@@ -7,19 +7,24 @@
 <link rel="stylesheet" href="css/styles.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/design-tokens.css">
+<link rel="stylesheet" href="css/footer-glass.css">
+<link rel="stylesheet" href="css/nav-glass.css">
 
 <body>
-  <nav class="navbar">
-    <div class="nav-container">
-      <a href="#" class="logo">MOLIAM</a>
-      <ul>
-        <li><a href="#services">Services</a></li>
-        <li><a href="#portfolio">Portfolio</a></li>
-        <li><a href="#about">About</a></li>
-        <li><a href="#contact">Contact</a></li>
-      </ul>
-    </div>
-  </nav>
+<nav class="navbar">
+     <div class="nav-container">
+       <a href="#" class="logo">MOLIAM</a>
+       <ul id="nav-menu">
+         <li><a href="#services" data-link>Services</a></li>
+         <li><a href="#portfolio" data-link>Portfolio</a></li>
+         <li><a href="#about" data-link>About</a></li>
+         <li><a href="#contact" data-link>Contact</a></li>
+         <li class="mobile-menu-toggle">
+           <button id="hamburger-btn" aria-label="Toggle navigation menu">☰</button>
+         </li>
+       </ul>
+     </div>
+   </nav>
 
   <header class="container">
     <div class="hero-content">
@@ -99,6 +104,7 @@
 
   <footer>© 2026 Moliam. All rights reserved.</footer>
 
-  <script src="js/script.js"></script>
+    <script src="js/script.js"></script>
+<script src="js/nav-interactions.js" defer></script>
 </body>
 </html>
