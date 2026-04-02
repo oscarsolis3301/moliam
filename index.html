@@ -10,7 +10,8 @@
 <link rel="stylesheet" href="css/footer-glass.css">
 <link rel="stylesheet" href="css/nav-glass.css">
 <link rel="stylesheet" href="css/hero-section.css">
-<link rel="stylesheet" href="css/scroll-indicator.css">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/new-sections.css">
 
 <body>
 <nav class="navbar">
@@ -46,74 +47,162 @@
    </a>
  </div>
 
-  <section id="services" class="section">
-    <h2>Our Services</h2>
-    <div class="grid">
-      <div class="card">
-        <span class="icon">🎨</span>
-        <h3>Visual Design</h3>
-        <p>Stunning, responsive websites and UI/UX that tells your brand story with cutting-edge design principles.</p>
-      </div>
-      <div class="card">
-        <span class="icon">🤖</span>
-        <h3>AI Marketing</h3>
-        <p>Data-driven campaigns powered by artificial intelligence for maximum impact and measurable ROI.</p>
-      </div>
-      <div class="card">
-        <span class="icon">💼</span>
-        <h3>Digital Solutions</h3>
-        <p>Complete web development and business optimization to scale your operations efficiently.</p>
-      </div>
-    </div>
-  </section>
+<!-- Services section with expanded offerings -->
+<section id="services" class="section">
+<div class="container">
+<h2>Our Services</h2>
+<p class="section-subtitle">Comprehensive digital marketing solutions tailored to your business needs</p>
 
-  <section id="portfolio" class="section">
-    <h2>Featured Projects</h2>
-    <div class="grid">
-      <div class="card">
-        <span class="icon">🚀</span>
-        <h3>VisualArk Platform</h3>
-        <p>Enterprise digital transformation solution for modern businesses and brands.</p>
-      </div>
-      <div class="card">
-        <span class="icon">📱</span>
-        <h3>Smart Applications</h3>
-        <p>Mobile-first applications designed for today's connected world and users.</p>
-      </div>
-      <div class="card">
-        <span class="icon">📊</span>
-        <h3>Analytics Dashboard</h3>
-        <p>Predictive insights and performance tracking dashboards for data-driven decisions.</p>
-      </div>
-    </div>
-  </section>
+<div class="services-grid">
+  <!-- Website Builds -->
+  <div class="card service-card" data-service="website-builds">
+    <span class="icon">💻</span>
+    <h3>Website Builds</h3>
+    <p>Bespoke, high-conversion websites built with modern frameworks. From landing pages to enterprise platforms.</p>
+    <ul class="feature-list">
+      <li>Responsive, mobile-first design</li>
+      <li>SEO-optimized architecture</li>
+      <li>Fast load times & accessibility</li>
+      <li>CMS integration available</li>
+    </ul>
+  </div>
 
-  <section id="about" class="section">
-    <h2>About Moliam</h2>
-    <p style="text-align: center; max-width: 800px; margin: 0 auto; font-size: clamp(1.1rem, 1.5vw, 1.3rem); line-height: 1.8;">
-      We combine cutting-edge AI technology with award-winning creative design to deliver digital experiences that drive measurable business results. Our team of experts specializes in intelligent marketing strategies, award-winning visual design, and scalable web development for forward-thinking companies.
-    </p>
-  </section>
+  <!-- GBP Optimization -->
+  <div class="card service-card" data-service="gbp-optimization">
+    <span class="icon">📍</span>
+    <h3>GBP Optimization</h3>
+    <p>Maximize your Google Business Profile presence with strategic optimization and local SEO.</p>
+    <ul class="feature-list">
+      <li>Profile setup & verification</li>
+      <li>Review management strategy</li>
+      <li>Local SEO ranking improvements</li>
+      <li>Analytics & insights dashboard</li>
+    </ul>
+  </div>
 
-  <section id="contact" class="section">
-    <h2>Contact Us</h2>
-    <form action="#" method="post">
-      <label for="name">Name</label>
-      <input type="text" id="name" name="name" required placeholder="Your full name">
-      
-      <label for="email">Email</label>
-      <input type="email" id="email" name="email" required placeholder="your@email.com">
-      
-      <label for="message">Message</label>
-      <textarea id="message" name="message" rows="4" required placeholder="How can we help you?"></textarea>
-      
-      <button type="submit">Send Message</button>
-    </form>
-  </section>
+  <!-- Google LSA Management -->
+  <div class="card service-card" data-service="lsa-management">
+    <span class="icon">🎯</span>
+    <h3>Google LSA Management</h3>
+    <p>Lead Service Ads that put you at the top of search results - paying only for qualified leads.</p>
+    <ul class="feature-list">
+      <li>Campaign setup & configuration</li>
+      <li>Keyword strategy & bidding</li>
+      <li>Performance monitoring</li>
+      <li>ROI optimization reports</li>
+    </ul>
+  </div>
 
-  <footer>© 2026 Moliam. All rights reserved.</footer>
+  <!-- Full Retainer -->
+  <div class="card service-card" data-service="full-retainer">
+    <span class="icon">🤝</span>
+    <h3>Full Retainer</h3>
+    <p>Ongoing partnership with dedicated support for brands that want consistent growth.</p>
+    <ul class="feature-list">
+      <li>Dedicated account manager</li>
+      <li>Monthly strategy sessions</li>
+      <li>24/7 priority support</li>
+      <li>Custom reporting & analytics</li>
+    </ul>
+  </div>
+</div>
+</div>
+</section>
 
-    <script src="js/script.js"></script>
-<script src="js/nav-interactions.js" defer></script>
-</body>
-</html>
+   <!-- Process/How it works section -->
+   <section id="process" class="section">
+     <div class="container">
+       <h2>How It Works</h2>
+       <p class="section-subtitle">A streamlined approach to get you from concept to launch.</p>
+       
+       <div class="process-timeline">
+         <!-- Step 1: Discovery -->
+         <div class="process-step" data-step="discovery">
+           <div class="step-number">1</div>
+           <h3>Discovery & Strategy</h3>
+           <p>We start by understanding your brand, goals, and audience. Research, competitive analysis, and strategic planning.</p>
+         </div>
+
+         <!-- Step 2: Build -->
+         <div class="process-step" data-step="build">
+           <div class="step-number">2</div>
+           <h3>Build & Design</h3>
+           <p>Movement from concept to creation. UI/UX design, development sprints, and iterative testing.</p>
+         </div>
+
+         <!-- Step 3: Launch -->
+         <div class="process-step" data-step="launch">
+           <div class="step-number">3</div>
+           <h3>Liquid & Iterate</h3>
+           <p>Launch, monitoring, and optimization. Continuous improvement based on data and user feedback.</p>
+         </div>
+
+         <!-- Step 4: Grow -->
+         <div class="process-step" data-step="grow">
+           <div class="step-number">4</div>
+           <h3>Growth & Scale</h3>
+           <p>Ongoing support, scaling efforts, and long-term partnership for sustained success.</p>
+         </div>
+       </div>
+     </div>
+   </section>\n\n\n   <!-- Testimonials section -->
+   <section id="testimonials" class="section">
+     <div class="container">
+       <h2>What Clients Say</h2>
+       <p class="section-subtitle">Trusted by forward-thinking businesses and brands.</p>
+       
+       <div class="testimonials-grid">
+         <!-- Testimonial 1 -->
+         <div class="testimonial-card">
+           <div class="quote-icon">❝</div>
+           <blockquote>"Moliam transformed our online presence. The AI-powered approach helped us quadruple leads in just 3 months."</blockquote>
+           <cite>Sarah Chen, CEO of TechFlow Solutions</cite>
+         </div>
+
+         <!-- Testimonial 2 -->
+         <div class="testimonial-card">
+           <div class="quote-icon">❝</div>
+           <blockquote>"Their attention to detail and creative excellence is unmatched. Our conversion rate improved by 150%."</blockquote>
+           <cite>Michael Rodriguez, Director at BrightPath Agency</cite>
+         </div>
+
+         <!-- Testimonial 3 -->
+         <div class="testimonial-card">
+           <div class="quote-icon">❝</div>
+           <blockquote>"Professional, responsive, and incredibly talented. They delivered beyond our expectations on time and budget."</blockquote>
+           <cite>Jennifer Park, Founder of InnovateStart</cite>
+         </div>
+       </div>
+     </div>
+   </section>\n\n   
+   <!-- Portfolio section moved to after testimonials -->
+   <section id="portfolio" class="section">
+     <h2>Featured Projects</h2>
+     <div class="grid">
+       <div class="card">
+         <span class="icon">🚀</span>
+         <h3>VisualArk Platform</h3>
+         <p>Enterprise digital transformation solution for modern businesses and brands.</p>
+       </div>
+       <div class="card">
+         <span class="icon">📱</span>
+         <h3>Smart Applications</h3>
+         <p>Mobile-first applications designed for today's connected world and users.</p>
+       </div>
+       <div class="card">
+         <span class="icon">📊</span>
+         <h3>Analytics Dashboard</h3>
+         <p>Predictive insights and performance tracking dashboards for data-driven decisions.</p>
+       </div>
+     </div>
+   </section>\n"
+
+
+<section id="contact-embedded" style="background:var(--color-glass-bg);padding:40px;border-radius:16px;backdrop-filter:blur(16px);border:1px solid rgba(255,255,245,0.1);margin-top:30px;"><h3 style="margin-bottom:25px;">Get Started Today</h3><form action="#"method="post"novalidate=""><div style="margin-bottom:18px"><label for="cf-name"style="display:block;font-size:.9rem;color:var(--color-neutral-300);font-weight:600;">Full Name *</label><input type="text"id="cf-name"name="name"requiredclass="rounded-contact-input"></div></div><div style="margin-bottom:18px"><label for="cf-email"style="display:block;font-size:.9rem;color:var(--color-neutral-300);font-weight:600;">Email *</label><input type="email"id="cf-email"name="email"required class="rounded-contact-input"></div></div><div style="margin-bottom:18px"><label for="cf-phone"style="font-size:.9rem;color:var(--color-neutral-300);font-weight:600;">Phone (optional)</label><input type="tel"id="cf-phone"name="phone"class="rounded-contact-input"></div></div><div style="margin-bottom:18px"><label for="cf-company"style="font-size:.9rem;color:var(--color-neutral-300);font-weight:600;">Company</label><input type="text"id="cf-company"name="company"class="rounded-contact-input"></div></div><div style="margin-bottom:18px"><label for="cf-message"style="font-size:.9rem;color:var(--color-neutral-300);font-weight:600;">How can we help?</label><textarea id="cf-message"name="message"rows="4"class="rounded-contact-input"></textarea></div></div><button type="submit"class="btn-submit-main">Send Message</button><pstyle name="&#34;font-size:.8rem;color:#94a3b8;margin-top:10px;&#34;">We'll respond within 24 hours.</p></form></div><!-- contact embedded -->
+
+     <div><!-- CTA buttons area -->
+       <h2 style="text-align:center;color:white;font-size:clamp(1.8rem,3vw,2.5rem);margin:40px 0 20px;">Ready to Transform Your Business?</h2>
+       <p style="color:var(--color-neutral-300);font-size:clamp(1rem,1.5vw,1.2rem);text-align:center;margin-bottom:30px;">Join forward-thinking brands that trust Moliam for their digital success.</p>
+       <divstyle name="&#34;display:flex;gap:20px;justify-content:center;flex-wrap:wrap;&#34;"><a href="#contact-embedded" class="btn-main btn-lg">Book a Demo</a><a href=mailto:hello@moliam.com class="btn-secondary btn-lg">Contact Us</a></div></div>
+
+<footer class="footer-glass">&copy; 2026 Moliam. All rights reserved.</footer><script src="js/script.js"></script>\n<script src="js/nav-interactions.js"defer></script>\n      </body>\n    </html>
