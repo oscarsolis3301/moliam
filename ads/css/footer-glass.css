@@ -1,0 +1,73 @@
+/* ============================================
+   MOLIAM - Footer Glass Effect & Styling
+   ============================================ */
+
+/* Global footer styling (applied via CSS variable) */
+footer {
+  background: rgba(30, 41, 59, 0.95);          /* Glass opacity from design-tokens */
+  backdrop-filter: blur(10px);                   /* Glassmorphism effect */
+  border-top: 1px solid rgba(255, 255, 245, 0.1);  /* Border-pale from tokens */
+  padding: clamp(2rem, 5vw, 3rem) 1rem;     /* Responsive padding */
+  text-align: center;                           /* Centered content */
+  margin-top: auto;                             /* Push to bottom */
+  font-size: clamp(0.875rem, 1.3vw, 1.125rem);   /* Mobile → Desktop */
+  opacity: 0.85;                                /* Slight transparency */
+  position: relative;                           /* Container for children */
+}
+
+footer::before {
+  content: '';                                  /* Subtle top border gradient */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.3), transparent);
+}
+
+footer::after {
+  content: '';                                  /* Inner border glow */
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 200px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(236, 72, 153, 0.5), transparent);
+  transform: translateX(-50%);
+}
+
+footer p {
+  color: var(--color-glow);                    /* Lavender glow from tokens */
+  margin: 0;
+  letter-spacing: 0.5px;                       /* Subtle spacing */
+  text-shadow: 0 0 15px rgba(168, 85, 247, 0.2); /* Soft purple glow */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  footer {
+    padding: clamp(1.5rem, 3vw, 2.5rem) 0.75rem;   /* Tighter mobile spacing */
+    font-size: var(--text-sm);                       /* Smaller on mobile */
+  }
+  
+  footer::after {
+    width: 150px;                                    /* Smaller glow on mobile */
+  }
+}
+
+/* Hover effect for footer copyright text (if future interactive element added) */
+footer p:hover {
+  filter: brightness(1.1);                           /* Subtle brighten on hover */
+  cursor: default;                                  /* No pointer (not a link yet) */
+}
+
+/* Accessible focus state if footer elements become clickable */
+@media (prefers-reduced-motion: reduce) {
+  footer * {
+    transition-duration: 0.01ms !important;         /* Minimal animation for accessibility */
+  }
+  
+  footer p:hover {
+    filter: none;                                  /* No brightness change on hover */
+  }
+}
