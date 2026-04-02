@@ -1,14 +1,4 @@
-# Root development files - don't commit to repo! 
-*.DS_Store
-.gitkeep
-collaboration-plan.md
-*~/*.tmp
-/*/*.log
-
-# Public folder (CloudFlare Pages serves from public/ — everything below will be uploaded to CloudFlare) 
-/
-!/public/
-/public/*
-
-# Functions are auto-discovered at root, but they're separate from static assets!  
-/functions/api/contact.js
+.DS_Store
+node_modules/
+*.log
+*.tmp
