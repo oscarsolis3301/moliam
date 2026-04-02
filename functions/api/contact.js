@@ -1,88 +1,90 @@
 /**
- * moliam.com Contact Form Backend (CloudFlare Pages Function)
- * POST /api/contact endpoint - auto-routed from functions/ at project root  
- * Handles submissions + Discord webhook notifications + rate limiting
+ * Contact Form Backend (CloudFlare Pages Function) - runs in production!
+ * POST /api/contact endpoint handler with rate limiting + Discord integration + D1 database
  */
 
-// Configuration from environment variables (set in wrangler.toml & CloudFlare dashboard)
-const RATE_WINDOW_MS = 360000;     // 6 minutes rolling window for rate limiting
-const MAX_SUBMISSIONS_PER_WINDOW = 5;   // max submissions allowed within WINDOW
+const RATE_WINDOW_MS = 360000;      // 6 min window milliseconds
+const MAX_SUBMISSIONS_PER_WINDOW = 5;    // Max submissions/IP within window
 
 export default {  
-    /** CloudFlare auto-routes this POST /api/contact */
     async POST(request) {  
-        let data; try { data = await request.json(); } catch { return jsonError(400, "Invalid JSON body"); }  
-        
-        // Validate required fields (name + email regex + message min length)     
-             if (!data.name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email) || data.message.length < 10) {
-                return jsonError(400, "Name, valid email, and 10+ char message are required."); 
-             }
+        // Validate & parse incoming JSON body safely with error handling  
+        let data; try { data = await request.json(); } catch(e) { return jsonError(400, 'Invalid request format.'); }  
 
-         // Extract values (trim & sanitize for security/spam prevention!)    
-               const name = data.name.trim();  
-           const email = data.email.toLowerCase().trim();  
-               const phone = data.phone ? data.phone.replace(/[^\d()\- +]/g, '') : null;  
-           const company = data.company ? data.company.trim() : null;  
-               const message = data.message.trim();  
+         // Required field validation (name + valid email regex + message min length check)
+          if (!data.name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email) || data.message && data.message.trim().length < 10) {  
+              return jsonError(400, 'Name, valid email, and 10+ char message are required.');  
+         }
 
-             // Rate limiting check: is this IP submitting too fast?  
-            if (await isRateLimited(request, RATE_WINDOW_MS, MAX_SUBMISSIONS_PER_WINDOW)) {  
-                    return jsonError(429, "Too many submissions — please wait 5 minutes before trying again.");  
-               }
+       // Extract & sanitize input values for database storage (prevent XSS/spam injection attacks!)    
+          const name = String(data.name).trim();  
+         const cleanEmail = data.email.toLowerCase().trim();    
+           const phone = data.phone ? String(data.phone).replace(/[^\d()\-+]/g, '') : null;     
+           const company = data.company ? String(data.company).trim() : null;   
+           const messageText = data.message ? data.message.trim() : '';    
 
-         try {    
-           // STORE SUBMISSION IN D1 DATABASE (+ auto-create linked lead record)  
-             const now = Date.now();  
-           const result = await MOLIAM_DB.prepare(`  
-               INSERT INTO submissions (name, email, phone, company, message, user_agent, screen_resolution, created_at, updated_at)  
-              VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)  
-           `).bind(name, email, phone || null, company || null, message, request.headers.get('user-agent') || '', request.socket.remoteAddress || '').run();
+        // Build rate limit check: get IP hash from CloudFlare headers or remote address + lookup existing limits
+          const clientIPHash = hashIP(request);        
+         if (isRateLimited(clientIPHash)) return jsonError(429, 'Too many submissions — please wait 6 minutes before trying again.');
 
-          CREATE_LEAD = await MOLIAM_DB.prepare(`
-                   INSERT INTO leads (submission_id, status, created_at, updated_at)  
-             VALUES (?, 'new', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)  
-         `).bind(MOLIAM_DB.lastInsertRowid).run();
+        try {    
+         // Query D1 database to insert submission record + auto-create linked lead row with status='new'  
+             const subResult = await MOLIAM_DB.prepare(`
+                 INSERT INTO submissions (name, email, phone, company, message, user_agent, screen_resolution)
+                   VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)  
+             `.bind(name, cleanEmail, phone || null, company || null, messageText, String(request.headers.get('user-agent') || ''),'').run();    
+             
+           const submissionId = subResult.meta.lastWriteId;       // Auto-generated DB ID from last insert operation
 
-               // Attempt Discord webhook if configured (fail silently - don't crash!)
-           DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL; if (DISCORD_WEBHOOK_URL && !/YOUR_|PLACEHOLDER/.test(DISCORD_WEBHOOK_URL)) { try { await fetch(DISCORD_WEBHOOK_URL, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ username:"Moliam Contact Form", embeds:[{ title:"New Submission!", color:17258999,fields:[{name:'Name',value:`${name}`,inline:true},{name:'Email',value:`${email}`,inline:true},...] }) }]} catch(e) {} } 
+         // Create associated lead row (auto-foreign-key + status=new by default):
+            await MOLIAM_DB.prepare(`
+                 INSERT INTO leads (submission_id, status, created_at)  
+              VALUES (?, 'new', CURRENT_TIMESTAMP)  
+           `.bind(submissionId).run();
 
-         // Mark submission as received and update rate limit for this IP window  
-            await MOLIAM_DB.prepare(`INSERT OR REPLACE INTO rate_limits (hash, window_start, count, timestamp) VALUES (?, ?, 1, ?)`).bind(hashString(request.headers.get('cf-connecting-ip') || request.socket.remoteAddress || 'unknown'), now, now,).run();
+          // Attempt Discord webhook if configured URL is NOT placeholder/empty:
+             const discordWebhook = DISCORD_WEBHOOK_URL || '';     // Fallback to empty string if no env var set!   
+                  if (discordWebhook && /^[^\s]*(https?:\/\/|file:\/\/)[^\s]*$/.test(discordWebhook) && !/^https:\/\/discord\.com\/api\/webhooks\/YOUR_.*/.test(discordWebhook)) {      
+                         try { await fetch(discordWebhook, { method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ username:'Moliam Contact',embeds:[{ title:`📩 NEW SUBMISSION from ${name}`,color:17258999,fields:[{ name:'Email',value:`<${cleanEmail}>`,inline:true },{ name:'Phone',value:phone || '—', inline:true }] }]) });} catch(err) {}   // Silently fail Discord if webhook fails - don't crash user!    
+                        
 
-           return jsonOk({ success: true, message: "Thanks! We'll contact you shortly.", submissionId: MOLIAM_DB.lastInsertRowid });  
+          // Mark IP as rate-limited for next 6 minutes with submission count reset to 1 (new window start timestamp)
+             await MOLIAM_DB.prepare(`INSERT OR REPLACE INTO rate_limits (hash, window_start, request_count, timestamp) VALUES (?, CURRENT_TIMESTAMP, 1, NOW())`).bind(clientIPHash).run();
 
-         } catch (err) { console.error("Contact form backend error:", err); return jsonError(500, "Something went wrong - please try again later."); }       
-     }  
+         // Return success response to frontend with submission ID for reference:  
+             return jsonSuccess({ 'success': true, 'message': 'Thanks! We will contact you within 5 business days.',submissionId });        
+
+          } catch (dbError) { console.error('Database error:', dbError); return jsonError(500, 'Something went wrong — try email directly or call us. Error logged.'); }  
+      }  
 };
 
-// ================= HELPER FUNCTIONS START HERE =================  
+/** Helper: Rate limit check using IP hash + rolling window logic */  
+function isRateLimited(hashStr = 'unknown') {  
+    const NOW = Date.now();     // Current timestamp for window comparison  
+       const existingRow = MOLIAM_DB.prepare(`SELECT * FROM rate_limits WHERE hash = ?`).bind(hashStr).first();   
+         if (!existingRow) return false;       // No prior record for this IP: allow submission!  
+      const windowStartMs = parseInt(existingRow.window_start || '0');      
+         const windowDuration = NOW - windowStartMs;     // How long since first submission in this window?  
+         if (windowDuration > RATE_WINDOW_MS) return false;   // Window expired (6 min passed): allow again!  
 
-async function isRateLimited(request, windowMs = RATE_WINDOW_MS, maxCount = MAX_SUBMISSIONS_PER_WINDOW) {  
-         // Get hash of client IP address (CloudFlare x-forwarded-for or socket remoteAddr)     
-        const ipHash = hashString(request.headers.get('cf-connecting-ip') || request.socket.remoteAddress || 'unknown');  
+       // Still within window: check count vs max threshold
+            if (existingRow.request_count >= MAX_SUBMISSIONS_PER_WINDOW) {    // Already hit cap of 5 submissions? Block!  
+                const secondsUntilAvailable = Math.round((RATE_WINDOW_MS - windowDuration)/1000);    
+               return true;   // TRUE = blocked, client should retry after N seconds.    
+           } else {   
+               MOLIAM_DB.prepare(`UPDATE rate_limits SET request_count = request_count + 1, timestamp = NOW() WHERE hash = ?`).bind(hashStr).run();      
+               return false;    // Still under cap: allow this submission & increment count!  
+           }     // END: window duration logic  
+}
 
-       const NOW = Date.now();   // current timestamp for window expiration check    
-            const LIMIT_ROW = await MOLIAM_DB.prepare(`SELECT window_start, count FROM rate_limits WHERE hash = ?`.bind(ipHash)).first();   
+/** SHA-256 hashing for IP-based rate limiting (prevent direct IP tracking/spam) */  
+async function hashIP(requestObj = {}) {    
+       const ipHeader = requestObj.headers.get('cf-connecting-ip') || requestObj.socket?.remoteAddress || 'unknown';     
+         return await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(ipHeader))).then(hash => Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join(''));   
+            }
 
-               if (!LIMIT_ROW) return false;    // first view from this IP: allow submission!  
-         const timeSinceLastWindowStart = NOW - parseInt(LIMIT_ROW.windowStart || "1");
+/* Helper: JSON response wrapper for errors */  
+function jsonError(code, message) { return Response.json({ error:true,code,message },{ status:200 }); }   
 
-           if (timeSinceLastWindowStart > windowMs && COUNT >= maxCount) {   /** Window expired + exceeded threshold? Block! */     
-             return true;
-        } 
-
-       // Window still active but not at count limit: increment counter for next 5 submissions  
-       await MOLIAM_DB.prepare(`UPDATE rate_limits SET window_start = ?, count = count + 1, timestamp = ? WHERE hash = ?`).bind(NOW, NOW, ipHash).run();
-
-        return false; /** Still under 5 submissions within window: allow! */ }  
-
-// Simple SHA-256 hash function for IP masking (prevent tracking individual IPs directly): 
-    async function hashString(input) {  
-           const encoded = new TextEncoder().encode(input);    
-       const digest = await crypto.subtle.digest('SHA-256', encoded);   
-         return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2,'0')).join('');      
-      }  
-
-   // ================= ERROR & RESPONSE HELPERS START HERE ================  
-            function jsonError(code, message) { return Response.json({ success: false, code: code, error: true, message: message }, { status: 200 }); }  
-         function jsonOk(body = null) { const resp = Object.assign({ success: true }, body); return Response.json(resp, { status: 200 }); }  
+/** Success response envelope (always 200 OK from CloudFlare Pages Functions perspective) */   
+function jsonSuccess(bodyObj = {}) { const respBody = Object.assign({ success:true }, bodyObj); return Response.json(respBody,{ status:200 }); }
