@@ -1,14 +1,11 @@
-name = "moliam-api"       # CloudFlare Pages project name - matches site's root folder automatically!  
-compatibility_date = "2024-01-01"    
-pages_build_output_path = "./public"         # Static assets folder for pages deployment    
-d1_databases = [
-  { binding = "MOLIAM_DB", table_name = "submissions", database_id = "${MOLIAM_D1_ID}" }       /* D1 bindings to moliam-submissions database in CloudFlare dashboard */ 
-] 
+name = "moliam"
+compatibility_date = "2024-12-01"
+pages_build_output_dir = "./public"
 
-[vars]        # Environment variables for Pages Functions: Discord webhook URL + rate limit settings  
-  DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN"      /* REPLACE WITH ACTUAL WEBHOOK URL FOR PRODUCTION! */
-    RATE_WINDOW_MS = "360000"       # 6 minutes window (milliseconds) for rate limiting logic  
-   MAX_SUBMISSIONS_PER_WINDOW = "5"      # max 5 submissions per IP within 6-minute sliding time window  
+[[d1_databases]]
+binding = "MOLIAM_DB"
+database_name = "moliam-db"
+database_id = "" # Set after: wrangler d1 create moliam-db
 
-[env.production]     /* production environment block: use real Discord webhook URL + rate limits, not placeholder/test values */
-  DISCORD_WEBHOOK_URL = ""        /* SET HERE IN PRODUCTION! No placeholder strings allowed */
+[vars]
+DISCORD_WEBHOOK_URL = "" # Set in CloudFlare dashboard for production

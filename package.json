@@ -1,11 +1,13 @@
-{  
-   "name": "moliam-api",       
-  "version": "1.0.0",    
-  "description": "CloudFlare Pages Functions for moliam.com contact form backend (D1 + rate limiting)",   
-   "scripts": {    
-     "dev": "wrangler pages dev public --d moliam-db=./moliam.db",         /* run local mock server with mocked D1 SQLite on disk file */  
-       "deploy": "wrangler pages deploy public"      /* deploy to CloudFlare Pages for production! */  
-   },   
-  "devDependencies": {      
-     "wrangler": "^3.50.0"         /* CloudFlare CLI tool for local mock D1 + deployment to live platform automatically! */  
-    }
+{
+  "name": "moliam",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MOLIAM - AI-powered marketing agency website",
+  "scripts": {
+    "dev": "wrangler pages dev ./public --d1 MOLIAM_DB=moliam-db",
+    "deploy": "wrangler pages deploy ./public"
+  },
+  "devDependencies": {
+    "wrangler": "^3.50.0"
+  }
+}
