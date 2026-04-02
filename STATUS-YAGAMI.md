@@ -13,10 +13,10 @@
 - [x] Initialized Next.js 14 App Router project
 - [x] Installed Framer Motion for animations
 - [x] Configured Tailwind CSS with dark premium design system:
-  - Dark base colors (near-black backgrounds: #0a0a0a, #121212, #1a1a1a)
-  - Electric blue accent color (#3B8F56 → #3B74F6)
-  - Fonts: Sora (display), Inter (body)
-  - Custom spacing scale, shadows, border-radius
+   - Dark base colors (near-black backgrounds: #0a0a0a, #121212, #1a1a1a)
+   - Electric blue accent color (#3B8F56 → #3B74F6)
+   - Fonts: Sora (display), Inter (body)
+   - Custom spacing scale, shadows, border-radius
 - [x] Global layout with sticky glassmorphic navigation bar
 - [x] Mobile hamburger menu structure prepared
 - [x] Footer with sitemap, social icons, "Built by MOLIAMA" badge
@@ -30,15 +30,15 @@
 
 ### Task 3: Landing Page — Sections ✓
 - [x] **Services Section:** 6-card grid with hover-lift animations:
-  - Content Creation
-  - Social Strategy  
-  - Paid Ads Management
-  - AI Automation
-  - Brand Identity
-  - Analytics & Reporting
+   - Content Creation
+   - Social Strategy  
+   - Paid Ads Management
+   - AI Automation
+   - Brand Identity
+   - Analytics & Reporting
 
 - [x] **Process Section:** Horizontal stepper with scroll-triggered animations:
-  - Discovery → Strategy → Create → Launch → Optimize
+   - Discovery → Strategy → Create → Launch → Optimize
 
 - [x] **Testimonials Section:** Rotating cards with realistic placeholder testimonials and 5-star ratings
 
