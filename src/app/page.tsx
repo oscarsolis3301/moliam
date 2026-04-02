@@ -76,7 +76,7 @@ export default function Home() {
             <a href="#contact" className="w-full sm:w-auto px-8 py-3 text-base font-semibold text-white bg-brand-500 rounded-lg hover:bg-brand-600 transition-all shadow-glow transform hover:scale-105">
               Start a Project
             </a>
-            <a href="#services" className="w-full sm:w-auto px-8 py-3 text-base font-semibold text-neutral-200 bg-dark-700 rounded-lg hover:bg-dark-600 transition-all border border-dark-600">
+            <a href="#services" className="w-full sm:w-auto px-8 py-3 text-base font-semibold text-neutral-200 bg-dark-700 rounded-lg hover:bg-dark-600 transition-all border border-neutral-800">
               See Our Work
             </a>
           </motion.div>
@@ -86,7 +86,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 1.1, ease: "easeOut" }}
-            className="mt-16 pt-8 border-t border-dark-600/50 max-w-4xl mx-auto"
+            className="mt-16 pt-8 border-t border-neutral-800/50 max-w-4xl mx-auto"
           >
             <div className="grid grid-cols-3 gap-8">
               {[
@@ -115,7 +115,7 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {/* Content Creation */}
-              <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} whileHover={{ scale: 1.02 }} className="bg-dark-700 rounded-premium-xl border border-dark-600 p-8 hover:border-brand-500/50 transition-all group">
+              <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} whileHover={{ scale: 1.02 }} className="bg-dark-700 rounded-premium-xl border border-neutral-800 p-8 hover:border-brand-500/30 transition-all group">
                 <div className="w-14 h-14 rounded-lg bg-brand-500/10 flex items-center justify-center mb-6 group-hover:bg-brand-500/20 transition-all">
                   <svg className="w-8 h-8 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036 5.172L15 8.414V3a1 1 0 00-1-1h-2a1 1 0 00-1 1v5.414l-1.732 1.732a1 1 0 001.414 1.414L10 8.414V3a1 1 0 00-1-1H7a1 1 0 00-1 1v5.414l-1.732 1.732a1 1 0 001.414 1.414L8 8.414V3a1 1 0 00-1-1H5a1 1 0 00-1 1v5.414L2 12.76A1 1 0 002 15v4a1 1 0 001 1h2a1 1 0 001-1v-2.24l2.88-1.344L13.37 9.44l-.37 2.64 1.44.672V15a1 1 0 001 1h4a1 1 0 001-1v-4a1 1 0 00-1-1h-2.37L16.88 12z" />
@@ -128,7 +128,7 @@ export default function Home() {
               </motion.div>
 
               {/* Social Strategy */}
-              <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} whileHover={{ scale: 1.02 }} className="bg-dark-700 rounded-premium-xl border border-dark-600 p-8 hover:border-brand-500/50 transition-all group">
+              <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} whileHover={{ scale: 1.02 }} className="bg-dark-700 rounded-premium-xl border border-neutral-800 p-8 hover:border-brand-500/30 transition-all group">
                 <div className="w-14 h-14 rounded-lg bg-brand-500/10 flex items-center justify-center mb-6 group-hover:bg-brand-500/20 transition-all">
                   <svg className="w-8 h-8 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -141,7 +141,7 @@ export default function Home() {
               </motion.div>
 
               {/* Paid Ads Management */}
-              <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} whileHover={{ scale: 1.02 }} className="bg-dark-700 rounded-premium-xl border border-dark-600 p-8 hover:border-brand-500/50 transition-all group">
+              <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} whileHover={{ scale: 1.02 }} className="bg-dark-700 rounded-premium-xl border border-neutral-800 p-8 hover:border-brand-500/30 transition-all group">
                 <div className="w-14 h-14 rounded-lg bg-brand-500/10 flex items-center justify-center mb-6 group-hover:bg-brand-500/20 transition-all">
                   <svg className="w-8 h-8 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -154,7 +154,7 @@ export default function Home() {
               </motion.div>
 
               {/* AI Automation */}
-              <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} whileHover={{ scale: 1.02 }} className="bg-dark-700 rounded-premium-xl border border-dark-600 p-8 hover:border-brand-500/50 transition-all group">
+              <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} whileHover={{ scale: 1.02 }} className="bg-dark-700 rounded-premium-xl border border-neutral-800 p-8 hover:border-brand-500/30 transition-all group">
                 <div className="w-14 h-14 rounded-lg bg-brand-500/10 flex items-center justify-center mb-6 group-hover:bg-brand-500/20 transition-all">
                   <svg className="w-8 h-8 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -167,7 +167,7 @@ export default function Home() {
               </motion.div>
 
               {/* Brand Identity */}
-              <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} whileHover={{ scale: 1.02 }} className="bg-dark-700 rounded-premium-xl border border-dark-600 p-8 hover:border-brand-500/50 transition-all group">
+              <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} whileHover={{ scale: 1.02 }} className="bg-dark-700 rounded-premium-xl border border-neutral-800 p-8 hover:border-brand-500/30 transition-all group">
                 <div className="w-14 h-14 rounded-lg bg-brand-500/10 flex items-center justify-center mb-6 group-hover:bg-brand-500/20 transition-all">
                   <svg className="w-8 h-8 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
@@ -180,7 +180,7 @@ export default function Home() {
               </motion.div>
 
               {/* Analytics & Reporting */}
-              <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} whileHover={{ scale: 1.02 }} className="bg-dark-700 rounded-premium-xl border border-dark-600 p-8 hover:border-brand-500/50 transition-all group">
+              <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} whileHover={{ scale: 1.02 }} className="bg-dark-700 rounded-premium-xl border border-neutral-800 p-8 hover:border-brand-500/30 transition-all group">
                 <div className="w-14 h-14 rounded-lg bg-brand-500/10 flex items-center justify-center mb-6 group-hover:bg-brand-500/20 transition-all">
                   <svg className="w-8 h-8 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
@@ -271,7 +271,7 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Testimonial 1 */}
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }} className="bg-dark-700 rounded-premium-xl border border-dark-600 p-8">
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }} className="bg-dark-700 rounded-premium-xl border border-neutral-800 p-8">
                   <div className="flex items-center mb-4">
                     {[1, 2, 3, 4, 5].map((star) => (
                        <svg key={star} className="w-5 h-5 text-brand-500" fill="currentColor" viewBox="0 0 20 20">
@@ -287,7 +287,7 @@ export default function Home() {
                 </motion.div>
 
                 {/* Testimonial 2 */}
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="bg-dark-700 rounded-premium-xl border border-dark-600 p-8">
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="bg-dark-700 rounded-premium-xl border border-neutral-800 p-8">
                   <div className="flex items-center mb-4">
                     {[1, 2, 3, 4, 5].map((star) => (
                        <svg key={star} className="w-5 h-5 text-brand-500" fill="currentColor" viewBox="0 0 20 20">
@@ -303,7 +303,7 @@ export default function Home() {
                 </motion.div>
 
                 {/* Testimonial 3 */}
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }} className="bg-dark-700 rounded-premium-xl border border-dark-600 p-8">
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }} className="bg-dark-700 rounded-premium-xl border border-neutral-800 p-8">
                   <div className="flex items-center mb-4">
                     {[1, 2, 3, 4, 5].map((star) => (
                        <svg key={star} className="w-5 h-5 text-brand-500" fill="currentColor" viewBox="0 0 20 20">
