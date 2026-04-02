@@ -4,32 +4,47 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Moliam - AI Marketing & Digital Solutions</title>
-  <link rel="stylesheet" href="css/styles.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-  <nav class="navbar">
-    <div class="nav-container">
-      <a href="#" class="logo">MOLIAM</a>
-      <ul>
-        <li><a href="#services">Services</a></li>
-        <li><a href="#portfolio">Portfolio</a></li>
-        <li><a href="#about">About</a></li>
-        <li><a href="#contact">Contact</a></li>
-      </ul>
-    </div>
-  </nav>
+<link rel="stylesheet" href="css/styles.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/design-tokens.css">
+<link rel="stylesheet" href="css/footer-glass.css">
+<link rel="stylesheet" href="css/nav-glass.css">
+<link rel="stylesheet" href="css/hero-section.css">
+<link rel="stylesheet" href="css/scroll-indicator.css">
 
-  <header class="container">
-    <div class="hero-content">
-      <h1>Moliam</h1>
-      <p class="subtitle">Where creativity meets intelligence. We deliver digital solutions that drive real business results.</p>
-      <div class="buttons">
-        <a href="#services" class="btn-main">Explore Our Work</a>
-        <a href="#contact" class="btn-main">Get Started</a>
-      </div>
-    </div>
-  </header>
+<body>
+<nav class="navbar">
+     <div class="nav-container">
+       <a href="#" class="logo">MOLIAM</a>
+       <ul id="nav-menu">
+         <li><a href="#services" data-link>Services</a></li>
+         <li><a href="#portfolio" data-link>Portfolio</a></li>
+         <li><a href="#about" data-link>About</a></li>
+         <li><a href="#contact" data-link>Contact</a></li>
+         <li class="mobile-menu-toggle">
+           <button id="hamburger-btn" aria-label="Toggle navigation menu">☰</button>
+         </li>
+       </ul>
+     </div>
+   </nav>
+
+<header class="hero-section container">
+        <div class="hero-content">
+          <h1>AI-Powered Digital Marketing</h1>
+<p class="subtitle">Transform your business with intelligent automation and creative excellence</p>
+           <div class="buttons">
+             <a href="#services" class="btn-main">Explore Our Work</a>
+             <a href="#contact" class="btn-main">Get Started</a>
+           </div>
+         </div>
+       </header>
+
+<!-- Scroll Down Indicator for Hero Section -->
+<div class="hero-scroll-indicator">
+  <a href="#services" class="hero-scroll-arrow" aria-label="Scroll down to view services">
+    ↓
+   </a>
+ </div>
 
   <section id="services" class="section">
     <h2>Our Services</h2>
@@ -98,6 +113,7 @@
 
   <footer>© 2026 Moliam. All rights reserved.</footer>
 
-  <script src="js/script.js"></script>
+    <script src="js/script.js"></script>
+<script src="js/nav-interactions.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,243 @@
+/* ============================================
+   MOLIAM - Design System Tokens
+   ============================================ */
+
+:root {
+  /* ============================================
+     COLOR SYSTEM
+     ============================================ */
+  
+  /* Primary brand gradient: Purple → Pink (AI/innovative feel) */
+  --color-primary-start: #0f172a;      /* Deep navy base */
+  --color-primary-end: #581c87;        /* Rich purple */
+  --color-accent-purple: #a855f7;      /* Vibrant accent purple */
+  --color-accent-pink: #ec4899;        /* Electric pink */
+  --color-gradient-main: linear-gradient(135deg, var(--color-primary-start), var(--color-primary-end));
+  
+  /* Brand gradient for text/logo effects */
+  --color-brand-gradient: linear-gradient(90deg, var(--color-accent-purple), var(--color-accent-pink));
+  --color-glow: #e9d5ff;               /* Soft lavender glow */
+  
+  /* Neutral spectrum */
+  --color-neutral-0: #ffffff;          /* Pure white */
+  --color-neutral-50: #f8fafc;         /* Near-white background */
+  --color-neutral-100: #f1f5f9;        /* Light neutral */
+  --color-neutral-200: #e2e8f0;        /* Subtle border */
+  --color-neutral-300: #ccd4da;        /* Muted highlights */
+  --color-neutral-400: #94a3b8;        /* Medium text */
+  --color-neutral-500: #64748b;        /* Body text */
+  --color-neutral-600: #475569;        /* Emphasis text */
+  --color-neutral-700: #334155;        /* Subtitles */
+  --color-neutral-800: #1e293b;        /* Card backgrounds */
+  --color-neutral-900: #0f172a;        /* Deepest base */
+  
+  /* Functional colors */
+  --color-border-pale: rgba(255, 255, 245, 0.1);          /* Subtle borders */
+  --color-glass-opacity: rgba(30, 41, 59, 0.7);           /* Glassmorphism */
+  --color-glass-darker: rgba(30, 41, 59, 0.85);          /* Dark glass */
+  
+  /* Status colors (add when needed for future states) */
+  --color-success: #10b981;       /* Green */
+  --color-warning: #f59e0b;        /* Amber */
+  --color-error: #ef4444;          /* Red */
+  --color-info: #3b82f6;           /* Blue */
+
+  /* ============================================
+     SPACING SYSTEM
+     ============================================ */
+  
+  /* Base unit: 4px grid system */
+  --spacing-xs: 0.25rem;   /* 4px - tiny margins */
+  --spacing-sm: 0.5rem;    /* 8px - small gaps */
+  --spacing-md: 1rem;      /* 16px - standard padding */
+  --spacing-lg: 1.5rem;    /* 24px - section spacing */
+  --spacing-xl: 2rem;      /* 32px - large margins */
+  --spacing-2xl: 2.5rem;   /* 40px - hero sections */
+  --spacing-3xl: 3rem;     /* 48px - major divisions */
+  --spacing-4xl: 4rem;     /* 64px - full hero heights */
+
+  /* Responsive spacing using clamp() for fluid scaling */
+  --spacing-responsive-sm: clamp(0.5rem, 1.5vw, 1rem);    /* Mobile → Desktop */
+  --spacing-responsive-md: clamp(1rem, 2vw, 1.5rem);       /* Medium gaps */
+  --spacing-responsive-lg: clamp(2rem, 4vw, 3rem);         /* Large sections */
+
+  /* ============================================
+     TYPOGRAPHY SYSTEM
+     ============================================ */
+  
+  /* Font families */
+  --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;   /* For code blocks if needed */
+
+  /* Base typography scale (16px base) */
+  --text-xs: clamp(0.75rem, 0.6rem + 0.33vw, 0.875rem);    /* 12-14px - microcopy */
+  --text-sm: clamp(0.875rem, 0.75rem + 0.5vw, 1rem);         /* 14-16px - labels */
+  --text-md: clamp(1rem, 0.875rem + 0.625vw, 1.125rem);      /* 16-18px - body text */
+  --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.375rem);       /* 18-22px - subtitles */
+  --text-xl: clamp(1.375rem, 1.125rem + 1.25vw, 1.75rem);    /* 22-28px - section headers */
+  --text-2xl: clamp(1.75rem, 1.375rem + 1.875vw, 2.5rem);    /* 28-40px - H2s */
+  --text-3xl: clamp(2rem, 1.5rem + 2.5vw, 3.5rem);            /* 32-56px - H1s */
+  --text-4xl: clamp(2.5rem, 1.75rem + 3.125vw, 4.5rem);      /* 40-72px - hero titles */
+
+  /* Font weights */
+  --font-light: 300;
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+
+  /* Line heights */
+  --line-tight: 1.1;       /* Headlines */
+  --line-snug: 1.25;       /* Subtitles */
+  --line-normal: 1.6;      /* Body text */
+  --line-relaxed: 1.8;     /* Large paragraphs */
+
+  /* Letter spacing */
+  --letter-tightest: -0.05em;   /* Display fonts */
+  --letter-tighter: -0.025em;    /* Headlines */
+  --letter-normal: normal;       /* Body text */
+  --letter-wide: 0.05em;        /* Subtitles */
+  --letter-widest: 0.1em;       /* Accents */
+
+  /* ============================================
+     BOUNDING & SHADOW SYSTEM
+     ============================================ */
+  
+  /* Border radius scale */
+  --radius-sm: 0.375rem;      /* 6px - small UI elements */
+  --radius-md: 0.5rem;         /* 8px - standard cards/buttons */
+  --radius-lg: 1rem;           /* 16px - rounded cards */
+  --radius-xl: 1.5rem;         /* 24px - hero sections */
+  --radius-2xl: 2rem;          /* 32px - major containers */
+  --radius-full: 9999px;       /* Circular buttons/avatars */
+
+  /* Shadow depth (elevation system) */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);          /* Subtle depth */
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),      /* Card shadows */
+                    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(168, 85, 247, 0.1), /* Purple glow */
+                   0 4px 6px -2px rgba(15, 23, 42, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(192, 46, 163, 0.2), /* Pink glow */
+                   0 8px 10px -6px rgba(15, 23, 42, 0.2);
+
+  /* === Glassmorphism utilities (already in base CSS but standardized here) === */
+  --glass-bg: rgba(30, 41, 59, 0.7);
+  --glass-border: 1px solid var(--border-pale);
+  --glass-blur: blur(10px);
+
+  /* ============================================
+     ANIMATION & TRANSITION SYSTEM
+     ============================================ */
+  
+  /* Timing functions */
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);         /* Standard ease */
+  --ease-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Playful bounce */
+  --ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);        /* Symmetric ease */
+
+  /* Duration scale (in milliseconds) */
+  --duration-fast: 100ms;      /* Micro-interactions */
+  --duration-normal: 300ms;    /* Standard transitions */
+  --duration-slow: 500ms;      /* Major animations */
+  --duration-slower: 800ms;    /* Hero reveals */
+
+  /* Keyframes (defined in separate animation.css if needed, referenced here) */
+  --animate-fade-in: fadeInUp;          /* Hero section entrance */
+  --animate-float: float;               /* Icon/subtle motion */
+  --animate-shine: gradientShine;       /* Button hover effect */
+
+  /* ============================================
+     LAYOUT & MEDIA
+     ============================================ */
+  
+  /* Container widths */
+  --container-sm: 640px;              /* Small breakpoint */
+  --container-md: 768px;              /* Medium breakpoint */
+  --container-lg: 1024px;             /* Large breakpoint */
+  --container-xl: 1200px;             /* XL containers (max content width) */
+  --container-2xl: 1440px;            /* Extra large */
+
+  /* Z-index layer stack */
+  --z-base: 1;             /* Base elements */
+  --z-nav: 100;            /* Navigation bar */
+  --z-overlay: 500;        /* Modals/popups */
+  --z-tooltip: 1000;       /* Tooltips */
+  --z-modal: 1100;         /* Modal dialogs */
+  --z-fixed: 1200;         <!-- Fixed overlays */
+
+  /* Grid system defaults */
+  --grid-columns: repeat(auto-fit, minmax(300px, 1fr));
+  --grid-gap: clamp(1.5rem, 3vw, 2.5rem);
+
+  /* ============================================
+     ACCESSIBILITY CONSTANTS
+     ============================================ */
+  
+  --focus-ring: 0 0 0 4px rgba(168, 85, 247, 0.25);   /* Purple focus outline */
+  --reduced-motion: all 0.01ms;                        /* For prefers-reduced-motion */
+
+  /* ============================================
+     CUSTOM PROPERTIES FOR EXISTING CSS MAPPING
+     ============================================ */
+  
+  /* Maintaining backward compatibility with existing moliam-site-TEMP/css/styles.css */
+  /* These map to the new token system above */
+  
+  --primary-gradient-start: var(--color-primary-start);         /* Existing reference → New */
+  --primary-gradient-end: var(--color-primary-end);
+  --accent-purple: var(--color-accent-purple);
+  --accent-pink: var(--color-accent-pink);
+  --text-glow: var(--color-glow);
+  --card-bg: var(--glass-bg);
+  --glass-opacity: rgba(30, 41, 59, 0.6);
+  --transition-speed: var(--duration-normal);
+  --border-pale: rgba(255, 255, 245, 0.1);
+
+  /* New semantic names for future use (add to styles.css as needed) */
+  /* E.g.: .text-brand-primary -> color: var(--color-accent-purple); */
+}
+
+/* ============================================
+   ANIMATION KEYFRAMES
+   ============================================ */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0); 
+  }
+  50% { 
+    transform: translateY(-10px); 
+  }
+}
+
+@keyframes gradientShine {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* ============================================
+   RESPONSIVE BREAKPOINTS (if needed)
+   ============================================ */
+
+@media (max-width: 768px) {
+  :root {
+    --text-xs: 0.75rem;          /* Slightly smaller on mobile */
+    --spacing-responsive-md: 1rem;   /* Tighter spacing */
+    --radius-lg: 0.75rem;        /* Smaller radii on mobile */
+  }
+}
+
+/* ============================================
+   END OF TOKEN SYSTEM
+   ============================================ */

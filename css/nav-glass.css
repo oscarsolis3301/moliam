@@ -1,0 +1,193 @@
+/* ============================================
+   MOLIAM - Navigation Enhanced Styling
+   ============================================ */
+
+/* Glassmorphism navbar base */
+.navbar {
+  background: rgba(15, 23, 42, 0.9);           /* Deep navy glass from tokens */
+  backdrop-filter: blur(10px);                    /* Glass blur effect */
+  border-bottom: 1px solid rgba(255, 255, 245, 0.1);   /* Border-pale gradient */
+  position: fixed;                                /* Sticky positioning */
+  top: 0;                                         /* Fixed to viewport top */
+  width: 100%;                                    /* Full width */
+  z-index: 1000;                                  /* Above all content */
+  transition: all 0.3s ease-in-out;              /* Smooth hover transitions */
+}
+
+.nav-container {
+  max-width: 1200px;                              /* Responsive container */
+  margin: 0 auto;                                 /* Centered layout */
+  padding: clamp(1rem, 2vw, 1.5rem);             /* Mobile → Desktop padding */
+  display: flex;                                  /* Flexbox navigation */
+  justify-content: space-between;                 /* Logo left, menu right */
+  align-items: center;                            /* Vertical centering */
+}
+
+/* Logo glass effect with brand gradient */
+.logo {
+  font-size: clamp(1.375rem, 3vw, 2rem);         /* Responsive typography */
+  font-weight: 800;                               /* Bold weight */
+  background: linear-gradient(90deg, #a855f7, #ec4899);   /* Purple → Pink gradient */
+  -webkit-background-clip: text;                  /* Clip to text only */
+  -webkit-text-fill-color: transparent;           /* Transparent fill */
+  letter-spacing: clamp(1px, 2vw, 3px);          /* Responsive spacing */
+  position: relative;                             /* Container for hover effects */
+  text-shadow: 0 0 20px rgba(168, 85, 247, 0.2);   /* Soft purple glow */
+}
+
+.logo:hover {
+  filter: brightness(1.15);                       /* Subtle brighten on hover */
+  text-shadow: 0 0 30px rgba(236, 72, 153, 0.4);   /* Pink glow intensification */
+}
+
+/* Navigation menu container styling */
+nav ul {
+  list-style: none;                               /* Remove bullets */
+  margin: 0;                                      /* Zero margins */
+  padding: 0;                                     /* Zero padding */
+  display: flex;                                  /* Horizontal layout */
+  gap: clamp(1.5rem, 3vw, 2.5rem);              /* Responsive spacing between items */
+  align-items: center;                            /* Vertical alignment */
+}
+
+nav ul li {
+  position: relative;                             /* Container for hover effects */
+}
+
+/* Individual nav link styling */
+nav a[data-link] {
+  color: #ffffff;                                 /* Pure white base */
+  text-decoration: none;                          /* No underline initially */
+  opacity: 0.85;                                  /* Slight transparency */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);   /* Smooth easing */
+  position: relative;                             /* For hover underline */
+  font-size: clamp(0.875rem, 1.3vw, 1rem);       /* Responsive typography */
+  padding: clamp(0.5rem, 1vw, 0.75rem) 0.5rem;   /* Horizontal spacing */
+}
+
+/* Hover underline effect using pseudo-element */
+nav a[data-link]::after {
+  content: '';                                    /* Empty element created */
+  position: absolute;                             /* Positioned relative to link */
+  width: 0;                                       /* Start hidden */
+  height: 2px;                                    /* Thin line */
+  bottom: -4px;                                   /* Position above text */
+  left: 0;                                        /* Align left edge */
+  background: linear-gradient(90deg, #a855f7, #ec4899);   /* Purple → Pink gradient */
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);   /* Smooth animation */
+  border-radius: 2px;                             /* Soft corners */
+}
+
+/* Nav link hover state */
+nav a[data-link]:hover {
+  opacity: 1;                                     /* Fully opaque on interaction */
+  color: #d8b4fe;                                 /* Lavender glow for text */
+  text-shadow: 0 0 15px rgba(216, 180, 254, 0.3);   /* Subtle text shadow */
+}
+
+/* Underline animation on hover */
+nav a[data-link]:hover::after {
+  width: 100%;                                    /* Expand underline to full width */
+}
+
+/* Logo specific styling in navbar (existing implementation) */
+.nav-container .logo {
+  font-size: clamp(1.375rem, 3vw, 2rem);         /* Responsive typography */
+  font-weight: 800;                               /* Bold weight for visibility */
+  background: linear-gradient(90deg, #a855f7, #ec4899);   /* Purple → Pink gradient */
+  -webkit-background-clip: text;                  /* Clip to text only */
+  -webkit-text-fill-color: transparent;           /* Transparent fill for gradient */
+  letter-spacing: clamp(1px, 2vw, 3px);          /* Responsive spacing */
+}
+
+/* Mobile navigation adjustments */
+@media (max-width: 768px) {
+  .navbar {
+    backdrop-filter: blur(15px);                    /* Stronger glass effect on mobile */
+   }
+  
+  .nav-container {
+    padding: clamp(0.75rem, 1.5vw, 1rem);          /* Tighter mobile padding */
+   }
+  
+  nav ul {
+    gap: clamp(1rem, 2vw, 1.5rem);                /* Reduced spacing on mobile */
+   }
+  
+  nav a[data-link] {
+    padding: clamp(0.5rem, 1vw, 0.75rem) 0.35rem;  /* Smaller gaps mobile */
+   }
+}
+
+/* Desktop-specific enhancements for nav hover states */
+@media (min-width: 769px) {
+  nav a[data-link]:hover {
+    text-shadow: 0 0 20px rgba(168, 85, 247, 0.3);   /* Purple glow text on desktop */
+   }
+  
+  .logo:hover {
+    text-shadow: 0 0 25px rgba(236, 72, 153, 0.4);   /* Pink glow stronger on hover */
+  }
+  
+
+/* Focus state for accessibility - keyboard navigation support */
+nav a[data-link:focus-visible] {
+  outline: none;                            /* Remove default outline */
+  box-shadow: inset 0 0 0 2px #a855f7;     /* Purple focus ring inside link */
+}
+
+/* Reduce motion for accessibility preferences */
+@media (prefers-reduced-motion: reduce) {
+  nav *, nav a[data-link], .navbar {
+    transition-duration: 0.01ms !important;   /* Instant transitions for accessibility */
+   }
+  
+  nav a[data-link]:hover::after {
+    width: 100%;                              /* Skip animation, show immediately */
+  }
+  
+
+/* Mobile hamburger button (applied via nav-interactions.js) */
+#hamburger-btn {
+  display: none;                              /* Hidden on desktop */
+  font-size: clamp(1.5rem, 4vw, 2rem);        /* Responsive typography */
+  background: transparent;                      /* Transparent background */
+  color: var(--accent-purple);                  /* Purple brand color */
+  border: none;                                 /* No border styling */
+  cursor: pointer;                              /* Interactive pointer */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);   /* Smooth rotation */
+}
+
+@media (max-width: 768px) {
+  #hamburger-btn {
+    display: block;                             /* Show hamburger on mobile/tablet */
+    padding: 0.5rem 0.75rem;                    /* Clickable button area */
+   }
+  
+  #hamburger-btn:hover {
+    transform: scale(1.1);                      /* Subtle hover scale */
+    color: var(--accent-pink);                  /* Pink variant on interaction */
+  }
+  
+
+/* Mobile menu transitions (applied via nav-interactions.js) */
+#nav-menu {
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), /* Smooth expand/collapse */
+              border-radius 0.4s ease-in-out;       /* Rounded corners */
+  backdrop-filter: blur(15px);                      /* Glass effect for mobile menu */
+  background: rgba(15, 23, 42, 0.95);               /* Dark transparent background */
+}
+
+#nav-menu.menu-open {
+  border-radius: 0 0 10px 10px;                     /* Rounded bottom corners when open */
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-toggle {
+    margin-right: clamp(0.5rem, 1vw, 1rem);         /* Spacing for hamburger on mobile */
+   }
+
+  nav ul {
+    flex-direction: row justify;                    /* Horizontal layout even on mobile */
+   }
+}
