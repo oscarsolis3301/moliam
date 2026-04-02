@@ -1,6 +1,6 @@
 {  
    "name": "moliam-api",       
-  "$"version": "1.0.0",    
+  "version": "1.0.0",    
   "description": "CloudFlare Pages Functions for moliam.com contact form backend (D1 + rate limiting)",   
    "scripts": {    
      "dev": "wrangler pages dev public --d moliam-db=./moliam.db",         /* run local mock server with mocked D1 SQLite on disk file */  
