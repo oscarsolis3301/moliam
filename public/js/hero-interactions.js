@@ -10,10 +10,11 @@
 
   // Typing effect for tagline
   const taglines = [
-    "AI agents build websites in under 72h",
-    "GBP optimization for local search dominance",
-    "LSA management without the overhead"
-  ];
+     "AI-Powered Operations",
+     "Autonomous Marketing",
+     "Built for Contractors",
+     "24/7 Digital Growth"
+   ];
   
   let currentTaglineIndex = 0;
   let typingPos = 0;
