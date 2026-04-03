@@ -1448,6 +1448,24 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 <!-- ═══════════════════════════════════════════════════════════
      JAVASCRIPT — All logic in one file
      ═══════════════════════════════════════════════════════════ -->
+
+<!-- ═══════════════════════ NO-SCRIPT FALLBACK ═══════════════════════ -->
+<noscript>
+  <style>
+    @media (max-width: 768px) {
+      body::before { content: "Please enable JavaScript to view Moliam. This site uses AI-powered canvas visualization which requires modern browsers with JS enabled."; background: #0B0E14; color: #ffffff; padding: 24px 5%; font-family: -apple-system, sans-serif; text-align: center; line-height: 1.6; }
+    }
+    @media (min-width: 769px) {
+      body::before { content: "Please enable JavaScript to view Moliam. This site uses AI-powered canvas visualization which requires modern browsers with JS enabled."; background: #0B0E14; color: #ffffff; padding: 24px 5%; font-family: -apple-system, sans-serif; text-align: center; line-height: 1.6; }
+    }
+  </style>
+  <div style="background:#0B0E14;color:#fff;padding:24px 5%;text-align:center;font-family:-apple-system,sans-serif;">
+    <h2>Error: JavaScript Required</h2>
+    <p>Moliam uses AI-powered canvas visualization and interactive features. Please enable JavaScript in your browser settings to view our portfolio and services properly.</p>
+    <a href="#" style="color:#4A90E2;text-decoration:underline;">Refresh after enabling</a>
+  </div>
+</noscript>
+
 <script>
 (function() {
 'use strict';
