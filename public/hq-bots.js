@@ -23,9 +23,9 @@ function smoothstep(t) { return t*t*(3.0 - 2.0*t); }
 export const BOT_DEFS = [
   { name: 'Mavrick', initials: 'M', color: '#3B82F6', role: 'Lead Engineer' },
   { name: 'Yagami',  initials: 'Y', color: '#EF4444', role: 'Strategy AI' },
-  { name: 'Ada',     initials: 'A', color: '#8B5CF6', role: 'Analytics Engine' },
-  { name: 'Willow',  initials: 'W', color: '#06B6D4', role: 'Content AI' },
-  { name: 'Reaper',  initials: 'R', color: '#F59E0B', role: 'Ops Manager' },
+  { name: 'Ada',     initials: 'A', color: '#8B5CF6', role: 'Orchestrator' },
+  { name: 'Roman',   initials: 'R', color: '#10B981', role: 'CEO' },
+  { name: 'Angelina',initials: 'An', color: '#EC4899', role: 'Overseer' },
 ];
 
 export const TASKS = [
