@@ -13,11 +13,16 @@ export async function onRequestPost(context) {
   let data;
   try {
     data = await request.json();
-  } catch {
+   } catch {
     return jsonResp(400, { error: true, message: "Invalid JSON body." });
+   }
+
+   // --- Honeypot check ---
+  if (data.website) {
+    return jsonResp(200, { success: true, message: "Thanks!" });
   }
 
-  // --- Validate ---
+   // --- Validate ---
   const name = (data.name || "").trim();
   const email = (data.email || "").toLowerCase().trim();
   const phone = data.phone ? String(data.phone).replace(/[^\d()\-+\s]/g, "").trim() : null;
