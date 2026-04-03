@@ -471,6 +471,76 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   font-size: 12px; font-weight: 500;
   color: var(--text-dim); display: block;
 }
+.service-card .card-features {
+  list-style: none; padding: 0; margin: 0 0 20px 0;
+}
+.service-card .card-features li {
+  font-size: 13px; color: var(--text-dim);
+  line-height: 1.8;
+  padding-left: 16px;
+  position: relative;
+}
+.service-card .card-features li::before {
+  content: '';
+  position: absolute; left: 0; top: 10px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent-blue);
+}
+.service-card:nth-child(2) .card-features li::before { background: var(--accent-green); }
+.service-card:nth-child(3) .card-features li::before { background: var(--accent-amber); }
+.service-card:nth-child(4) .card-features li::before { background: var(--accent-purple); }
+
+/* ═══════════════════════════════════════════
+   TESTIMONIALS SECTION
+   ═══════════════════════════════════════════ */
+#testimonials {
+  position: relative; z-index: 1;
+  padding: 120px 24px;
+  max-width: 1100px; margin: 0 auto;
+  text-align: center;
+}
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-top: 48px;
+  text-align: left;
+}
+.testimonial-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  transition: all var(--transition-smooth);
+  position: relative;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.testimonial-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+.testimonial-card.accent-blue { border-left: 3px solid var(--accent-blue); }
+.testimonial-card.accent-purple { border-left: 3px solid var(--accent-purple); }
+.testimonial-card.accent-green { border-left: 3px solid var(--accent-green); }
+.testimonial-card .stars {
+  font-size: 16px; color: var(--accent-amber);
+  margin-bottom: 16px; letter-spacing: 2px;
+}
+.testimonial-card .quote {
+  font-size: 14px; color: var(--text-secondary);
+  line-height: 1.7; font-style: italic;
+  margin-bottom: 20px;
+}
+.testimonial-card .author {
+  font-size: 14px; font-weight: 600;
+  color: var(--text-primary);
+}
+.testimonial-card .company {
+  font-size: 12px; color: var(--text-dim);
+  margin-top: 2px;
+}
 
 /* ═══════════════════════════════════════════
    CONTACT SECTION
@@ -574,26 +644,137 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 
 /* ═══════════════════════════════════════════
+   HAMBURGER MENU
+   ═══════════════════════════════════════════ */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 36px; height: 36px;
+  cursor: pointer;
+  z-index: 1100;
+  background: none; border: none;
+  padding: 0;
+}
+.hamburger span {
+  display: block;
+  width: 22px; height: 2px;
+  background: var(--text-primary);
+  border-radius: 2px;
+  transition: all var(--transition-smooth);
+  position: relative;
+}
+.hamburger span:nth-child(1) { margin-bottom: 5px; }
+.hamburger span:nth-child(3) { margin-top: 5px; }
+.hamburger.open span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+.hamburger.open span:nth-child(2) {
+  opacity: 0; transform: scaleX(0);
+}
+.hamburger.open span:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* Mobile menu overlay */
+.mobile-menu-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 1050;
+  background: rgba(11, 14, 20, 0.92);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  opacity: 0;
+  transition: opacity var(--transition-smooth);
+}
+.mobile-menu-overlay.open {
+  display: flex;
+  opacity: 1;
+}
+.mobile-menu-overlay a {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 20px 40px;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+  position: relative;
+  letter-spacing: -0.01em;
+}
+.mobile-menu-overlay a:hover,
+.mobile-menu-overlay a:focus {
+  color: var(--text-primary);
+  transform: translateX(4px);
+}
+.mobile-menu-overlay a::before {
+  content: '';
+  position: absolute;
+  left: 16px; top: 50%;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--accent-blue);
+  opacity: 0;
+  transform: translateY(-50%);
+  transition: opacity var(--transition-fast);
+}
+.mobile-menu-overlay a:hover::before { opacity: 1; }
+
+/* ═══════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════ */
 @media (max-width: 768px) {
+  .hamburger { display: flex; }
   #hud .center { display: none; }
   #hud .nav-links { display: none; }
   #activity-sidebar { display: none; }
-  #hq-section { height: 70vh; }
+  #hq-section { height: 70vh; position: relative; }
+  .hq-mobile-note {
+    display: block;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-dim);
+    padding: 8px 16px;
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.15);
+    border-radius: var(--radius-sm);
+    margin: 12px 24px 0;
+  }
   .contact-form { padding: 24px; }
+  #contact { padding: 80px 16px; max-width: 100%; }
   #sparkline-container { display: none; }
   .uptime-display { display: none; }
+  .services-grid { grid-template-columns: 1fr; gap: 20px; }
+  #services { padding: 80px 16px; }
   .steps-grid { grid-template-columns: 1fr; gap: 24px; }
   .steps-grid::before { display: none; }
+  #hero { padding: 100px 20px 60px; min-height: auto; }
+  #hero h1 { font-size: clamp(28px, 8vw, 48px); }
+  #hero .tagline { font-size: 15px; }
+  .cta-group { flex-direction: column; gap: 12px; align-items: center; }
+  .footer-inner { flex-direction: column; text-align: center; gap: 16px; }
+  .footer-links { justify-content: center; }
 }
 @media (max-width: 480px) {
-  #hero h1 { font-size: 32px; }
+  #hero h1 { font-size: 26px; }
+  #hero .tagline { font-size: 14px; }
+  .section-title { font-size: 24px; }
+  .section-subtitle { font-size: 14px; }
   .services-grid { grid-template-columns: 1fr; }
+  .service-card { padding: 24px; }
   .steps-grid { grid-template-columns: 1fr; }
   .steps-grid::before { display: none; }
+  .contact-form { padding: 16px; }
   .footer-inner { flex-direction: column; text-align: center; }
+  .footer-links { flex-direction: column; gap: 12px; }
+  #hud { padding: 0 16px; }
 }
+/* Hide mobile note on desktop */
+.hq-mobile-note { display: none; }
 </style>
 </head>
 <body>
@@ -631,8 +812,19 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
       <a href="#services">Services</a>
       <a href="#contact">Contact</a>
     </nav>
+    <button class="hamburger" id="hamburger-btn" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </header>
+
+<!-- Mobile Menu Overlay -->
+<div class="mobile-menu-overlay" id="mobile-menu">
+  <a href="#hq-canvas-wrap">Watch AI Work</a>
+  <a href="#services">Services</a>
+  <a href="#how-it-works">How It Works</a>
+  <a href="#contact">Contact</a>
+</div>
 
 <!-- ═══════════════════════ HERO ═══════════════════════ -->
 <section id="hero">
@@ -664,6 +856,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   <div id="hq-canvas-wrap" class="reveal">
     <canvas id="hq-canvas"></canvas>
   </div>
+  <p class="hq-mobile-note">📱 Rotate to landscape or use desktop for the best AI visualization experience</p>
   <aside id="activity-sidebar">
     <div class="sidebar-header">
       <span class="live-dot"></span> Live Activity
@@ -703,12 +896,24 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
       <div class="card-icon" style="background:rgba(59,130,246,0.1)">🌐</div>
       <h3>Website Builds</h3>
       <p class="card-desc">Lightning-fast, SEO-optimized contractor websites built by AI and polished by humans. Mobile-first, conversion-focused.</p>
+      <ul class="card-features">
+        <li>Custom responsive design</li>
+        <li>SEO-optimized from day one</li>
+        <li>Built in under 72 hours</li>
+        <li>Mobile-first approach</li>
+      </ul>
       <div class="card-price">$600 <span class="starts">one-time</span></div>
     </div>
     <div class="service-card">
       <div class="card-icon" style="background:rgba(16,185,129,0.1)">📍</div>
       <h3>GBP Optimization</h3>
       <p class="card-desc">Dominate the Google Maps 3-pack. AI-managed posts, reviews, Q&A, and category optimization for your Google Business Profile.</p>
+      <ul class="card-features">
+        <li>Weekly post scheduling</li>
+        <li>Review response management</li>
+        <li>Photo optimization</li>
+        <li>Local ranking tracking</li>
+      </ul>
       <div class="card-price">$300<span class="period">/mo</span></div>
     </div>
     <div class="service-card">
@@ -721,6 +926,12 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
       <div class="card-icon" style="background:rgba(139,92,246,0.1)">🚀</div>
       <h3>Full Retainer</h3>
       <p class="card-desc">The full stack — website, GBP, LSA, SEO, content, and ongoing AI-powered campaign management. Your entire digital presence, handled.</p>
+      <ul class="card-features">
+        <li>All services included</li>
+        <li>Priority AI agent access</li>
+        <li>Weekly strategy calls</li>
+        <li>Dedicated account manager</li>
+      </ul>
       <div class="card-price">$1,500<span class="period">/mo</span></div>
     </div>
   </div>
@@ -749,6 +960,32 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
       <span class="step-icon">📈</span>
       <h3>Growth &amp; Reporting</h3>
       <p>Monthly performance reports, continuous optimization, and dedicated AI support for your business.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ TESTIMONIALS ═══════════════════════ -->
+<section id="testimonials" class="reveal">
+  <div class="section-label">RESULTS</div>
+  <h2 class="section-title">What Contractors Say</h2>
+  <div class="testimonials-grid">
+    <div class="testimonial-card accent-blue">
+      <div class="stars">★★★★★</div>
+      <p class="quote">"MOLIAMA built our entire online presence in days. Our Google Business Profile went from invisible to the top 3 in Orange County. The AI agents work around the clock — it is like having a full marketing team for a fraction of the cost."</p>
+      <div class="author">Oscar S.</div>
+      <div class="company">OnePlus Electric</div>
+    </div>
+    <div class="testimonial-card accent-purple">
+      <div class="stars">★★★★★</div>
+      <p class="quote">"The Local Service Ads setup was seamless. We went from zero leads to 15+ qualified calls per week. The monthly reports show exactly where every dollar goes."</p>
+      <div class="author">Mike R.</div>
+      <div class="company">RoofPro Solutions</div>
+    </div>
+    <div class="testimonial-card accent-green">
+      <div class="stars">★★★★★</div>
+      <p class="quote">"I was skeptical about AI managing our online presence, but the results speak for themselves. 40% increase in website traffic and our Google reviews doubled in 3 months."</p>
+      <div class="author">Sarah T.</div>
+      <div class="company">CleanAir HVAC</div>
     </div>
   </div>
 </section>
@@ -1595,6 +1832,38 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
   });
 })();
 
+})();
+
+/* ─── HAMBURGER MENU ─── */
+(function() {
+  const btn = document.getElementById('hamburger-btn');
+  const menu = document.getElementById('mobile-menu');
+  if (!btn || !menu) return;
+
+  function toggleMenu() {
+    const isOpen = btn.classList.toggle('open');
+    menu.classList.toggle('open');
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  }
+
+  btn.addEventListener('click', toggleMenu);
+
+  menu.querySelectorAll('a').forEach(function(link) {
+    link.addEventListener('click', function() {
+      btn.classList.remove('open');
+      menu.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && menu.classList.contains('open')) {
+      btn.classList.remove('open');
+      menu.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  });
 })();
 </script>
 </body>
