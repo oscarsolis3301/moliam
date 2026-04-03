@@ -5,6 +5,50 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MOLIAMA — AI Operations HQ</title>
 <meta name="description" content="MOLIAMA: AI-Powered Operations for Modern Agencies. Website builds, GBP optimization, Google LSA management for Orange County contractors.">
+<meta name="author" content="MOLIAMA">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#0B0E14">
+<link rel="canonical" href="https://moliam.pages.dev">
+<!-- Open Graph -->
+<meta property="og:title" content="MOLIAMA — AI Operations HQ">
+<meta property="og:description" content="AI-Powered Operations for Modern Agencies. Website builds, GBP optimization, Google LSA management for Orange County contractors.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://moliam.pages.dev">
+<meta property="og:image" content="https://moliam.pages.dev/og-image.png">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MOLIAMA — AI Operations HQ">
+<meta name="twitter:description" content="AI-Powered Operations for Modern Agencies. Website builds, GBP optimization, Google LSA management for Orange County contractors.">
+<!-- JSON-LD Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "MOLIAMA",
+  "description": "AI-Powered Operations for Modern Agencies. Website builds, GBP optimization, Google LSA management for Orange County contractors.",
+  "url": "https://moliam.pages.dev",
+  "image": "https://moliam.pages.dev/og-image.png",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Orange County",
+    "addressRegion": "CA",
+    "addressCountry": "US"
+  },
+  "areaServed": {
+    "@type": "Place",
+    "name": "Orange County, CA"
+  },
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Services",
+    "itemListElement": [
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Website Development", "description": "AI-powered custom website builds in under 72 hours" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Google Business Profile Optimization", "description": "GBP optimization for local search visibility" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Google Local Service Ads Management", "description": "LSA setup, verification, and ongoing optimization" } }
+    ]
+  }
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -775,6 +819,142 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 /* Hide mobile note on desktop */
 .hq-mobile-note { display: none; }
+
+/* ═══════════════════════════════════════════
+   PORTFOLIO / CASE STUDIES
+   ═══════════════════════════════════════════ */
+#portfolio {
+  padding: 100px 5% 80px;
+  text-align: center;
+}
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 32px;
+  max-width: 1200px;
+  margin: 48px auto 0;
+}
+.case-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 0;
+  text-align: left;
+  transition: transform var(--transition-smooth), box-shadow var(--transition-smooth);
+  overflow: hidden;
+}
+.case-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-lg);
+}
+.case-card--blue  { border-top: 3px solid var(--accent-blue); }
+.case-card--amber { border-top: 3px solid var(--accent-amber); }
+.case-card--green { border-top: 3px solid var(--accent-green); }
+.case-card:hover.case-card--blue  { box-shadow: var(--shadow-glow-blue); }
+.case-card:hover.case-card--amber { box-shadow: 0 0 40px rgba(245,158,11,0.15); }
+.case-card:hover.case-card--green { box-shadow: var(--shadow-glow-green); }
+.case-card-inner {
+  padding: 32px 28px;
+}
+.case-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.case-card--blue  .case-badge { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+.case-card--amber .case-badge { background: rgba(245,158,11,0.15); color: var(--accent-amber); }
+.case-card--green .case-badge { background: rgba(16,185,129,0.15); color: var(--accent-green); }
+.case-client {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.case-title {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+.case-stats {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
+  background: rgba(255,255,255,0.03);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.case-stat {
+  flex: 1;
+  text-align: center;
+  padding: 12px 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+.case-stat:not(:last-child) {
+  border-right: 1px solid var(--glass-border);
+}
+.case-desc {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+@media (max-width: 768px) {
+  .portfolio-grid { grid-template-columns: 1fr; gap: 24px; }
+  .case-card-inner { padding: 24px 20px; }
+}
+
+/* ═══════════════════════════════════════════
+   FAQ ACCORDION
+   ═══════════════════════════════════════════ */
+#faq { padding: 100px 5% 80px; max-width: 800px; margin: 0 auto; }
+.faq-accordion { display: flex; flex-direction: column; gap: 12px; margin-top: 48px; }
+.faq-item {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  overflow: hidden;
+  transition: border-color var(--transition-smooth), box-shadow var(--transition-smooth);
+}
+.faq-item:hover { border-color: rgba(255,255,255,0.15); }
+.faq-item.active { border-color: var(--accent-blue); box-shadow: var(--shadow-glow-blue); }
+.faq-question {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px; background: none; border: none; cursor: pointer;
+  color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 1rem;
+  font-weight: 500; text-align: left; gap: 16px; transition: color var(--transition-fast);
+}
+.faq-question:hover { color: var(--accent-blue); }
+.faq-chevron {
+  flex-shrink: 0; color: var(--text-dim);
+  transition: transform var(--transition-smooth), color var(--transition-smooth);
+}
+.faq-item.active .faq-chevron { transform: rotate(180deg); color: var(--accent-blue); }
+.faq-answer {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.faq-item.active .faq-answer { max-height: 300px; }
+.faq-answer-inner {
+  padding: 0 24px 20px; color: var(--text-secondary); font-size: 0.95rem;
+  line-height: 1.7; border-top: 1px solid var(--glass-border); padding-top: 16px;
+  margin: 0 24px; padding-left: 0; padding-right: 0;
+}
+@media (max-width: 768px) {
+  #faq { padding: 60px 5% 60px; }
+  .faq-question { padding: 16px 18px; font-size: 0.95rem; }
+  .faq-answer-inner { margin: 0 18px; font-size: 0.9rem; }
+}
 </style>
 </head>
 <body>
@@ -986,6 +1166,110 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
       <p class="quote">"I was skeptical about AI managing our online presence, but the results speak for themselves. 40% increase in website traffic and our Google reviews doubled in 3 months."</p>
       <div class="author">Sarah T.</div>
       <div class="company">CleanAir HVAC</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ FAQ ═══════════════════════ -->
+<section id="faq" class="reveal">
+  <div class="section-label">FAQ</div>
+  <h2 class="section-title">Frequently Asked Questions</h2>
+  <div class="faq-accordion">
+    <div class="faq-item">
+      <button class="faq-question" aria-expanded="false">
+        <span>How long does it take to build a website?</span>
+        <svg class="faq-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">Our AI agents can build a fully custom, responsive website in under 72 hours. We handle design, development, SEO optimization, and deployment — all included in the $600 flat fee.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" aria-expanded="false">
+        <span>What is Google Business Profile optimization?</span>
+        <svg class="faq-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">GBP (formerly Google My Business) is your free business listing on Google. We optimize your profile with professional photos, regular posts, review management, and local SEO strategies to get you into the top 3 local results — the Local Pack.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" aria-expanded="false">
+        <span>How do Local Service Ads work?</span>
+        <svg class="faq-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">LSAs appear at the very top of Google search results with a Google Guaranteed badge. You only pay per lead (not per click). We handle the entire setup, verification, and ongoing optimization to maximize your return.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" aria-expanded="false">
+        <span>Can I cancel anytime?</span>
+        <svg class="faq-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">Yes. All our monthly services are month-to-month with no long-term contracts. We earn your business every month through results, not lock-in agreements.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" aria-expanded="false">
+        <span>What makes MOLIAMA different from other agencies?</span>
+        <svg class="faq-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">We use autonomous AI agents that work 24/7 on your campaigns. This means faster execution, lower costs, and continuous optimization — not a team that checks in once a week.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" aria-expanded="false">
+        <span>Do you work with contractors outside Orange County?</span>
+        <svg class="faq-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">Currently we specialize in Orange County, CA contractors to provide the most focused local expertise. We are expanding to other SoCal markets soon.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ PORTFOLIO ═══════════════════════ -->
+<section id="portfolio" class="reveal">
+  <div class="section-label">PORTFOLIO</div>
+  <h2 class="section-title">Recent Projects</h2>
+  <p class="section-subtitle">Real results for real contractors. Here is what our AI agents built this quarter.</p>
+
+  <div class="portfolio-grid">
+    <!-- Card 1: OnePlus Electric -->
+    <div class="case-card case-card--blue reveal">
+      <div class="case-card-inner">
+        <span class="case-badge">Electrical Contractor</span>
+        <div class="case-client">OnePlus Electric</div>
+        <div class="case-title">Complete Digital Transformation</div>
+        <div class="case-stats">
+          <div class="case-stat">5.0★<br>Google Rating</div>
+          <div class="case-stat">24+<br>Reviews</div>
+          <div class="case-stat">Top 3<br>Local Pack</div>
+        </div>
+        <p class="case-desc">Built a conversion-optimized website, managed Google Business Profile from scratch, and launched Local Service Ads generating 20+ qualified leads per month.</p>
+      </div>
+    </div>
+
+    <!-- Card 2: RoofPro Solutions -->
+    <div class="case-card case-card--amber reveal">
+      <div class="case-card-inner">
+        <span class="case-badge">Roofing</span>
+        <div class="case-client">RoofPro Solutions</div>
+        <div class="case-title">From Zero to 15 Leads/Week</div>
+        <div class="case-stats">
+          <div class="case-stat">4.9★<br>Google Rating</div>
+          <div class="case-stat">45+<br>Reviews</div>
+          <div class="case-stat">#1<br>LSA Position</div>
+        </div>
+        <p class="case-desc">Full Google LSA campaign management with automated review collection. Website built in 48 hours with real-time lead tracking dashboard.</p>
+      </div>
+    </div>
+
+    <!-- Card 3: CleanAir HVAC -->
+    <div class="case-card case-card--green reveal">
+      <div class="case-card-inner">
+        <span class="case-badge">HVAC</span>
+        <div class="case-client">CleanAir HVAC</div>
+        <div class="case-title">40% Traffic Increase in 90 Days</div>
+        <div class="case-stats">
+          <div class="case-stat">4.8★<br>Google Rating</div>
+          <div class="case-stat">38+<br>Reviews</div>
+          <div class="case-stat">40%<br>Traffic Growth</div>
+        </div>
+        <p class="case-desc">GBP optimization, weekly content posting, review response management, and SEO-optimized service pages driving organic growth.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -1807,6 +2091,18 @@ addFeedItem('⚡ MOLIAMA HQ initialized — all systems nominal', '#3B82F6');
 addFeedItem('🤖 5 AI agents deployed and ready', '#10B981');
 addFeedItem('📊 Connected to analytics pipeline', '#8B5CF6');
 addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
+
+/* ─── FAQ ACCORDION ─── */
+(function() {
+  const faqItems = document.querySelectorAll('.faq-item');
+  faqItems.forEach(function(item) {
+    item.querySelector('.faq-question').addEventListener('click', function() {
+      const isActive = item.classList.contains('active');
+      faqItems.forEach(function(i) { i.classList.remove('active'); i.querySelector('.faq-question').setAttribute('aria-expanded', 'false'); });
+      if (!isActive) { item.classList.add('active'); this.setAttribute('aria-expanded', 'true'); }
+    });
+  });
+})();
 
 /* ─── SCROLL REVEAL (IntersectionObserver) ─── */
 (function() {
