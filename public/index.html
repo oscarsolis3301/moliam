@@ -629,7 +629,9 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .form-group textarea,
 .form-group select {
   width: 100%; padding: 12px 16px;
-  background: rgba(255,255,255,0.04);
+  background: rgba(10, 10, 20, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
@@ -641,7 +643,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .form-group textarea:focus,
 .form-group select:focus {
   border-color: var(--accent-blue);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15), 0 0 20px rgba(59, 130, 246, 0.1);
 }
 .form-group textarea { resize: vertical; min-height: 100px; }
 .form-group select option { background: var(--bg-deep); }
@@ -655,7 +657,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .form-submit:hover {
   box-shadow: 0 8px 30px rgba(59, 130, 246, 0.35);
-  transform: translateY(-1px);
+  transform: scale(1.03);
 }
 .form-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 #form-status {
@@ -668,7 +670,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
    ═══════════════════════════════════════════ */
 #footer {
   position: relative; z-index: 1;
-  border-top: 1px solid var(--glass-border);
+  border-top: 2px solid transparent;
+  border-image: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), transparent) 1;
   padding: 48px 24px;
 }
 .footer-inner {
@@ -685,6 +688,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   background-clip: text;
 }
 .footer-copy { font-size: 13px; color: var(--text-dim); }
+.footer-ai {
+  font-size: 12px; color: var(--accent-blue); letter-spacing: 0.05em;
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.4), 0 0 30px rgba(59, 130, 246, 0.15);
+}
 .footer-links { display: flex; gap: 20px; }
 .footer-links a {
   font-size: 13px; color: var(--text-dim);
@@ -938,14 +945,15 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .faq-item {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
+  border-left: 3px solid transparent;
   border-radius: var(--radius-md);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   overflow: hidden;
-  transition: border-color var(--transition-smooth), box-shadow var(--transition-smooth);
+  transition: border-color var(--transition-smooth), box-shadow var(--transition-smooth), background var(--transition-fast), border-left-color var(--transition-smooth);
 }
-.faq-item:hover { border-color: rgba(255,255,255,0.15); }
-.faq-item.active { border-color: var(--accent-blue); box-shadow: var(--shadow-glow-blue); }
+.faq-item:hover { border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.03); }
+.faq-item.active { border-color: var(--accent-blue); border-left-color: var(--accent-blue); box-shadow: var(--shadow-glow-blue); }
 .faq-question {
   width: 100%; display: flex; align-items: center; justify-content: space-between;
   padding: 20px 24px; background: none; border: none; cursor: pointer;
@@ -955,9 +963,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .faq-question:hover { color: var(--accent-blue); }
 .faq-chevron {
   flex-shrink: 0; color: var(--text-dim);
+  display: inline-block; font-size: 1.1rem;
   transition: transform var(--transition-smooth), color var(--transition-smooth);
 }
-.faq-item.active .faq-chevron { transform: rotate(180deg); color: var(--accent-blue); }
+.faq-item.active .faq-chevron { transform: rotate(90deg); color: var(--accent-blue); }
 .faq-answer {
   max-height: 0; overflow: hidden;
   transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1196,42 +1205,42 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     <div class="faq-item">
       <button class="faq-question" aria-expanded="false">
         <span>How long does it take to build a website?</span>
-        <svg class="faq-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="faq-chevron">▸</span>
       </button>
       <div class="faq-answer"><div class="faq-answer-inner">Our AI agents can build a fully custom, responsive website in under 72 hours. We handle design, development, SEO optimization, and deployment — all included in the $600 flat fee.</div></div>
     </div>
     <div class="faq-item">
       <button class="faq-question" aria-expanded="false">
         <span>What is Google Business Profile optimization?</span>
-        <svg class="faq-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="faq-chevron">▸</span>
       </button>
       <div class="faq-answer"><div class="faq-answer-inner">GBP (formerly Google My Business) is your free business listing on Google. We optimize your profile with professional photos, regular posts, review management, and local SEO strategies to get you into the top 3 local results — the Local Pack.</div></div>
     </div>
     <div class="faq-item">
       <button class="faq-question" aria-expanded="false">
         <span>How do Local Service Ads work?</span>
-        <svg class="faq-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="faq-chevron">▸</span>
       </button>
       <div class="faq-answer"><div class="faq-answer-inner">LSAs appear at the very top of Google search results with a Google Guaranteed badge. You only pay per lead (not per click). We handle the entire setup, verification, and ongoing optimization to maximize your return.</div></div>
     </div>
     <div class="faq-item">
       <button class="faq-question" aria-expanded="false">
         <span>Can I cancel anytime?</span>
-        <svg class="faq-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="faq-chevron">▸</span>
       </button>
       <div class="faq-answer"><div class="faq-answer-inner">Yes. All our monthly services are month-to-month with no long-term contracts. We earn your business every month through results, not lock-in agreements.</div></div>
     </div>
     <div class="faq-item">
       <button class="faq-question" aria-expanded="false">
         <span>What makes Moliam different from other agencies?</span>
-        <svg class="faq-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="faq-chevron">▸</span>
       </button>
       <div class="faq-answer"><div class="faq-answer-inner">We use autonomous AI agents that work 24/7 on your campaigns. This means faster execution, lower costs, and continuous optimization — not a team that checks in once a week.</div></div>
     </div>
     <div class="faq-item">
       <button class="faq-question" aria-expanded="false">
         <span>Do you work with contractors outside Orange County?</span>
-        <svg class="faq-chevron" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="faq-chevron">▸</span>
       </button>
       <div class="faq-answer"><div class="faq-answer-inner">Currently we specialize in Orange County, CA contractors to provide the most focused local expertise. We are expanding to other SoCal markets soon.</div></div>
     </div>
@@ -1333,6 +1342,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   <div class="footer-inner">
     <span class="footer-brand">Moliam</span>
     <span class="footer-copy">&copy; 2026 Moliam. All rights reserved. Orange County, CA.</span>
+    <span class="footer-ai">Powered by AI</span>
     <div class="footer-links">
       <a href="#">Twitter</a>
       <a href="#">LinkedIn</a>

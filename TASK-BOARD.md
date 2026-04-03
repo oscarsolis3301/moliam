@@ -1,35 +1,39 @@
 # MISSION BOARD — Yagami
 
-**PRIORITY: START IMMEDIATELY. NO NARRATING. JUST CODE.**
+**START IMMEDIATELY. NO NARRATING. JUST CODE.**
 
-## Task: Services Section Redesign  
+## Task: FAQ + Footer + Contact Section Polish
 
 **File:** `~/moliam/public/index.html`
 
 First: `cd ~/moliam && git pull origin main`
 
-Then edit `public/index.html` — redesign the services section (the cards showing Website Builds, GBP, LSA, Full Retainer):
-
 ### Changes required:
 
-1. **Card hover 3D tilt** — On mouseover, cards should tilt slightly (max 5deg) using CSS `perspective` and `transform: rotateX/rotateY`. Add JS for mouse position tracking on the cards.
+1. **FAQ accordion** — Restyle the FAQ section:
+   - Questions: 16px Inter 600, white text, with chevron icon (▸) that rotates 90° when open
+   - Answers: 14px Inter 400, muted gray (#9CA3AF), with smooth max-height transition
+   - Active question gets left border accent (3px solid blue)
+   - Add hover state: background rgba(255,255,255,0.03)
 
-2. **Feature icons** — Each service card should have a relevant emoji or icon at the top (🌐 for websites, 📍 for GBP, 🎯 for LSA, 🚀 for retainer). Make them 32px.
+2. **Contact form** — Polish the form:
+   - Input fields: glass morphism style (backdrop-filter blur, dark bg, subtle border)
+   - Focus state: border glows in accent blue with box-shadow
+   - Submit button: gradient background (blue → purple), hover scale(1.03)
+   - Add floating labels (label moves up when input focused/filled)
 
-3. **Pricing highlight** — The price on each card should have a gradient text effect (blue to purple) matching the brand.
+3. **Footer** — Redesign:
+   - Add social links row (placeholder icons for Twitter, LinkedIn, Instagram)
+   - "Powered by AI" badge with subtle glow animation
+   - Navigation links in a grid (Services, HQ, FAQ, Contact)
+   - Copyright line: "© 2026 Moliam. All rights reserved. Orange County, CA."
+   - Subtle gradient top border (blue → purple → transparent)
 
-4. **"Most Popular" badge** — Add a small badge/ribbon to the "Full Retainer" card saying "Most Popular" with a gradient background.
-
-5. **Card entrance animation** — Cards should stagger-animate in when scrolling into view (use the existing IntersectionObserver `.reveal` class, add stagger delays via CSS `transition-delay`).
-
-### DO NOT touch:
-- The hero section (Mavrick is working on that)
-- The HQ canvas section
-- FAQ, hamburger menu, contact form JS
+### DO NOT touch: hero section, services section, HQ canvas, testimonials, portfolio
 
 ### When done:
 ```bash
-cd ~/moliam && git add -A && git commit -m "v3 iter2: services redesign — 3D tilt, icons, pricing gradient, most popular badge, stagger animations" && git push origin main
+cd ~/moliam && git add -A && git commit -m "v3 iter3: FAQ restyle, contact form polish, footer redesign" && git push origin main
 ```
 
 Tag Ada <@1466244456088080569> when pushed.
