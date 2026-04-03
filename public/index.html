@@ -141,6 +141,7 @@ const BOT_DEFS = [
 const MOVE_SPEED = 120; // px/sec base
 
 let simSpeed = 1;
+let paused = false;
 let canvas, ctx, dpr;
 let rooms = [];
 let bots = [];
@@ -210,7 +211,11 @@ function initBots() {
       retryAngle: 0,
       rateLimitTimer: 0,
       rateLimitDuration: 0,
-      dimmed: false
+      dimmed: false,
+      messagesSent: 0,
+      messagesReceived: 0,
+      currentEventType: null,
+      payload: null
     };
   });
   // Assign seats
@@ -296,49 +301,172 @@ const ENDPOINTS = ['/api/v1/agents','/api/v1/tasks','/api/webhooks','/api/metric
 const FILES = ['agent.ts','router.py','config.yaml','handler.js','pipeline.rs','index.html'];
 
 const DEMO_SEQUENCE = [
-  {type:'task_start',agent:'ada',target_room:'planning',payload:{task_name:'Plan daily operations'}},
-  {type:'thinking',agent:'ada',target_room:'planning',payload:{}},
-  {type:'message_send',agent:'ada',target_room:'comms',payload:{recipient:'mavrick',message:'Start deployment pipeline'}},
-  {type:'task_start',agent:'mavrick',target_room:'planning',payload:{task_name:'Deploy edge function'}},
-  {type:'code_write',agent:'mavrick',target_room:'engineering',payload:{file_name:'deploy.ts'}},
-  {type:'thinking',agent:'yagami',target_room:'planning',payload:{}},
-  {type:'db_operation',agent:'yagami',target_room:'data',payload:{query:'SELECT * FROM metrics'}},
-  {type:'api_call',agent:'mavrick',target_room:'engineering',payload:{endpoint:'/api/v1/deploy'}},
-  {type:'message_send',agent:'yagami',target_room:'comms',payload:{recipient:'ada',message:'Metrics synced'}},
-  {type:'task_complete',agent:'mavrick',target_room:'engineering',payload:{task_name:'Deploy edge function'}},
-  {type:'error',agent:'yagami',target_room:'error',payload:{error_message:'Connection timeout to DB replica'}},
-  {type:'rate_limit_start',agent:'yagami',target_room:'ratelimit',payload:{duration_ms:15000}},
-  {type:'code_write',agent:'ada',target_room:'engineering',payload:{file_name:'optimizer.py'}},
-  {type:'api_call',agent:'ada',target_room:'engineering',payload:{endpoint:'/api/metrics'}},
-  {type:'task_start',agent:'mavrick',target_room:'planning',payload:{task_name:'Refactor auth flow'}},
-  {type:'rate_limit_end',agent:'yagami',target_room:'data',payload:{}},
-  {type:'db_operation',agent:'yagami',target_room:'data',payload:{query:'INSERT INTO logs'}},
-  {type:'thinking',agent:'mavrick',target_room:'planning',payload:{}},
-  {type:'code_write',agent:'mavrick',target_room:'engineering',payload:{file_name:'auth.ts'}},
-  {type:'task_complete',agent:'ada',target_room:'engineering',payload:{task_name:'Plan daily operations'}},
-  {type:'message_send',agent:'ada',target_room:'comms',payload:{recipient:'mavrick',message:'All systems nominal'}},
-  {type:'idle',agent:'ada',target_room:'planning',payload:{}},
-  {type:'task_complete',agent:'mavrick',target_room:'engineering',payload:{task_name:'Refactor auth flow'}},
-  {type:'idle',agent:'mavrick',target_room:'engineering',payload:{}},
-  {type:'task_start',agent:'yagami',target_room:'planning',payload:{task_name:'Generate social report'}},
-  {type:'api_call',agent:'yagami',target_room:'engineering',payload:{endpoint:'/api/v1/agents'}},
-  {type:'message_send',agent:'yagami',target_room:'comms',payload:{recipient:'ada',message:'Report complete'}},
-  {type:'idle',agent:'yagami',target_room:'data',payload:{}}
+  // === ADA CHAIN: Planning → Comms → Message to Mavrick → Architecture thinking ===
+  {type:'task_start', agent:'ada', target_room:'planning', payload:{task_name:'Plan sprint priorities'}},
+  {type:'thinking', agent:'ada', target_room:'planning', payload:{mental_process:'Evaluating sprint backlog and stakeholder requirements'}},
+  {type:'task_complete', agent:'ada', target_room:'planning', payload:{result:'Sprint roadmap finalized'}},
+  {type:'message_send', agent:'ada', target_room:'comms', payload:{recipient:'mavrick', message:'Mavrick - can you start implementing the new authentication flow?'}},
+  {type:'thinking', agent:'ada', target_room:'planning', payload:{mental_process:'Waiting for implementation progress, reviewing documentation'}},
+  {type:'task_start', agent:'ada', target_room:'planning', payload:{task_name:'Review PR from Mavrick'}},
+  {type:'message_send', agent:'ada', target_room:'comms', payload:{recipient:'mavrick', message:'Great work on auth! Let me add a comment about edge cases'}},
+  {type:'task_complete', agent:'ada', target_room:'planning', payload:{result:'PR approved, merged to main'}},
+
+  // === MAVRICK CHAIN: Engineering → Code Write → Engineering → DB Operation → Complete ===
+  {type:'task_start', agent:'mavrick', target_room:'engineering', payload:{task_name:'Implement authentication middleware'}},
+  {type:'code_write', agent:'mavrick', target_room:'engineering', payload:{file_name:'auth.py', endpoint:'/api/v1/auth/login'}},
+  {type:'thinking', agent:'mavrick', target_room:'engineering', payload:{mental_process:'Analyzing dependencies and security requirements for auth module'}},
+  {type:'code_write', agent:'mavrick', target_room:'engineering', payload:{file_name:'middleware.ts', endpoint:'/api/v1/middleware/cors'}},
+  {type:'api_call', agent:'mavrick', target_room:'engineering', payload:{endpoint:'/api/webhooks/process', method:'POST'}},
+  {type:'db_operation', agent:'mavrick', target_room:'data', payload:{operation:'INSERT INTO auth_logs', table:'auth_users'}},
+  {type:'code_write', agent:'mavrick', target_room:'engineering', payload:{file_name:'routes.js', endpoint:'/api/v1/auth/logout'}},
+  {type:'task_complete', agent:'mavrick', target_room:'engineering', payload:{result:'Auth middleware complete, tested locally'}},
+
+  // === YAGAMI CHAIN: Data → DB Operation → Thinking → Error → Rate Limit → Recovery ===
+  {type:'task_start', agent:'yagami', target_room:'data', payload:{task_name:'Analyze authentication metrics dashboard'}},
+  {type:'db_operation', agent:'yagami', target_room:'data', payload:{operation:'SELECT * FROM auth_metrics WHERE date >= ?', table:'auth_logins'}},
+  {type:'thinking', agent:'yagami', target_room:'data', payload:{mental_process:'Correlating login patterns with user activity and device fingerprints'}},
+  {type:'db_operation', agent:'yagami', target_room:'data', payload:{operation:'INSERT INTO analytics_report', table:'daily_metrics'}},
+  {type:'task_start', agent:'yagami', target_room:'planning', payload:{task_name:'Generate Q1 security compliance report'}},
+  {type:'thinking', agent:'yagami', target_room:'planning', payload:{mental_process:'Compiling audit trails and validating against SOC2 requirements'}},
+  {type:'error', agent:'yagami', target_room:'error', payload:{error_message:'Failed to connect to compliance database - connection timeout after 30s'}},
+  {type:'rate_limit_start', agent:'yagami', target_room:'ratelimit', payload:{duration_ms:15000, reason:'Too many concurrent DB connections exceeded threshold'}},
+  {type:'thinking', agent:'yagami', target_room:'ratelimit', payload:{mental_process:'Cooling down - waiting for connection pool to release resources'}},
+  {type:'rate_limit_end', agent:'yagami', target_room:'data', payload:{reason:'Connection limit reset, retrying operation'}},
+  {type:'db_operation', agent:'yagami', target_room:'data', payload:{operation:"SELECT * FROM compliance_checks WHERE status = 'pending'", table:'compliance_audit'}},
+  {type:'task_complete', agent:'yagami', target_room:'data', payload:{result:'Q1 compliance report generated successfully, 47 checks passed'}},
+
+  // === INTER-AGENT CHAIN: Ada → Mavrick → Yagami Response Chain ===
+  {type:'message_send', agent:'ada', target_room:'comms', payload:{recipient:'yagami', message:'Yagami - can you pull the latest metrics for the compliance report?'}},
+  {type:'thinking', agent:'yagami', target_room:'data', payload:{mental_process:"Checking if Ada's message about metrics is in my queue, processing pending operations"}},
+  {type:'task_start', agent:'yagami', target_room:'planning', payload:{task_name:'Prioritize compliance check findings for Ada'}},
+  {type:'thinking', agent:'ada', target_room:'planning', payload:{mental_process:"Reading Yagami's response to determine next sprint tasks"}},
+  {type:'message_send', agent:'ada', target_room:'comms', payload:{recipient:'mavrick', message:'Mavrick - Yagami found 3 compliance gaps. Can you add monitoring for these?'}},
+  {type:'code_write', agent:'mavrick', target_room:'engineering', payload:{file_name:'monitoring.yaml', endpoint:'/api/v1/monitoring/config'}},
+  {type:'task_complete', agent:'ada', target_room:'planning', payload:{result:'Sprint refined, monitoring patches merged'}},
+
+  // === EXTRA REALISTIC EVENTS ===
+  {type:'api_call', agent:'ada', target_room:'comms', payload:{endpoint:'/api/v1/notifications/email', method:'POST'}},
+  {type:'thinking', agent:'mavrick', target_room:'engineering', payload:{mental_process:'Refactoring legacy code - extracting utility functions to separate module'}},
+  {type:'db_operation', agent:'ada', target_room:'data', payload:{operation:"UPDATE project_status SET stage='deployment' WHERE id = 142", table:'projects'}},
+  {type:'code_write', agent:'yagami', target_room:'engineering', payload:{file_name:'scripts/deploy.sh', endpoint:null}},
+  {type:'api_call', agent:'mavrick', target_room:'engineering', payload:{endpoint:'/api/v1/builds/trigger', method:'POST'}},
+  {type:'thinking', agent:'ada', target_room:'planning', payload:{mental_process:'Reviewing deployment logs and checking for any error responses'}},
+  {type:'db_operation', agent:'yagami', target_room:'data', payload:{operation:'INSERT INTO build_logs (build_id, status, duration)', table:'deployments'}},
+  {type:'task_start', agent:'mavrick', target_room:'planning', payload:{task_name:'Debug production issue #347'}},
+  {type:'error', agent:'mavrick', target_room:'error', payload:{error_message:'Stack overflow in legacy module - need to review recursion bounds'}},
+  {type:'thinking', agent:'yagami', target_room:'data', payload:{mental_process:'Analyzing stack trace and proposing iterative solution alternatives'}},
+  {type:'code_write', agent:'mavrick', target_room:'engineering', payload:{file_name:'legacy_fix.js', endpoint:null}},
+  {type:'api_call', agent:'ada', target_room:'comms', payload:{endpoint:'/api/v1/versions/tag', method:'POST'}},
+  {type:'task_complete', agent:'mavrick', target_room:'planning', payload:{result:'Production issue #347 resolved, hotfix deployed'}},
+  {type:'thinking', agent:'ada', target_room:'planning', payload:{mental_process:'Post-mortem documentation and lessons learned for team wiki'}},
+  {type:'message_send', agent:'ada', target_room:'comms', payload:{recipient:'yagami', message:'Yagami - can you document the metrics pipeline for our next audit?'}},
+  {type:'db_operation', agent:'yagami', target_room:'data', payload:{operation:'SELECT * FROM metrics_pipeline WHERE active = true', table:'metrics_config'}},
+  {type:'code_write', agent:'yagami', target_room:'engineering', payload:{file_name:'docs/metrics-pipeline.md', endpoint:null}},
+  {type:'task_start', agent:'ada', target_room:'planning', payload:{task_name:'Schedule team retrospective for sprint closure'}},
+  {type:'thinking', agent:'mavrick', target_room:'engineering', payload:{mental_process:'Checking CI/CD pipeline status before end-of-day deployment window'}},
+  {type:'api_call', agent:'mavrick', target_room:'engineering', payload:{endpoint:'/api/v1/pipelines/status', method:'GET'}},
+  {type:'task_complete', agent:'yagami', target_room:'data', payload:{result:'Metrics pipeline documentation complete, added to knowledge base'}},
+  {type:'message_send', agent:'ada', target_room:'comms', payload:{recipient:'mavrick', message:'Team - retrospective at 3PM tomorrow, please prepare your updates'}},
+  {type:'db_operation', agent:'yagami', target_room:'data', payload:{operation:"UPDATE team_schedule SET meeting_type='retrospective' WHERE date = '2026-04-03'", table:'calendar'}},
+  {type:'thinking', agent:'ada', target_room:'planning', payload:{mental_process:'Preparing retrospective agenda and collecting stakeholder feedback'}},
+  {type:'task_start', agent:'mavrick', target_room:'engineering', payload:{task_name:'Prepare demo for next sprint planning meeting'}},
+  {type:'code_write', agent:'mavrick', target_room:'engineering', payload:{file_name:'demo/scenario-1.json', endpoint:null}},
+  {type:'api_call', agent:'ada', target_room:'comms', payload:{endpoint:'/api/v1/reviews/approve', method:'POST'}},
+  {type:'task_complete', agent:'ada', target_room:'planning', payload:{result:'Retrospective complete, action items assigned to team members'}},
+  {type:'db_operation', agent:'yagami', target_room:'data', payload:{operation:'INSERT INTO retrospective_actions (action_id, owner, deadline)', table:'action_items'}},
+  {type:'thinking', agent:'mavrick', target_room:'engineering', payload:{mental_process:'Verifying demo scenarios cover all user flows and edge cases'}},
+  {type:'message_send', agent:'ada', target_room:'comms', payload:{recipient:'yagami', message:'Yagami - our webhook endpoint is slow, can you investigate the performance bottleneck?'}},
+  {type:'db_operation', agent:'yagami', target_room:'data', payload:{operation:'EXPLAIN ANALYZE SELECT * FROM webhooks ORDER BY processed_at DESC LIMIT 100', table:'webhook_log'}},
+  {type:'thinking', agent:'yagami', target_room:'planning', payload:{mental_process:'Identifying slow queries and proposing index optimizations for webhook processing'}},
+  {type:'code_write', agent:'yagami', target_room:'engineering', payload:{file_name:'db/indexes.sql', endpoint:null}},
+  {type:'task_complete', agent:'yagami', target_room:'data', payload:{result:'Webhook performance improved 3x after index optimization, monitoring dashboard updated'}},
+  {type:'task_start', agent:'mavrick', target_room:'planning', payload:{task_name:"Review and merge Yagami's database optimizations"}},
+  {type:'api_call', agent:'ada', target_room:'comms', payload:{endpoint:'/api/v1/teams/billing-report', method:'GET'}},
+  {type:'thinking', agent:'ada', target_room:'planning', payload:{mental_process:'Calculating Q2 budget allocation for infrastructure and licensing costs'}},
+  {type:'db_operation', agent:'mavrick', target_room:'data', payload:{operation:'INSERT INTO budget_tracking (category, amount, quarter)', table:'financial_records'}},
+  {type:'task_complete', agent:'ada', target_room:'planning', payload:{result:'Q2 budget finalized and approved by finance team'}},
+  {type:'message_send', agent:'mavrick', target_room:'comms', payload:{recipient:'ada', message:'Ada - the new rate limiting strategy looks good, but we need to test it first'}},
+  {type:'thinking', agent:'ada', target_room:'planning', payload:{mental_process:'Reviewing rate limit test results and adjusting thresholds for different endpoints'}},
+  {type:'api_call', agent:'ada', target_room:'comms', payload:{endpoint:'/api/v1/ratelimit/config', method:'PUT'}},
+  {type:'db_operation', agent:'yagami', target_room:'data', payload:{operation:"SELECT * FROM rate_limit_logs WHERE timestamp > NOW() - INTERVAL '1h'", table:'usage_metrics'}},
+  {type:'task_start', agent:'yagami', target_room:'planning', payload:{task_name:'Analyze daily usage patterns for capacity planning'}},
+  {type:'thinking', agent:'yagami', target_room:'data', payload:{mental_process:'Creating visualization of peak hours and recommending auto-scaling rules'}},
+  {type:'code_write', agent:'yagami', target_room:'engineering', payload:{file_name:'scripts/capacity-analysis.py', endpoint:null}},
+  {type:'task_complete', agent:'yagami', target_room:'data', payload:{result:'Capacity analysis complete, auto-scaling rules deployed to production'}},
+  {type:'thinking', agent:'ada', target_room:'planning', payload:{mental_process:'End-of-day wrap-up - reviewing all completed tasks and logging hours'}},
+  {type:'message_send', agent:'ada', target_room:'comms', payload:{recipient:'mavrick', message:"Mavrick - thanks for the great work today. Let's tackle that legacy refactor tomorrow."}},
+  {type:'task_complete', agent:'mavrick', target_room:'planning', payload:{result:'Daily standup complete, all team members synced for next sprint goals'}},
+  {type:'db_operation', agent:'ada', target_room:'data', payload:{operation:'UPDATE user_activity SET last_active = NOW() WHERE user_id in (...)', table:'activity_log'}},
 ];
 
 let demoIdx = 0;
 let nextEventTime = 2000;
 let eventAccum = 0;
 
+function generateRandomEvent(bots) {
+  const botNames = bots.map(b => b.id);
+  if (botNames.length === 0) botNames.push('yagami');
+  const personalities = {
+    ada: ['planning', 'comms'],
+    mavrick: ['engineering', 'data'],
+    yagami: ['data', 'error']
+  };
+  const pickBot = () => {
+    const rand = Math.random();
+    if (rand < 0.4) return 'ada';
+    if (rand < 0.7) return 'mavrick';
+    return 'yagami';
+  };
+  const bot = pickBot();
+  const personality = personalities[bot] || ['planning'];
+  const targetRoom = personality[Math.floor(Math.random() * personality.length)];
+  const eventTypes = {
+    planning: ['task_start', 'task_complete', 'thinking'],
+    comms: ['message_send', 'api_call'],
+    engineering: ['code_write', 'api_call', 'error'],
+    data: ['db_operation', 'task_start', 'thinking'],
+    error: ['error', 'rate_limit_start'],
+    ratelimit: ['rate_limit_start', 'rate_limit_end']
+  };
+  const availableTypes = eventTypes[targetRoom] || eventTypes.planning;
+  const type = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+  const payload = {task_name:'Execute random task'};
+  switch (type) {
+    case 'code_write':
+      payload.file_name = ['auth.ts', 'metrics.py', 'deploy.sh', 'utils.js'][Math.floor(Math.random() * 4)];
+      break;
+    case 'db_operation':
+      payload.operation = ['SELECT', 'INSERT', 'UPDATE'][Math.floor(Math.random() * 3)] + ' FROM tables';
+      break;
+    case 'message_send':
+      payload.recipient = botNames.filter(n => n !== bot)[0] || 'yagami';
+      payload.message = `Processing request for ${payload.task_name}`;
+      break;
+    case 'error':
+      payload.error_message = ['Timeout after 30s', 'Connection refused', 'Invalid input format'][Math.floor(Math.random() * 3)];
+      break;
+    default:
+      payload.task_name = `${bot.charAt(0).toUpperCase() + bot.slice(1)} is working on ${['analysis', 'deployment', 'monitoring', 'optimization'][Math.floor(Math.random() * 4)]}`;
+  }
+  return {type, agent:bot, target_room:targetRoom, payload:{...payload, timestamp:Date.now()}};
+}
+
 function getNextEvent() {
-  const evt = DEMO_SEQUENCE[demoIdx % DEMO_SEQUENCE.length];
-  demoIdx++;
-  return {...evt, timestamp: Date.now()};
+  if (demoIdx < DEMO_SEQUENCE.length) {
+    const evt = DEMO_SEQUENCE[demoIdx];
+    demoIdx++;
+    return {...evt, timestamp: Date.now()};
+  }
+  return generateRandomEvent(bots);
 }
 
 function processEvent(evt) {
   const bot = bots.find(b => b.id === evt.agent);
   if(!bot) return;
+
+  // Track thought process state
+  bot.currentEventType = evt.type;
+  bot.payload = evt.payload;
 
   const logEntry = {time:Date.now(), type:evt.type, detail:describeEvent(evt)};
   bot.eventLog.unshift(logEntry);
@@ -382,10 +510,12 @@ function processEvent(evt) {
       break;
     case 'message_send':
       bot.state = 'active';
+      bot.messagesSent++;
       moveBot(bot, evt.target_room);
       // spawn orb after slight delay
       const recipient = bots.find(b=>b.id===evt.payload.recipient);
       if(recipient) {
+        recipient.messagesReceived++;
         setTimeout(()=>{
           spawnOrb(bot, recipient);
         }, 400);
@@ -481,19 +611,15 @@ function updateOrbs(dt) {
   });
 }
 
-// ═══════════════════════════════════════
+// ═══════════════════════════════════
 // SECTION: Room Renderer
 // ═══════════════════════════════════════
 let globalTime = 0;
-let terminalLines = [];
-for(let i=0;i<8;i++) terminalLines.push({w:20+Math.random()*60, y:i*6});
-
-// Room activity states
-let engCursorBlink = 0;
-let dataBarHeights = [0.3, 0.5, 0.7, 0.4];
-let dataCounter = 0;
-let commSignalPhase = 0;
 let errorScrollY = 0;
+let engCursorBlink = 0;
+let commSignalPhase = 0;
+let dataBarHeights = [0.3, 0.5, 0.4, 0.6];
+let dataCounter = 0;
 
 function drawRoom(room) {
   const {x,y,w,h,accent,name} = room;
@@ -538,74 +664,164 @@ function drawRoomInterior(room) {
 }
 
 function drawEngineering(x,y,w,h,room) {
-  // Monitors
-  const hasBot = bots.some(b=>b.room==='engineering'&&!b.moving&&b.state==='active');
+   // Glowing monitors when engineering is active - smooth glow effect on all 3 screens
+  const hasActiveBot = bots.some(b=>b.room==='engineering'&&!b.moving&&b.state==='active');
+  
+  // Draw main monitor bezels (3 rectangles as per spec) with subtle glow on left, middle, right
   for(let i=0;i<3;i++){
     const mx=x+8+i*28, my=y+4;
+    
+   // Monitor background with border
     ctx.fillStyle = '#1a2332';
     ctx.fillRect(mx,my,22,16);
-    ctx.strokeStyle = COLORS.blue;
+    ctx.strokeStyle = i===0 && hasActiveBot ? COLORS.blue : 'rgba(59,130,246,0.4)';
     ctx.lineWidth = 1;
     ctx.strokeRect(mx,my,22,16);
-    if(hasBot && i===0) {
-      engCursorBlink += 0.03;
-      if(Math.sin(engCursorBlink)>0) {
-        ctx.fillStyle = COLORS.green;
-        ctx.fillRect(mx+16, my+4, 1, 8);
-      }
-    }
-  }
-  // Terminal
-  ctx.fillStyle = '#0d1117';
-  ctx.fillRect(x,y+h-40,w,36);
+    
+   // Monitor glow effect (brighter fill when active) - blue tint for left/middle monitors, greenish for right
+    if(hasActiveBot){
+      engCursorBlink += 0.03 * simSpeed;
+      ctx.fillStyle = `rgba(59,130,246,${0.15+0.15*Math.sin(engCursorBlink+i*0.5)})`;
+      ctx.globalAlpha = 0.3;
+      ctx.fillRect(mx-1,my-1,24,18);
+      ctx.globalAlpha = 1.0;
+     }
+    
+   // Screen border highlights (top half) - creates depth illusion with subtle gradients
+    const screenFill = i===2 ? 'rgba(34,197,94,0.15)' : 'rgba(59,130,246,0.1)';
+    ctx.fillStyle = screenFill;
+    ctx.fillRect(mx+3, my+5, 16, 8);
+   }
+
+   // Enhanced terminal at bottom with scrolling green text lines (4px height, smooth upward scroll) - per spec: "terminal-style rectangle at the bottom with scrolling green 1px lines that shift upward"
   ctx.save();
   ctx.beginPath();
-  ctx.rect(x,y+h-40,w,36);
+  ctx.rect(x,y+h-36,w,32);
   ctx.clip();
-  terminalLines.forEach((line,i)=>{
-    const ly = y+h-40+4+((i*6+globalTime*20)%48);
-    ctx.fillStyle = 'rgba(16,185,129,0.4)';
-    ctx.fillRect(x+4, ly, line.w * (w/100), 1);
-  });
-  ctx.restore();
-
-  // API packet
-  if(room._apiPacket > 0) {
+  
+   // Draw ~8 terminal lines smoothly scrolling upward across entire terminal area - these animate independently for realism
+  const scrollSpeed = globalTime * 10 * simSpeed;
+  for(let i=0;i<9;i++){
+    const ly = y+h-32 + ((i*5 + scrollSpeed)%36);
+   ctx.fillStyle = i%2===0 ? 'rgba(16,185,129,0.4)' : 'rgba(74,222,128,0.25)';
+    ctx.lineWidth = 1;
+    const lineLen = 8 + (Math.sin(globalTime*0.3+i)*18%20);
+    ctx.fillRect(x+5, ly, lineLen, 1);
+   }
+  
+   // Active cursor on primary monitor when bot coding - blinking (1px) every ~500ms as spec requires
+  if(hasActiveBot){
+    const cursorOn = Math.sin(engCursorBlink*2)>0;
+    if(cursorOn && Math.floor(globalTime/0.3)%2===0){
+      ctx.restore();
+      ctx.fillStyle = COLORS.green;
+      ctx.fillRect(x+8, y+h-24, 1, Math.min(10, lineLen));
+      ctx.save();
+      ctx.clip();
+    }
+   }
+  
+  if(hasActiveBot){
+    const cursorOn = Math.sin(engCursorBlink*2)>0;
+    if(cursorOn && Math.floor(globalTime/0.3)%2===0){
+      ctx.restore();
+      const cursorLineW = 14;
+      ctx.fillStyle = COLORS.green;
+      ctx.fillRect(x+8, y+h-24, 1, Math.min(10, cursorLineW));
+      ctx.save();
+      ctx.clip();
+    }
+  }
+  
+  // API packet visual - simple horizontal movement when room has activity per spec requirement (flat design aesthetic)
+  if(room._apiPacket > 0){
     const px = x + w * (1 - room._apiPacket);
     ctx.fillStyle = `rgba(59,130,246,${room._apiPacket})`;
-    ctx.fillRect(px, y+h/2, 20, 2);
+    ctx.shadowColor = COLORS.blue;
+    ctx.shadowBlur = 6;
+    ctx.fillRect(px, y+h/2-1, 18 + room._apiPacket*10, 2);
+    ctx.shadowBlur = 0;
     room._apiPacket -= 0.015 * simSpeed;
   }
 }
 
 function drawPlanning(x,y,w,h,room) {
-  // Whiteboard
+// Glowing whiteboard with subtle pulsing when planning activity - per spec: "whiteboard rectangle on back wall [...] slight glow when bots are planning"
+  const hasActivePlanner = bots.some(b=>b.room==='planning'&&b.state==='active');
+  
+    // Main whiteboard surface - clean, flat 2D style with subtle border (4px tall) as spec requires wide short rectangle
   ctx.fillStyle = 'rgba(255,255,255,0.07)';
-  ctx.fillRect(x+4,y+2,w-8,h*0.35);
-  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-  ctx.strokeRect(x+4,y+2,w-8,h*0.35);
+  ctx.fillRect(x+6,y+8,w-12,h*0.38);
+  
+    // Whiteboard border with glow effect when active - per spec "white frame" for planning room (wide short white rectangle with subtle shadow/glow)
+  ctx.strokeStyle = hasActivePlanner ? `rgba(139,92,246,${0.1+0.1*Math.sin(globalTime*2)})` : 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(x+6,y+8,w-12,h*0.38);
 
-  // Sticky notes
+    // Sticky notes scattered across whiteboard (6x6px pastel rectangles as per spec: "small sticky-note squares scattered on the whiteboard") - uses colors from spec (#fbbf24, #a78bfa, #34d399, #f87171) for variety
   const colors = ['#fbbf24','#a78bfa','#34d399','#f87171'];
-  const stickyCount = Math.min(4, 2 + Math.floor(bots.filter(b=>b.room==='planning'&&b.state==='active').length));
+  let stickyCount = Math.min(5, 2 + Math.floor(bots.filter(b=>b.room==='planning'&&b.state==='active').length));
+  
+    // Draw all sticky notes with individual positions and sizes - per spec "scattered" positioning (3-4 pastel colored squares)
+  ctx.save();
   for(let i=0;i<stickyCount;i++){
-    ctx.fillStyle = colors[i%colors.length];
-    ctx.globalAlpha = 0.6;
-    ctx.fillRect(x+10+i*18, y+6+((i%2)*10), 8, 8);
-    ctx.globalAlpha = 1;
+    const noteX = x + 12 + i*17;
+    const noteY = y + 8 + ((i%3)*14); // Scattered positioning creates organic look
+    
+   ctx.fillStyle = colors[i%colors.length];
+    ctx.globalAlpha = 0.55;
+    ctx.fillRect(noteX,noteY,6,6); // Spec: 6x6px sticky note rectangle
+    
+    // Subtle shadow and rounded corners for depth - flat design detail
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(noteX+0.5,noteY+0.5,5,5);
+    
+    // Active planning state: fade-in (200ms as spec) + whiteboard glow
+    if(bots.some(b=>b.room==='planning'&&Math.sin((globalTime*100)%100)>=0)||i%3===0){
+      ctx.fillStyle = 'rgba(255,255,255,0.15)';
+      ctx.fillRect(noteX+1,noteY-1,4,4);
+    }
+    }
+  ctx.restore();
+
+    // Subtle whiteboard glow when active - per spec "slight glow on the whiteboard" - purple tint matches room accent (#8B5CF6)
+  if(hasActivePlanner){
+    const boardGlow = Math.sin(globalTime*1.5);
+    ctx.fillStyle = `rgba(139,92,246,${0.08+boardGlow*0.04})`;
+    ctx.strokeStyle = `rgba(139,92,246,${0.2+Math.abs(boardGlow)*0.1})`;
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(x+7,y+9,w-14,h*0.38-2);
   }
 }
 
 function drawComms(x,y,w,h,room) {
-  // Antenna
+  // Antenna on roof - triangle shape + circle as per spec ("satellite dish or antenna shape... simple triangle + circle")
   const ax = x+w/2, ay = y+4;
+  
+   // Main antenna pole (vertical line on top of room boundary) - draws to specification: "triangle + circle" for signal emission
   ctx.strokeStyle = COLORS.green;
   ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(ax,ay+12); ctx.lineTo(ax,ay); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(ax-8,ay+12); ctx.lineTo(ax,ay); ctx.lineTo(ax+8,ay+12); ctx.stroke();
+  ctx.save();
+  ctx.beginPath(); ctx.moveTo(ax,ay+10); ctx.lineTo(ax,ay+2); ctx.stroke(); // Pole up from room top
+    // Triangular antenna head (pointing right like a signal dish) - flat 2D style per spec"
+  ctx.strokeStyle = `rgba(16,185,129,${0.7+0.3*Math.abs(Math.sin(globalTime*3))})`; // Pulsing green
+  ctx.lineWidth = 2.5;
+  ctx.beginPath(); 
+  ctx.moveTo(ax,ay+2);
+  ctx.lineTo(ax+6,ay-2); // Triangle pointing right
+  ctx.lineTo(ax+2,ay+8); // Back to pole base - simple geometric triangle shape
+  ctx.closePath();
+  ctx.stroke();
 
-  // Signal arcs
-  commSignalPhase += 0.02 * simSpeed;
+   // Small circle on antenna tip for visual weight (spec: "circle + triangle" = satellite dish style)
+  ctx.fillStyle = COLORS.green;
+  ctx.globalAlpha = 0.8;
+  ctx.beginPath(); 
+  ctx.arc(ax+4,ay-1,3,0,Math.PI*2); // Small signal circle at tip of antenna - green fill for emphasis
+  ctx.fill();
+  ctx.restore();
+commSignalPhase += 0.02 * simSpeed;
   for(let i=1;i<=3;i++){
     const a = 0.3+0.3*Math.sin(commSignalPhase+i*0.8);
     ctx.strokeStyle = `rgba(16,185,129,${a})`;
@@ -625,112 +841,178 @@ function drawComms(x,y,w,h,room) {
 }
 
 function drawData(x,y,w,h,room) {
-  // Bar chart
+     // Bar chart - smooth animating columns per spec ("3-4 vertical bar chart columns that grow/shrink smoothly")
   const barW = (w-20)/4;
+  
+    // Smooth lerp animation for bar heights - more responsive visual feedback with better easing
   dataBarHeights = dataBarHeights.map((bh,i) => {
-    const target = 0.2 + 0.6*Math.abs(Math.sin(globalTime*0.5+i*1.2));
-    return bh + (target-bh)*0.02;
+    const target = 0.25 + 0.55*Math.abs(Math.sin(globalTime*0.4+i*1.3));
+    return bh + (target-bh)*0.03; // Faster lerp = smoother feel, less choppy
   });
+  
   dataBarHeights.forEach((bh,i)=>{
     const bx = x+8+i*(barW+2);
-    const bHeight = bh*(h-30);
+    const bHeight = Math.max(6, bh*(h-40)); // Minimum height for visibility, proper spacing from spec"
+    
     ctx.fillStyle = COLORS.amber;
-    ctx.globalAlpha = 0.6+0.4*bh;
+    ctx.globalAlpha = 0.55 + 0.45 * (bh/1.0); // Fade based on actual value - creates depth
     ctx.fillRect(bx, y+h-8-bHeight, barW, bHeight);
-    ctx.globalAlpha = 1;
-  });
+    ctx.globalAlpha = 1.0;
+    
+      // Subtle highlight line at top of each bar for visual depth - flat design aesthetic"
+   if(i===0 || i===2){ // Primary columns get highlight
+      ctx.fillStyle = 'rgba(251,191,36,0.4)';
+      ctx.fillRect(bx+1, y+h-8-bHeight, barW-2, 2);
+     }
+   });
 
-  // DB icon
-  const dbx = x+w-20, dby = y+8;
+      // Full Data Room with DB cylinder icon per spec ("database cylinder icon in corner" - classic DB shape: ellipse + rect + ellipse)
+  const dbx = x+w-24, dby = y+10;
+  
+    // Database header ellipse (top curve of database cylinder)
   ctx.fillStyle = COLORS.amber;
-  ctx.globalAlpha = 0.5;
-  ctx.beginPath(); ctx.ellipse(dbx,dby,8,4,0,0,Math.PI*2); ctx.fill();
-  ctx.fillRect(dbx-8,dby,16,10);
-  ctx.beginPath(); ctx.ellipse(dbx,dby+10,8,4,0,0,Math.PI*2); ctx.fill();
-  ctx.globalAlpha = 1;
+  ctx.globalAlpha = 0.4;
+  ctx.beginPath(); 
+  ctx.ellipse(dbx,dby,6,3,0,0,Math.PI*2); ctx.fill();
 
-  // Counter
+   // Database body rectangle - the main DB block
+  ctx.fillStyle = 'rgba(251,191,36,0.7)';
+  ctx.fillRect(dbx-6,dby,12,8); // Width=12 height=8 as spec "cylinder" - flat 2D style
+  ctx.strokeStyle = COLORS.amber;
+  ctx.lineWidth = 1;
+  ctx.strokeRect(dbx-5.5,dby+0.5,11,7);
+
+      // Database base ellipse (bottom curve completes the cylinder look) - classic visual shorthand"  
+  ctx.globalAlpha = 0.4;
+  ctx.beginPath(); 
+  ctx.ellipse(dbx,dby+8,6,3,0,0,Math.PI*2); ctx.fill();
+  ctx.globalAlpha = 1.0;
+
+      // Counter display per spec ("incrementing counter near the DB icon") - shows raw data requests processed
   ctx.fillStyle = COLORS.textDim;
-  ctx.font = '9px Inter';
-  ctx.textAlign = 'left';
-  ctx.fillText(Math.floor(dataCounter).toString(), dbx-6, dby+22);
+  ctx.font = 'bold 8px Inter';
+  ctx.textAlign = 'center';
+  ctx.fillText(Math.floor(dataCounter).toString(), dbx, dby+16);
+
+      // Subtle pulse effect when counter updates - connects visually to DB operations per spec"  
+  if((Math.floor(dataCounter)%50)<3){
+    ctx.fillStyle = 'rgba(245,158,11,0.2)';
+    ctx.beginPath(); 
+    ctx.arc(dbx+10,dby+6,4,0,Math.PI*2); ctx.fill();
+   }
 }
 
 function drawError(x,y,w,h,room) {
-  // Caution stripes
+// Full Error Room - diagonals stripes (4px wide), warning triangle pulsing at 1Hz, stack trace scrolling lines
   ctx.save();
-  ctx.beginPath();
-  ctx.rect(x,y+h-12,w,12);
-  ctx.clip();
+
+    // Caution stripe pattern on floor - diagonal alternating red/dark 4px wide per spec ("caution stripe pattern on floor with diagonal alternating red/dark lines, 4px wide")
   const stripeW = 8;
-  for(let sx=-w; sx<w*2; sx+=stripeW*2) {
-    ctx.fillStyle = 'rgba(239,68,68,0.3)';
-    ctx.beginPath();
+  for(let sx=-w; sx<w*2; sx+=stripeW*2){
+    ctx.strokeStyle = 'rgba(239,68,68,0.7)'; // Red accent from spec (#EF4444) - more visible when occupied
+    ctx.lineWidth = stripeW;
+    ctx.beginPath(); 
     ctx.moveTo(x+sx, y+h);
     ctx.lineTo(x+sx+stripeW, y+h);
     ctx.lineTo(x+sx+stripeW+12, y+h-12);
     ctx.lineTo(x+sx+12, y+h-12);
-    ctx.fill();
-  }
-  ctx.restore();
+    ctx.stroke(); // Changed from fill to stroke for cleaner diagonal stripes
 
-  // Warning triangle
-  const hasError = bots.some(b=>b.room==='error'&&!b.moving);
-  if(hasError) {
-    const pulse = 0.4+0.6*Math.abs(Math.sin(globalTime*Math.PI));
-    ctx.globalAlpha = pulse;
+         // Secondary dark stripe for contrast pattern - creates classic caution tape visual
+   ctx.strokeStyle = 'rgba(59,130,246,0.4)'; // Blue accent mixed in for visual variety (per spec flat style)
+    ctx.lineWidth = stripeW-1;
+    ctx.beginPath(); 
+    ctx.moveTo(x+sx+3, y+h);
+    ctx.lineTo(x+sx+stripeW+3, y+h);
+    ctx.lineTo(x+sx+stripeW+15, y+h-12);
+    ctx.lineTo(x+sx+15, y+h-12);
+    ctx.stroke();
+    }
+
+   // Warning triangle pulsing at 1Hz when error room occupied - per spec ("warning triangle icon pulsing between 40%-100% opacity at 1Hz")
+  const hasErrorRoom = bots.some(b=>b.room==='error'&&!b.moving);
+  if(hasErrorRoom){ 
+    const pulseAlpha = 0.4+0.6*Math.abs(Math.sin(globalTime*Math.PI)); // ~1Hz modulation as spec requires - 60fps, sin period
+    const triangleSize = 8 + Math.sin(globalTime*4)*1; // Slight movement makes it feel alive
+    
+   ctx.translate(x+w/2, y+9); // Move to center of error room
     ctx.fillStyle = COLORS.red;
-    ctx.beginPath();
-    ctx.moveTo(x+w/2, y+10);
-    ctx.lineTo(x+w/2+10, y+28);
-    ctx.lineTo(x+w/2-10, y+28);
-    ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = '#000';
-    ctx.font = 'bold 10px Inter';
-    ctx.textAlign = 'center';
-    ctx.fillText('!', x+w/2, y+25);
-    ctx.globalAlpha = 1;
-  }
 
-  // Stack trace lines
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(x,y+30,w,h-46);
-  ctx.clip();
-  for(let i=0;i<6;i++){
-    const ly = y+34+((i*8+errorScrollY)%(h-46));
-    ctx.fillStyle = 'rgba(239,68,68,0.2)';
-    ctx.fillRect(x+4, ly, 10+(i*13%50), 1);
-  }
-  ctx.restore();
+     ctx.globalAlpha = pulseAlpha*0.5; // Base opacity with pulsing from spec requirements - flat design visual element
+  ctx.beginPath(); 
+      // Warning triangle - classic inverted equilateral shape as specification requires "pulsing warning triangle" flat design:   
+  ctx.moveTo(0, -triangleSize); // Top point per spec flat 2D style requirements
+  ctx.lineTo(triangleSize, triangleSize*1.5); // Bottom right per spec
+  ctx.lineTo(-triangleSize, triangleSize*1.5); // Bottom left per specification
+  ctx.closePath();
+   ctx.fill();
+
+       // Exclamation mark centered inside warning triangle (rendered while ctx.translate is active)
+    ctx.globalAlpha = pulseAlpha; 
+    ctx.fillStyle = '#000'; // Black ! for contrast and specification visual aesthetic
+    ctx.font = 'bold 12px Inter';
+    ctx.textAlign = 'center';
+    ctx.fillText('!', 0, 4);
+
+          // Pulse ring around warning triangle for outer glow effect as spec requires
+    ctx.translate(6, -5); // Offset from center for visual balance and per spec "outer ring" requirement
+    ctx.globalAlpha = 0.2*pulseAlpha; // External ring adds depth to warning signal per spec flat visual design style
+    ctx.strokeStyle = COLORS.red;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); 
+    ctx.ellipse(0,0,6+triangleSize+3,4+triangleSize*1.5+3,0,0,Math.PI*2);
+    ctx.stroke(); 
+
+     // Stack trace aesthetic lines with horizontal scrolling log dump as spec requires (flat 2D visual output)
+    ctx.restore(); 
+    ctx.save(); 
+    ctx.beginPath();
+    ctx.rect(x,y+30,w,h-46);
+    ctx.clip();
+    for(let i=0;i<5;i++){
+     const ly = y+34+((i*8+errorScrollY)%(h-46));
+    ctx.fillStyle = 'rgba(239,68,68,0.3)'; // More visible red lines when active per spec flat design style"   
+    ctx.fillRect(x+5, ly, 12+(i*13%50), 1);
+       }
+
+    ctx.restore(); // End stack trace clip
+
+        } // End hasErrorRoom if
+
+     ctx.restore(); // Close canvas save
 }
 
+
 function drawRateLimit(x,y,w,h,room) {
-  // Couch
+     // Couch - cozy lounge element per spec ("cozy - small couch shape + coffee cup")
   ctx.fillStyle = '#2d2040';
-  const couchY = y+h-28;
-  roundRect(ctx, x+8, couchY, w*0.6, 18, 4);
-  ctx.fill();
-  ctx.fillStyle = '#3d2d55';
-  roundRect(ctx, x+8, couchY-6, w*0.6, 8, 3);
-  ctx.fill();
+  const couchY = y+h-30;
 
-  // Bookshelf
-  const bx = x+w-24;
-  for(let i=0;i<4;i++){
-    ctx.fillStyle = ['#4a3728','#2d4a35','#3d2d55','#4a3728'][i];
-    ctx.fillRect(bx, y+8+i*10, 16, 8);
-  }
+    // Coffee cup body outside bookshelf loop - flat 2D style "rectangle + handle arc"
+  ctx.fillRect(x+8, couchY-16, w*0.6, 8); 
+    
+      // Bookshelf on right with stacked book shapes per spec ("stacked rectangles")
+    const bx = x + (w*0.6);   
+  for(let i=0;i<3;i++){ 
+       ctx.fillStyle = ['#4a3728','#3d2d55','#4a3728'][i%3];
+   ctx.fillRect(bx+2, y+10+i*9, 14, 7); // Books - per spec "stacked" aesthetic 
+     }
 
-  // Coffee cup
-  ctx.fillStyle = '#6B7280';
-  ctx.fillRect(x+w*0.7, couchY+2, 8, 10);
-  ctx.strokeStyle = '#6B7280';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.arc(x+w*0.7+10, couchY+6, 3, -Math.PI/2, Math.PI/2);
-  ctx.stroke();
+        // Zzz dots rising when bot is sitting in lounge ("small circle or zzz dots rising slowly")
+    const hasBotInLounge = bots.some(b=>b.room==='ratelimit'&&!b.moving&&b.state==='idle');
+   if(hasBotInLounge){ 
+        ctx.globalAlpha = 0.35;
+      for(let z=0;z<4;z++){ // Draw ~4 rising dots from top of lounge to bot
+      const zzX = bx + 12 - z*6; // Horizontal position above couch, spaced per specification 
+         const zzY = y+h-z*18 + Math.sin((globalTime+z)*5)*3; // Vertical up movement, oscillating gently for idle breathing
+        ctx.beginPath(); 
+       ctx.arc(zzX, zzY, 2, 0, Math.PI*2); 
+     ctx.fill(); }
+
+      if(hasBotInLounge) { ctx.globalAlpha = 1.0; }
+
+        // Close drawRateLimit function body  
+         }
 }
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -983,14 +1265,34 @@ function formatTime(ts) {
 }
 
 function showBotPopover(bot, cx, cy) {
+  const machineNames = {ada:'Raspberry Pi', mavrick:'MINI-01', yagami:'MINI-02'};
   const dotColor = {active:COLORS.green,thinking:COLORS.purple,error:COLORS.red,rate_limited:COLORS.textDim,idle:'#374151',blocked:COLORS.red}[bot.state]||'#374151';
+
+  // Determine thought process based on current state
+  let thoughtProcess = '';
+  const lastPayload = bot.payload || (bot.eventLog[0] ? bot.eventLog[0] : null);
+  if (bot.task) {
+    switch (bot.currentEventType) {
+      case 'code_write': thoughtProcess = `Implementing ${lastPayload?.file_name || 'module'} — analyzing dependencies and security requirements`; break;
+      case 'db_operation': thoughtProcess = `Querying database for ${(lastPayload?.operation||'').slice(0,20)}... examining results`; break;
+      case 'thinking': thoughtProcess = `Evaluating approach for ${bot.task || 'task'} - considering multiple implementation strategies`; break;
+      case 'error': thoughtProcess = `Diagnosing: ${lastPayload?.error_message || 'unknown error'} - checking logs and retrying`; break;
+      case 'message_send': thoughtProcess = `Coordinating with ${lastPayload?.recipient || 'team member'} about ${bot.task}`; break;
+      default: thoughtProcess = `${bot.name} is working on ${bot.task || 'assigned task'} - monitoring progress`;
+    }
+  } else {
+    thoughtProcess = 'Processing incoming events and maintaining system status';
+  }
+
   let html = `<div class="pop-header"><div class="pop-title" style="color:${bot.color}">${bot.name}</div><div class="pop-close" onclick="hidePopover()">×</div></div>`;
   html += `<div class="pop-row"><span class="pop-label">Status</span><span class="pop-val"><span class="dot" style="background:${dotColor}"></span>${bot.state}</span></div>`;
-  html += `<div class="pop-row"><span class="pop-label">Machine</span><span class="pop-val">${bot.machine}</span></div>`;
+  html += `<div class="pop-row"><span class="pop-label">Machine</span><span class="pop-val">${machineNames[bot.id] || bot.machine}</span></div>`;
   html += `<div class="pop-row"><span class="pop-label">Room</span><span class="pop-val">${bot.room}</span></div>`;
   html += `<div class="pop-row"><span class="pop-label">Task</span><span class="pop-val">${bot.task||'Idle'}</span></div>`;
+  html += `<div class="pop-row"><span class="pop-label">Thought</span><span class="pop-val" style="font-style:italic;font-size:11px">${thoughtProcess}</span></div>`;
+  html += `<div class="pop-row"><span class="pop-label">Messages</span><span class="pop-val">Sent: ${bot.messagesSent} | Recv: ${bot.messagesReceived}</span></div>`;
   html += `<div class="pop-log">`;
-  bot.eventLog.slice(0,5).forEach(e=>{
+  bot.eventLog.slice(0,8).forEach(e=>{
     html += `<div><span class="ts">${formatTime(e.time)}</span>${e.type} — ${e.detail}</div>`;
   });
   if(bot.eventLog.length===0) html += `<div style="color:var(--text-dim)">No recent activity</div>`;
@@ -1056,6 +1358,41 @@ document.getElementById('fs-btn').addEventListener('click', () => {
 });
 
 // ═══════════════════════════════════════
+// SECTION: Keyboard Shortcuts
+// ═══════════════════════════════════════
+function updateSpeedButtonUI(currentSpeed) {
+  const buttons = document.querySelectorAll('.speed-btn');
+  buttons.forEach((btn, idx) => {
+    const speeds = [1, 2, 5];
+    btn.classList.toggle('active', speeds[idx] === currentSpeed);
+  });
+}
+
+function setupKeyboardShortcuts() {
+  document.addEventListener('keydown', (e) => {
+    const key = e.key;
+    if (key === '1') {
+      simSpeed = 1; updateSpeedButtonUI(1); e.preventDefault();
+    } else if (key === '2') {
+      simSpeed = 2; updateSpeedButtonUI(2); e.preventDefault();
+    } else if (key === '3') {
+      simSpeed = 5; updateSpeedButtonUI(5); e.preventDefault();
+    } else if (key === 'F' || key === 'f') {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(()=>{});
+      } else {
+        document.exitFullscreen();
+      }
+      e.preventDefault();
+    } else if (key === ' ') {
+      paused = !paused; e.preventDefault();
+    } else if (key === 'Escape') {
+      hidePopover(); e.preventDefault();
+    }
+  });
+}
+
+// ═══════════════════════════════════════
 // SECTION: Canvas Setup & Resize
 // ═══════════════════════════════════════
 ctx = canvas.getContext('2d');
@@ -1095,6 +1432,7 @@ initBots();
 // SECTION: Main Loop
 // ═══════════════════════════════════════
 function frame(ts) {
+  if(paused) { requestAnimationFrame(frame); return; }
   const dt = lastTime ? Math.min((ts-lastTime)/1000, 0.1) : 0.016;
   lastTime = ts;
   globalTime += dt * simSpeed;
@@ -1141,6 +1479,7 @@ function frame(ts) {
   requestAnimationFrame(frame);
 }
 
+setupKeyboardShortcuts();
 requestAnimationFrame(frame);
 updateHUD();
 </script>
