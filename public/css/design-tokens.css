@@ -29,12 +29,13 @@
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-highlight: rgba(255, 255, 255, 0.04);
 
-   /* ─── Shadows ─── */
---shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
---shadow-md: 0 8px 24px rgba(0, 0, 0, 0.3);
---shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
---shadow-hero-glow: 0 0 120px rgba(59, 130, 246, 0.3), 0 0 80px rgba(139, 92, 246, 0.15);
---shadow-card-hover: 0 20px 60px rgba(59, 130, 246, 0.2), 0 0 40px rgba(139, 92, 246, 0.15);
+  /* ─── Shadows ─── */
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+  --shadow-glow-blue: 0 0 40px rgba(59, 130, 246, 0.15);
+  --shadow-glow-purple: 0 0 40px rgba(139, 92, 246, 0.15);
+  --shadow-glow-green: 0 0 40px rgba(16, 185, 129, 0.15);
 
   /* ─── Radii ─── */
   --radius-xs: 4px;
@@ -61,16 +62,12 @@
   --z-modal: 1000;
   --z-tooltip: 2000;
 
-   /* ─── Spacing Scale ─── */
---space-xs: 4px;
---space-sm: 8px;
---space-md: 16px;
---space-lg: 24px;
---space-xl: 48px;
---space-2xl: 96px;
-
-    /* ─── Typography ─── */
-
+  /* ─── Spacing Scale ─── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
   --space-10: 40px;

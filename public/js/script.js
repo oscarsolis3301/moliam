@@ -37,17 +37,28 @@ function initLoadingAnimation() {
    }
 }
 
-// Scroll reveal effects - elements fade in when scrolling into view (class-based)
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-     }
-   });
-}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-
+// Scroll reveal effects - elements fade in when scrolling into view
 function setupScrollReveal() {
-  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+  const revealElements = document.querySelectorAll('.card, h2, h1');
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0) scale(1)';
+          entry.target.style.transition = 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+  
+  revealElements.forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(30px) scale(0.95)';
+      observer.observe(el);
+   });
+}
+
 // Smooth scroll to sections when clicking nav links
 function initializeSmoothScroll() {
   document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
