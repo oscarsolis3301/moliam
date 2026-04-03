@@ -1522,11 +1522,11 @@ const TASKS = [
 ];
 
 const BOT_DEFS = [
-  { name: 'Mavrick', initials: 'M', color: '#3B82F6', role: 'Lead Engineer' },
-  { name: 'Yagami',  initials: 'Y', color: '#EF4444', role: 'Strategy AI' },
-  { name: 'Ada',     initials: 'A', color: '#8B5CF6', role: 'Orchestrator' },
-  { name: 'Roman',   initials: 'R', color: '#10B981', role: 'CEO' },
-  { name: 'Angelina',initials: 'An', color: '#EC4899', role: 'Overseer' },
+  { name: 'Ada',     initials: 'A', color: '#8B5CF6', role: 'Orchestrator',    online: true },
+  { name: 'Mavrick', initials: 'M', color: '#3B82F6', role: 'Lead Engineer',   online: true },
+  { name: 'Yagami',  initials: 'Y', color: '#EF4444', role: 'Strategy AI',     online: true },
+  { name: 'Willow',  initials: 'W', color: '#F59E0B', role: 'Content AI',      online: false },
+  { name: 'Soni',    initials: 'S', color: '#06B6D4', role: 'Research AI',     online: false },
 ];
 
 let bots = BOT_DEFS.map((def, i) => {
@@ -1538,10 +1538,10 @@ let bots = BOT_DEFS.map((def, i) => {
     targetX: room.x + room.w / 2,
     targetY: room.y + room.h / 2,
     roomIdx: i % rooms.length,
-    state: 'idle', // idle, moving, working, thinking
+    state: def.online ? 'idle' : 'offline', // idle, moving, working, thinking, offline
     task: '',
     tasksDone: 0,
-    stateTimer: rand(1000, 4000),
+    stateTimer: def.online ? rand(1000, 4000) : Infinity,
     thinkAngle: 0,
     trail: [],
     radius: 18,
@@ -1554,6 +1554,7 @@ let totalErrors = 0;
 /* ─── BOT AI ─── */
 function tickBots(dt) {
   for (const bot of bots) {
+    if (bot.state === 'offline') continue; // skip offline agents
     bot.stateTimer -= dt;
     bot.thinkAngle += dt * 0.004;
 
@@ -1793,7 +1794,12 @@ function drawRoom(room, t) {
 function drawBot(bot, t) {
   const { x, y, color, initials, state, task, thinkAngle, trail, radius } = bot;
   const R = 20; // larger avatar radius
-  const [cr, cg, cb] = hexRGB(color);
+  const isOffline = state === 'offline';
+  const drawColor = isOffline ? '#4B5563' : color;
+  const [cr, cg, cb] = hexRGB(drawColor);
+
+  // Dim offline bots
+  if (isOffline) ctx.globalAlpha = 0.45;
 
   // Particle trail (fading dots in bot's color)
   for (const tp of trail) {
@@ -1810,7 +1816,8 @@ function drawBot(bot, t) {
   ctx.fill();
 
   // Outer status ring (background)
-  const ringColor = state === 'working' ? '#10B981' :
+  const ringColor = isOffline ? '#374151' :
+                    state === 'working' ? '#10B981' :
                     state === 'thinking' ? '#F59E0B' :
                     state === 'moving' ? '#3B82F6' : 'rgba(107,114,128,0.3)';
   ctx.beginPath();
@@ -1875,6 +1882,20 @@ function drawBot(bot, t) {
       ctx.fillStyle = `rgba(${cr},${cg},${cb},${0.4 + 0.3 * Math.sin(thinkAngle * 2 + i)})`;
       ctx.fill();
     }
+  }
+
+  // Offline label
+  if (isOffline) {
+    ctx.font = '600 9px Inter, sans-serif';
+    ctx.fillStyle = 'rgba(107,114,128,0.6)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('OFFLINE', x, y + R + 18);
+    ctx.fillText(bot.role, x, y + R + 30);
+    ctx.textBaseline = 'alphabetic';
+    // dim the whole bot
+    ctx.globalAlpha = 1;
+    return; // skip task label for offline bots
   }
 
   // Task label (wider for longer task names)
