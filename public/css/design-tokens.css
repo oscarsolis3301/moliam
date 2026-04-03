@@ -62,12 +62,14 @@
   --z-modal: 1000;
   --z-tooltip: 2000;
 
-  /* ─── Spacing Scale ─── */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
+   /* ─── Spacing Scale ─── */
+--space-xs: 4px;
+--space-sm: 8px;
+--space-md: 16px;
+--space-lg: 24px;
+--space-xl: 48px;
+--space-2xl: 96px;
+
   --space-6: 24px;
   --space-8: 32px;
   --space-10: 40px;
