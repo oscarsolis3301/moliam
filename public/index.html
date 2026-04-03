@@ -473,21 +473,38 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   padding: 32px 28px;
-  transition: all var(--transition-smooth);
   position: relative;
   overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-style: preserve-3d;
+  perspective: 1000px;
 }
-.service-card::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
-  opacity: 0; transition: opacity var(--transition-smooth);
-}
+
 .service-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(59, 130, 246, 0.2);
-  box-shadow: var(--shadow-glow-blue);
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: var(--shadow-glow-blue), 0 8px 40px rgba(59, 130, 246, 0.15);
 }
+
+/* Icon gradient border on hover */
+.service-card::before {
+  content: ''; display: none; /* Removed top line gradient */
+}
+
+.service-card:hover::after {
+  content: ''; position: absolute; inset: -2px;
+  background: radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(59,130,246,0.15), transparent 45%);
+  z-index: -1; pointer-events:none; opacity: 1;
+}
+
+/* Price gradient text */
+.service-card .card-price {
+  font-size: 28px; font-weight: 800;
+  margin-bottom: 4px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; text-fill-color: transparent;
+}
+
 .service-card:hover::before { opacity: 1; }
 .service-card .card-icon {
   width: 48px; height: 48px;
