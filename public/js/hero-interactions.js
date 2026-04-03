@@ -13,7 +13,6 @@
      "AI-Powered Operations",
      "Autonomous Marketing",
      "Built for Contractors",
-    "24/7 Digital Growth",
      "24/7 Digital Growth"
    ];
   
