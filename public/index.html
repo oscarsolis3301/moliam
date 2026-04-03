@@ -561,6 +561,19 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .footer-links a:hover { color: var(--text-primary); }
 
 /* ═══════════════════════════════════════════
+   SCROLL REVEAL ANIMATIONS
+   ═══════════════════════════════════════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ═══════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════ */
 @media (max-width: 768px) {
@@ -571,10 +584,14 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   .contact-form { padding: 24px; }
   #sparkline-container { display: none; }
   .uptime-display { display: none; }
+  .steps-grid { grid-template-columns: 1fr; gap: 24px; }
+  .steps-grid::before { display: none; }
 }
 @media (max-width: 480px) {
   #hero h1 { font-size: 32px; }
   .services-grid { grid-template-columns: 1fr; }
+  .steps-grid { grid-template-columns: 1fr; }
+  .steps-grid::before { display: none; }
   .footer-inner { flex-direction: column; text-align: center; }
 }
 </style>
@@ -644,7 +661,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 <!-- ═══════════════════════ HQ VISUALIZATION ═══════════════════════ -->
 <section id="hq-section">
-  <div id="hq-canvas-wrap">
+  <div id="hq-canvas-wrap" class="reveal">
     <canvas id="hq-canvas"></canvas>
   </div>
   <aside id="activity-sidebar">
@@ -674,7 +691,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 </div>
 
 <!-- ═══════════════════════ SERVICES ═══════════════════════ -->
-<section id="services">
+<section id="services" class="reveal">
   <div class="section-label">What We Build</div>
   <h2 class="section-title">AI-Driven Services</h2>
   <p class="section-subtitle">
@@ -705,6 +722,33 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
       <h3>Full Retainer</h3>
       <p class="card-desc">The full stack — website, GBP, LSA, SEO, content, and ongoing AI-powered campaign management. Your entire digital presence, handled.</p>
       <div class="card-price">$1,500<span class="period">/mo</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ HOW IT WORKS ═══════════════════════ -->
+<section id="how-it-works" class="reveal">
+  <div class="section-label">Process</div>
+  <h2 class="section-title">How It Works</h2>
+  <p class="section-subtitle">From first contact to full automation in 3 simple steps</p>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-number">1</div>
+      <span class="step-icon">🔍</span>
+      <h3>Discovery Call</h3>
+      <p>We analyze your current online presence, competitors, and local market. 15-minute Zoom call via Calendly.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-number">2</div>
+      <span class="step-icon">🚀</span>
+      <h3>AI Deployment</h3>
+      <p>Our autonomous agents build your website, optimize your Google Business Profile, and set up Local Service Ads.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-number">3</div>
+      <span class="step-icon">📈</span>
+      <h3>Growth &amp; Reporting</h3>
+      <p>Monthly performance reports, continuous optimization, and dedicated AI support for your business.</p>
     </div>
   </div>
 </section>
@@ -1526,6 +1570,30 @@ addFeedItem('⚡ MOLIAMA HQ initialized — all systems nominal', '#3B82F6');
 addFeedItem('🤖 5 AI agents deployed and ready', '#10B981');
 addFeedItem('📊 Connected to analytics pipeline', '#8B5CF6');
 addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
+
+/* ─── SCROLL REVEAL (IntersectionObserver) ─── */
+(function() {
+  const revealEls = document.querySelectorAll('.reveal');
+  let revealedCount = 0;
+  const totalReveal = revealEls.length;
+
+  const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+        revealedCount++;
+        if (revealedCount >= totalReveal) {
+          observer.disconnect();
+        }
+      }
+    });
+  }, { threshold: 0.1 });
+
+  revealEls.forEach(function(el) {
+    observer.observe(el);
+  });
+})();
 
 })();
 </script>
