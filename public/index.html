@@ -1,501 +1,2336 @@
-     1|<!DOCTYPE html>
-     2|<html lang="en">
-     3|<head>
-     4|<meta charset="UTF-8">
-     5|<meta name="viewport" content="width=device-width, initial-scale=1.0">
-     6|<title>Moliam — AI Operations HQ</title>
-     7|<meta name="description" content="Moliam: AI-Powered Operations for Modern Agencies. Website builds, GBP optimization, Google LSA management for Orange County contractors.">
-     8|<meta name="author" content="Moliam">
-     9|<meta name="robots" content="index, follow">
-    10|<meta name="theme-color" content="#0B0E14">
-    11|<link rel="canonical" href="https://moliam.pages.dev">
-    12|<!-- Open Graph -->
-    13|<meta property="og:title" content="Moliam — AI Operations HQ">
-    14|<meta property="og:description" content="AI-Powered Operations for Modern Agencies. Website builds, GBP optimization, Google LSA management for Orange County contractors.">
-    15|<meta property="og:type" content="website">
-    16|<meta property="og:url" content="https://moliam.pages.dev">
-    17|<meta property="og:image" content="https://moliam.pages.dev/og-image.png">
-    18|<!-- Twitter Card -->
-    19|<meta name="twitter:card" content="summary_large_image">
-    20|<meta name="twitter:title" content="Moliam — AI Operations HQ">
-    21|<meta name="twitter:description" content="AI-Powered Operations for Modern Agencies. Website builds, GBP optimization, Google LSA management for Orange County contractors.">
-    22|<!-- Icon links for browsers and mobile -->
-    23|<link rel="icon" href="/favicon.ico" type="image/x-icon">
-    24|<link rel="apple-touch-icon" href="/apple-touch-icon.png" size="180x180">
-    25|<!-- Sitemap reference -->
-    26|<link rel="sitemap" type="application/xml" href="/sitemap.xml">
-    27|<!-- Open Graph image dimensions for proper social previews -->
-    28|<meta property="og:image:width" content="1200">
-    29|<meta property="og:image:height" content="630">
-    30|<!-- JSON-LD Structured Data -->
-    31|<script type="application/ld+json">
-    32|{
-    33|  "@context": "https://schema.org",
-    34|  "@type": "LocalBusiness",
-    35|  "name": "Moliam",
-    36|  "description": "AI-Powered Operations for Modern Agencies. Website builds, GBP optimization, Google LSA management for Orange County contractors.",
-    37|  "url": "https://moliam.pages.dev",
-    38|  "image": "https://moliam.pages.dev/og-image.png",
-    39|  "address": {
-    40|    "@type": "PostalAddress",
-    41|    "addressLocality": "Orange County",
-    42|    "addressRegion": "CA",
-    43|    "addressCountry": "US"
-    44|  },
-    45|  "areaServed": {
-    46|    "@type": "Place",
-    47|    "name": "Orange County, CA"
-    48|  },
-    49|  "hasOfferCatalog": {
-    50|    "@type": "OfferCatalog",
-    51|    "name": "Services",
-    52|    "itemListElement": [
-    53|      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Website Development", "description": "AI-powered custom website builds in under 72 hours" } },
-    54|      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Google Business Profile Optimization", "description": "GBP optimization for local search visibility" } },
-    55|      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Google Local Service Ads Management", "description": "LSA setup, verification, and ongoing optimization" } }
-    56|    ]
-    57|  }
-    58|}
-    59|</script>
-    60|<link rel="preconnect" href="https://fonts.googleapis.com">
-    61|<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    62|<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    63|<style>
-    64|/* ═══════════════════════════════════════════
-    65|   DESIGN TOKENS
-    66|   ═══════════════════════════════════════════ */
-    67|:root {
-    68|  --bg-deep: #0B0E14;
-    69|  --bg-building: #111827;
-    70|  --bg-room: #1F2937;
-    71|  --bg-room-active: #263044;
-    72|  --border-room: #374151;
-    73|  --border-subtle: #1F2937;
-    74|  --accent-blue: #3B82F6;
-    75|  --accent-purple: #8B5CF6;
-    76|  --accent-green: #10B981;
-    77|  --accent-amber: #F59E0B;
-    78|  --accent-red: #EF4444;
-    79|  --accent-cyan: #06B6D4;
-    80|  --text-primary: #F9FAFB;
-    81|  --text-secondary: #9CA3AF;
-    82|  --text-dim: #6B7280;
-    83|  --glass-bg: rgba(17, 24, 39, 0.6);
-    84|  --glass-border: rgba(255, 255, 255, 0.08);
-    85|  --glass-highlight: rgba(255, 255, 255, 0.04);
-    86|  --shadow-lg: 0 20px 60px rgba(0,0,0,0.5);
-    87|  --shadow-glow-blue: 0 0 40px rgba(59,130,246,0.15);
-    88|  --shadow-glow-purple: 0 0 40px rgba(139,92,246,0.15);
-    89|  --shadow-glow-green: 0 0 40px rgba(16,185,129,0.15);
-    90|  --radius-sm: 8px;
-    91|  --radius-md: 12px;
-    92|  --radius-lg: 20px;
-    93|  --radius-xl: 24px;
-    94|  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-    95|  --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-    96|  --transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
-    97|}
-    98|
-    99|/* ═══════════════════════════════════════════
-   100|   RESET & BASE
-   101|   ═══════════════════════════════════════════ */
-   102|*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-   103|html { scroll-behavior: smooth; }
-   104|body {
-   105|  background: var(--bg-deep);
-   106|  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-   107|  color: var(--text-primary);
-   108|  overflow-x: hidden;
-   109|  -webkit-font-smoothing: antialiased;
-   110|  -moz-osx-font-smoothing: grayscale;
-   111|}
-   112|a { color: inherit; text-decoration: none; }
-   113|button { font-family: inherit; cursor: pointer; border: none; background: none; }
-   114|
-   115|/* ═══════════════════════════════════════════
-   116|   PARTICLE CANVAS (behind everything)
-   117|   ═══════════════════════════════════════════ */
-   118|#particle-bg {
-   119|  position: fixed;
-   120|  top: 0; left: 0;
-   121|  width: 100%; height: 100%;
-   122|  z-index: 0;
-   123|  pointer-events: none;
-   124|}
-   125|
-   126|/* ═══════════════════════════════════════════
-   127|   NAVIGATION / HUD BAR
-   128|   ═══════════════════════════════════════════ */
-   129|#hud {
-   130|  position: fixed; top: 0; left: 0; right: 0;
-   131|  height: 56px; z-index: 1000;
-   132|  background: rgba(11, 14, 20, 0.85);
-   133|  backdrop-filter: blur(20px) saturate(180%);
-   134|  -webkit-backdrop-filter: blur(20px) saturate(180%);
-   135|  border-bottom: 1px solid var(--glass-border);
-   136|  display: flex; align-items: center; justify-content: space-between;
-   137|  padding: 0 24px;
-   138|  user-select: none;
-   139|  transition: background var(--transition-smooth);
-   140|}
-   141|#hud .left { display: flex; align-items: center; gap: 12px; }
-   142|#hud .logo {
-   143|  font-size: 15px; font-weight: 800;
-   144|  letter-spacing: 0.12em;
-   145|  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-   146|  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-   147|  background-clip: text;
-   148|}
-   149|#hud .status-pill {
-   150|  display: flex; align-items: center; gap: 6px;
-   151|  padding: 4px 12px; border-radius: 100px;
-   152|  background: rgba(16, 185, 129, 0.1);
-   153|  border: 1px solid rgba(16, 185, 129, 0.2);
-   154|  font-size: 11px; font-weight: 600;
-   155|  color: var(--accent-green);
-   156|  text-transform: uppercase; letter-spacing: 0.05em;
-   157|}
-   158|#hud .status-pill .dot {
-   159|  width: 6px; height: 6px; border-radius: 50%;
-   160|  background: var(--accent-green);
-   161|  box-shadow: 0 0 8px var(--accent-green);
-   162|  animation: pulse-dot 2s ease-in-out infinite;
-   163|}
-   164|@keyframes pulse-dot {
-   165|  0%, 100% { opacity: 1; transform: scale(1); }
-   166|  50% { opacity: 0.6; transform: scale(0.8); }
-   167|}
-   168|#hud .center { display: flex; gap: 28px; }
-   169|.stat-block { text-align: center; }
-   170|.stat-block .label {
-   171|  font-size: 9px; text-transform: uppercase;
-   172|  letter-spacing: 0.08em; color: var(--text-dim);
-   173|  font-weight: 600; margin-bottom: 2px;
-   174|}
-   175|.stat-block .value {
-   176|  font-size: 18px; font-weight: 700;
-   177|  color: var(--text-primary);
-   178|  font-variant-numeric: tabular-nums;
-   179|}
-   180|.stat-block .value.error { color: var(--accent-red); }
-   181|.stat-block .value.success { color: var(--accent-green); }
-   182|#hud .right { display: flex; align-items: center; gap: 16px; }
-   183|#sparkline-container {
-   184|  width: 100px; height: 32px;
-   185|  background: rgba(255,255,255,0.03);
-   186|  border-radius: var(--radius-sm);
-   187|  overflow: hidden;
-   188|  border: 1px solid var(--glass-border);
-   189|}
-   190|#sparkline { width: 100%; height: 100%; }
-   191|.uptime-display {
-   192|  font-size: 11px; color: var(--text-dim);
-   193|  font-weight: 500; font-variant-numeric: tabular-nums;
-   194|}
-   195|#hud .nav-links { display: flex; gap: 20px; }
-   196|#hud .nav-links a {
-   197|  font-size: 13px; font-weight: 500;
-   198|  color: var(--text-secondary);
-   199|  transition: color var(--transition-fast);
-   200|  position: relative;
-   201|}
-   202|#hud .nav-links a:hover { color: var(--text-primary); }
-   203|#hud .nav-links a::after {
-   204|  content: ''; position: absolute;
-   205|  bottom: -4px; left: 0; right: 0; height: 2px;
-   206|  background: var(--accent-blue);
-   207|  border-radius: 1px;
-   208|  transform: scaleX(0); transition: transform var(--transition-smooth);
-   209|}
-   210|#hud .nav-links a:hover::after { transform: scaleX(1); }
-   211|
-   212|/* ═══════════════════════════════════════════
-   213|   HERO SECTION
-   214|   ═══════════════════════════════════════════ */
-   215|#hero {
-   216|  position: relative; z-index: 1;
-   217|  min-height: 100vh;
-   218|  display: flex; flex-direction: column;
-   219|  align-items: center; justify-content: center;
-   220|  text-align: center;
-   221|  padding: 120px 24px 80px;
-   222|}
-   223|#hero .badge {
-   224|  display: inline-flex; align-items: center; gap: 8px;
-   225|  padding: 6px 16px; border-radius: 100px;
-   226|  background: rgba(59, 130, 246, 0.08);
-   227|  border: 1px solid rgba(59, 130, 246, 0.2);
-   228|  font-size: 12px; font-weight: 600;
-   229|  color: var(--accent-blue);
-   230|  text-transform: uppercase; letter-spacing: 0.06em;
-   231|  margin-bottom: 32px;
-   232|  animation: fadeInUp 0.8s ease-out;
-   233|}
-   234|#hero .badge .emoji { font-size: 14px; }
-   235|#hero h1 {
-   236|  font-size: clamp(40px, 6vw, 72px);
-   237|  font-weight: 900;
-   238|  line-height: 1.05;
-   239|  letter-spacing: -0.03em;
-   240|  margin-bottom: 20px;
-   241|  animation: fadeInUp 0.8s ease-out 0.1s both;
-   242|}
-   243|#hero h1 .gradient {
-   244|  background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 50%, var(--accent-cyan) 100%);
-   245|  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-   246|  background-clip: text;
-   247|}
-   248|#hero .tagline {
-   249|  font-size: clamp(16px, 2vw, 20px);
-   250|  color: var(--text-secondary);
-   251|  max-width: 560px;
-   252|  line-height: 1.6;
-   253|  font-weight: 400;
-   254|  margin-bottom: 48px;
-   255|  animation: fadeInUp 0.8s ease-out 0.2s both;
-   256|}
-   257|#hero .cta-group {
-   258|  display: flex; gap: 16px;
-   259|  flex-wrap: wrap; justify-content: center;
-   260|  animation: fadeInUp 0.8s ease-out 0.3s both;
-   261|}
-   262|.btn-primary {
-   263|  display: inline-flex; align-items: center; gap: 8px;
-   264|  padding: 14px 32px; border-radius: 12px;
-   265|  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-   266|  color: white; font-size: 15px; font-weight: 600;
-   267|  transition: all var(--transition-smooth);
-   268|  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
-   269|}
-   270|.btn-primary:hover {
-   271|  transform: translateY(-2px);
-   272|  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4);
-   273|}
-   274|.btn-secondary {
-   275|  display: inline-flex; align-items: center; gap: 8px;
-   276|  padding: 14px 32px; border-radius: 12px;
-   277|  background: var(--glass-bg);
-   278|  border: 1px solid var(--glass-border);
-   279|  color: var(--text-primary); font-size: 15px; font-weight: 500;
-   280|  transition: all var(--transition-smooth);
-   281|  backdrop-filter: blur(10px);
-   282|}
-   283|.btn-secondary:hover {
-   284|  background: rgba(255,255,255,0.08);
-   285|  transform: translateY(-2px);
-   286|}
-   287|.scroll-indicator {
-   288|  position: absolute; bottom: 32px;
-   289|  display: flex; flex-direction: column;
-   290|  align-items: center; gap: 8px;
-   291|  color: var(--text-dim);
-   292|  font-size: 11px; font-weight: 500;
-   293|  letter-spacing: 0.08em; text-transform: uppercase;
-   294|  animation: fadeInUp 0.8s ease-out 0.5s both;
-   295|}
-   296|.scroll-indicator .chevron {
-   297|  width: 24px; height: 24px;
-   298|  border-right: 2px solid var(--text-dim);
-   299|  border-bottom: 2px solid var(--text-dim);
-   300|  transform: rotate(45deg);
-   301|  animation: bounce-down 2s ease-in-out infinite;
-   302|}
-   303|@keyframes bounce-down {
-   304|  0%, 100% { transform: rotate(45deg) translate(0, 0); opacity: 0.5; }
-   305|  50% { transform: rotate(45deg) translate(4px, 4px); opacity: 1; }
-   306|}
-   307|@keyframes fadeInUp {
-   308|  from { opacity: 0; transform: translateY(24px); }
-   309|  to { opacity: 1; transform: translateY(0); }
-   310|}
-   311|
-   312|/* ═══════════════════════════════════════════
-   313|   HQ SECTION (Canvas + Sidebar)
-   314|   ═══════════════════════════════════════════ */
-   315|#hq-section {
-   316|  position: relative; z-index: 1;
-   317|  width: 100%; height: 100vh;
-   318|  display: flex;
-   319|}
-   320|#hq-canvas-wrap {
-   321|  flex: 1;
-   322|  position: relative;
-   323|  overflow: hidden;
-   324|}
-   325|#hq-canvas {
-   326|  display: block;
-   327|  width: 100%; height: 100%;
-   328|}
-   329|
-   330|/* Bot Tooltip */
-   331|#bot-tooltip {
-   332|  position: fixed; z-index: 2000;
-   333|  background: rgba(11, 14, 20, 0.95);
-   334|  backdrop-filter: blur(20px);
-   335|  border: 1px solid var(--glass-border);
-   336|  border-radius: var(--radius-md);
-   337|  padding: 16px;
-   338|  min-width: 220px;
-   339|  pointer-events: none;
-   340|  opacity: 0;
-   341|  transform: translateY(8px);
-   342|  transition: opacity var(--transition-fast), transform var(--transition-fast);
-   343|  box-shadow: var(--shadow-lg);
-   344|}
-   345|#bot-tooltip.visible { opacity: 1; transform: translateY(0); }
-   346|#bot-tooltip .tt-header {
-   347|  display: flex; align-items: center; gap: 10px;
-   348|  margin-bottom: 12px; padding-bottom: 10px;
-   349|  border-bottom: 1px solid var(--glass-border);
-   350|}
-   351|#bot-tooltip .tt-avatar {
-   352|  width: 36px; height: 36px; border-radius: 50%;
-   353|  display: flex; align-items: center; justify-content: center;
-   354|  font-size: 13px; font-weight: 700; color: white;
-   355|}
-   356|#bot-tooltip .tt-name { font-size: 14px; font-weight: 700; }
-   357|#bot-tooltip .tt-role { font-size: 11px; color: var(--text-dim); }
-   358|#bot-tooltip .tt-stat {
-   359|  display: flex; justify-content: space-between;
-   360|  font-size: 12px; margin-bottom: 6px;
-   361|}
-   362|#bot-tooltip .tt-stat .tt-label { color: var(--text-dim); }
-   363|#bot-tooltip .tt-stat .tt-val { font-weight: 600; font-variant-numeric: tabular-nums; }
-   364|
-   365|/* Activity Sidebar */
-   366|#activity-sidebar {
-   367|  width: 320px;
-   368|  background: rgba(11, 14, 20, 0.7);
-   369|  backdrop-filter: blur(16px);
-   370|  border-left: 1px solid var(--glass-border);
-   371|  display: flex; flex-direction: column;
-   372|  overflow: hidden;
-   373|}
-   374|#activity-sidebar .sidebar-header {
-   375|  padding: 16px 20px;
-   376|  border-bottom: 1px solid var(--glass-border);
-   377|  font-size: 12px; font-weight: 700;
-   378|  text-transform: uppercase; letter-spacing: 0.08em;
-   379|  color: var(--text-dim);
-   380|  display: flex; align-items: center; gap: 8px;
-   381|}
-   382|#activity-sidebar .sidebar-header .live-dot {
-   383|  width: 6px; height: 6px; border-radius: 50%;
-   384|  background: var(--accent-red);
-   385|  animation: pulse-dot 1.5s ease-in-out infinite;
-   386|}
-   387|#activity-feed {
-   388|  flex: 1; overflow-y: auto;
-   389|  padding: 8px 0;
-   390|  scrollbar-width: thin;
-   391|  scrollbar-color: var(--border-room) transparent;
-   392|}
-   393|#activity-feed::-webkit-scrollbar { width: 4px; }
-   394|#activity-feed::-webkit-scrollbar-track { background: transparent; }
-   395|#activity-feed::-webkit-scrollbar-thumb { background: var(--border-room); border-radius: 2px; }
-   396|.feed-item {
-   397|  padding: 10px 20px;
-   398|  border-bottom: 1px solid rgba(255,255,255,0.03);
-   399|  animation: slideInRight 0.3s ease-out;
-   400|  transition: background var(--transition-fast);
-   401|}
-   402|.feed-item:hover { background: rgba(255,255,255,0.02); }
-   403|.feed-item .feed-time {
-   404|  font-size: 11px; color: var(--text-dim);
-   405|  font-variant-numeric: tabular-nums;
-   406|  margin-bottom: 3px;
-   407|}
-   408|.feed-item .feed-msg {
-   409|  font-size: 13px; color: var(--text-secondary);
-   410|  line-height: 1.5;
-   411|  display: flex; align-items: center; gap: 8px;
-   412|}
-   413|.feed-item .feed-msg .feed-dot {
-   414|  width: 8px; height: 8px; border-radius: 50%;
-   415|  flex-shrink: 0; display: inline-block;
-   416|}
-   417|.feed-item .feed-msg .bot-name { font-weight: 600; }
-   418|@keyframes slideInRight {
-   419|  from { opacity: 0; transform: translateX(20px); }
-   420|  to { opacity: 1; transform: translateX(0); }
-   421|}
-   422|
-   423|/* Bot status section in sidebar */
-   424|#bot-status-panel {
-   425|  border-top: 1px solid var(--glass-border);
-   426|  padding: 12px 16px;
-   427|}
-   428|#bot-status-panel .panel-title {
-   429|  font-size: 10px; font-weight: 700;
-   430|  text-transform: uppercase; letter-spacing: 0.08em;
-   431|  color: var(--text-dim); margin-bottom: 10px;
-   432|}
-   433|.bot-status-row {
-   434|  display: flex; align-items: center; gap: 8px;
-   435|  padding: 5px 0;
-   436|}
-   437|.bot-status-dot {
-   438|  width: 8px; height: 8px; border-radius: 50%;
-   439|  flex-shrink: 0;
-   440|}
-   441|.bot-status-name { font-size: 11px; font-weight: 600; flex: 1; }
-   442|.bot-status-task {
-   443|  font-size: 10px; color: var(--text-dim);
-   444|  max-width: 120px;
-   445|  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-   446|}
-   447|
-   448|/* ═══════════════════════════════════════════
-   449|   SERVICES SECTION
-   450|   ═══════════════════════════════════════════ */
-   451|#services {
-   452|  position: relative; z-index: 1;
-   453|  padding: 120px 24px;
-   454|  max-width: 1200px; margin: 0 auto;
-   455|}
-   456|.section-label {
-   457|  font-size: 12px; font-weight: 700;
-   458|  text-transform: uppercase; letter-spacing: 0.1em;
-   459|  color: var(--accent-blue);
-   460|  margin-bottom: 12px; text-align: center;
-   461|}
-   462|.section-title {
-   463|  font-size: clamp(28px, 4vw, 44px);
-   464|  font-weight: 800; text-align: center;
-   465|  letter-spacing: -0.02em;
-   466|  margin-bottom: 16px;
-   467|}
-   468|.section-subtitle {
-   469|  font-size: 16px; color: var(--text-secondary);
-   470|  text-align: center; max-width: 560px;
-   471|  margin: 0 auto 64px; line-height: 1.6;
-   472|}
-   473|.services-grid {
-   474|  display: grid;
-   475|  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-   476|  gap: 24px;
-   477|}
-   478|.service-card {
-   479|  background: var(--glass-bg);
-   480|  border: 1px solid var(--glass-border);
-   481|  border-radius: var(--radius-lg);
-   482|  padding: 32px 28px;
-   483|  position: relative;
-   484|  overflow: hidden;
-   485|  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-   486|  transform-style: preserve-3d;
-   487|  perspective: 1000px;
-   488|}
-   489|
-   490|.service-card:hover {
-   491|  border-color: rgba(59, 130, 246, 0.3);
-   492|  box-shadow: var(--shadow-glow-blue), 0 8px 40px rgba(59, 130, 246, 0.15);
-   493|}
-   494|
-   495|/* Icon gradient border on hover */
-   496|.service-card::before {
-   497|  content: ''; display: none; /* Removed top line gradient */
-   498|}
-   499|
-   500|.service-card:hover::after {
-   501|
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moliam — AI Operations HQ</title>
+<meta name="description" content="Moliam: AI-Powered Operations for Modern Agencies. Website builds, GBP optimization, Google LSA management for Orange County contractors.">
+<meta name="author" content="Moliam">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#0B0E14">
+<link rel="canonical" href="https://moliam.pages.dev">
+<!-- Open Graph -->
+<meta property="og:title" content="Moliam — AI Operations HQ">
+<meta property="og:description" content="AI-Powered Operations for Modern Agencies. Website builds, GBP optimization, Google LSA management for Orange County contractors.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://moliam.pages.dev">
+<meta property="og:image" content="https://moliam.pages.dev/og-image.png">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Moliam — AI Operations HQ">
+<meta name="twitter:description" content="AI-Powered Operations for Modern Agencies. Website builds, GBP optimization, Google LSA management for Orange County contractors.">
+<!-- Icon links for browsers and mobile -->
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" size="180x180">
+<!-- Sitemap reference -->
+<link rel="sitemap" type="application/xml" href="/sitemap.xml">
+<!-- Open Graph image dimensions for proper social previews -->
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<!-- JSON-LD Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "Moliam",
+  "description": "AI-Powered Operations for Modern Agencies. Website builds, GBP optimization, Google LSA management for Orange County contractors.",
+  "url": "https://moliam.pages.dev",
+  "image": "https://moliam.pages.dev/og-image.png",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Orange County",
+    "addressRegion": "CA",
+    "addressCountry": "US"
+  },
+  "areaServed": {
+    "@type": "Place",
+    "name": "Orange County, CA"
+  },
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Services",
+    "itemListElement": [
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Website Development", "description": "AI-powered custom website builds in under 72 hours" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Google Business Profile Optimization", "description": "GBP optimization for local search visibility" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Google Local Service Ads Management", "description": "LSA setup, verification, and ongoing optimization" } }
+    ]
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS
+   ═══════════════════════════════════════════ */
+:root {
+  --bg-deep: #0B0E14;
+  --bg-building: #111827;
+  --bg-room: #1F2937;
+  --bg-room-active: #263044;
+  --border-room: #374151;
+  --border-subtle: #1F2937;
+  --accent-blue: #3B82F6;
+  --accent-purple: #8B5CF6;
+  --accent-green: #10B981;
+  --accent-amber: #F59E0B;
+  --accent-red: #EF4444;
+  --accent-cyan: #06B6D4;
+  --text-primary: #F9FAFB;
+  --text-secondary: #9CA3AF;
+  --text-dim: #6B7280;
+  --glass-bg: rgba(17, 24, 39, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.04);
+  --shadow-lg: 0 20px 60px rgba(0,0,0,0.5);
+  --shadow-glow-blue: 0 0 40px rgba(59,130,246,0.15);
+  --shadow-glow-purple: 0 0 40px rgba(139,92,246,0.15);
+  --shadow-glow-green: 0 0 40px rgba(16,185,129,0.15);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ═══════════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg-deep);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--text-primary);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+/* ═══════════════════════════════════════════
+   PARTICLE CANVAS (behind everything)
+   ═══════════════════════════════════════════ */
+#particle-bg {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════
+   NAVIGATION / HUD BAR
+   ═══════════════════════════════════════════ */
+#hud {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 56px; z-index: 1000;
+  background: rgba(11, 14, 20, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--glass-border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+  user-select: none;
+  transition: background var(--transition-smooth);
+}
+#hud .left { display: flex; align-items: center; gap: 12px; }
+#hud .logo {
+  font-size: 15px; font-weight: 800;
+  letter-spacing: 0.12em;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+#hud .status-pill {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: 100px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  font-size: 11px; font-weight: 600;
+  color: var(--accent-green);
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+#hud .status-pill .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent-green);
+  box-shadow: 0 0 8px var(--accent-green);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.8); }
+}
+#hud .center { display: flex; gap: 28px; }
+.stat-block { text-align: center; }
+.stat-block .label {
+  font-size: 9px; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-dim);
+  font-weight: 600; margin-bottom: 2px;
+}
+.stat-block .value {
+  font-size: 18px; font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.stat-block .value.error { color: var(--accent-red); }
+.stat-block .value.success { color: var(--accent-green); }
+#hud .right { display: flex; align-items: center; gap: 16px; }
+#sparkline-container {
+  width: 100px; height: 32px;
+  background: rgba(255,255,255,0.03);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+}
+#sparkline { width: 100%; height: 100%; }
+.uptime-display {
+  font-size: 11px; color: var(--text-dim);
+  font-weight: 500; font-variant-numeric: tabular-nums;
+}
+#hud .nav-links { display: flex; gap: 20px; }
+#hud .nav-links a {
+  font-size: 13px; font-weight: 500;
+  color: var(--text-secondary);
+  transition: color var(--transition-fast);
+  position: relative;
+}
+#hud .nav-links a:hover { color: var(--text-primary); }
+#hud .nav-links a::after {
+  content: ''; position: absolute;
+  bottom: -4px; left: 0; right: 0; height: 2px;
+  background: var(--accent-blue);
+  border-radius: 1px;
+  transform: scaleX(0); transition: transform var(--transition-smooth);
+}
+#hud .nav-links a:hover::after { transform: scaleX(1); }
+
+/* ═══════════════════════════════════════════
+   HERO SECTION
+   ═══════════════════════════════════════════ */
+#hero {
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 120px 24px 80px;
+}
+#hero .badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 16px; border-radius: 100px;
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  font-size: 12px; font-weight: 600;
+  color: var(--accent-blue);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 32px;
+  animation: fadeInUp 0.8s ease-out;
+}
+#hero .badge .emoji { font-size: 14px; }
+#hero h1 {
+  font-size: clamp(40px, 6vw, 72px);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin-bottom: 20px;
+  animation: fadeInUp 0.8s ease-out 0.1s both;
+}
+#hero h1 .gradient {
+  background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 50%, var(--accent-cyan) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+#hero .tagline {
+  font-size: clamp(16px, 2vw, 20px);
+  color: var(--text-secondary);
+  max-width: 560px;
+  line-height: 1.6;
+  font-weight: 400;
+  margin-bottom: 48px;
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+#hero .cta-group {
+  display: flex; gap: 16px;
+  flex-wrap: wrap; justify-content: center;
+  animation: fadeInUp 0.8s ease-out 0.3s both;
+}
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 32px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  color: white; font-size: 15px; font-weight: 600;
+  transition: all var(--transition-smooth);
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4);
+}
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 32px; border-radius: 12px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary); font-size: 15px; font-weight: 500;
+  transition: all var(--transition-smooth);
+  backdrop-filter: blur(10px);
+}
+.btn-secondary:hover {
+  background: rgba(255,255,255,0.08);
+  transform: translateY(-2px);
+}
+.scroll-indicator {
+  position: absolute; bottom: 32px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 8px;
+  color: var(--text-dim);
+  font-size: 11px; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  animation: fadeInUp 0.8s ease-out 0.5s both;
+}
+.scroll-indicator .chevron {
+  width: 24px; height: 24px;
+  border-right: 2px solid var(--text-dim);
+  border-bottom: 2px solid var(--text-dim);
+  transform: rotate(45deg);
+  animation: bounce-down 2s ease-in-out infinite;
+}
+@keyframes bounce-down {
+  0%, 100% { transform: rotate(45deg) translate(0, 0); opacity: 0.5; }
+  50% { transform: rotate(45deg) translate(4px, 4px); opacity: 1; }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════
+   HQ SECTION (Canvas + Sidebar)
+   ═══════════════════════════════════════════ */
+#hq-section {
+  position: relative; z-index: 1;
+  width: 100%; height: 100vh;
+  display: flex;
+}
+#hq-canvas-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+#hq-canvas {
+  display: block;
+  width: 100%; height: 100%;
+}
+
+/* Bot Tooltip */
+#bot-tooltip {
+  position: fixed; z-index: 2000;
+  background: rgba(11, 14, 20, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  min-width: 220px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  box-shadow: var(--shadow-lg);
+}
+#bot-tooltip.visible { opacity: 1; transform: translateY(0); }
+#bot-tooltip .tt-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 12px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--glass-border);
+}
+#bot-tooltip .tt-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: white;
+}
+#bot-tooltip .tt-name { font-size: 14px; font-weight: 700; }
+#bot-tooltip .tt-role { font-size: 11px; color: var(--text-dim); }
+#bot-tooltip .tt-stat {
+  display: flex; justify-content: space-between;
+  font-size: 12px; margin-bottom: 6px;
+}
+#bot-tooltip .tt-stat .tt-label { color: var(--text-dim); }
+#bot-tooltip .tt-stat .tt-val { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Activity Sidebar */
+#activity-sidebar {
+  width: 320px;
+  background: rgba(11, 14, 20, 0.7);
+  backdrop-filter: blur(16px);
+  border-left: 1px solid var(--glass-border);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+#activity-sidebar .sidebar-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--glass-border);
+  font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-dim);
+  display: flex; align-items: center; gap: 8px;
+}
+#activity-sidebar .sidebar-header .live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent-red);
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+#activity-feed {
+  flex: 1; overflow-y: auto;
+  padding: 8px 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-room) transparent;
+}
+#activity-feed::-webkit-scrollbar { width: 4px; }
+#activity-feed::-webkit-scrollbar-track { background: transparent; }
+#activity-feed::-webkit-scrollbar-thumb { background: var(--border-room); border-radius: 2px; }
+.feed-item {
+  padding: 10px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  animation: slideInRight 0.3s ease-out;
+  transition: background var(--transition-fast);
+}
+.feed-item:hover { background: rgba(255,255,255,0.02); }
+.feed-item .feed-time {
+  font-size: 11px; color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 3px;
+}
+.feed-item .feed-msg {
+  font-size: 13px; color: var(--text-secondary);
+  line-height: 1.5;
+  display: flex; align-items: center; gap: 8px;
+}
+.feed-item .feed-msg .feed-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  flex-shrink: 0; display: inline-block;
+}
+.feed-item .feed-msg .bot-name { font-weight: 600; }
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Bot status section in sidebar */
+#bot-status-panel {
+  border-top: 1px solid var(--glass-border);
+  padding: 12px 16px;
+}
+#bot-status-panel .panel-title {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-dim); margin-bottom: 10px;
+}
+.bot-status-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 0;
+}
+.bot-status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.bot-status-name { font-size: 11px; font-weight: 600; flex: 1; }
+.bot-status-task {
+  font-size: 10px; color: var(--text-dim);
+  max-width: 120px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ═══════════════════════════════════════════
+   SERVICES SECTION
+   ═══════════════════════════════════════════ */
+#services {
+  position: relative; z-index: 1;
+  padding: 120px 24px;
+  max-width: 1200px; margin: 0 auto;
+}
+.section-label {
+  font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--accent-blue);
+  margin-bottom: 12px; text-align: center;
+}
+.section-title {
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 800; text-align: center;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+.section-subtitle {
+  font-size: 16px; color: var(--text-secondary);
+  text-align: center; max-width: 560px;
+  margin: 0 auto 64px; line-height: 1.6;
+}
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+}
+.service-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.service-card:hover {
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: var(--shadow-glow-blue), 0 8px 40px rgba(59, 130, 246, 0.15);
+}
+
+/* Icon gradient border on hover */
+.service-card::before {
+  content: ''; display: none; /* Removed top line gradient */
+}
+
+.service-card:hover::after {
+  content: ''; position: absolute; inset: -2px;
+  background: radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(59,130,246,0.15), transparent 45%);
+  z-index: -1; pointer-events:none; opacity: 1;
+}
+
+/* Price gradient text */
+.service-card .card-price {
+  font-size: 28px; font-weight: 800;
+  margin-bottom: 4px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; text-fill-color: transparent;
+}
+
+.service-card:hover::before { opacity: 1; }
+.service-card .card-icon {
+  width: 48px; height: 48px;
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+.service-card h3 {
+  font-size: 18px; font-weight: 700;
+  margin-bottom: 8px;
+}
+.service-card .card-desc {
+  font-size: 14px; color: var(--text-secondary);
+  line-height: 1.6; margin-bottom: 20px;
+}
+.service-card .card-price {
+  font-size: 28px; font-weight: 800;
+  margin-bottom: 4px;
+}
+.service-card .card-price .period {
+  font-size: 14px; font-weight: 500;
+  color: var(--text-dim);
+}
+.service-card .card-price .starts {
+  font-size: 12px; font-weight: 500;
+  color: var(--text-dim); display: block;
+}
+.service-card .card-features {
+  list-style: none; padding: 0; margin: 0 0 20px 0;
+}
+.service-card .card-features li {
+  font-size: 13px; color: var(--text-dim);
+  line-height: 1.8;
+  padding-left: 16px;
+  position: relative;
+}
+.service-card .card-features li::before {
+  content: '';
+  position: absolute; left: 0; top: 10px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent-blue);
+}
+.service-card:nth-child(2) .card-features li::before { background: var(--accent-green); }
+.service-card:nth-child(3) .card-features li::before { background: var(--accent-amber); }
+.service-card:nth-child(4) .card-features li::before { background: var(--accent-purple); }
+
+/* ═══════════════════════════════════════════
+   TESTIMONIALS SECTION
+   ═══════════════════════════════════════════ */
+#testimonials {
+  position: relative; z-index: 1;
+  padding: 120px 24px;
+  max-width: 1100px; margin: 0 auto;
+  text-align: center;
+}
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-top: 48px;
+  text-align: left;
+}
+.testimonial-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  transition: all var(--transition-smooth);
+  position: relative;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.testimonial-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg), 0 0 30px rgba(59,130,246,0.12);
+  border-color: rgba(99,102,241,0.3);
+}
+.testimonial-card.accent-blue:hover { box-shadow: var(--shadow-lg), 0 0 30px rgba(59,130,246,0.15); }
+.testimonial-card.accent-purple:hover { box-shadow: var(--shadow-lg), 0 0 30px rgba(139,92,246,0.15); }
+.testimonial-card.accent-green:hover { box-shadow: var(--shadow-lg), 0 0 30px rgba(16,185,129,0.15); }
+.testimonial-card::before {
+  content: '\201C';
+  position: absolute;
+  top: 16px; left: 20px;
+  font-size: 48px;
+  line-height: 1;
+  color: var(--accent-blue);
+  opacity: 0.25;
+  font-family: Georgia, serif;
+  pointer-events: none;
+}
+.testimonial-card.accent-purple::before { color: var(--accent-purple); }
+.testimonial-card.accent-green::before { color: var(--accent-green); }
+.testimonial-card.accent-blue { border-left: 3px solid var(--accent-blue); }
+.testimonial-card.accent-purple { border-left: 3px solid var(--accent-purple); }
+.testimonial-card.accent-green { border-left: 3px solid var(--accent-green); }
+.testimonial-card .stars {
+  font-size: 18px; color: #F59E0B;
+  margin-bottom: 16px; letter-spacing: 3px;
+  text-shadow: 0 0 8px rgba(245,158,11,0.3);
+}
+.testimonial-card .quote {
+  font-size: 14px; color: var(--text-secondary);
+  line-height: 1.7; font-style: italic;
+  margin-bottom: 20px;
+}
+.testimonial-card .author {
+  font-size: 14px; font-weight: 600;
+  color: var(--text-primary);
+}
+.testimonial-card .company {
+  font-size: 12px; color: var(--text-dim);
+  margin-top: 2px;
+}
+
+/* ═══════════════════════════════════════════
+   CONTACT SECTION
+   ═══════════════════════════════════════════ */
+#contact {
+  position: relative; z-index: 1;
+  padding: 120px 24px;
+  max-width: 640px; margin: 0 auto;
+}
+.contact-form {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 40px;
+  backdrop-filter: blur(16px);
+}
+.form-group { margin-bottom: 20px; }
+.form-group label {
+  display: block; font-size: 13px;
+  font-weight: 600; color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%; padding: 12px 16px;
+  background: rgba(10, 10, 20, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: inherit; font-size: 14px;
+  transition: all var(--transition-fast);
+  outline: none;
+}
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15), 0 0 20px rgba(59, 130, 246, 0.1);
+}
+.form-group textarea { resize: vertical; min-height: 100px; }
+.form-group select option { background: var(--bg-deep); }
+.form-submit {
+  width: 100%; padding: 14px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  color: white; font-size: 15px; font-weight: 600;
+  transition: all var(--transition-smooth);
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.25);
+}
+.form-submit:hover {
+  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.35);
+  transform: scale(1.03);
+}
+.form-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+#form-status {
+  margin-top: 12px; font-size: 13px;
+  text-align: center; min-height: 20px;
+}
+
+/* ═══════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════ */
+#footer {
+  position: relative; z-index: 1;
+  border-top: 2px solid transparent;
+  border-image: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), transparent) 1;
+  padding: 48px 24px;
+}
+.footer-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap; gap: 24px;
+}
+.footer-brand {
+  font-size: 14px; font-weight: 800;
+  letter-spacing: 0.1em;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.footer-copy { font-size: 13px; color: var(--text-dim); }
+.footer-ai {
+  font-size: 12px; color: var(--accent-blue); letter-spacing: 0.05em;
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.4), 0 0 30px rgba(59, 130, 246, 0.15);
+}
+.footer-links { display: flex; gap: 20px; }
+.footer-links a {
+  font-size: 13px; color: var(--text-dim);
+  transition: color var(--transition-fast);
+}
+.footer-links a:hover { color: var(--text-primary); }
+
+/* ═══════════════════════════════════════════
+   SCROLL REVEAL ANIMATIONS
+   ═══════════════════════════════════════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ═══════════════════════════════════════════
+   HAMBURGER MENU
+   ═══════════════════════════════════════════ */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 36px; height: 36px;
+  cursor: pointer;
+  z-index: 1100;
+  background: none; border: none;
+  padding: 0;
+}
+.hamburger span {
+  display: block;
+  width: 22px; height: 2px;
+  background: var(--text-primary);
+  border-radius: 2px;
+  transition: all var(--transition-smooth);
+  position: relative;
+}
+.hamburger span:nth-child(1) { margin-bottom: 5px; }
+.hamburger span:nth-child(3) { margin-top: 5px; }
+.hamburger.open span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+.hamburger.open span:nth-child(2) {
+  opacity: 0; transform: scaleX(0);
+}
+.hamburger.open span:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* Mobile menu overlay */
+.mobile-menu-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 1050;
+  background: rgba(11, 14, 20, 0.92);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  opacity: 0;
+  transition: opacity var(--transition-smooth);
+}
+.mobile-menu-overlay.open {
+  display: flex;
+  opacity: 1;
+}
+.mobile-menu-overlay a {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 20px 40px;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+  position: relative;
+  letter-spacing: -0.01em;
+}
+.mobile-menu-overlay a:hover,
+.mobile-menu-overlay a:focus {
+  color: var(--text-primary);
+  transform: translateX(4px);
+}
+.mobile-menu-overlay a::before {
+  content: '';
+  position: absolute;
+  left: 16px; top: 50%;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--accent-blue);
+  opacity: 0;
+  transform: translateY(-50%);
+  transition: opacity var(--transition-fast);
+}
+.mobile-menu-overlay a:hover::before { opacity: 1; }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .hamburger { display: flex; }
+  #hud .center { display: none; }
+  #hud .nav-links { display: none; }
+  #activity-sidebar { display: none; }
+  #hq-section { height: 70vh; position: relative; }
+  .hq-mobile-note {
+    display: block;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-dim);
+    padding: 8px 16px;
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.15);
+    border-radius: var(--radius-sm);
+    margin: 12px 24px 0;
+  }
+  .contact-form { padding: 24px; }
+  #contact { padding: 80px 16px; max-width: 100%; }
+  #sparkline-container { display: none; }
+  .uptime-display { display: none; }
+  .services-grid { grid-template-columns: 1fr; gap: 20px; }
+  #services { padding: 80px 16px; }
+  .steps-grid { grid-template-columns: 1fr; gap: 24px; }
+  .steps-grid::before { display: none; }
+  #hero { padding: 100px 20px 60px; min-height: auto; }
+  #hero h1 { font-size: clamp(28px, 8vw, 48px); }
+  #hero .tagline { font-size: 15px; }
+  .cta-group { flex-direction: column; gap: 12px; align-items: center; }
+  .footer-inner { flex-direction: column; text-align: center; gap: 16px; }
+  .footer-links { justify-content: center; }
+}
+@media (max-width: 480px) {
+  #hero h1 { font-size: 26px; }
+  #hero .tagline { font-size: 14px; }
+  .section-title { font-size: 24px; }
+  .section-subtitle { font-size: 14px; }
+  .services-grid { grid-template-columns: 1fr; }
+  .service-card { padding: 24px; }
+  .steps-grid { grid-template-columns: 1fr; }
+  .steps-grid::before { display: none; }
+  .contact-form { padding: 16px; }
+  .footer-inner { flex-direction: column; text-align: center; }
+  .footer-links { flex-direction: column; gap: 12px; }
+  #hud { padding: 0 16px; }
+}
+/* Hide mobile note on desktop */
+.hq-mobile-note { display: none; }
+
+
+/* ═══════════════════════════════════════════
+   HOW IT WORKS STEPS
+   ═══════════════════════════════════════════ */
+#how-it-works {
+  position: relative; z-index: 1;
+  padding: 120px 24px;
+  max-width: 1100px; margin: 0 auto;
+  text-align: center;
+}
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 48px;
+  margin-top: 48px;
+  position: relative;
+  text-align: center;
+}
+.step-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 40px 28px 32px;
+  position: relative;
+  transition: all var(--transition-smooth);
+}
+.step-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+.step-card:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -32px;
+  width: 48px;
+  border-top: 2px dashed rgba(139,92,246,0.35);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.step-number {
+  font-size: 48px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 12px;
+  line-height: 1;
+}
+.step-icon {
+  font-size: 28px;
+  display: block;
+  margin-bottom: 16px;
+}
+.step-card h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+.step-card p {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+/* ═══════════════════════════════════════════
+   PORTFOLIO / CASE STUDIES
+   ═══════════════════════════════════════════ */
+#portfolio {
+  padding: 100px 5% 80px;
+  text-align: center;
+}
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 32px;
+  max-width: 1200px;
+  margin: 48px auto 0;
+}
+.case-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 0;
+  text-align: left;
+  transition: transform var(--transition-smooth), box-shadow var(--transition-smooth);
+  overflow: hidden;
+}
+.case-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-lg);
+}
+.case-card--blue  { border-top: 4px solid var(--accent-blue); }
+.case-card--amber { border-top: 4px solid var(--accent-amber); }
+.case-card--green { border-top: 4px solid var(--accent-green); }
+.case-card:hover.case-card--blue  { box-shadow: var(--shadow-glow-blue); }
+.case-card:hover.case-card--amber { box-shadow: 0 0 40px rgba(245,158,11,0.15); }
+.case-card:hover.case-card--green { box-shadow: var(--shadow-glow-green); }
+.case-card-inner {
+  padding: 32px 28px;
+}
+.case-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.case-card--blue  .case-badge { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+.case-card--amber .case-badge { background: rgba(245,158,11,0.15); color: var(--accent-amber); }
+.case-card--green .case-badge { background: rgba(16,185,129,0.15); color: var(--accent-green); }
+.case-client {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.case-title {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+.case-stats {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
+  background: rgba(255,255,255,0.03);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.case-stat {
+  flex: 1;
+  text-align: center;
+  padding: 12px 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+.case-stat:not(:last-child) {
+  border-right: 1px solid var(--glass-border);
+}
+.case-desc {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+.case-stat strong, .case-stat b {
+  font-weight: 800;
+  font-size: 1.1rem;
+  display: block;
+}
+.portfolio-grid .case-card:nth-child(1) { transition-delay: 0s; }
+.portfolio-grid .case-card:nth-child(2) { transition-delay: 0.15s; }
+.portfolio-grid .case-card:nth-child(3) { transition-delay: 0.3s; }
+@media (max-width: 768px) {
+  .portfolio-grid { grid-template-columns: 1fr; gap: 24px; }
+  .case-card-inner { padding: 24px 20px; }
+}
+
+/* ═══════════════════════════════════════════
+   FAQ ACCORDION
+   ═══════════════════════════════════════════ */
+#faq { padding: 100px 5% 80px; max-width: 800px; margin: 0 auto; }
+.faq-accordion { display: flex; flex-direction: column; gap: 12px; margin-top: 48px; }
+.faq-item {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-left: 3px solid transparent;
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  overflow: hidden;
+  transition: border-color var(--transition-smooth), box-shadow var(--transition-smooth), background var(--transition-fast), border-left-color var(--transition-smooth);
+}
+.faq-item:hover { border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.03); }
+.faq-item.active { border-color: var(--accent-blue); border-left-color: var(--accent-blue); box-shadow: var(--shadow-glow-blue); }
+.faq-question {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px; background: none; border: none; cursor: pointer;
+  color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 1rem;
+  font-weight: 500; text-align: left; gap: 16px; transition: color var(--transition-fast);
+}
+.faq-question:hover { color: var(--accent-blue); }
+.faq-chevron {
+  flex-shrink: 0; color: var(--text-dim);
+  display: inline-block; font-size: 1.1rem;
+  transition: transform var(--transition-smooth), color var(--transition-smooth);
+}
+.faq-item.active .faq-chevron { transform: rotate(90deg); color: var(--accent-blue); }
+.faq-answer {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.faq-item.active .faq-answer { max-height: 300px; }
+.faq-answer-inner {
+  padding: 0 24px 20px; color: var(--text-secondary); font-size: 0.95rem;
+  line-height: 1.7; border-top: 1px solid var(--glass-border); padding-top: 16px;
+  margin: 0 24px; padding-left: 0; padding-right: 0;
+}
+@media (max-width: 768px) {
+  #faq { padding: 60px 5% 60px; }
+  .faq-question { padding: 16px 18px; font-size: 0.95rem; }
+  .faq-answer-inner { margin: 0 18px; font-size: 0.9rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- Particle Background -->
+<canvas id="particle-bg"></canvas>
+
+<!-- ═══════════════════════ HUD NAV ═══════════════════════ -->
+<header id="hud">
+  <div class="left">
+    <span class="logo">Moliam</span>
+    <span class="status-pill"><span class="dot"></span> Systems Online</span>
+  </div>
+  <div class="center">
+    <div class="stat-block">
+      <div class="label">Active Agents</div>
+      <div class="value" id="stat-agents">5</div>
+    </div>
+    <div class="stat-block">
+      <div class="label">Tasks Done</div>
+      <div class="value success" id="stat-tasks">0</div>
+    </div>
+    <div class="stat-block">
+      <div class="label">Errors</div>
+      <div class="value error" id="stat-errors">0</div>
+    </div>
+    <div id="sparkline-container">
+      <canvas id="sparkline"></canvas>
+    </div>
+    <div class="uptime-display" id="uptime">00:00:00</div>
+  </div>
+  <div class="right">
+<nav class="nav-links">
+      <a href="#hq-section" aria-label="Open HQ visualization dashboard">HQ</a>
+      <a href="#services" aria-label="View our services">Services</a>
+      <a href="#contact" aria-label="Contact us directly">Contact</a>
+    </nav>
+     <button class="hamburger" id="hamburger-btn" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- Mobile Menu Overlay -->
+<div class="mobile-menu-overlay" id="mobile-menu">
+  <a href="#hq-canvas-wrap" aria-label="Link: ref=\"#hq-canvas-wrap\">Watch AI Work</a>
+<a href="#services" aria-label="View our services">Services</a>
+   <a href="#how-it-works" aria-label="Link: ref=\"#how-it-works\">How It Works</a>
+    <a href="#contact" aria-label="Contact us directly">Contact</a>
+</div>
+
+<!-- ═══════════════════════ HERO ═══════════════════════ -->
+<section id="hero">
+  <div class="badge"><span class="emoji">⚡</span> AI Operations Platform</div>
+  <h1>
+    <span class="gradient">Moliam</span><br>
+    AI-Powered Operations<br>for Modern Agencies
+  </h1>
+  <p class="tagline">
+    Watch our autonomous AI agents build websites, optimize listings, 
+    and manage campaigns — all in real time. Built for Orange County contractors 
+    who want to dominate local search.
+  </p>
+  <div class="cta-group">
+    <a href="https://calendly.com/visualark/demo" class="btn-primary" aria-label="Open HQ visualization dashboard" rel="noopener noreferrer" target="_blank">
+      <span>Watch Our AI Work</span>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a href="#services" class="btn-secondary" aria-label="View our services">View Services</a>
+  </div>
+  <div class="scroll-indicator">
+    <span>Scroll to explore</span>
+    <div class="chevron"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ HQ VISUALIZATION ═══════════════════════ -->
+<section id="hq-section">
+  <div id="hq-canvas-wrap" class="reveal">
+    <canvas id="hq-canvas"></canvas>
+  </div>
+  <p class="hq-mobile-note">📱 Rotate to landscape or use desktop for the best AI visualization experience</p>
+  <aside id="activity-sidebar">
+    <div class="sidebar-header">
+      <span class="live-dot"></span> Live Activity
+    </div>
+    <div id="activity-feed"></div>
+    <div id="bot-status-panel">
+      <div class="panel-title">Agent Status</div>
+      <div id="bot-status-list"></div>
+    </div>
+  </aside>
+</section>
+
+<!-- Bot Tooltip -->
+<div id="bot-tooltip">
+  <div class="tt-header">
+    <div class="tt-avatar" id="tt-avatar"></div>
+    <div>
+      <div class="tt-name" id="tt-name"></div>
+      <div class="tt-role" id="tt-role"></div>
+    </div>
+  </div>
+  <div class="tt-stat"><span class="tt-label">Current Task</span><span class="tt-val" id="tt-task">—</span></div>
+  <div class="tt-stat"><span class="tt-label">Tasks Done</span><span class="tt-val" id="tt-done">0</span></div>
+  <div class="tt-stat"><span class="tt-label">Uptime</span><span class="tt-val" id="tt-uptime">00:00</span></div>
+</div>
+
+<!-- ═══════════════════════ SERVICES ═══════════════════════ -->
+<section id="services" class="reveal">
+  <div class="section-label">What We Build</div>
+  <h2 class="section-title">AI-Driven Services</h2>
+  <p class="section-subtitle">
+    From high-converting contractor websites to fully managed Google campaigns — 
+    our AI agents handle the heavy lifting so you can focus on your craft.
+  </p>
+  <div class="services-grid">
+    <div class="service-card">
+      <div class="card-icon" style="background:rgba(59,130,246,0.1)">🌐</div>
+      <h3>Website Builds</h3>
+      <p class="card-desc">Lightning-fast, SEO-optimized contractor websites built by AI and polished by humans. Mobile-first, conversion-focused.</p>
+      <ul class="card-features">
+        <li>Custom responsive design</li>
+        <li>SEO-optimized from day one</li>
+        <li>Built in under 72 hours</li>
+        <li>Mobile-first approach</li>
+      </ul>
+      <div class="card-price">$600 <span class="starts">one-time</span></div>
+    </div>
+    <div class="service-card">
+      <div class="card-icon" style="background:rgba(16,185,129,0.1)">📍</div>
+      <h3>GBP Optimization</h3>
+      <p class="card-desc">Dominate the Google Maps 3-pack. AI-managed posts, reviews, Q&A, and category optimization for your Google Business Profile.</p>
+      <ul class="card-features">
+        <li>Weekly post scheduling</li>
+        <li>Review response management</li>
+        <li>Photo optimization</li>
+        <li>Local ranking tracking</li>
+      </ul>
+      <div class="card-price">$300<span class="period">/mo</span></div>
+    </div>
+    <div class="service-card">
+      <div class="card-icon" style="background:rgba(245,158,11,0.1)">⚡</div>
+      <h3>Google LSA</h3>
+      <p class="card-desc">Google Local Services Ads setup & management. Get the Google Guaranteed badge and start receiving verified leads.</p>
+      <div class="card-price">$500 <span class="starts">setup + management</span></div>
+    </div>
+    <div class="service-card">
+      <div class="card-icon" style="background:rgba(139,92,246,0.1)">🚀</div>
+      <h3>Full Retainer</h3>
+      <p class="card-desc">The full stack — website, GBP, LSA, SEO, content, and ongoing AI-powered campaign management. Your entire digital presence, handled.</p>
+      <ul class="card-features">
+        <li>All services included</li>
+        <li>Priority AI agent access</li>
+        <li>Weekly strategy calls</li>
+        <li>Dedicated account manager</li>
+      </ul>
+      <div class="card-price">$1,500<span class="period">/mo</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ HOW IT WORKS ═══════════════════════ -->
+<section id="how-it-works" class="reveal">
+  <div class="section-label">Process</div>
+  <h2 class="section-title">How It Works</h2>
+  <p class="section-subtitle">From first contact to full automation in 3 simple steps</p>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-number">1</div>
+      <span class="step-icon">🔍</span>
+      <h3>Discovery Call</h3>
+      <p>We analyze your current online presence, competitors, and local market. 15-minute Zoom call via Calendly.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-number">2</div>
+      <span class="step-icon">🚀</span>
+      <h3>AI Deployment</h3>
+      <p>Our autonomous agents build your website, optimize your Google Business Profile, and set up Local Service Ads.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-number">3</div>
+      <span class="step-icon">📈</span>
+      <h3>Growth &amp; Reporting</h3>
+      <p>Monthly performance reports, continuous optimization, and dedicated AI support for your business.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ TESTIMONIALS ═══════════════════════ -->
+<section id="testimonials" class="reveal">
+  <div class="section-label">RESULTS</div>
+  <h2 class="section-title">What Contractors Say</h2>
+  <div class="testimonials-grid">
+    <div class="testimonial-card accent-blue">
+      <div class="stars">★★★★★</div>
+      <p class="quote">"Moliam built our entire online presence in days. Our Google Business Profile went from invisible to the top 3 in Orange County. The AI agents work around the clock — it is like having a full marketing team for a fraction of the cost."</p>
+      <div class="author">Oscar S.</div>
+      <div class="company">OnePlus Electric</div>
+    </div>
+    <div class="testimonial-card accent-purple">
+      <div class="stars">★★★★★</div>
+      <p class="quote">"The Local Service Ads setup was seamless. We went from zero leads to 15+ qualified calls per week. The monthly reports show exactly where every dollar goes."</p>
+      <div class="author">Mike R.</div>
+      <div class="company">RoofPro Solutions</div>
+    </div>
+    <div class="testimonial-card accent-green">
+      <div class="stars">★★★★★</div>
+      <p class="quote">"I was skeptical about AI managing our online presence, but the results speak for themselves. 40% increase in website traffic and our Google reviews doubled in 3 months."</p>
+      <div class="author">Sarah T.</div>
+      <div class="company">CleanAir HVAC</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ FAQ ═══════════════════════ -->
+<section id="faq" class="reveal">
+  <div class="section-label">FAQ</div>
+  <h2 class="section-title">Frequently Asked Questions</h2>
+  <div class="faq-accordion">
+    <div class="faq-item">
+      <button class="faq-question aria-expanded="false">
+        <span>How long does it take to build a website?</span>
+        <span class="faq-chevron">▸</span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">Our AI agents can build a fully custom, responsive website in under 72 hours. We handle design, development, SEO optimization, and deployment — all included in the $600 flat fee.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question aria-expanded="false">
+        <span>What is Google Business Profile optimization?</span>
+        <span class="faq-chevron">▸</span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">GBP (formerly Google My Business) is your free business listing on Google. We optimize your profile with professional photos, regular posts, review management, and local SEO strategies to get you into the top 3 local results — the Local Pack.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question aria-expanded="false">
+        <span>How do Local Service Ads work?</span>
+        <span class="faq-chevron">▸</span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">LSAs appear at the very top of Google search results with a Google Guaranteed badge. You only pay per lead (not per click). We handle the entire setup, verification, and ongoing optimization to maximize your return.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question aria-expanded="false">
+        <span>Can I cancel anytime?</span>
+        <span class="faq-chevron">▸</span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">Yes. All our monthly services are month-to-month with no long-term contracts. We earn your business every month through results, not lock-in agreements.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question aria-expanded="false">
+        <span>What makes Moliam different from other agencies?</span>
+        <span class="faq-chevron">▸</span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">We use autonomous AI agents that work 24/7 on your campaigns. This means faster execution, lower costs, and continuous optimization — not a team that checks in once a week.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question aria-expanded="false">
+        <span>Do you work with contractors outside Orange County?</span>
+        <span class="faq-chevron">▸</span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">Currently we specialize in Orange County, CA contractors to provide the most focused local expertise. We are expanding to other SoCal markets soon.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ PORTFOLIO ═══════════════════════ -->
+<section id="portfolio" class="reveal">
+  <div class="section-label">PORTFOLIO</div>
+  <h2 class="section-title">Recent Projects</h2>
+  <p class="section-subtitle">Real results for real contractors. Here is what our AI agents built this quarter.</p>
+
+  <div class="portfolio-grid">
+    <!-- Card 1: OnePlus Electric -->
+    <div class="case-card case-card--blue reveal">
+      <div class="case-card-inner">
+        <span class="case-badge">Electrical Contractor</span>
+        <div class="case-client">OnePlus Electric</div>
+        <div class="case-title">Complete Digital Transformation</div>
+        <div class="case-stats">
+          <div class="case-stat">5.0★<br>Google Rating</div>
+          <div class="case-stat">24+<br>Reviews</div>
+          <div class="case-stat">Top 3<br>Local Pack</div>
+        </div>
+        <p class="case-desc">Built a conversion-optimized website, managed Google Business Profile from scratch, and launched Local Service Ads generating 20+ qualified leads per month.</p>
+      </div>
+    </div>
+
+    <!-- Card 2: RoofPro Solutions -->
+    <div class="case-card case-card--amber reveal">
+      <div class="case-card-inner">
+        <span class="case-badge">Roofing</span>
+        <div class="case-client">RoofPro Solutions</div>
+        <div class="case-title">From Zero to 15 Leads/Week</div>
+        <div class="case-stats">
+          <div class="case-stat">4.9★<br>Google Rating</div>
+          <div class="case-stat">45+<br>Reviews</div>
+          <div class="case-stat">#1<br>LSA Position</div>
+        </div>
+        <p class="case-desc">Full Google LSA campaign management with automated review collection. Website built in 48 hours with real-time lead tracking dashboard.</p>
+      </div>
+    </div>
+
+    <!-- Card 3: CleanAir HVAC -->
+    <div class="case-card case-card--green reveal">
+      <div class="case-card-inner">
+        <span class="case-badge">HVAC</span>
+        <div class="case-client">CleanAir HVAC</div>
+        <div class="case-title">40% Traffic Increase in 90 Days</div>
+        <div class="case-stats">
+          <div class="case-stat">4.8★<br>Google Rating</div>
+          <div class="case-stat">38+<br>Reviews</div>
+          <div class="case-stat">40%<br>Traffic Growth</div>
+        </div>
+        <p class="case-desc">GBP optimization, weekly content posting, review response management, and SEO-optimized service pages driving organic growth.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ CONTACT ═══════════════════════ -->
+<section id="contact">
+  <div class="section-label">Get Started</div>
+  <h2 class="section-title">Let's Build Something</h2>
+  <p class="section-subtitle">
+    Tell us about your business and we'll show you exactly how our AI can help you grow.
+  </p>
+  <form class="contact-form" id="contact-form" action="/api/contact" method="POST">
+    <div class="form-group">
+      <label for="cf-name">Name</label>
+      <input type="text" id="cf-name" name="name" required placeholder="Your name" aria-label="Contact form input" autocomplete="name">
+    </div>
+    <div class="form-group">
+      <label for="cf-email">Email</label>
+      <input type="email" id="cf-email" name="email" required placeholder="you@company.com" aria-label="Contact form input" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label for="cf-service">Service Interest</label>
+      <select id="cf-service" name="service">
+        <option value="">Select a service...</option>
+        <option value="website">Website Build ($600)</option>
+        <option value="gbp">GBP Optimization ($300/mo)</option>
+        <option value="lsa">Google LSA ($500 setup)</option>
+        <option value="retainer">Full Retainer ($1,500/mo)</option>
+        <option value="other">Other / Not sure</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="cf-message">Message</label>
+      <textarea id="cf-message" name="message" placeholder="Tell us about your business..." aria-label="Message input for contact form" autocomplete="off"></textarea>
+    </div>
+    <button type="submit" class="form-submit" id="form-btn">Send Message</button>
+    <div id="form-status"></div>
+  </form>
+</section>
+
+<!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+<footer id="footer">
+  <div class="footer-inner">
+    <span class="footer-brand">Moliam</span>
+    <span class="footer-copy">&copy; 2026 Moliam. All rights reserved. Orange County, CA.</span>
+    <span class="footer-ai">Powered by AI</span>
+    <div class="footer-links">
+      <a href="https://twitter.com/visualark" aria-label="Twitter" rel="noopener noreferrer" target="_blank">Twitter</a>
+      <a href="https://linkedin.com/company/visualark" aria-label="LinkedIn" rel="noopener noreferrer" target="_blank">LinkedIn</a>
+      <a href="https://github.com/visualark" aria-label="GitHub" rel="noopener noreferrer" target="_blank">GitHub</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT — All logic in one file
+     ═══════════════════════════════════════════════════════════ -->
+
+<!-- ═══════════════════════ NO-SCRIPT FALLBACK ═══════════════════════ -->
+<noscript>
+  <style>
+    @media (max-width: 768px) {
+      body::before { content: "Please enable JavaScript to view Moliam. This site uses AI-powered canvas visualization which requires modern browsers with JS enabled."; background: #0B0E14; color: #ffffff; padding: 24px 5%; font-family: -apple-system, sans-serif; text-align: center; line-height: 1.6; }
+    }
+    @media (min-width: 769px) {
+      body::before { content: "Please enable JavaScript to view Moliam. This site uses AI-powered canvas visualization which requires modern browsers with JS enabled."; background: #0B0E14; color: #ffffff; padding: 24px 5%; font-family: -apple-system, sans-serif; text-align: center; line-height: 1.6; }
+    }
+  </style>
+  <div style="background:#0B0E14;color:#fff;padding:24px 5%;text-align:center;font-family:-apple-system,sans-serif;">
+    <h2>Error: JavaScript Required</h2>
+    <p>Moliam uses AI-powered canvas visualization and interactive features. Please enable JavaScript in your browser settings to view our portfolio and services properly.</p>
+    <a href="#" style="color:#4A90E2;text-decoration:underline;">Refresh after enabling</a>
+  </div>
+</noscript>
+
+<script>
+(function() {
+'use strict';
+
+/* ─── UTILS ─── */
+const $ = s => document.querySelector(s);
+const PI2 = Math.PI * 2;
+const lerp = (a, b, t) => a + (b - a) * t;
+const rand = (a, b) => Math.random() * (b - a) + a;
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const now = performance.now.bind(performance);
+
+/* ─── PARTICLE BACKGROUND ─── */
+const pbg = $('#particle-bg');
+const pctx = pbg.getContext('2d');
+let particles = [];
+
+function initParticles() {
+  pbg.width = window.innerWidth;
+  pbg.height = document.documentElement.scrollHeight;
+  particles = [];
+  const count = Math.floor((pbg.width * pbg.height) / 12000);
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x: rand(0, pbg.width),
+      y: rand(0, pbg.height),
+      r: rand(0.3, 1.5),
+      a: rand(0.1, 0.5),
+      dx: rand(-0.15, 0.15),
+      dy: rand(-0.1, 0.1),
+      pulse: rand(0, PI2)
+    });
+  }
+}
+
+function drawParticles(t) {
+  pctx.clearRect(0, 0, pbg.width, pbg.height);
+  for (const p of particles) {
+    p.x += p.dx;
+    p.y += p.dy;
+    p.pulse += 0.01;
+    if (p.x < 0) p.x = pbg.width;
+    if (p.x > pbg.width) p.x = 0;
+    if (p.y < 0) p.y = pbg.height;
+    if (p.y > pbg.height) p.y = 0;
+    const alpha = p.a * (0.6 + 0.4 * Math.sin(p.pulse));
+    pctx.beginPath();
+    pctx.arc(p.x, p.y, p.r, 0, PI2);
+    pctx.fillStyle = `rgba(148, 163, 184, ${alpha})`;
+    pctx.fill();
+  }
+  requestAnimationFrame(drawParticles);
+}
+
+initParticles();
+requestAnimationFrame(drawParticles);
+window.addEventListener('resize', () => { initParticles(); });
+
+/* ─── SPARKLINE ─── */
+const sparkCanvas = $('#sparkline');
+const sparkCtx = sparkCanvas.getContext('2d');
+const sparkData = new Array(30).fill(0);
+let sparkIdx = 0;
+
+function drawSparkline() {
+  const W = sparkCanvas.width = sparkCanvas.offsetWidth * 2;
+  const H = sparkCanvas.height = sparkCanvas.offsetHeight * 2;
+  sparkCtx.clearRect(0, 0, W, H);
+  const max = Math.max(1, ...sparkData);
+  sparkCtx.beginPath();
+  sparkCtx.strokeStyle = '#3B82F6';
+  sparkCtx.lineWidth = 2;
+  sparkCtx.lineJoin = 'round';
+  for (let i = 0; i < sparkData.length; i++) {
+    const x = (i / (sparkData.length - 1)) * W;
+    const y = H - (sparkData[i] / max) * (H - 8) - 4;
+    i === 0 ? sparkCtx.moveTo(x, y) : sparkCtx.lineTo(x, y);
+  }
+  sparkCtx.stroke();
+  // fill under
+  sparkCtx.lineTo(W, H);
+  sparkCtx.lineTo(0, H);
+  sparkCtx.closePath();
+  sparkCtx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+  sparkCtx.fill();
+}
+
+/* ─── UPTIME ─── */
+const startTime = Date.now();
+function updateUptime() {
+  const elapsed = Math.floor((Date.now() - startTime) / 1000);
+  const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
+  const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
+  const s = String(elapsed % 60).padStart(2, '0');
+  $('#uptime').textContent = `${h}:${m}:${s}`;
+}
+setInterval(updateUptime, 1000);
+
+/* ─── ACTIVITY FEED ─── */
+const feedEl = $('#activity-feed');
+const feedItems = [];
+
+function addFeedItem(msg, botColor) {
+  const now = new Date();
+  const time = now.toLocaleTimeString('en-US', { hour12: false });
+  const div = document.createElement('div');
+  div.className = 'feed-item';
+  const dotHtml = botColor ? `<span class="feed-dot" style="background:${botColor};box-shadow:0 0 6px ${botColor}"></span>` : '';
+  div.innerHTML = `<div class="feed-time">${time}</div><div class="feed-msg">${dotHtml}${msg}</div>`;
+  if (botColor) div.style.borderLeft = `3px solid ${botColor}`;
+  feedEl.prepend(div);
+  feedItems.unshift(div);
+  while (feedItems.length > 20) {
+    const old = feedItems.pop();
+    old.remove();
+  }
+}
+
+/* ─── HQ CANVAS ─── */
+const canvas = $('#hq-canvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+let mouseX = -1000, mouseY = -1000;
+let hoveredBot = null;
+
+function resizeCanvas() {
+  const wrap = $('#hq-canvas-wrap');
+  W = canvas.width = wrap.clientWidth;
+  H = canvas.height = wrap.clientHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+/* ─── ROOMS ─── */
+const ROOM_DEFS = [
+  { id: 'engineering', label: 'Engineering', icon: '🛠', color: '#3B82F6' },
+  { id: 'planning',    label: 'Planning',    icon: '📋', color: '#8B5CF6' },
+  { id: 'comms',       label: 'Comms',       icon: '📡', color: '#10B981' },
+  { id: 'dataops',     label: 'Data Ops',    icon: '📊', color: '#06B6D4' },
+  { id: 'error',       label: 'Error Room',  icon: '⚠️', color: '#EF4444' },
+  { id: 'ratelimit',   label: 'Rate Limit',  icon: '⏳', color: '#F59E0B' },
+];
+
+let rooms = [];
+
+function layoutRooms() {
+  const margin = 40;
+  const cols = W > 900 ? 3 : 2;
+  const rows = Math.ceil(ROOM_DEFS.length / cols);
+  const padTop = 40;
+  const padBottom = 20;
+  const gapX = 24;
+  const gapY = 24;
+  const availW = W - margin * 2 - gapX * (cols - 1);
+  const availH = H - padTop - padBottom - margin - gapY * (rows - 1);
+  const rw = availW / cols;
+  const rh = availH / rows;
+
+  rooms = ROOM_DEFS.map((def, i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    return {
+      ...def,
+      x: margin + col * (rw + gapX),
+      y: padTop + margin + row * (rh + gapY),
+      w: rw,
+      h: rh,
+      activeCount: 0,
+      utilization: 0,
+      utilizationHistory: 0,
+      pulsePhase: rand(0, PI2),
+      progress: 0,
+      progressTarget: 0,
+    };
+  });
+}
+layoutRooms();
+window.addEventListener('resize', layoutRooms);
+
+/* ─── BOTS ─── */
+const TASKS = [
+  'Building contractor website for Oscar', 'Optimizing Google Business Profile',
+  'Managing LSA campaign for PlumbRight', 'Analyzing competitor rankings',
+  'Writing blog: "5 Signs You Need a New Roof"', 'Generating GBP posts for Mike\'s HVAC',
+  'Setting up Google Guaranteed badge', 'Auditing local SEO for OC Plumbing',
+  'Deploying website update for Ramirez Electric', 'Processing 12 new leads',
+  'A/B testing landing page CTAs', 'Optimizing LSA budget allocation',
+  'Monitoring review response times', 'Updating NAP citations across directories',
+  'Building service area pages for Costa Mesa', 'Scheduling social media content',
+  'Analyzing call tracking data', 'Generating monthly performance report',
+  'Configuring schema markup for services', 'Optimizing images for Core Web Vitals',
+  'Setting up retargeting campaign', 'Creating before/after project gallery',
+];
+
+const BOT_DEFS = [
+  { name: 'Ada',     initials: 'A', color: '#8B5CF6', role: 'Orchestrator',    online: true },
+  { name: 'Mavrick', initials: 'M', color: '#3B82F6', role: 'Lead Engineer',   online: true },
+  { name: 'Yagami',  initials: 'Y', color: '#EF4444', role: 'Strategy AI',     online: true },
+  { name: 'Willow',  initials: 'W', color: '#F59E0B', role: 'Content AI',      online: false },
+  { name: 'Soni',    initials: 'S', color: '#06B6D4', role: 'Research AI',     online: false },
+];
+
+let bots = BOT_DEFS.map((def, i) => {
+  const room = rooms[i % rooms.length];
+  return {
+    ...def,
+    x: room.x + room.w / 2,
+    y: room.y + room.h / 2,
+    targetX: room.x + room.w / 2,
+    targetY: room.y + room.h / 2,
+    roomIdx: i % rooms.length,
+    state: def.online ? 'idle' : 'offline', // idle, moving, working, thinking, offline
+    task: '',
+    tasksDone: 0,
+    stateTimer: def.online ? rand(1000, 4000) : Infinity,
+    thinkAngle: 0,
+    trail: [],
+    radius: 18,
+  };
+});
+
+let totalTasks = 0;
+let totalErrors = 0;
+
+/* ─── BOT AI ─── */
+function tickBots(dt) {
+  for (const bot of bots) {
+    if (bot.state === 'offline') continue; // skip offline agents
+    bot.stateTimer -= dt;
+    bot.thinkAngle += dt * 0.004;
+
+    if (bot.state === 'idle' && bot.stateTimer <= 0) {
+      // pick new room & task
+      const newIdx = Math.floor(rand(0, rooms.length));
+      const room = rooms[newIdx];
+      bot.roomIdx = newIdx;
+      bot.targetX = room.x + rand(40, room.w - 40);
+      bot.targetY = room.y + rand(40, room.h - 40);
+      bot.state = 'moving';
+      bot.task = pick(TASKS);
+      addFeedItem(`<span class="bot-name" style="color:${bot.color}">${bot.name}</span> → ${room.label}`, bot.color);
+    }
+
+    if (bot.state === 'moving') {
+      const dx = bot.targetX - bot.x;
+      const dy = bot.targetY - bot.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 3) {
+        bot.x = bot.targetX;
+        bot.y = bot.targetY;
+        bot.state = 'thinking';
+        bot.stateTimer = rand(800, 1500);
+        addFeedItem(`<span class="bot-name" style="color:${bot.color}">${bot.name}</span> thinking...`, bot.color);
+      } else {
+        const speed = Math.min(3.5, dist * 0.06);
+        bot.x += (dx / dist) * speed;
+        bot.y += (dy / dist) * speed;
+        // trail
+        bot.trail.push({ x: bot.x, y: bot.y, a: 0.6, r: 3 });
+        if (bot.trail.length > 20) bot.trail.shift();
+      }
+    }
+
+    if (bot.state === 'thinking' && bot.stateTimer <= 0) {
+      bot.state = 'working';
+      bot.stateTimer = rand(3000, 8000);
+      rooms[bot.roomIdx].progressTarget = 1;
+      rooms[bot.roomIdx].progress = 0;
+      addFeedItem(`<span class="bot-name" style="color:${bot.color}">${bot.name}</span> ${bot.task}`, bot.color);
+    }
+
+    if (bot.state === 'working' && bot.stateTimer <= 0) {
+      bot.state = 'idle';
+      bot.stateTimer = rand(1000, 3000);
+      bot.tasksDone++;
+      totalTasks++;
+
+      // small chance of error
+      if (Math.random() < 0.05) {
+        totalErrors++;
+        addFeedItem(`<span class="bot-name" style="color:${bot.color}">${bot.name}</span> ⚠️ error handled`, bot.color);
+      } else {
+        addFeedItem(`<span class="bot-name" style="color:${bot.color}">${bot.name}</span> ✅ completed task`, bot.color);
+      }
+
+      rooms[bot.roomIdx].progressTarget = 0;
+      rooms[bot.roomIdx].utilizationHistory++;
+
+      // update stats
+      $('#stat-tasks').textContent = totalTasks;
+      $('#stat-errors').textContent = totalErrors;
+
+      // sparkline
+      sparkData[sparkData.length - 1]++;
+    }
+
+    // fade trail
+    for (let i = bot.trail.length - 1; i >= 0; i--) {
+      bot.trail[i].a -= 0.015;
+      bot.trail[i].r *= 0.97;
+      if (bot.trail[i].a <= 0) bot.trail.splice(i, 1);
+    }
+  }
+
+  // room active counts
+  for (const r of rooms) {
+    r.activeCount = bots.filter(b => b.roomIdx === rooms.indexOf(r) && (b.state === 'working' || b.state === 'thinking')).length;
+    r.pulsePhase += dt * 0.003;
+    r.progress = lerp(r.progress, r.progressTarget, 0.02);
+  }
+}
+
+/* ─── hex to rgb helper ─── */
+function hexRGB(hex) {
+  return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)];
+}
+
+/* ─── DRAW ROOM (isometric-lite + neon glow) ─── */
+function drawRoom(room, t) {
+  const { x, y, w, h, label, icon, color, activeCount, pulsePhase, progress, utilizationHistory } = room;
+  const isActive = activeCount > 0;
+  const depth = 8;
+  const [cr, cg, cb] = hexRGB(color);
+
+  // Neon glow border (always visible, brighter when active)
+  ctx.save();
+  const glowIntensity = isActive ? (20 + 15 * Math.sin(pulsePhase)) : 8;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = glowIntensity;
+  ctx.strokeStyle = isActive ? color : `rgba(${cr},${cg},${cb},0.35)`;
+  ctx.lineWidth = isActive ? 2 : 1;
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, 12);
+  ctx.stroke();
+  ctx.restore();
+
+  // Pulsing glow overlay when bots working
+  if (isActive) {
+    const glowAlpha = 0.06 + 0.04 * Math.sin(pulsePhase);
+    ctx.fillStyle = `rgba(${cr},${cg},${cb},${glowAlpha})`;
+    ctx.beginPath();
+    ctx.roundRect(x - 8, y - 8, w + 16, h + 16, 18);
+    ctx.fill();
+  }
+
+  // 3D side (bottom)
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.beginPath();
+  ctx.moveTo(x + 6, y + h);
+  ctx.lineTo(x + 6 + depth, y + h + depth);
+  ctx.lineTo(x + w + depth, y + h + depth);
+  ctx.lineTo(x + w, y + h);
+  ctx.closePath();
+  ctx.fill();
+
+  // 3D side (right)
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.beginPath();
+  ctx.moveTo(x + w, y + 6);
+  ctx.lineTo(x + w + depth, y + 6 + depth);
+  ctx.lineTo(x + w + depth, y + h + depth);
+  ctx.lineTo(x + w, y + h);
+  ctx.closePath();
+  ctx.fill();
+
+  // Main face with gradient fill
+  const roomGrad = ctx.createLinearGradient(x, y, x, y + h);
+  if (isActive) {
+    roomGrad.addColorStop(0, `rgba(${cr},${cg},${cb},0.18)`);
+    roomGrad.addColorStop(0.5, `rgba(31, 41, 55, 0.88)`);
+    roomGrad.addColorStop(1, `rgba(${cr},${cg},${cb},0.08)`);
+  } else {
+    roomGrad.addColorStop(0, 'rgba(35, 48, 68, 0.7)');
+    roomGrad.addColorStop(1, 'rgba(25, 35, 52, 0.6)');
+  }
+  ctx.fillStyle = roomGrad;
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, 12);
+  ctx.fill();
+
+  // Active pulse overlay
+  if (isActive) {
+    const pa = 0.04 + 0.03 * Math.sin(pulsePhase);
+    ctx.fillStyle = `rgba(${cr},${cg},${cb},${pa})`;
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, 12);
+    ctx.fill();
+  }
+
+  // Room icon (emoji) — larger, centered in upper area
+  ctx.font = '28px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(icon, x + w / 2, y + h * 0.38);
+
+  // Label — centered below icon
+  ctx.font = '600 14px Inter, sans-serif';
+  ctx.fillStyle = isActive ? '#F9FAFB' : '#9CA3AF';
+  ctx.textAlign = 'center';
+  ctx.fillText(label, x + w / 2, y + h * 0.62);
+  ctx.textBaseline = 'alphabetic';
+
+  // Utilization bar
+  const maxUtil = Math.max(1, ...rooms.map(r => r.utilizationHistory));
+  const utilPct = utilizationHistory / maxUtil;
+  const barW = w - 32;
+  const barH = 4;
+  const barX = x + 16;
+  const barY = y + h - 20;
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  ctx.beginPath();
+  ctx.roundRect(barX, barY, barW, barH, 2);
+  ctx.fill();
+  if (utilPct > 0) {
+    const utilGrad = ctx.createLinearGradient(barX, 0, barX + barW * utilPct, 0);
+    utilGrad.addColorStop(0, `rgba(${cr},${cg},${cb},0.8)`);
+    utilGrad.addColorStop(1, `rgba(${cr},${cg},${cb},0.3)`);
+    ctx.fillStyle = utilGrad;
+    ctx.beginPath();
+    ctx.roundRect(barX, barY, barW * utilPct, barH, 2);
+    ctx.fill();
+  }
+
+  // Active task progress bar
+  if (progress > 0.01) {
+    const pBarW = w - 32;
+    const pBarH = 3;
+    const pBarX = x + 16;
+    const pBarY = y + h - 32;
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.beginPath();
+    ctx.roundRect(pBarX, pBarY, pBarW, pBarH, 2);
+    ctx.fill();
+    const pGrad = ctx.createLinearGradient(pBarX, 0, pBarX + pBarW * clamp(progress, 0, 1), 0);
+    pGrad.addColorStop(0, `rgba(${cr},${cg},${cb},1)`);
+    pGrad.addColorStop(1, `rgba(${cr},${cg},${cb},0.4)`);
+    ctx.fillStyle = pGrad;
+    ctx.beginPath();
+    ctx.roundRect(pBarX, pBarY, pBarW * clamp(progress, 0, 1), pBarH, 2);
+    ctx.fill();
+  }
+
+  // Active count badge
+  if (activeCount > 0) {
+    const bx = x + w - 24;
+    const by = y + 16;
+    ctx.save();
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(bx, by, 11, 0, PI2);
+    ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = '#fff';
+    ctx.font = '700 11px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(activeCount, bx, by);
+    ctx.textBaseline = 'alphabetic';
+  }
+}
+
+/* ─── DRAW BOT ─── */
+function drawBot(bot, t) {
+  const { x, y, color, initials, state, task, thinkAngle, trail, radius } = bot;
+  const R = 20; // larger avatar radius
+  const isOffline = state === 'offline';
+  const drawColor = isOffline ? '#4B5563' : color;
+  const [cr, cg, cb] = hexRGB(drawColor);
+
+  // Dim offline bots
+  if (isOffline) ctx.globalAlpha = 0.45;
+
+  // Particle trail (fading dots in bot's color)
+  for (const tp of trail) {
+    ctx.beginPath();
+    ctx.arc(tp.x, tp.y, tp.r, 0, PI2);
+    ctx.fillStyle = `rgba(${cr},${cg},${cb},${tp.a * 0.5})`;
+    ctx.fill();
+  }
+
+  // Drop shadow
+  ctx.beginPath();
+  ctx.ellipse(x, y + R + 5, R * 0.65, 4, 0, 0, PI2);
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.fill();
+
+  // Outer status ring (background)
+  const ringColor = isOffline ? '#374151' :
+                    state === 'working' ? '#10B981' :
+                    state === 'thinking' ? '#F59E0B' :
+                    state === 'moving' ? '#3B82F6' : 'rgba(107,114,128,0.3)';
+  ctx.beginPath();
+  ctx.arc(x, y, R + 4, 0, PI2);
+  ctx.strokeStyle = `rgba(${hexRGB(ringColor === 'rgba(107,114,128,0.3)' ? '#6B7280' : ringColor).join(',')},0.25)`;
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // Animated rotating ring (for working/thinking/moving)
+  if (state === 'working' || state === 'thinking' || state === 'moving') {
+    const speed = state === 'working' ? 0.004 : state === 'thinking' ? 0.002 : 0.003;
+    const arcLen = state === 'working' ? 2.2 : 1.5;
+    const angle = (t * speed) % PI2;
+    ctx.beginPath();
+    ctx.arc(x, y, R + 4, angle, angle + arcLen);
+    ctx.strokeStyle = ringColor;
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+
+    // Second arc segment for working (double spinner)
+    if (state === 'working') {
+      ctx.beginPath();
+      ctx.arc(x, y, R + 4, angle + Math.PI, angle + Math.PI + 1.2);
+      ctx.strokeStyle = ringColor;
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+      ctx.lineCap = 'butt';
+    }
+  }
+
+  // Avatar circle with gradient
+  const grad = ctx.createRadialGradient(x - 5, y - 5, 0, x, y, R);
+  grad.addColorStop(0, `rgba(${Math.min(255,cr+30)},${Math.min(255,cg+30)},${Math.min(255,cb+30)},1)`);
+  grad.addColorStop(1, `rgba(${Math.max(0,cr-30)},${Math.max(0,cg-30)},${Math.max(0,cb-30)},1)`);
+  ctx.save();
+  ctx.shadowColor = color;
+  ctx.shadowBlur = state === 'working' ? 12 : 6;
+  ctx.beginPath();
+  ctx.arc(x, y, R, 0, PI2);
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.restore();
+
+  // Initials (single letter, larger)
+  ctx.fillStyle = '#fff';
+  ctx.font = '700 15px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(initials, x, y + 1);
+
+  // Thinking orbiting dots
+  if (state === 'thinking') {
+    for (let i = 0; i < 3; i++) {
+      const a = thinkAngle + (i * PI2 / 3);
+      const dx = Math.cos(a) * (R + 12);
+      const dy = Math.sin(a) * (R + 12);
+      ctx.beginPath();
+      ctx.arc(x + dx, y + dy, 3.5, 0, PI2);
+      ctx.fillStyle = `rgba(${cr},${cg},${cb},${0.4 + 0.3 * Math.sin(thinkAngle * 2 + i)})`;
+      ctx.fill();
+    }
+  }
+
+  // Offline label
+  if (isOffline) {
+    ctx.font = '600 9px Inter, sans-serif';
+    ctx.fillStyle = 'rgba(107,114,128,0.6)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('OFFLINE', x, y + R + 18);
+    ctx.fillText(bot.role, x, y + R + 30);
+    ctx.textBaseline = 'alphabetic';
+    // dim the whole bot
+    ctx.globalAlpha = 1;
+    return; // skip task label for offline bots
+  }
+
+  // Task label (wider for longer task names)
+  if (task && (state === 'working' || state === 'thinking')) {
+    const labelText = task.length > 28 ? task.slice(0, 26) + '…' : task;
+    ctx.font = '500 10px Inter, sans-serif';
+    const tw = ctx.measureText(labelText).width;
+    const lx = x - tw / 2 - 10;
+    const ly = y - R - 24;
+
+    // Label background with bot-color accent
+    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+    ctx.beginPath();
+    ctx.roundRect(lx, ly, tw + 20, 20, 8);
+    ctx.fill();
+    ctx.strokeStyle = `rgba(${cr},${cg},${cb},0.4)`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(lx, ly, tw + 20, 20, 8);
+    ctx.stroke();
+
+    ctx.fillStyle = '#E5E7EB';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(labelText, x, ly + 10);
+  }
+
+  ctx.textBaseline = 'alphabetic';
+}
+
+/* ─── HOVER DETECTION ─── */
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  mouseX = e.clientX - rect.left;
+  mouseY = e.clientY - rect.top;
+
+  hoveredBot = null;
+  for (const bot of bots) {
+    const dx = mouseX - bot.x;
+    const dy = mouseY - bot.y;
+    if (dx * dx + dy * dy < (24) ** 2) {
+      hoveredBot = bot;
+      break;
+    }
+  }
+
+  const tooltip = $('#bot-tooltip');
+  if (hoveredBot) {
+    tooltip.classList.add('visible');
+    tooltip.style.left = (e.clientX + 16) + 'px';
+    tooltip.style.top = (e.clientY - 16) + 'px';
+    $('#tt-avatar').style.background = hoveredBot.color;
+    $('#tt-avatar').textContent = hoveredBot.initials;
+    $('#tt-name').textContent = hoveredBot.name;
+    $('#tt-role').textContent = hoveredBot.role;
+    $('#tt-task').textContent = hoveredBot.task || '—';
+    $('#tt-done').textContent = hoveredBot.tasksDone;
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    const s = String(elapsed % 60).padStart(2, '0');
+    $('#tt-uptime').textContent = `${m}:${s}`;
+  } else {
+    tooltip.classList.remove('visible');
+  }
+});
+
+canvas.addEventListener('mouseleave', () => {
+  hoveredBot = null;
+  $('#bot-tooltip').classList.remove('visible');
+});
+
+/* ─── AMBIENT HQ PARTICLES ─── */
+let hqParticles = [];
+function initHQParticles() {
+  hqParticles = [];
+  const count = Math.floor((W * H) / 18000);
+  for (let i = 0; i < count; i++) {
+    hqParticles.push({
+      x: rand(0, W), y: rand(0, H),
+      r: rand(0.5, 1.8),
+      a: rand(0.08, 0.25),
+      dx: rand(-0.2, 0.2),
+      dy: rand(-0.15, 0.15),
+      phase: rand(0, PI2),
+    });
+  }
+}
+initHQParticles();
+window.addEventListener('resize', initHQParticles);
+
+function drawHQParticles(t) {
+  for (const p of hqParticles) {
+    p.x += p.dx;
+    p.y += p.dy;
+    p.phase += 0.008;
+    if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+    if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+    const alpha = p.a * (0.5 + 0.5 * Math.sin(p.phase));
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, PI2);
+    ctx.fillStyle = `rgba(100, 140, 200, ${alpha})`;
+    ctx.fill();
+  }
+}
+
+/* ─── MAIN LOOP ─── */
+let lastT = now();
+
+function mainLoop(t) {
+  const dt = Math.min(t - lastT, 50);
+  lastT = t;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Ambient background particles
+  drawHQParticles(t);
+
+  // Title bar in canvas
+  ctx.fillStyle = '#F9FAFB';
+  ctx.font = '700 16px Inter, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('⚡ AI Operations HQ', 40, 30);
+  ctx.fillStyle = '#6B7280';
+  ctx.font = '400 12px Inter, sans-serif';
+  ctx.fillText('Real-time agent activity', 230, 30);
+
+  tickBots(dt);
+
+  // Draw rooms
+  for (const room of rooms) drawRoom(room, t);
+
+  // Draw bots
+  for (const bot of bots) drawBot(bot, t);
+
+  // Connection lines (subtle, dashed)
+  ctx.globalAlpha = 0.08;
+  ctx.setLineDash([4, 4]);
+  for (let i = 0; i < bots.length; i++) {
+    for (let j = i + 1; j < bots.length; j++) {
+      if (bots[i].roomIdx === bots[j].roomIdx) {
+        ctx.beginPath();
+        ctx.moveTo(bots[i].x, bots[i].y);
+        ctx.lineTo(bots[j].x, bots[j].y);
+        ctx.strokeStyle = '#9CA3AF';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+  }
+  ctx.setLineDash([]);
+  ctx.globalAlpha = 1;
+
+  requestAnimationFrame(mainLoop);
+}
+requestAnimationFrame(mainLoop);
+
+/* ─── SPARKLINE UPDATER ─── */
+setInterval(() => {
+  sparkData.push(sparkData[sparkData.length - 1]);
+  sparkData.shift();
+  sparkData[sparkData.length - 1] = 0;
+  drawSparkline();
+}, 5000);
+drawSparkline();
+
+/* ─── UPDATE BOT STATUS PANEL ─── */
+function updateBotStatusPanel() {
+  const container = $('#bot-status-list');
+  container.innerHTML = bots.map(b => `
+    <div class="bot-status-row">
+      <div class="bot-status-dot" style="background:${b.color};box-shadow:0 0 6px ${b.color}"></div>
+      <span class="bot-status-name" style="color:${b.color}">${b.name}</span>
+      <span class="bot-status-task">${b.task || 'Idle'}</span>
+    </div>
+  `).join('');
+}
+setInterval(updateBotStatusPanel, 1000);
+updateBotStatusPanel();
+
+/* ─── CONTACT FORM ─── */
+const form = $('#contact-form');
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = $('#form-btn');
+  const status = $('#form-status');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  status.textContent = '';
+
+  try {
+    const data = Object.fromEntries(new FormData(form));
+    const res = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.ok) {
+      status.style.color = '#10B981';
+      status.textContent = '✓ Message sent! We\'ll be in touch.';
+      form.reset();
+    } else {
+      throw new Error('Failed');
+    }
+  } catch (err) {
+    status.style.color = '#EF4444';
+    status.textContent = 'Something went wrong. Please try again.';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Send Message';
+});
+
+/* ─── INITIAL FEED ─── */
+addFeedItem('⚡ Moliam HQ initialized — all systems nominal', '#3B82F6');
+addFeedItem('🤖 5 AI agents deployed and ready', '#10B981');
+addFeedItem('📊 Connected to analytics pipeline', '#8B5CF6');
+addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
+
+/* ─── FAQ ACCORDION ─── */
+(function() {
+  const faqItems = document.querySelectorAll('.faq-item');
+  faqItems.forEach(function(item) {
+    item.querySelector('.faq-question').addEventListener('click', function() {
+      const isActive = item.classList.contains('active');
+      faqItems.forEach(function(i) { i.classList.remove('active'); i.querySelector('.faq-question').setAttribute('aria-expanded', 'false'); });
+      if (!isActive) { item.classList.add('active'); this.setAttribute('aria-expanded', 'true'); }
+    });
+  });
+})();
+
+/* ─── SCROLL REVEAL (IntersectionObserver) ─── */
+(function() {
+  const revealEls = document.querySelectorAll('.reveal');
+  let revealedCount = 0;
+  const totalReveal = revealEls.length;
+
+  const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+        revealedCount++;
+        if (revealedCount >= totalReveal) {
+          observer.disconnect();
+        }
+      }
+    });
+  }, { threshold: 0.1 });
+
+  revealEls.forEach(function(el) {
+    observer.observe(el);
+  });
+})();
+
+})();
+
+/* ─── HAMBURGER MENU ─── */
+(function() {
+  const btn = document.getElementById('hamburger-btn');
+  const menu = document.getElementById('mobile-menu');
+  if (!btn || !menu) return;
+
+  function toggleMenu() {
+    const isOpen = btn.classList.toggle('open');
+    menu.classList.toggle('open');
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  }
+
+  btn.addEventListener('click', toggleMenu);
+
+  menu.querySelectorAll('a').forEach(function(link) {
+    link.addEventListener('click', function() {
+      btn.classList.remove('open');
+      menu.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && menu.classList.contains('open')) {
+      btn.classList.remove('open');
+      menu.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  });
+})();
+</script>
+<script src="js/hero-interactions.js"></script>
+</body>
+</html>
