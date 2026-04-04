@@ -743,11 +743,15 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
    SCROLL REVEAL ANIMATIONS
    ═══════════════════════════════════════════ */
 .reveal {
-  opacity: 0;
-  transform: translateY(30px);
+  opacity: 1;
+  transform: translateY(0);
   transition: opacity 0.6s ease, transform 0.6s ease;
 }
-.reveal.visible {
+.js-reveal .reveal {
+  opacity: 0;
+  transform: translateY(30px);
+}
+.js-reveal .reveal.visible, .reveal.visible {
   opacity: 1;
   transform: translateY(0);
 }
@@ -1574,6 +1578,9 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 <script>
 (function() {
 'use strict';
+
+/* Enable JS-enhanced reveal animations */
+document.documentElement.classList.add('js-reveal');
 
 /* ─── UTILS ─── */
 const $ = s => document.querySelector(s);
