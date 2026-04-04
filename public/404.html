@@ -1,70 +1,248 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>404 — Page Not Found | Moliam</title>
-  <style>
-    :root { --bg-deep: #0B0E14; }
-    
-    body {
-      background: var(--bg-deep);
-      font-family: 'Inter', system-ui, sans-serif;
-      color: #F9FAFB;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0;
-      padding: 24px;
-    }
-    
-    .error-container {
-      text-align: center;
-      max-width: 500px;
-    }
-    
-    h1 {
-      font-size: clamp(32px, 8vw, 64px);
-      margin-bottom: 16px;
-      background: linear-gradient(135deg, #3B82F6, #8B5CF6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    
-    p {
-      color: #9CA3AF;
-      font-size: 16px;
-      margin-bottom: 32px;
-      line-height: 1.6;
-    }
-    
-    .home-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 14px 32px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #3B82F6, #8B5CF6);
-      color: white;
-      font-size: 15px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-    }
-    
-    .home-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 30px rgba(59,130,246,0.4);
-    }
-  </style>
+   <meta charset="UTF-8"/>
+   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+   <title>404 — Page Not Found | Moliam</title>
+   <meta name="description" content="Page not found - Moliam AI Operations Platform">
+   <meta name="robots" content="noindex, follow"/>
+   <link rel="preconnect" href="https://fonts.googleapis.com"/>
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+   <link rel="stylesheet" href="/css/main.css"/>
+   <style>
+     :root { 
+       --error-color: #EF4444;
+       --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+     }
+     
+     .error-page-container {
+       min-height: 100vh;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       position: relative;
+       z-index: 1;
+       padding: 24px;
+     }
+     
+     .error-content {
+       text-align: center;
+       max-width: 520px;
+       animation: slideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+     }
+     
+     .error-code {
+       font-size: clamp(80px, 15vw, 140px);
+       font-weight: 900;
+       line-height: 1;
+       margin-bottom: 24px;
+       background: linear-gradient(135deg, var(--error-color), #DC2626);
+       -webkit-background-clip: text;
+       -webkit-text-fill-color: transparent;
+       background-clip: text;
+       animation: pulse-error 3s ease-in-out infinite;
+     }
+     
+     .error-title {
+       font-size: clamp(24px, 4vw, 32px);
+       font-weight: 700;
+       margin-bottom: 16px;
+       color: #F9FAFB;
+     }
+     
+     .error-message {
+       color: #9CA3AF;
+       font-size: 16px;
+       line-height: 1.6;
+       margin-bottom: 32px;
+     }
+     
+     .back-home {
+       display: inline-flex;
+       align-items: center;
+       gap: 10px;
+       padding: 14px 32px;
+       border-radius: 12px;
+       background: linear-gradient(135deg, var(--error-color), #DC2626);
+       color: white;
+       font-size: 15px;
+       font-weight: 600;
+       text-decoration: none;
+       transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+       position: relative;
+       overflow: hidden;
+     }
+     
+     .back-home::before {
+       content: '';
+       position: absolute;
+       top: 0; left: 0; right: 0; bottom: 0;
+       background: linear-gradient(135deg, var(--error-color), #DC2626);
+       opacity: 0;
+       transition: opacity var(--transition-fast);
+     }
+     
+     .back-home:hover {
+       transform: translateY(-3px);
+       box-shadow: 0 12px 40px rgba(239,68,68,0.5);
+     }
+     
+     .back-home:hover::before {
+       opacity: 1;
+     }
+     
+     .back-home svg {
+       position: relative;
+       z-index: 1;
+     }
+     
+     @keyframes slideUp {
+       from {
+         opacity: 0;
+         transform: translateY(40px);
+       }
+       to {
+         opacity: 1;
+         transform: translateY(0);
+       }
+     }
+     
+     @keyframes pulse-error {
+       0%, 100% { filter: drop-shadow(0 0 8px rgba(239,68,68,0.3)); }
+       50% { filter: drop-shadow(0 0 20px rgba(239,68,68,0.6)); }
+     }
+     
+     .particle-glow {
+       position: fixed;
+       top: 0; left: 0;
+       width: 100%; height: 100%;
+       z-index: 0;
+       pointer-events: none;
+     }
+     
+     .error-badge {
+       display: inline-flex;
+       align-items: center;
+       gap: 8px;
+       padding: 6px 16px;
+       border-radius: 100px;
+       background: rgba(239,68,68,0.1);
+       border: 1px solid rgba(239,68,68,0.2);
+       font-size: 11px;
+       font-weight: 600;
+       color: var(--error-color);
+       text-transform: uppercase;
+       letter-spacing: 0.05em;
+       margin-bottom: 24px;
+     }
+     
+     .status-dot {
+       width: 6px; height: 6px; border-radius: 50%;
+       background: var(--error-color);
+       box-shadow: 0 0 8px var(--error-color);
+       animation: pulse-dot 2s ease-in-out infinite;
+     }
+     
+     @keyframes pulse-dot {
+       0%, 100% { transform: scale(1); opacity: 1; }
+       50% { transform: scale(1.3); opacity: 0.7; }
+     }
+     
+     @media (max-width: 768px) {
+       .error-code {
+         font-size: 100px;
+       }
+       .error-title {
+         font-size: 24px;
+       }
+       .back-home {
+         padding: 12px 24px;
+         font-size: 14px;
+       }
+     }
+   </style>
 </head>
 <body>
-  <div class="error-container">
-    <h1>404 — Page Not Found</h1>
-    <p>The page you are looking for does not exist or has been moved.</p>
-    <a href="/" class="home-btn">Back to Home</a>
-  </div>
+   <canvas class="particle-glow" id="particle-error-bg"></canvas>
+   
+   <div class="error-page-container">
+     <div class="error-content">
+       <div class="error-badge">
+         <span class="status-dot"></span> Error 404
+       </div>
+       <h1 class="error-code">404</h1>
+       <h2 class="error-title">Page Not Found</h2>
+       <p class="error-message">
+         The page you're looking for doesn't exist or has been moved. 
+         Our AI agents are ready to help you get back on track.
+       </p>
+       <a href="/" class="back-home" aria-label="Return to home page">
+         <span>Back to HQ</span>
+         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+           <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+         </svg>
+       </a>
+     </div>
+   </div>
+   
+   <script>
+     // Particle background for error page - mobile optimized
+     (function() {
+       'use strict';
+       
+       const canvas = document.getElementById('particle-error-bg');
+       if (!canvas) return;
+       
+       const ctx = canvas.getContext('2d');
+       const isMobile = window.innerWidth < 768;
+       
+       function resizeCanvas() {
+         canvas.width = window.innerWidth;
+         canvas.height = window.innerHeight;
+       }
+       resizeCanvas();
+       window.addEventListener('resize', resizeCanvas);
+       
+       let particles = [];
+       const particleCount = isMobile ? Math.floor((canvas.width * canvas.height) / 20000) : 
+                                 Math.floor((canvas.width * canvas.height) / 12000);
+       
+       for (let i = 0; i < particleCount; i++) {
+         particles.push({
+           x: Math.random() * canvas.width,
+           y: Math.random() * canvas.height,
+           r: isMobile ? Math.random() * 0.8 + 0.3 : Math.random() * 1.5,
+           a: Math.random() * 0.3 + 0.1,
+           dx: isMobile ? (Math.random() - 0.5) * 0.1 : (Math.random() - 0.5) * 0.3,
+           dy: (Math.random() - 0.5) * 0.2,
+           pulse: Math.random() * Math.PI * 2
+         });
+       }
+       
+       function drawParticles(t) {
+         ctx.clearRect(0, 0, canvas.width, canvas.height);
+         for (const p of particles) {
+           p.x += p.dx;
+           p.y += p.dy;
+           p.pulse += 0.01;
+           
+           if (p.x < 0) p.x = canvas.width;
+           if (p.x > canvas.width) p.x = 0;
+           if (p.y < 0) p.y = canvas.height;
+           if (p.y > canvas.height) p.y = 0;
+           
+           const alpha = p.a * (0.6 + 0.4 * Math.sin(p.pulse));
+           ctx.beginPath();
+           ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+           ctx.fillStyle = `rgba(239, 68, 68, ${alpha})`;
+           ctx.fill();
+         }
+         requestAnimationFrame(drawParticles);
+       }
+       
+       drawParticles(0);
+     })();
+   </script>
 </body>
 </html>
