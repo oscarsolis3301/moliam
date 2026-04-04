@@ -28,33 +28,67 @@ const name = (data.name || "").trim();
   const service = (data.service || "").trim().toLowerCase();
   const budgetRange = (data.budget || "").trim().toLowerCase();
 
-// Score calculation: 0–100 scale based on service type + budget range (lead prioritization)
-  function calculateLeadScore(service, budget) {
-    if (!service || service === "other") return 0;
-
-    const servicePoints = {
-        website: 40,      // Higher value - full build @ $600+start
-    gbp: 30,           // Recurring revenue @$300/mo (lower than lsa)
-    lsa: 50,            // Google LSA @ $500 setup + $400/mo (highest value)
-      retainer: 60,      // Full service @ $1500/mo (premium tier)
-        };
-
-let baseScore = servicePoints[service] || 20;
-
-// Budget multiplier (0.5 to 1.5 range)
-const budgetMultiplier = {
-    'under-500': 0.5,
-    '500–1000': 0.75,
-    '1000–2000': 1.2,
-    '2000-plus': 1.5,
-      }[budget] || 1.0;
-
-// Score = base × budget multiplier, capped to 0–100
-const rawScore = Math.round(baseScore * budgetMultiplier);
-return Math.max(0, Math.min(100, rawScore));
+// Lead scoring: 0-100 scale based on signals from Ada's spec
+// Signals: phone(+15), company(+10), service(retainer+30, LSA+25, GBP+20, website+15), 
+// budget(5k+ +25, 2.5-5k +20, <1k +10), timeline(immediate +20, 1-2wk +15, this month +10, exploring +5),
+// detailed message >50 chars (+10)
+function calculateLeadScore(data) {
+  let score = 0;
+  
+   // Phone provided: +15
+  if (data.phone && String(data.phone).trim().length > 0) {
+    score += 15;
+   }
+  
+   // Company name: +10
+  if (data.company && String(data.company).trim().length > 0) {
+    score += 10;
+   }
+  
+   // Service interest points
+  const service = (data.service || "").toLowerCase();
+  const servicePoints = {
+    retainer: 30,       // Full service @ $1500/mo (premium tier)
+    lsa: 25,            // Google LSA @ $500 setup + $400/mo
+    gbp: 20,            // Recurring revenue @ $300/mo
+    website: 15,        // Full build @ $600+ start
+   };
+  score += servicePoints[service] || 0;
+  
+   // Budget range points
+  const budgetRange = (data.budget_range || "").toLowerCase();
+  if (budgetRange.includes('2000-plus') || budgetRange.includes('5k+') || budgetRange.includes('5000+')) {
+    score += 25;      // $5k+ budget
+   } else if (budgetRange.includes('1000-2000') || budgetRange.includes('2.5-5k') || budgetRange.includes('2500-5000')) {
+    score += 20;      // $2.5-5k budget
+   } else if (budgetRange.includes('under-500') || budgetRange.includes('<1k') || budgetRange.includes('500-1000')) {
+    score += 10;      // <$1k budget
+   }
+  
+   // Timeline points: +20 immediate, +15 1-2wk, +10 this month, +5 exploring
+  const timeline = (data.timeline || "").toLowerCase();
+  if (timeline.includes('immediate') || timeline.includes('within 1 week') || timeline.includes('this week')) {
+    score += 20;
+   } else if (timeline.includes('1-2 weeks') || timeline.includes('7-14 days')) {
+    score += 15;
+   } else if (timeline.includes('this month') || timeline.includes('2-4 weeks')) {
+    score += 10;
+   } else if (timeline.includes('exploring') || timeline.includes('just looking')) {
+    score += 5;
+   }
+  
+   // Detailed message (>50 chars): +10
+  const message = (data.message || "").trim();
+  if (message.length > 50) {
+    score += 10;
+   }
+  
+   // Cap at 100
+  return Math.min(100, score);
 }
 
-const leadScore = calculateLeadScore(service, budgetRange);
+// Call with full data object including phone, company, service, budget_range, timeline, message
+const leadScore = calculateLeadScore(data);
 
   const errors = [];
   if (name.length < 2) errors.push("Name must be at least 2 characters.");
