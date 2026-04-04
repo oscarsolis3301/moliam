@@ -1,248 +1,323 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   <meta charset="UTF-8"/>
-   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-   <title>404 — Page Not Found | Moliam</title>
-   <meta name="description" content="Page not found - Moliam AI Operations Platform">
-   <meta name="robots" content="noindex, follow"/>
-   <link rel="preconnect" href="https://fonts.googleapis.com"/>
-   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-   <link rel="stylesheet" href="/css/main.css"/>
-   <style>
-     :root { 
-       --error-color: #EF4444;
-       --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-     }
-     
-     .error-page-container {
-       min-height: 100vh;
-       display: flex;
-       align-items: center;
-       justify-content: center;
-       position: relative;
-       z-index: 1;
-       padding: 24px;
-     }
-     
-     .error-content {
-       text-align: center;
-       max-width: 520px;
-       animation: slideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-     }
-     
-     .error-code {
-       font-size: clamp(80px, 15vw, 140px);
-       font-weight: 900;
-       line-height: 1;
-       margin-bottom: 24px;
-       background: linear-gradient(135deg, var(--error-color), #DC2626);
-       -webkit-background-clip: text;
-       -webkit-text-fill-color: transparent;
-       background-clip: text;
-       animation: pulse-error 3s ease-in-out infinite;
-     }
-     
-     .error-title {
-       font-size: clamp(24px, 4vw, 32px);
-       font-weight: 700;
-       margin-bottom: 16px;
-       color: #F9FAFB;
-     }
-     
-     .error-message {
-       color: #9CA3AF;
-       font-size: 16px;
-       line-height: 1.6;
-       margin-bottom: 32px;
-     }
-     
-     .back-home {
-       display: inline-flex;
-       align-items: center;
-       gap: 10px;
-       padding: 14px 32px;
-       border-radius: 12px;
-       background: linear-gradient(135deg, var(--error-color), #DC2626);
-       color: white;
-       font-size: 15px;
-       font-weight: 600;
-       text-decoration: none;
-       transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-       position: relative;
-       overflow: hidden;
-     }
-     
-     .back-home::before {
-       content: '';
-       position: absolute;
-       top: 0; left: 0; right: 0; bottom: 0;
-       background: linear-gradient(135deg, var(--error-color), #DC2626);
-       opacity: 0;
-       transition: opacity var(--transition-fast);
-     }
-     
-     .back-home:hover {
-       transform: translateY(-3px);
-       box-shadow: 0 12px 40px rgba(239,68,68,0.5);
-     }
-     
-     .back-home:hover::before {
-       opacity: 1;
-     }
-     
-     .back-home svg {
-       position: relative;
-       z-index: 1;
-     }
-     
-     @keyframes slideUp {
-       from {
-         opacity: 0;
-         transform: translateY(40px);
-       }
-       to {
-         opacity: 1;
-         transform: translateY(0);
-       }
-     }
-     
-     @keyframes pulse-error {
-       0%, 100% { filter: drop-shadow(0 0 8px rgba(239,68,68,0.3)); }
-       50% { filter: drop-shadow(0 0 20px rgba(239,68,68,0.6)); }
-     }
-     
-     .particle-glow {
-       position: fixed;
-       top: 0; left: 0;
-       width: 100%; height: 100%;
-       z-index: 0;
-       pointer-events: none;
-     }
-     
-     .error-badge {
-       display: inline-flex;
-       align-items: center;
-       gap: 8px;
-       padding: 6px 16px;
-       border-radius: 100px;
-       background: rgba(239,68,68,0.1);
-       border: 1px solid rgba(239,68,68,0.2);
-       font-size: 11px;
-       font-weight: 600;
-       color: var(--error-color);
-       text-transform: uppercase;
-       letter-spacing: 0.05em;
-       margin-bottom: 24px;
-     }
-     
-     .status-dot {
-       width: 6px; height: 6px; border-radius: 50%;
-       background: var(--error-color);
-       box-shadow: 0 0 8px var(--error-color);
-       animation: pulse-dot 2s ease-in-out infinite;
-     }
-     
-     @keyframes pulse-dot {
-       0%, 100% { transform: scale(1); opacity: 1; }
-       50% { transform: scale(1.3); opacity: 0.7; }
-     }
-     
-     @media (max-width: 768px) {
-       .error-code {
-         font-size: 100px;
-       }
-       .error-title {
-         font-size: 24px;
-       }
-       .back-home {
-         padding: 12px 24px;
-         font-size: 14px;
-       }
-     }
-   </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 — Page Not Found | Moliam</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0B0E14;
+      color: #E2E8F0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Particle canvas */
+    #particles {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Ambient glow blobs */
+    .glow {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: .12;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glow--blue   { width: 500px; height: 500px; background: #3B82F6; top: -10%; left: -8%; }
+    .glow--purple { width: 420px; height: 420px; background: #8B5CF6; bottom: -8%; right: -6%; }
+    .glow--green  { width: 300px; height: 300px; background: #10B981; top: 50%; left: 60%; transform: translate(-50%,-50%); }
+
+    /* Main content */
+    .container {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 2rem;
+      max-width: 600px;
+      width: 100%;
+    }
+
+    /* 404 number */
+    .error-code {
+      font-size: clamp(7rem, 20vw, 12rem);
+      font-weight: 900;
+      line-height: 1;
+      background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 50%, #10B981 100%);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 6s ease infinite, floatIn .8s cubic-bezier(.16,1,.3,1) both;
+      margin-bottom: .25rem;
+      user-select: none;
+      position: relative;
+    }
+    .error-code::after {
+      content: '404';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 50%, #10B981 100%);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 6s ease infinite;
+      filter: blur(30px);
+      opacity: .4;
+      z-index: -1;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50%      { background-position: 100% 50%; }
+    }
+    @keyframes floatIn {
+      from { opacity: 0; transform: translateY(30px) scale(.92); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .subtitle {
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: #CBD5E1;
+      margin-bottom: .5rem;
+      animation: floatIn .8s .15s cubic-bezier(.16,1,.3,1) both;
+    }
+
+    .description {
+      font-size: .95rem;
+      color: #64748B;
+      margin-bottom: 2.5rem;
+      line-height: 1.6;
+      animation: floatIn .8s .25s cubic-bezier(.16,1,.3,1) both;
+    }
+
+    /* Search bar */
+    .search-wrap {
+      animation: floatIn .8s .35s cubic-bezier(.16,1,.3,1) both;
+      margin-bottom: 2.5rem;
+    }
+    .search-form {
+      display: flex;
+      gap: 0;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: border-color .25s, box-shadow .25s;
+    }
+    .search-form:focus-within {
+      border-color: rgba(59,130,246,.45);
+      box-shadow: 0 0 0 3px rgba(59,130,246,.1), 0 8px 32px rgba(0,0,0,.3);
+    }
+    .search-input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      padding: .9rem 1.2rem;
+      font-family: inherit;
+      font-size: .95rem;
+      color: #E2E8F0;
+    }
+    .search-input::placeholder { color: #475569; }
+    .search-btn {
+      background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+      border: none;
+      padding: .9rem 1.4rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      transition: opacity .2s;
+    }
+    .search-btn:hover { opacity: .85; }
+    .search-btn svg { width: 18px; height: 18px; color: #fff; }
+
+    /* Quick links */
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: .75rem;
+      animation: floatIn .8s .45s cubic-bezier(.16,1,.3,1) both;
+    }
+    .links a {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      padding: .65rem 1.25rem;
+      font-size: .875rem;
+      font-weight: 500;
+      color: #CBD5E1;
+      text-decoration: none;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 10px;
+      transition: all .25s;
+    }
+    .links a:hover {
+      background: rgba(255,255,255,.08);
+      border-color: rgba(59,130,246,.35);
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0,0,0,.25);
+    }
+    .links a svg { width: 16px; height: 16px; opacity: .6; }
+
+    /* Footer hint */
+    .footer {
+      position: fixed;
+      bottom: 1.5rem;
+      font-size: .75rem;
+      color: #334155;
+      z-index: 1;
+    }
+
+    @media (max-width: 480px) {
+      .links { gap: .5rem; }
+      .links a { padding: .55rem 1rem; font-size: .8rem; }
+    }
+  </style>
 </head>
 <body>
-   <canvas class="particle-glow" id="particle-error-bg"></canvas>
-   
-   <div class="error-page-container">
-     <div class="error-content">
-       <div class="error-badge">
-         <span class="status-dot"></span> Error 404
-       </div>
-       <h1 class="error-code">404</h1>
-       <h2 class="error-title">Page Not Found</h2>
-       <p class="error-message">
-         The page you're looking for doesn't exist or has been moved. 
-         Our AI agents are ready to help you get back on track.
-       </p>
-       <a href="/" class="back-home" aria-label="Return to home page">
-         <span>Back to HQ</span>
-         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-           <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-         </svg>
-       </a>
-     </div>
-   </div>
-   
-   <script>
-     // Particle background for error page - mobile optimized
-     (function() {
-       'use strict';
-       
-       const canvas = document.getElementById('particle-error-bg');
-       if (!canvas) return;
-       
-       const ctx = canvas.getContext('2d');
-       const isMobile = window.innerWidth < 768;
-       
-       function resizeCanvas() {
-         canvas.width = window.innerWidth;
-         canvas.height = window.innerHeight;
-       }
-       resizeCanvas();
-       window.addEventListener('resize', resizeCanvas);
-       
-       let particles = [];
-       const particleCount = isMobile ? Math.floor((canvas.width * canvas.height) / 20000) : 
-                                 Math.floor((canvas.width * canvas.height) / 12000);
-       
-       for (let i = 0; i < particleCount; i++) {
-         particles.push({
-           x: Math.random() * canvas.width,
-           y: Math.random() * canvas.height,
-           r: isMobile ? Math.random() * 0.8 + 0.3 : Math.random() * 1.5,
-           a: Math.random() * 0.3 + 0.1,
-           dx: isMobile ? (Math.random() - 0.5) * 0.1 : (Math.random() - 0.5) * 0.3,
-           dy: (Math.random() - 0.5) * 0.2,
-           pulse: Math.random() * Math.PI * 2
-         });
-       }
-       
-       function drawParticles(t) {
-         ctx.clearRect(0, 0, canvas.width, canvas.height);
-         for (const p of particles) {
-           p.x += p.dx;
-           p.y += p.dy;
-           p.pulse += 0.01;
-           
-           if (p.x < 0) p.x = canvas.width;
-           if (p.x > canvas.width) p.x = 0;
-           if (p.y < 0) p.y = canvas.height;
-           if (p.y > canvas.height) p.y = 0;
-           
-           const alpha = p.a * (0.6 + 0.4 * Math.sin(p.pulse));
-           ctx.beginPath();
-           ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-           ctx.fillStyle = `rgba(239, 68, 68, ${alpha})`;
-           ctx.fill();
-         }
-         requestAnimationFrame(drawParticles);
-       }
-       
-       drawParticles(0);
-     })();
-   </script>
+
+  <canvas id="particles"></canvas>
+  <div class="glow glow--blue"></div>
+  <div class="glow glow--purple"></div>
+  <div class="glow glow--green"></div>
+
+  <div class="container">
+    <div class="error-code">404</div>
+    <p class="subtitle">This page doesn't exist yet</p>
+    <p class="description">The page you're looking for may have been moved, deleted, or never existed. Try searching or use one of the links below.</p>
+
+    <div class="search-wrap">
+      <form class="search-form" id="searchForm" action="https://www.google.com/search" method="GET" target="_blank" rel="noopener">
+        <input type="text" class="search-input" id="searchInput" placeholder="Search the Moliam site…" autocomplete="off" />
+        <input type="hidden" name="q" id="searchQuery" />
+        <button type="submit" class="search-btn" aria-label="Search">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5" stroke-linecap="round"/></svg>
+        </button>
+      </form>
+    </div>
+
+    <nav class="links">
+      <a href="/">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="m3 12 9-9 9 9M5 10v10a1 1 0 001 1h3m10-11v10a1 1 0 01-1 1h-3m-4 0v-5a1 1 0 011-1h2a1 1 0 011 1v5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Home
+      </a>
+      <a href="/#services">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Services
+      </a>
+      <a href="/#contact">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8A8.5 8.5 0 0112.5 20a8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7A8.38 8.38 0 014 11.5 8.5 8.5 0 018.7 4a8.38 8.38 0 013.8-.9h.5A8.48 8.48 0 0121 11.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Contact
+      </a>
+      <a href="/portal">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Client Portal
+      </a>
+    </nav>
+  </div>
+
+  <div class="footer">© Moliam</div>
+
+  <script>
+    // Search form — prepend site: prefix
+    document.getElementById('searchForm').addEventListener('submit', function(e) {
+      var input = document.getElementById('searchInput').value.trim();
+      if (!input) { e.preventDefault(); return; }
+      document.getElementById('searchQuery').value = 'site:moliam.pages.dev ' + input;
+    });
+
+    // Particle animation
+    (function() {
+      var c = document.getElementById('particles');
+      var ctx = c.getContext('2d');
+      var dots = [];
+      var count = 60;
+      var mouse = { x: -1000, y: -1000 };
+
+      function resize() {
+        c.width = window.innerWidth;
+        c.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+      document.addEventListener('mousemove', function(e) { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+      var colors = ['rgba(59,130,246,.35)', 'rgba(139,92,246,.3)', 'rgba(16,185,129,.25)', 'rgba(148,163,184,.15)'];
+
+      for (var i = 0; i < count; i++) {
+        dots.push({
+          x: Math.random() * c.width,
+          y: Math.random() * c.height,
+          r: Math.random() * 2 + 0.5,
+          vx: (Math.random() - 0.5) * 0.3,
+          vy: (Math.random() - 0.5) * 0.3,
+          color: colors[Math.floor(Math.random() * colors.length)]
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, c.width, c.height);
+        for (var i = 0; i < dots.length; i++) {
+          var d = dots[i];
+          d.x += d.vx;
+          d.y += d.vy;
+          if (d.x < 0) d.x = c.width;
+          if (d.x > c.width) d.x = 0;
+          if (d.y < 0) d.y = c.height;
+          if (d.y > c.height) d.y = 0;
+
+          // Subtle mouse repulsion
+          var dx = d.x - mouse.x, dy = d.y - mouse.y;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) {
+            d.x += dx / dist * 0.8;
+            d.y += dy / dist * 0.8;
+          }
+
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+          ctx.fillStyle = d.color;
+          ctx.fill();
+
+          // Connect nearby dots
+          for (var j = i + 1; j < dots.length; j++) {
+            var d2 = dots[j];
+            var ddx = d.x - d2.x, ddy = d.y - d2.y;
+            var dd = ddx * ddx + ddy * ddy;
+            if (dd < 18000) {
+              ctx.beginPath();
+              ctx.moveTo(d.x, d.y);
+              ctx.lineTo(d2.x, d2.y);
+              ctx.strokeStyle = 'rgba(148,163,184,' + (0.04 * (1 - dd / 18000)) + ')';
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+  </script>
 </body>
 </html>
