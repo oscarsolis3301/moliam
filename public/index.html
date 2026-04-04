@@ -393,12 +393,16 @@
       <label for="cf-name">Name</label>
       <input type="text" id="cf-name" name="name" required placeholder="Your name" aria-label="Contact form input" autocomplete="name">
     </div>
-    <div class="form-group">
-      <label for="cf-email">Email</label>
-      <input type="email" id="cf-email" name="email" required placeholder="you@company.com" aria-label="Contact form input" autocomplete="email">
-    </div>
-    <div class="form-group">
-      <label for="cf-service">Service Interest</label>
+     <div class="form-group">
+       <label for="cf-email">Email</label>
+       <input type="email" id="cf-email" name="email" required placeholder="you@company.com" aria-label="Contact form input" autocomplete="email">
+     </div>
+     <div class="form-group">
+       <label for="cf-phone">Phone (optional)</label>
+       <input type="tel" id="cf-phone" name="phone" placeholder="+1 (555) 000-0000" aria-label="Phone number (optional)" autocomplete="tel">
+     </div>
+     <div class="form-group">
+       <label for="cf-service">Service Interest</label>
       <select id="cf-service" name="service">
         <option value="">Select a service...</option>
         <option value="website">Website Build ($600)</option>
@@ -419,17 +423,20 @@
 
 <!-- ═══════════════════════ FOOTER ═══════════════════════ -->
 <footer id="footer">
-   <div class="footer-inner">
-     <span class="footer-brand">Moliam</span>
-     <span class="footer-copy">&copy; 2026 Moliam. All rights reserved. Orange County, CA.</span>
-     <a href="/dashboard" class="footer-portal-link">Client Portal</a>
-     <span class="footer-ai">Powered by AI</span>
-     <div class="footer-links">
-       <a href="https://twitter.com/visualark" aria-label="Twitter" rel="noopener noreferrer" target="_blank">Twitter</a>
-       <a href="https://linkedin.com/company/visualark" aria-label="LinkedIn" rel="noopener noreferrer" target="_blank">LinkedIn</a>
-       <a href="https://github.com/visualark" aria-label="GitHub" rel="noopener noreferrer" target="_blank">GitHub</a>
-     </div>
-   </div>
+    <div class="footer-inner">
+      <span class="footer-brand">Moliam</span>
+      <span class="footer-copy">&copy; 2026 Moliam. All rights reserved. Orange County, CA.</span>
+      <a href="/dashboard" class="footer-portal-link">Client Portal</a>
+      <span class="footer-ai">Powered by AI</span>
+      <div class="footer-links">
+        <a href="mailto:hello@moliam.pages.dev" aria-label="Email" rel="noopener noreferrer" target="_blank">Contact Us</a>
+      </div>
+      <div class="newsletter-signup">
+        <label for="newsletter-email">Join our newsletter</label>
+        <input type="email" id="newsletter-email" placeholder="Your email" autocomplete="email">
+        <button type="submit" aria-label="Subscribe to newsletter">Subscribe</button>
+      </div>
+    </div>
 </footer>
 
 <!-- ═══════════════════════════════════════════════════════════
