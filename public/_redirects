@@ -1,0 +1,3 @@
+/dashboard /dashboard.html 200
+/dashboard?* /dashboard.html 200
+/api/* /api/:splat 200
