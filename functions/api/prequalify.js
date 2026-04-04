@@ -171,15 +171,12 @@ async function generateBooking(context, prequalId) {
   if (prequal) {
     // Insert booking record
     const now = new Date().toISOString();
-    await db.prepare(`
-      INSERT INTO appointments 
-      (prequalification_id, calendar_link, status, scheduled_with)
-      VALUES (?, ?, 'pending', '${context.env.ADMIN_EMAIL || "hello@moliam.com"}')
-    `).bind(prequalId, personalizedLink, now).run();
+    await db.prepare(
+      "INSERT INTO appointments (prequalification_id, calendar_link, status, scheduled_with) VALUES (?, ?, 'pending', ?)"
+    ).bind(prequalId, personalizedLink, context.env.ADMIN_EMAIL || "hello@moliam.com").run();
 
     // Send booking confirmation email to lead
-    const { env } = context;
-    await sendBookingConfirmationEmail(prequal, personalizedLink);
+    await sendBookingConfirmationEmail(context, prequal, personalizedLink);
     
     // Auto-schedule initial demo slot (30-day window from today)
     const baseDate = new Date();
@@ -193,10 +190,12 @@ async function generateBooking(context, prequalId) {
 }
 
 // Send booking confirmation to qualified leads
-async function sendBookingConfirmationEmail(prequal, calendarLink) {
+async function sendBookingConfirmationEmail(context, prequal, calendarLink) {
   try {
-    const email = prequal.submission_id ? await getSubEmail(prequal.submission_id) : null;
-    const name = prequal.submission_id ? await getSubName(prequal.submission_id) : 'Valued Client';
+    const db = context.env.MOLIAM_DB;
+    const env = context.env;
+    const email = prequal.submission_id ? await getSubEmail(db, prequal.submission_id) : null;
+    const name = prequal.submission_id ? await getSubName(db, prequal.submission_id) : 'Valued Client';
 
     const subject = "🎉 You're Qualified! Book Your Discovery Call Now";
     
@@ -261,17 +260,15 @@ async function sendBookingConfirmationEmail(prequal, calendarLink) {
   }
 }
 
-async function getSubEmail(submissionId) {
+async function getSubEmail(db, submissionId) {
   if (!submissionId) return null;
-  const db = context.env.MOLIAM_DB;
-  const sub = await db.prepare(`SELECT email FROM submissions WHERE id = ${submissionId}`).first();
+  const sub = await db.prepare("SELECT email FROM submissions WHERE id = ?").bind(submissionId).first();
   return sub ? sub.email : null;
 }
 
-async function getSubName(submissionId) {
+async function getSubName(db, submissionId) {
   if (!submissionId) return "Valued Client";
-  const db = context.env.MOLIAM_DB;
-  const sub = await db.prepare(`SELECT name FROM submissions WHERE id = ${submissionId}`).first();
+  const sub = await db.prepare("SELECT name FROM submissions WHERE id = ?").bind(submissionId).first();
   return sub ? sub.name : "Valued Client";
 }
 

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book a Call — Moliam</title>
+<meta name="description" content="Schedule a free strategy call with Moliam. Discover how AI-powered operations can transform your agency.">
+<meta name="theme-color" content="#0B0E14">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #0B0E14;
+  --bg-building: #111827;
+  --bg-room: #1F2937;
+  --border-subtle: #1F2937;
+  --accent-blue: #3B82F6;
+  --accent-purple: #8B5CF6;
+  --accent-green: #10B981;
+  --text-primary: #F9FAFB;
+  --text-secondary: #9CA3AF;
+  --text-dim: #6B7280;
+  --glass-bg: rgba(17, 24, 39, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Ambient Background ── */
+.ambient-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.ambient-bg .orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.15;
+  animation: orbFloat 20s ease-in-out infinite;
+}
+.ambient-bg .orb-1 {
+  width: 600px; height: 600px;
+  background: var(--accent-blue);
+  top: -10%; left: -10%;
+}
+.ambient-bg .orb-2 {
+  width: 500px; height: 500px;
+  background: var(--accent-purple);
+  bottom: -10%; right: -10%;
+  animation-delay: -10s;
+}
+.ambient-bg .orb-3 {
+  width: 300px; height: 300px;
+  background: var(--accent-green);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.08;
+  animation-delay: -5s;
+}
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.05); }
+  66% { transform: translate(-20px, 20px) scale(0.95); }
+}
+
+/* ── Nav ── */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 1rem 2rem;
+  background: rgba(11, 14, 20, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.nav-logo {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.nav-logo .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent-blue);
+  box-shadow: 0 0 12px var(--accent-blue);
+}
+.nav-back {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.2s;
+}
+.nav-back:hover { color: var(--text-primary); }
+
+/* ── Main Content ── */
+.page-content {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 4rem;
+}
+
+/* ── Hero Section ── */
+.hero-section {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1rem;
+  border-radius: 100px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: var(--accent-blue);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1.5rem;
+}
+.badge .pulse {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  box-shadow: 0 0 8px var(--accent-green);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+}
+.hero-title {
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin-bottom: 1rem;
+}
+.hero-title .gradient-text {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto 2.5rem;
+  line-height: 1.7;
+}
+
+/* ── What to Expect Cards ── */
+.expect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+.expect-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  backdrop-filter: blur(12px);
+  transition: border-color 0.3s, transform 0.3s;
+}
+.expect-card:hover {
+  border-color: rgba(59, 130, 246, 0.3);
+  transform: translateY(-2px);
+}
+.expect-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  margin-bottom: 0.75rem;
+}
+.expect-icon.blue { background: rgba(59, 130, 246, 0.15); }
+.expect-icon.purple { background: rgba(139, 92, 246, 0.15); }
+.expect-icon.green { background: rgba(16, 185, 129, 0.15); }
+.expect-card h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  letter-spacing: -0.01em;
+}
+.expect-card p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* ── Calendly Widget Section ── */
+.calendly-section {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  margin-bottom: 3rem;
+}
+.calendly-section-header {
+  padding: 1.5rem 2rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.calendly-section-header .icon-ring {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+.calendly-section-header h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.calendly-inline-widget {
+  min-width: 320px;
+  height: 700px;
+}
+
+/* ── Fallback Contact ── */
+.fallback-section {
+  text-align: center;
+  padding: 2.5rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  backdrop-filter: blur(12px);
+}
+.fallback-section h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.fallback-section p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+.contact-methods {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+.contact-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.contact-pill:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: var(--text-primary);
+}
+.contact-pill .pill-icon {
+  font-size: 1rem;
+}
+
+/* ── Footer ── */
+.footer {
+  text-align: center;
+  padding: 2rem 0;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .page-content { padding: 2rem 1rem 3rem; }
+  .calendly-inline-widget { height: 600px; }
+  .expect-grid { grid-template-columns: 1fr; }
+  .calendly-section-header { padding: 1rem 1rem 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- Ambient Background -->
+<div class="ambient-bg">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<!-- Navigation -->
+<nav class="nav">
+  <a href="/" class="nav-logo">
+    <span class="dot"></span>
+    Moliam
+  </a>
+  <a href="/" class="nav-back">
+    <span>←</span> Back to Home
+  </a>
+</nav>
+
+<!-- Page Content -->
+<main class="page-content">
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="badge">
+      <span class="pulse"></span>
+      Free Strategy Call
+    </div>
+    <h1 class="hero-title">
+      Let's Build Something<br><span class="gradient-text">Extraordinary</span>
+    </h1>
+    <p class="hero-subtitle">
+      Book a 30-minute discovery call. We'll audit your current digital presence, 
+      identify quick wins, and map out an AI-powered growth strategy tailored to your business.
+    </p>
+  </section>
+
+  <!-- What to Expect -->
+  <section class="expect-grid">
+    <div class="expect-card">
+      <div class="expect-icon blue">🔍</div>
+      <h3>Discovery & Audit</h3>
+      <p>We review your current online presence, competitors, and identify gaps holding you back.</p>
+    </div>
+    <div class="expect-card">
+      <div class="expect-icon purple">🗺️</div>
+      <h3>Custom Strategy</h3>
+      <p>Get a personalized action plan covering web, GBP, LSA, and AI automation opportunities.</p>
+    </div>
+    <div class="expect-card">
+      <div class="expect-icon green">🚀</div>
+      <h3>Clear Next Steps</h3>
+      <p>Leave with a concrete roadmap — timeline, deliverables, and expected ROI. No pressure, ever.</p>
+    </div>
+  </section>
+
+  <!-- Calendly Embed -->
+  <section class="calendly-section">
+    <div class="calendly-section-header">
+      <div class="icon-ring">📅</div>
+      <h2>Select a Time That Works for You</h2>
+    </div>
+    <div class="calendly-inline-widget" data-url="https://calendly.com/visualark/demo?hide_gdpr_banner=1&background_color=111827&text_color=f9fafb&primary_color=3b82f6"></div>
+  </section>
+
+  <!-- Fallback Contact -->
+  <section class="fallback-section">
+    <h3>Prefer to reach out directly?</h3>
+    <p>No problem — pick whichever channel works best for you and we'll get back to you within 24 hours.</p>
+    <div class="contact-methods">
+      <a href="mailto:hello@moliam.co" class="contact-pill">
+        <span class="pill-icon">✉️</span>
+        hello@moliam.co
+      </a>
+      <a href="https://calendly.com/visualark/demo" target="_blank" rel="noopener" class="contact-pill">
+        <span class="pill-icon">📅</span>
+        Open Calendly Directly
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2025 Moliam — AI-Powered Operations for Modern Agencies</p>
+  </footer>
+
+</main>
+
+<!-- Calendly Widget Script -->
+<script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+
+</body>
+</html>
