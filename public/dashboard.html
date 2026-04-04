@@ -339,12 +339,29 @@
             margin-bottom: 2rem;
         }
 
-        /* Loading State */
-        .loading-state {
-            color: var(--text-secondary);
-            text-align: center;
-            padding: 2rem;
-        }
+         /* Loading State */
+         .skeleton {
+             background: linear-gradient(90deg, #1E232E 25%, #2D3748 50%, #1E232E 75%);
+             background-size: 200% 100%;
+             animation: shimmer 1.5s infinite;
+             border-radius: 8px;
+         }
+
+          @keyframes shimmer {
+              0% {
+                 background-position: 200% 0;
+              }
+
+              100% {
+                 background-position: -200% 0;
+              }
+          }
+
+          .loading-state {
+             color: var(--text-secondary);
+             text-align: center;
+             padding: 2rem;
+         }
 
         .loading-spinner {
             border: 3px solid var(--bg-hover);
@@ -451,14 +468,9 @@
                 setupMessageForm();
             }
 
-            function getLoadingHTML() {
-                return `
-                    <div class="loading-state">
-                        <div class="loading-spinner"></div>
-                        Loading data...
-                    </div>
-                `;
-            }
+           function getLoadingHTML() {
+               return `<div class="skeleton" style="height: 60px;"></div>`;
+           }
 
             // Escape HTML to prevent XSS
             function escapeHtml(text) {
