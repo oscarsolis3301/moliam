@@ -832,6 +832,7 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
     const isOpen = btn.classList.toggle('open');
     menu.classList.toggle('open');
     document.body.style.overflow = isOpen ? 'hidden' : '';
+    btn.setAttribute('aria-expanded', isOpen.toString());
   }
 
   btn.addEventListener('click', toggleMenu);
