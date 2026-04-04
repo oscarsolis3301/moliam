@@ -612,13 +612,33 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   text-shadow: 0 0 8px rgba(245,158,11,0.3);
 }
 .testimonial-card .quote {
-  font-size: 14px; color: var(--text-secondary);
+  font-size: 1rem; color: var(--text-secondary);
   line-height: 1.7; font-style: italic;
   margin-bottom: 20px;
 }
 .testimonial-card .author {
   font-size: 14px; font-weight: 600;
   color: var(--text-primary);
+}
+.testimonial-card .author-row {
+  display: flex; align-items: center; gap: 12px;
+}
+.testimonial-card .avatar-initials {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.testimonial-card.accent-blue .avatar-initials { background: var(--accent-blue); }
+.testimonial-card.accent-purple .avatar-initials { background: var(--accent-purple); }
+.testimonial-card.accent-green .avatar-initials { background: var(--accent-green); }
+.testimonial-card.accent-blue:hover {
+  background: linear-gradient(135deg, var(--glass-bg), rgba(59,130,246,0.08));
+}
+.testimonial-card.accent-purple:hover {
+  background: linear-gradient(135deg, var(--glass-bg), rgba(139,92,246,0.08));
+}
+.testimonial-card.accent-green:hover {
+  background: linear-gradient(135deg, var(--glass-bg), rgba(16,185,129,0.08));
 }
 .testimonial-card .company {
   font-size: 12px; color: var(--text-dim);
@@ -1319,20 +1339,35 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     <div class="testimonial-card accent-blue">
       <div class="stars">★★★★★</div>
       <p class="quote">"Moliam built our entire online presence in days. Our Google Business Profile went from invisible to the top 3 in Orange County. The AI agents work around the clock — it is like having a full marketing team for a fraction of the cost."</p>
-      <div class="author">Oscar S.</div>
-      <div class="company">OnePlus Electric</div>
+      <div class="author-row">
+        <div class="avatar-initials">OS</div>
+        <div>
+          <div class="author">Oscar S.</div>
+          <div class="company">OnePlus Electric</div>
+        </div>
+      </div>
     </div>
     <div class="testimonial-card accent-purple">
       <div class="stars">★★★★★</div>
       <p class="quote">"The Local Service Ads setup was seamless. We went from zero leads to 15+ qualified calls per week. The monthly reports show exactly where every dollar goes."</p>
-      <div class="author">Mike R.</div>
-      <div class="company">RoofPro Solutions</div>
+      <div class="author-row">
+        <div class="avatar-initials">MR</div>
+        <div>
+          <div class="author">Mike R.</div>
+          <div class="company">RoofPro Solutions</div>
+        </div>
+      </div>
     </div>
     <div class="testimonial-card accent-green">
       <div class="stars">★★★★★</div>
       <p class="quote">"I was skeptical about AI managing our online presence, but the results speak for themselves. 40% increase in website traffic and our Google reviews doubled in 3 months."</p>
-      <div class="author">Sarah T.</div>
-      <div class="company">CleanAir HVAC</div>
+      <div class="author-row">
+        <div class="avatar-initials">ST</div>
+        <div>
+          <div class="author">Sarah T.</div>
+          <div class="company">CleanAir HVAC</div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1978,421 +2013,3 @@ function drawRoom(room, t) {
     ctx.beginPath();
     ctx.roundRect(pBarX, pBarY, pBarW * clamp(progress, 0, 1), pBarH, 2);
     ctx.fill();
-  }
-
-  // Active count badge
-  if (activeCount > 0) {
-    const bx = x + w - 24;
-    const by = y + 16;
-    ctx.save();
-    ctx.shadowColor = color;
-    ctx.shadowBlur = 10;
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(bx, by, 11, 0, PI2);
-    ctx.fill();
-    ctx.restore();
-    ctx.fillStyle = '#fff';
-    ctx.font = '700 11px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(activeCount, bx, by);
-    ctx.textBaseline = 'alphabetic';
-  }
-}
-
-/* ─── DRAW BOT ─── */
-function drawBot(bot, t) {
-  const { x, y, color, initials, state, task, thinkAngle, trail, radius } = bot;
-  const R = 20; // larger avatar radius
-  const isOffline = state === 'offline';
-  const drawColor = isOffline ? '#4B5563' : color;
-  const [cr, cg, cb] = hexRGB(drawColor);
-
-  // Dim offline bots
-  if (isOffline) ctx.globalAlpha = 0.45;
-
-  // Particle trail (fading dots in bot's color)
-  for (const tp of trail) {
-    ctx.beginPath();
-    ctx.arc(tp.x, tp.y, tp.r, 0, PI2);
-    ctx.fillStyle = `rgba(${cr},${cg},${cb},${tp.a * 0.5})`;
-    ctx.fill();
-  }
-
-  // Drop shadow
-  ctx.beginPath();
-  ctx.ellipse(x, y + R + 5, R * 0.65, 4, 0, 0, PI2);
-  ctx.fillStyle = 'rgba(0,0,0,0.35)';
-  ctx.fill();
-
-  // Outer status ring (background)
-  const ringColor = isOffline ? '#374151' :
-                    state === 'working' ? '#10B981' :
-                    state === 'thinking' ? '#F59E0B' :
-                    state === 'moving' ? '#3B82F6' : 'rgba(107,114,128,0.3)';
-  ctx.beginPath();
-  ctx.arc(x, y, R + 4, 0, PI2);
-  ctx.strokeStyle = `rgba(${hexRGB(ringColor === 'rgba(107,114,128,0.3)' ? '#6B7280' : ringColor).join(',')},0.25)`;
-  ctx.lineWidth = 2.5;
-  ctx.stroke();
-
-  // Animated rotating ring (for working/thinking/moving)
-  if (state === 'working' || state === 'thinking' || state === 'moving') {
-    const speed = state === 'working' ? 0.004 : state === 'thinking' ? 0.002 : 0.003;
-    const arcLen = state === 'working' ? 2.2 : 1.5;
-    const angle = (t * speed) % PI2;
-    ctx.beginPath();
-    ctx.arc(x, y, R + 4, angle, angle + arcLen);
-    ctx.strokeStyle = ringColor;
-    ctx.lineWidth = 3;
-    ctx.lineCap = 'round';
-    ctx.stroke();
-    ctx.lineCap = 'butt';
-
-    // Second arc segment for working (double spinner)
-    if (state === 'working') {
-      ctx.beginPath();
-      ctx.arc(x, y, R + 4, angle + Math.PI, angle + Math.PI + 1.2);
-      ctx.strokeStyle = ringColor;
-      ctx.lineWidth = 3;
-      ctx.lineCap = 'round';
-      ctx.stroke();
-      ctx.lineCap = 'butt';
-    }
-  }
-
-  // Avatar circle with gradient
-  const grad = ctx.createRadialGradient(x - 5, y - 5, 0, x, y, R);
-  grad.addColorStop(0, `rgba(${Math.min(255,cr+30)},${Math.min(255,cg+30)},${Math.min(255,cb+30)},1)`);
-  grad.addColorStop(1, `rgba(${Math.max(0,cr-30)},${Math.max(0,cg-30)},${Math.max(0,cb-30)},1)`);
-  ctx.save();
-  ctx.shadowColor = color;
-  ctx.shadowBlur = state === 'working' ? 12 : 6;
-  ctx.beginPath();
-  ctx.arc(x, y, R, 0, PI2);
-  ctx.fillStyle = grad;
-  ctx.fill();
-  ctx.restore();
-
-  // Initials (single letter, larger)
-  ctx.fillStyle = '#fff';
-  ctx.font = '700 15px Inter, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(initials, x, y + 1);
-
-  // Thinking orbiting dots
-  if (state === 'thinking') {
-    for (let i = 0; i < 3; i++) {
-      const a = thinkAngle + (i * PI2 / 3);
-      const dx = Math.cos(a) * (R + 12);
-      const dy = Math.sin(a) * (R + 12);
-      ctx.beginPath();
-      ctx.arc(x + dx, y + dy, 3.5, 0, PI2);
-      ctx.fillStyle = `rgba(${cr},${cg},${cb},${0.4 + 0.3 * Math.sin(thinkAngle * 2 + i)})`;
-      ctx.fill();
-    }
-  }
-
-  // Offline label
-  if (isOffline) {
-    ctx.font = '600 9px Inter, sans-serif';
-    ctx.fillStyle = 'rgba(107,114,128,0.6)';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('OFFLINE', x, y + R + 18);
-    ctx.fillText(bot.role, x, y + R + 30);
-    ctx.textBaseline = 'alphabetic';
-    // dim the whole bot
-    ctx.globalAlpha = 1;
-    return; // skip task label for offline bots
-  }
-
-  // Task label (wider for longer task names)
-  if (task && (state === 'working' || state === 'thinking')) {
-    const labelText = task.length > 28 ? task.slice(0, 26) + '…' : task;
-    ctx.font = '500 10px Inter, sans-serif';
-    const tw = ctx.measureText(labelText).width;
-    const lx = x - tw / 2 - 10;
-    const ly = y - R - 24;
-
-    // Label background with bot-color accent
-    ctx.fillStyle = 'rgba(0,0,0,0.75)';
-    ctx.beginPath();
-    ctx.roundRect(lx, ly, tw + 20, 20, 8);
-    ctx.fill();
-    ctx.strokeStyle = `rgba(${cr},${cg},${cb},0.4)`;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.roundRect(lx, ly, tw + 20, 20, 8);
-    ctx.stroke();
-
-    ctx.fillStyle = '#E5E7EB';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(labelText, x, ly + 10);
-  }
-
-  ctx.textBaseline = 'alphabetic';
-}
-
-/* ─── HOVER DETECTION ─── */
-canvas.addEventListener('mousemove', (e) => {
-  const rect = canvas.getBoundingClientRect();
-  mouseX = e.clientX - rect.left;
-  mouseY = e.clientY - rect.top;
-
-  hoveredBot = null;
-  for (const bot of bots) {
-    const dx = mouseX - bot.x;
-    const dy = mouseY - bot.y;
-    if (dx * dx + dy * dy < (24) ** 2) {
-      hoveredBot = bot;
-      break;
-    }
-  }
-
-  const tooltip = $('#bot-tooltip');
-  if (hoveredBot) {
-    tooltip.classList.add('visible');
-    tooltip.style.left = (e.clientX + 16) + 'px';
-    tooltip.style.top = (e.clientY - 16) + 'px';
-    $('#tt-avatar').style.background = hoveredBot.color;
-    $('#tt-avatar').textContent = hoveredBot.initials;
-    $('#tt-name').textContent = hoveredBot.name;
-    $('#tt-role').textContent = hoveredBot.role;
-    $('#tt-task').textContent = hoveredBot.task || '—';
-    $('#tt-done').textContent = hoveredBot.tasksDone;
-    const elapsed = Math.floor((Date.now() - startTime) / 1000);
-    const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
-    const s = String(elapsed % 60).padStart(2, '0');
-    $('#tt-uptime').textContent = `${m}:${s}`;
-  } else {
-    tooltip.classList.remove('visible');
-  }
-});
-
-canvas.addEventListener('mouseleave', () => {
-  hoveredBot = null;
-  $('#bot-tooltip').classList.remove('visible');
-});
-
-/* ─── AMBIENT HQ PARTICLES ─── */
-let hqParticles = [];
-function initHQParticles() {
-  hqParticles = [];
-  const count = Math.floor((W * H) / 18000);
-  for (let i = 0; i < count; i++) {
-    hqParticles.push({
-      x: rand(0, W), y: rand(0, H),
-      r: rand(0.5, 1.8),
-      a: rand(0.08, 0.25),
-      dx: rand(-0.2, 0.2),
-      dy: rand(-0.15, 0.15),
-      phase: rand(0, PI2),
-    });
-  }
-}
-initHQParticles();
-window.addEventListener('resize', initHQParticles);
-
-function drawHQParticles(t) {
-  for (const p of hqParticles) {
-    p.x += p.dx;
-    p.y += p.dy;
-    p.phase += 0.008;
-    if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
-    if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
-    const alpha = p.a * (0.5 + 0.5 * Math.sin(p.phase));
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r, 0, PI2);
-    ctx.fillStyle = `rgba(100, 140, 200, ${alpha})`;
-    ctx.fill();
-  }
-}
-
-/* ─── MAIN LOOP ─── */
-let lastT = now();
-
-function mainLoop(t) {
-  const dt = Math.min(t - lastT, 50);
-  lastT = t;
-
-  ctx.clearRect(0, 0, W, H);
-
-  // Ambient background particles
-  drawHQParticles(t);
-
-  // Title bar in canvas
-  ctx.fillStyle = '#F9FAFB';
-  ctx.font = '700 16px Inter, sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText('⚡ AI Operations HQ', 40, 30);
-  ctx.fillStyle = '#6B7280';
-  ctx.font = '400 12px Inter, sans-serif';
-  ctx.fillText('Real-time agent activity', 230, 30);
-
-  tickBots(dt);
-
-  // Draw rooms
-  for (const room of rooms) drawRoom(room, t);
-
-  // Draw bots
-  for (const bot of bots) drawBot(bot, t);
-
-  // Connection lines (subtle, dashed)
-  ctx.globalAlpha = 0.08;
-  ctx.setLineDash([4, 4]);
-  for (let i = 0; i < bots.length; i++) {
-    for (let j = i + 1; j < bots.length; j++) {
-      if (bots[i].roomIdx === bots[j].roomIdx) {
-        ctx.beginPath();
-        ctx.moveTo(bots[i].x, bots[i].y);
-        ctx.lineTo(bots[j].x, bots[j].y);
-        ctx.strokeStyle = '#9CA3AF';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      }
-    }
-  }
-  ctx.setLineDash([]);
-  ctx.globalAlpha = 1;
-
-  requestAnimationFrame(mainLoop);
-}
-requestAnimationFrame(mainLoop);
-
-/* ─── SPARKLINE UPDATER ─── */
-setInterval(() => {
-  sparkData.push(sparkData[sparkData.length - 1]);
-  sparkData.shift();
-  sparkData[sparkData.length - 1] = 0;
-  drawSparkline();
-}, 5000);
-drawSparkline();
-
-/* ─── UPDATE BOT STATUS PANEL ─── */
-function updateBotStatusPanel() {
-  const container = $('#bot-status-list');
-  container.innerHTML = bots.map(b => `
-    <div class="bot-status-row">
-      <div class="bot-status-dot" style="background:${b.color};box-shadow:0 0 6px ${b.color}"></div>
-      <span class="bot-status-name" style="color:${b.color}">${b.name}</span>
-      <span class="bot-status-task">${b.task || 'Idle'}</span>
-    </div>
-  `).join('');
-}
-setInterval(updateBotStatusPanel, 1000);
-updateBotStatusPanel();
-
-/* ─── CONTACT FORM ─── */
-const form = $('#contact-form');
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const btn = $('#form-btn');
-  const status = $('#form-status');
-  btn.disabled = true;
-  btn.textContent = 'Sending...';
-  status.textContent = '';
-
-  try {
-    const data = Object.fromEntries(new FormData(form));
-    const res = await fetch('/api/contact', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    if (res.ok) {
-      status.style.color = '#10B981';
-      status.textContent = '✓ Message sent! We\'ll be in touch.';
-      form.reset();
-    } else {
-      throw new Error('Failed');
-    }
-  } catch (err) {
-    status.style.color = '#EF4444';
-    status.textContent = 'Something went wrong. Please try again.';
-  }
-  btn.disabled = false;
-  btn.textContent = 'Send Message';
-});
-
-/* ─── INITIAL FEED ─── */
-addFeedItem('⚡ Moliam HQ initialized — all systems nominal', '#3B82F6');
-addFeedItem('🤖 5 AI agents deployed and ready', '#10B981');
-addFeedItem('📊 Connected to analytics pipeline', '#8B5CF6');
-addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
-
-/* ─── FAQ ACCORDION ─── */
-(function() {
-  const faqItems = document.querySelectorAll('.faq-item');
-  faqItems.forEach(function(item) {
-    item.querySelector('.faq-question').addEventListener('click', function() {
-      const isActive = item.classList.contains('active');
-      faqItems.forEach(function(i) { i.classList.remove('active'); i.querySelector('.faq-question').setAttribute('aria-expanded', 'false'); });
-      if (!isActive) { item.classList.add('active'); this.setAttribute('aria-expanded', 'true'); }
-    });
-  });
-})();
-
-/* ─── SCROLL REVEAL (IntersectionObserver) ─── */
-(function() {
-  const revealEls = document.querySelectorAll('.reveal');
-  let revealedCount = 0;
-  const totalReveal = revealEls.length;
-
-  const observer = new IntersectionObserver(function(entries) {
-    entries.forEach(function(entry) {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-        revealedCount++;
-        if (revealedCount >= totalReveal) {
-          observer.disconnect();
-        }
-      }
-    });
-  }, { threshold: 0.1 });
-
-  revealEls.forEach(function(el) {
-    observer.observe(el);
-  });
-})();
-
-})();
-
-/* ─── HAMBURGER MENU ─── */
-(function() {
-  const btn = document.getElementById('hamburger-btn');
-  const menu = document.getElementById('mobile-menu');
-  if (!btn || !menu) return;
-
-  function toggleMenu() {
-    const isOpen = btn.classList.toggle('open');
-    menu.classList.toggle('open');
-    document.body.style.overflow = isOpen ? 'hidden' : '';
-  }
-
-  btn.addEventListener('click', toggleMenu);
-
-  menu.querySelectorAll('a').forEach(function(link) {
-    link.addEventListener('click', function() {
-      btn.classList.remove('open');
-      menu.classList.remove('open');
-      document.body.style.overflow = '';
-    });
-  });
-
-  // Close on Escape key
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && menu.classList.contains('open')) {
-      btn.classList.remove('open');
-      menu.classList.remove('open');
-      document.body.style.overflow = '';
-    }
-  });
-})();
-</script>
-</body>
-</html>
