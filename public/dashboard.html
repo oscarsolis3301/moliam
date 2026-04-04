@@ -558,48 +558,51 @@
                 `;
             }
 
-            // Update activity feed
+           // Update activity feed
             function updateActivity(activityList) {
                 const container = document.getElementById('activity-container');
                 if (!container) return;
 
                 if (!activityList || activityList.length === 0) {
-                    container.innerHTML = '<li class="activity-item"><div class="activity-text">No activity yet.</div></li>';
+                    container.innerHTML = '<li class="activity-item"><div class="activity-text" style="text-align: center;">📋 No activity yet — your AI agents will start working soon</div></li>';
                     return;
-                }
+                 }
 
                 container.innerHTML = activityList.map(function(item) {
                     return `
-                        <li class="activity-item">
-                            <div class="activity-time">${formatTime(item.created_at)}</div>
-                            <div class="activity-agent">${escapeHtml(item.agent_name)}:</div>
-                            <div class="activity-text">${escapeHtml(item.description)}</div>
-                        </li>
-                    `;
-                }).join('');
+                         <li class="activity-item">
+                             <div class="activity-time">${formatTime(item.created_at)}</div>
+                             <div class="activity-agent">${escapeHtml(item.agent_name)}:</div>
+                             <div class="activity-text">${escapeHtml(item.description)}</div>
+                         </li>
+                     `;
+                 }).join('');
             }
 
-            // Update messages panel
+          // Update messages panel
             function updateMessages(messages) {
                 const container = document.getElementById('messages-container');
                 if (!container) return;
 
                 if (!messages || messages.length === 0) {
-                    container.innerHTML = '<li class="message-item"><div class="message-text">No messages yet.</div></li>';
+                    container.innerHTML = '<li class="message-item"><div class="message-text" style="text-align: center;">💬 No messages yet — send your first message below</div></li>';
                     return;
-                }
+                 }
 
                 container.innerHTML = messages.map(function(msg) {
                     return `
-                        <li class="message-item">
-                            <div class="message-agent">${escapeHtml(msg.sender)}</div>
-                            <div class="message-text">${escapeHtml(msg.message)}</div>
-                        </li>
-                    `;
-                }).join('');
+                         <li class="message-item">
+                             <div class="message-agent">${escapeHtml(msg.sender)}</div>
+                             <div class="message-text">${escapeHtml(msg.message)}</div>
+                         </li>
+                     `;
+                 }).join('');
             }
 
-            // Format numbers
+          // Add style for secondary text centering
+            function getMessageContainerEmptyStyle() {
+                return 'text-align: center; color: var(--text-secondary); padding: 1rem;';
+            }
             function formatNumber(num) {
                 if (num === undefined || num === null) return '0';
                 if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
