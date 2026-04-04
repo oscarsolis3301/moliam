@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Moliam</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #0B0E14;
+  --bg-building: #111827;
+  --bg-room: #1F2937;
+  --accent-blue: #3B82F6;
+  --accent-purple: #8B5CF6;
+  --accent-green: #10B981;
+  --accent-amber: #F59E0B;
+  --accent-red: #EF4444;
+  --accent-cyan: #06B6D4;
+  --text-primary: #F9FAFB;
+  --text-secondary: #9CA3AF;
+  --text-dim: #6B7280;
+  --glass-bg: rgba(17, 24, 39, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg-deep);
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+/* ═══ NAV ═══ */
+.topnav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 32px;
+  background: var(--glass-bg);
+  border-bottom: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  position: sticky; top: 0; z-index: 100;
+}
+.topnav .brand {
+  font-size: 1.3rem; font-weight: 800;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.topnav .nav-links { display: flex; gap: 4px; }
+.topnav .nav-link {
+  padding: 8px 16px; border-radius: var(--radius-sm);
+  color: var(--text-secondary); text-decoration: none;
+  font-size: 0.85rem; font-weight: 500;
+  transition: all var(--transition-smooth);
+}
+.topnav .nav-link:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+.topnav .nav-link.active { color: var(--accent-blue); background: rgba(59,130,246,0.1); }
+.topnav .user-area { display: flex; align-items: center; gap: 12px; }
+.btn-logout {
+  padding: 8px 16px;
+  background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3);
+  border-radius: var(--radius-sm); color: #FCA5A5;
+  font-family: inherit; font-size: 0.8rem; font-weight: 500;
+  cursor: pointer; transition: all var(--transition-smooth);
+}
+.btn-logout:hover { background: rgba(239,68,68,0.25); color: white; }
+
+/* ═══ LAYOUT ═══ */
+.main { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+
+/* ═══ TABS ═══ */
+.tabs {
+  display: flex; gap: 4px; margin-bottom: 32px;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: 0;
+}
+.tab-btn {
+  padding: 12px 20px;
+  background: none; border: none; border-bottom: 2px solid transparent;
+  color: var(--text-dim); font-family: inherit;
+  font-size: 0.9rem; font-weight: 500;
+  cursor: pointer; transition: all var(--transition-smooth);
+}
+.tab-btn:hover { color: var(--text-secondary); }
+.tab-btn.active {
+  color: var(--accent-blue);
+  border-bottom-color: var(--accent-blue);
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ═══ STAT CARDS ═══ */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px; margin-bottom: 32px;
+}
+.stat-card {
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md); padding: 20px;
+  backdrop-filter: blur(10px);
+}
+.stat-card .stat-label {
+  font-size: 0.7rem; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 6px;
+}
+.stat-card .stat-value { font-size: 1.6rem; font-weight: 800; }
+.stat-value.blue { color: var(--accent-blue); }
+.stat-value.green { color: var(--accent-green); }
+.stat-value.purple { color: var(--accent-purple); }
+.stat-value.amber { color: var(--accent-amber); }
+
+/* ═══ TABLE ═══ */
+.table-wrap {
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg); overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+.table-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 24px; border-bottom: 1px solid var(--glass-border);
+}
+.table-header h3 { font-size: 1rem; font-weight: 700; }
+table {
+  width: 100%; border-collapse: collapse;
+}
+th {
+  text-align: left; padding: 12px 24px;
+  font-size: 0.7rem; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-dim);
+  border-bottom: 1px solid var(--glass-border);
+  font-weight: 600;
+}
+td {
+  padding: 16px 24px; border-bottom: 1px solid rgba(255,255,255,0.03);
+  font-size: 0.85rem;
+}
+tr:hover td { background: rgba(255,255,255,0.02); }
+.client-name { font-weight: 600; }
+.client-company { color: var(--text-secondary); font-size: 0.8rem; }
+.client-email { color: var(--text-dim); font-size: 0.8rem; }
+
+.badge {
+  display: inline-block; padding: 3px 10px;
+  border-radius: 100px; font-size: 0.7rem;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.badge-active { background: rgba(16,185,129,0.15); color: #6EE7B7; }
+.badge-inactive { background: rgba(107,114,128,0.15); color: var(--text-dim); }
+
+/* ═══ FORMS ═══ */
+.form-card {
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg); padding: 32px;
+  backdrop-filter: blur(10px); max-width: 600px;
+}
+.form-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 24px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.form-row.full { grid-template-columns: 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label {
+  font-size: 0.75rem; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--text-dim); font-weight: 600;
+}
+.form-group input, .form-group select, .form-group textarea {
+  padding: 12px 14px; background: var(--bg-deep);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-sm); color: var(--text-primary);
+  font-family: inherit; font-size: 0.9rem;
+  transition: border-color var(--transition-smooth);
+  outline: none;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.12);
+}
+.form-group select { cursor: pointer; }
+.form-group select option { background: var(--bg-deep); }
+.form-group textarea { min-height: 80px; resize: vertical; }
+
+.btn-primary {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  border: none; border-radius: var(--radius-sm);
+  color: white; font-family: inherit;
+  font-size: 0.9rem; font-weight: 600;
+  cursor: pointer; transition: all var(--transition-smooth);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59,130,246,0.3); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.btn-secondary {
+  padding: 12px 24px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary); font-family: inherit;
+  font-size: 0.9rem; font-weight: 500;
+  cursor: pointer; transition: all var(--transition-smooth);
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.08); color: var(--text-primary); }
+
+.form-actions { display: flex; gap: 12px; margin-top: 24px; }
+
+.alert {
+  padding: 12px 16px; border-radius: var(--radius-sm);
+  font-size: 0.85rem; margin-bottom: 20px; display: none;
+}
+.alert.error { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #FCA5A5; display: block; }
+.alert.success { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #6EE7B7; display: block; }
+
+/* ═══ LOADING ═══ */
+.loading-state {
+  display: flex; align-items: center; justify-content: center;
+  padding: 80px; color: var(--text-dim); gap: 12px;
+}
+.loading-spin {
+  width: 24px; height: 24px;
+  border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--accent-blue);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-state { text-align: center; padding: 40px; color: var(--text-dim); }
+.empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 8px; }
+
+/* ═══ MOBILE ═══ */
+@media (max-width: 768px) {
+  .topnav { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+  .topnav .nav-links { width: 100%; justify-content: center; }
+  .main { padding: 20px 16px; }
+  .form-row { grid-template-columns: 1fr; }
+  .table-wrap { overflow-x: auto; }
+  table { min-width: 600px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="/" class="brand" style="text-decoration:none">Moliam</a>
+  <div class="nav-links">
+    <a href="/dashboard" class="nav-link">Dashboard</a>
+    <a href="/admin" class="nav-link active">Admin</a>
+  </div>
+  <div class="user-area">
+    <span style="font-size:0.85rem; color:var(--text-secondary);" id="userGreeting"></span>
+    <button class="btn-logout" id="logoutBtn">Sign Out</button>
+  </div>
+</nav>
+
+<main class="main" id="mainContent">
+  <div class="loading-state" id="loadingState">
+    <div class="loading-spin"></div>
+    <span>Loading admin panel...</span>
+  </div>
+</main>
+
+<script>
+let clients = [];
+let projects = [];
+let dashData = null;
+
+async function init() {
+  try {
+    // Verify admin
+    const authRes = await fetch('/api/auth/me', { credentials: 'include' });
+    const auth = await authRes.json();
+    if (!auth.success || auth.user.role !== 'admin') {
+      window.location.href = auth.success ? '/dashboard' : '/login';
+      return;
+    }
+
+    document.getElementById('userGreeting').textContent = auth.user.name;
+
+    // Load data
+    const [dashRes, clientsRes, projectsRes] = await Promise.all([
+      fetch('/api/dashboard', { credentials: 'include' }),
+      fetch('/api/admin/clients', { credentials: 'include' }),
+      fetch('/api/admin/projects', { credentials: 'include' }),
+    ]);
+
+    dashData = await dashRes.json();
+    const cData = await clientsRes.json();
+    const pData = await projectsRes.json();
+
+    clients = cData.clients || [];
+    projects = pData.projects || [];
+
+    renderAdmin();
+  } catch (err) {
+    console.error(err);
+    window.location.href = '/login';
+  }
+}
+
+function renderAdmin() {
+  const main = document.getElementById('mainContent');
+  const stats = dashData.stats || {};
+
+  main.innerHTML = `
+    <h1 style="font-size:1.6rem; font-weight:800; margin-bottom:24px;">Admin Panel</h1>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Total Clients</div><div class="stat-value blue">${stats.total_clients || 0}</div></div>
+      <div class="stat-card"><div class="stat-label">Active Projects</div><div class="stat-value green">${stats.active_projects || 0}</div></div>
+      <div class="stat-card"><div class="stat-label">Monthly Revenue</div><div class="stat-value purple">$${(stats.monthly_revenue || 0).toLocaleString()}</div></div>
+      <div class="stat-card"><div class="stat-label">New Leads</div><div class="stat-value amber">${stats.new_leads || 0}</div></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="clients">Clients</button>
+      <button class="tab-btn" data-tab="onboard">+ Onboard Client</button>
+      <button class="tab-btn" data-tab="projects">Projects</button>
+      <button class="tab-btn" data-tab="add-project">+ Add Project</button>
+      <button class="tab-btn" data-tab="add-update">+ Add Update</button>
+    </div>
+
+    <!-- Clients Tab -->
+    <div class="tab-panel active" id="tab-clients">
+      ${clients.length > 0 ? `
+        <div class="table-wrap">
+          <div class="table-header"><h3>All Clients (${clients.length})</h3></div>
+          <table>
+            <thead><tr>
+              <th>Client</th><th>Email</th><th>Projects</th><th>Monthly Rev</th><th>Status</th><th>Last Login</th>
+            </tr></thead>
+            <tbody>
+              ${clients.map(c => `<tr>
+                <td><span class="client-name">${esc(c.name)}</span>${c.company ? `<br><span class="client-company">${esc(c.company)}</span>` : ''}</td>
+                <td class="client-email">${esc(c.email)}</td>
+                <td>${c.project_count || 0}</td>
+                <td style="font-weight:600;">$${(c.monthly_revenue || 0).toLocaleString()}</td>
+                <td><span class="badge ${c.is_active ? 'badge-active' : 'badge-inactive'}">${c.is_active ? 'Active' : 'Inactive'}</span></td>
+                <td style="color:var(--text-dim); font-size:0.8rem;">${c.last_login ? formatDate(c.last_login) : 'Never'}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      ` : `
+        <div class="empty-state"><div class="empty-icon">👥</div><p>No clients yet. Onboard your first client!</p></div>
+      `}
+    </div>
+
+    <!-- Onboard Client Tab -->
+    <div class="tab-panel" id="tab-onboard">
+      <div class="form-card">
+        <h3>🚀 Onboard New Client</h3>
+        <div id="onboardAlert"></div>
+        <form id="onboardForm">
+          <div class="form-row">
+            <div class="form-group"><label>Full Name *</label><input type="text" id="ob-name" required placeholder="Oscar Solis"></div>
+            <div class="form-group"><label>Company</label><input type="text" id="ob-company" placeholder="OnePlus Electric"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Email *</label><input type="email" id="ob-email" required placeholder="oscar@company.com"></div>
+            <div class="form-group"><label>Phone</label><input type="tel" id="ob-phone" placeholder="(949) 555-0100"></div>
+          </div>
+          <div class="form-row full">
+            <div class="form-group"><label>Temporary Password *</label><input type="text" id="ob-password" required placeholder="Min 6 characters — share with client"></div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" id="onboardBtn">Create Client Account</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Projects Tab -->
+    <div class="tab-panel" id="tab-projects">
+      ${projects.length > 0 ? `
+        <div class="table-wrap">
+          <div class="table-header"><h3>All Projects (${projects.length})</h3></div>
+          <table>
+            <thead><tr>
+              <th>Project</th><th>Client</th><th>Type</th><th>Status</th><th>Monthly</th><th>Started</th>
+            </tr></thead>
+            <tbody>
+              ${projects.map(p => `<tr>
+                <td style="font-weight:600;">${esc(p.name)}</td>
+                <td>${esc(p.client_name || '')}${p.client_company ? `<br><span style="color:var(--text-dim);font-size:0.8rem;">${esc(p.client_company)}</span>` : ''}</td>
+                <td><span class="badge" style="background:rgba(59,130,246,0.15);color:#93C5FD;">${p.type.toUpperCase()}</span></td>
+                <td><span class="badge ${p.status === 'active' || p.status === 'in_progress' ? 'badge-active' : 'badge-inactive'}">${p.status.replace('_',' ')}</span></td>
+                <td style="font-weight:600;">$${(p.monthly_rate || 0).toLocaleString()}</td>
+                <td style="color:var(--text-dim);font-size:0.8rem;">${p.start_date ? formatDate(p.start_date) : '—'}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      ` : `
+        <div class="empty-state"><div class="empty-icon">📁</div><p>No projects yet. Add one after onboarding a client.</p></div>
+      `}
+    </div>
+
+    <!-- Add Project Tab -->
+    <div class="tab-panel" id="tab-add-project">
+      <div class="form-card">
+        <h3>📁 Add New Project</h3>
+        <div id="projectAlert"></div>
+        <form id="projectForm">
+          <div class="form-row full">
+            <div class="form-group">
+              <label>Client *</label>
+              <select id="proj-client" required>
+                <option value="">Select client...</option>
+                ${clients.map(c => `<option value="${c.id}">${esc(c.name)}${c.company ? ' — ' + esc(c.company) : ''}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Project Name *</label><input type="text" id="proj-name" required placeholder="Website Build"></div>
+            <div class="form-group">
+              <label>Type *</label>
+              <select id="proj-type" required>
+                <option value="website">Website ($600 + $150/mo)</option>
+                <option value="gbp">GBP Optimization ($300/mo)</option>
+                <option value="lsa">LSA Management ($500 + $400/mo)</option>
+                <option value="retainer">Full Retainer ($1,500/mo)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Setup Fee ($)</label><input type="number" id="proj-setup" placeholder="600" step="50"></div>
+            <div class="form-group"><label>Monthly Rate ($)</label><input type="number" id="proj-monthly" placeholder="150" step="50"></div>
+          </div>
+          <div class="form-row full">
+            <div class="form-group"><label>Notes</label><textarea id="proj-notes" placeholder="Project details, timeline, special requirements..."></textarea></div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" id="projectBtn">Create Project</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Add Update Tab -->
+    <div class="tab-panel" id="tab-add-update">
+      <div class="form-card">
+        <h3>📰 Add Project Update</h3>
+        <div id="updateAlert"></div>
+        <form id="updateForm">
+          <div class="form-row full">
+            <div class="form-group">
+              <label>Project *</label>
+              <select id="upd-project" required>
+                <option value="">Select project...</option>
+                ${projects.map(p => `<option value="${p.id}">${esc(p.name)} — ${esc(p.client_name || 'Unknown')}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Title *</label><input type="text" id="upd-title" required placeholder="Website v1 delivered"></div>
+            <div class="form-group">
+              <label>Type</label>
+              <select id="upd-type">
+                <option value="update">💬 Update</option>
+                <option value="milestone">🏁 Milestone</option>
+                <option value="deliverable">📦 Deliverable</option>
+                <option value="report">📊 Report</option>
+                <option value="invoice">💰 Invoice</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="form-group"><label>Description</label><textarea id="upd-desc" placeholder="Details about this update..."></textarea></div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" id="updateBtn">Add Update</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+    });
+  });
+
+  // Auto-fill pricing when type changes
+  const typeSelect = document.getElementById('proj-type');
+  if (typeSelect) {
+    typeSelect.addEventListener('change', () => {
+      const pricing = {
+        website: { setup: 600, monthly: 150 },
+        gbp: { setup: 0, monthly: 300 },
+        lsa: { setup: 500, monthly: 400 },
+        retainer: { setup: 0, monthly: 1500 },
+      };
+      const p = pricing[typeSelect.value];
+      if (p) {
+        document.getElementById('proj-setup').value = p.setup;
+        document.getElementById('proj-monthly').value = p.monthly;
+      }
+    });
+  }
+
+  // Form handlers
+  setupOnboardForm();
+  setupProjectForm();
+  setupUpdateForm();
+}
+
+function setupOnboardForm() {
+  const form = document.getElementById('onboardForm');
+  if (!form) return;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('onboardBtn');
+    btn.disabled = true; btn.textContent = 'Creating...';
+    clearAlert('onboardAlert');
+
+    try {
+      const res = await fetch('/api/admin/clients', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: document.getElementById('ob-name').value.trim(),
+          email: document.getElementById('ob-email').value.trim(),
+          company: document.getElementById('ob-company').value.trim(),
+          phone: document.getElementById('ob-phone').value.trim(),
+          password: document.getElementById('ob-password').value.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showAlert('onboardAlert', data.message, 'success');
+        form.reset();
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        showAlert('onboardAlert', data.message, 'error');
+      }
+    } catch (err) {
+      showAlert('onboardAlert', 'Connection error.', 'error');
+    }
+    btn.disabled = false; btn.textContent = 'Create Client Account';
+  });
+}
+
+function setupProjectForm() {
+  const form = document.getElementById('projectForm');
+  if (!form) return;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('projectBtn');
+    btn.disabled = true; btn.textContent = 'Creating...';
+    clearAlert('projectAlert');
+
+    try {
+      const res = await fetch('/api/admin/projects', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: parseInt(document.getElementById('proj-client').value),
+          name: document.getElementById('proj-name').value.trim(),
+          type: document.getElementById('proj-type').value,
+          setup_fee: parseFloat(document.getElementById('proj-setup').value) || 0,
+          monthly_rate: parseFloat(document.getElementById('proj-monthly').value) || 0,
+          notes: document.getElementById('proj-notes').value.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showAlert('projectAlert', data.message, 'success');
+        form.reset();
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        showAlert('projectAlert', data.message, 'error');
+      }
+    } catch (err) {
+      showAlert('projectAlert', 'Connection error.', 'error');
+    }
+    btn.disabled = false; btn.textContent = 'Create Project';
+  });
+}
+
+function setupUpdateForm() {
+  const form = document.getElementById('updateForm');
+  if (!form) return;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('updateBtn');
+    btn.disabled = true; btn.textContent = 'Adding...';
+    clearAlert('updateAlert');
+
+    try {
+      const res = await fetch('/api/admin/updates', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          project_id: parseInt(document.getElementById('upd-project').value),
+          title: document.getElementById('upd-title').value.trim(),
+          type: document.getElementById('upd-type').value,
+          description: document.getElementById('upd-desc').value.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showAlert('updateAlert', data.message, 'success');
+        form.reset();
+      } else {
+        showAlert('updateAlert', data.message, 'error');
+      }
+    } catch (err) {
+      showAlert('updateAlert', 'Connection error.', 'error');
+    }
+    btn.disabled = false; btn.textContent = 'Add Update';
+  });
+}
+
+function showAlert(id, msg, type) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = `<div class="alert ${type}">${esc(msg)}</div>`;
+}
+function clearAlert(id) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = '';
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  try { return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); } catch { return d; }
+}
+
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch {}
+  window.location.href = '/login';
+});
+
+init();
+</script>
+</body>
+</html>

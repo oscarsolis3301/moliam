@@ -1,698 +1,481 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moliam Dashboard</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-deep: #0B0E14;
-            --bg-card: #151921;
-            --bg-hover: #1E232E;
-            --accent-blue: #3B82F6;
-            --accent-purple: #8B5CF6;
-            --text-primary: #F0F0F0;
-            --text-secondary: #94A3B8;
-            --border-color: #2D3748;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Moliam</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #0B0E14;
+  --bg-building: #111827;
+  --bg-room: #1F2937;
+  --bg-room-active: #263044;
+  --border-subtle: #1F2937;
+  --accent-blue: #3B82F6;
+  --accent-purple: #8B5CF6;
+  --accent-green: #10B981;
+  --accent-amber: #F59E0B;
+  --accent-red: #EF4444;
+  --accent-cyan: #06B6D4;
+  --text-primary: #F9FAFB;
+  --text-secondary: #9CA3AF;
+  --text-dim: #6B7280;
+  --glass-bg: rgba(17, 24, 39, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg-deep);
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--text-primary);
+  min-height: 100vh;
+}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+/* ═══ NAV ═══ */
+.topnav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 32px;
+  background: var(--glass-bg);
+  border-bottom: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  position: sticky; top: 0; z-index: 100;
+}
+.topnav .brand {
+  font-size: 1.3rem; font-weight: 800;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.topnav .user-area {
+  display: flex; align-items: center; gap: 16px;
+}
+.topnav .user-name {
+  font-size: 0.85rem; color: var(--text-secondary);
+}
+.topnav .user-name strong {
+  color: var(--text-primary); font-weight: 600;
+}
+.btn-logout {
+  padding: 8px 16px;
+  background: rgba(239,68,68,0.15);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: var(--radius-sm);
+  color: #FCA5A5; font-family: inherit;
+  font-size: 0.8rem; font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-smooth);
+}
+.btn-logout:hover { background: rgba(239,68,68,0.25); color: white; }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-deep);
-            color: var(--text-primary);
-            min-height: 100vh;
-        }
+/* ═══ MAIN LAYOUT ═══ */
+.main {
+  max-width: 1200px; margin: 0 auto;
+  padding: 32px 24px;
+}
+.page-title {
+  font-size: 1.8rem; font-weight: 800;
+  margin-bottom: 8px;
+}
+.page-subtitle {
+  color: var(--text-secondary); margin-bottom: 32px;
+}
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
+/* ═══ STAT CARDS ═══ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 40px;
+}
+.stat-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  backdrop-filter: blur(10px);
+  transition: transform var(--transition-smooth);
+}
+.stat-card:hover { transform: translateY(-2px); }
+.stat-card .stat-label {
+  font-size: 0.75rem; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.stat-card .stat-value {
+  font-size: 2rem; font-weight: 800;
+}
+.stat-card .stat-value.blue { color: var(--accent-blue); }
+.stat-card .stat-value.green { color: var(--accent-green); }
+.stat-card .stat-value.purple { color: var(--accent-purple); }
+.stat-card .stat-value.amber { color: var(--accent-amber); }
 
-        /* Top Bar */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.5rem 2rem;
-            background: var(--bg-card);
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            border: 1px solid var(--border-color);
-        }
+/* ═══ PROJECTS ═══ */
+.section-title {
+  font-size: 1.2rem; font-weight: 700;
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title .icon { font-size: 1.1rem; }
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 16px;
+  margin-bottom: 40px;
+}
 
-        .client-name {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
+.project-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  backdrop-filter: blur(10px);
+  transition: all var(--transition-smooth);
+  position: relative; overflow: hidden;
+}
+.project-card:hover {
+  border-color: rgba(59,130,246,0.3);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+.project-card .project-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 16px;
+}
+.project-card .project-name {
+  font-size: 1.1rem; font-weight: 700;
+}
+.project-card .project-type {
+  font-size: 0.7rem; text-transform: uppercase;
+  letter-spacing: 0.1em; padding: 4px 10px;
+  border-radius: 100px; font-weight: 600;
+}
+.type-website { background: rgba(59,130,246,0.15); color: #93C5FD; }
+.type-gbp { background: rgba(16,185,129,0.15); color: #6EE7B7; }
+.type-lsa { background: rgba(245,158,11,0.15); color: #FCD34D; }
+.type-retainer { background: rgba(139,92,246,0.15); color: #C4B5FD; }
 
-        .logout-link {
-            color: var(--accent-blue);
-            text-decoration: none;
-            font-size: 0.875rem;
-            transition: color 0.2s;
-        }
+.status-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.8rem; font-weight: 500;
+  margin-bottom: 12px;
+}
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+}
+.status-active .status-dot { background: var(--accent-green); box-shadow: 0 0 8px rgba(16,185,129,0.5); }
+.status-active { color: #6EE7B7; }
+.status-in_progress .status-dot { background: var(--accent-blue); box-shadow: 0 0 8px rgba(59,130,246,0.5); }
+.status-in_progress { color: #93C5FD; }
+.status-onboarding .status-dot { background: var(--accent-amber); box-shadow: 0 0 8px rgba(245,158,11,0.5); }
+.status-onboarding { color: #FCD34D; }
+.status-review .status-dot { background: var(--accent-purple); }
+.status-review { color: #C4B5FD; }
+.status-paused .status-dot { background: var(--text-dim); }
+.status-paused { color: var(--text-dim); }
+.status-completed .status-dot { background: var(--accent-green); }
+.status-completed { color: #6EE7B7; }
 
-        .logout-link:hover {
-            color: var(--text-primary);
-        }
+.project-meta {
+  display: flex; gap: 24px; margin-top: 16px;
+  padding-top: 16px; border-top: 1px solid var(--glass-border);
+}
+.project-meta .meta-item {
+  font-size: 0.8rem;
+}
+.project-meta .meta-label { color: var(--text-dim); }
+.project-meta .meta-value { color: var(--text-primary); font-weight: 600; }
 
-        /* Stats Row */
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
+/* ═══ TIMELINE ═══ */
+.timeline {
+  margin-top: 8px;
+}
+.timeline-item {
+  display: flex; gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.timeline-item:last-child { border-bottom: none; }
+.timeline-dot-col {
+  display: flex; flex-direction: column; align-items: center;
+  padding-top: 4px;
+}
+.timeline-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.timeline-dot.update { background: var(--accent-blue); }
+.timeline-dot.milestone { background: var(--accent-green); }
+.timeline-dot.deliverable { background: var(--accent-purple); }
+.timeline-dot.report { background: var(--accent-amber); }
+.timeline-dot.invoice { background: var(--accent-red); }
+.timeline-line {
+  width: 2px; flex: 1; background: rgba(255,255,255,0.06);
+  margin-top: 4px;
+}
+.timeline-content {
+  flex: 1;
+}
+.timeline-title {
+  font-size: 0.9rem; font-weight: 600;
+}
+.timeline-desc {
+  font-size: 0.8rem; color: var(--text-secondary);
+  margin-top: 4px; line-height: 1.5;
+}
+.timeline-meta {
+  font-size: 0.7rem; color: var(--text-dim); margin-top: 6px;
+  display: flex; gap: 12px;
+}
+.timeline-type {
+  font-size: 0.65rem; text-transform: uppercase;
+  letter-spacing: 0.08em; font-weight: 600;
+  padding: 2px 8px; border-radius: 100px;
+}
 
-        .stat-card {
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid var(--border-color);
-            transition: transform 0.2s, border-color 0.2s;
-        }
+/* ═══ EMPTY STATE ═══ */
+.empty-state {
+  text-align: center; padding: 60px 20px;
+  color: var(--text-dim);
+}
+.empty-state .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+.empty-state p { font-size: 0.9rem; }
 
-        .stat-card:hover {
-            transform: translateY(-2px);
-            border-color: var(--accent-blue);
-        }
+/* ═══ LOADING ═══ */
+.loading-state {
+  display: flex; align-items: center; justify-content: center;
+  padding: 80px; color: var(--text-dim);
+  gap: 12px;
+}
+.loading-spin {
+  width: 24px; height: 24px;
+  border: 2px solid rgba(255,255,255,0.1);
+  border-top-color: var(--accent-blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-label {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
-
-        /* Two-column layout */
-        .content-grid {
-            display: grid;
-            grid-template-columns: 60% 40%;
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-
-         @media (max-width: 768px) {
-             .stats-grid {
-                grid-template-columns: 1fr 1fr;
-             }
-
-             .main-content {
-                grid-template-columns: 1fr;
-             }
-
-             .container {
-                padding: 1rem;
-             }
-
-             .top-bar {
-                flex-direction: column;
-                gap: 0.5rem;
-                text-align: center;
-             }
-
-             .content-grid {
-                grid-template-columns: 1fr;
-             }
-
-             .top-bar {
-                flex-direction: column;
-                text-align: center;
-                gap: 1rem;
-             }
-
-             .stats-row {
-                grid-template-columns: repeat(2, 1fr);
-             }
-         }
-
-         @media (max-width: 480px) {
-             .stats-grid {
-                grid-template-columns: 1fr;
-             }
-
-             .stats-row {
-                grid-template-columns: 1fr;
-             }
-         }
-
-        /* Activity Feed */
-        .activity-section {
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid var(--border-color);
-        }
-
-        .section-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            color: var(--text-primary);
-        }
-
-        .activity-list {
-            list-style: none;
-        }
-
-        .activity-item {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-            transition: background 0.2s;
-        }
-
-        .activity-item:last-child {
-            border-bottom: none;
-        }
-
-        .activity-item:hover {
-            background: var(--bg-hover);
-        }
-
-        .activity-time {
-            color: var(--text-secondary);
-            font-size: 0.75rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .activity-agent {
-            color: var(--accent-blue);
-            font-weight: 500;
-        }
-
-        .activity-text {
-            color: var(--text-primary);
-        }
-
-        /* Messages Panel */
-        .messages-section {
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid var(--border-color);
-        }
-
-        .messages-list {
-            list-style: none;
-            margin-bottom: 1rem;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .message-item {
-            padding: 0.75rem;
-            margin-bottom: 0.75rem;
-            background: var(--bg-hover);
-            border-radius: 8px;
-            border-left: 3px solid var(--accent-blue);
-        }
-
-        .message-agent {
-            color: var(--accent-blue);
-            font-weight: 500;
-            font-size: 0.75rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .message-text {
-            color: var(--text-primary);
-        }
-
-        .message-form {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: auto;
-        }
-
-        .message-input {
-            flex: 1;
-            background: var(--bg-deep);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 0.75rem;
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
-            font-size: 0.875rem;
-        }
-
-        .message-input:focus {
-            outline: none;
-            border-color: var(--accent-blue);
-        }
-
-        .message-input::placeholder {
-            color: var(--text-secondary);
-        }
-
-        .send-button {
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 0.75rem 1.5rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .send-button:hover {
-            opacity: 0.9;
-        }
-
-        .send-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* Book a Call CTA */
-        .cta-section {
-            text-align: center;
-            padding: 3rem 2rem;
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-            border-radius: 12px;
-            margin-bottom: 2rem;
-        }
-
-        .cta-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: white;
-        }
-
-        .cta-button {
-            display: inline-block;
-            padding: 1rem 2.5rem;
-            background: white;
-            color: var(--accent-blue);
-            text-decoration: none;
-            font-weight: 600;
-            border-radius: 8px;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .cta-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Error Page */
-        .error-page {
-            text-align: center;
-            padding: 4rem 2rem;
-        }
-
-        .error-title {
-            font-size: 3rem;
-            font-weight: 700;
-            color: #EF4444;
-            margin-bottom: 1rem;
-        }
-
-        .error-message {
-            color: var(--text-secondary);
-            font-size: 1.25rem;
-            margin-bottom: 2rem;
-        }
-
-         /* Loading State */
-         .skeleton {
-             background: linear-gradient(90deg, #1E232E 25%, #2D3748 50%, #1E232E 75%);
-             background-size: 200% 100%;
-             animation: shimmer 1.5s infinite;
-             border-radius: 8px;
-         }
-
-          @keyframes shimmer {
-              0% {
-                 background-position: 200% 0;
-              }
-
-              100% {
-                 background-position: -200% 0;
-              }
-          }
-
-          .loading-state {
-             color: var(--text-secondary);
-             text-align: center;
-             padding: 2rem;
-         }
-
-           .loading-spinner {
-             border: 3px solid var(--bg-hover);
-             border-top: 3px solid var(--accent-blue);
-             border-radius: 50%;
-             width: 40px;
-             height: 40px;
-             animation: spin 1s linear infinite;
-             margin: 1rem auto;
-          }
-
-          @keyframes spin {
-               0% { transform: rotate(0deg); }
-               100% { transform: rotate(360deg); }
-            }
-
-            /* Text secondary utility for empty states */
-           .text-secondary {
-               color: var(--text-secondary);
-           }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg-deep);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--accent-blue);
-        }
-    </style>
+/* ═══ MOBILE ═══ */
+@media (max-width: 768px) {
+  .topnav { padding: 12px 16px; }
+  .main { padding: 20px 16px; }
+  .page-title { font-size: 1.4rem; }
+  .projects-grid { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .stat-card .stat-value { font-size: 1.5rem; }
+}
+</style>
 </head>
 <body>
-    <div class="container" id="app">
-        <!-- Content loaded dynamically -->
+
+<nav class="topnav">
+  <a href="/" class="brand" style="text-decoration:none">Moliam</a>
+  <div class="user-area">
+    <span class="user-name" id="userGreeting">Loading...</span>
+    <button class="btn-logout" id="logoutBtn">Sign Out</button>
+  </div>
+</nav>
+
+<main class="main" id="mainContent">
+  <div class="loading-state" id="loadingState">
+    <div class="loading-spin"></div>
+    <span>Loading dashboard...</span>
+  </div>
+</main>
+
+<script>
+let currentUser = null;
+
+async function init() {
+  try {
+    const res = await fetch('/api/dashboard', { credentials: 'include' });
+    const data = await res.json();
+
+    if (!data.success) {
+      window.location.href = '/login';
+      return;
+    }
+
+    currentUser = data.user;
+    renderDashboard(data);
+
+  } catch (err) {
+    window.location.href = '/login';
+  }
+}
+
+function renderDashboard(data) {
+  const { user, projects, updates, stats } = data;
+
+  document.getElementById('userGreeting').innerHTML =
+    `<strong>${user.name}</strong> · ${user.company || user.role}`;
+
+  const main = document.getElementById('mainContent');
+
+  const greeting = getGreeting();
+
+  main.innerHTML = `
+    <h1 class="page-title">${greeting}, ${user.name.split(' ')[0]} 👋</h1>
+    <p class="page-subtitle">${user.role === 'admin' ? 'Admin overview — manage clients and projects' : 'Here\'s what\'s happening with your projects'}</p>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      ${user.role === 'admin' ? `
+        <div class="stat-card">
+          <div class="stat-label">Total Clients</div>
+          <div class="stat-value blue">${stats.total_clients || 0}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Active Projects</div>
+          <div class="stat-value green">${stats.active_projects || 0}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Monthly Revenue</div>
+          <div class="stat-value purple">$${(stats.monthly_revenue || 0).toLocaleString()}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">New Leads</div>
+          <div class="stat-value amber">${stats.new_leads || 0}</div>
+        </div>
+      ` : `
+        <div class="stat-card">
+          <div class="stat-label">Active Projects</div>
+          <div class="stat-value blue">${stats.active_projects || 0}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Projects</div>
+          <div class="stat-value green">${stats.total_projects || 0}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Monthly Total</div>
+          <div class="stat-value purple">$${(stats.monthly_total || 0).toLocaleString()}</div>
+        </div>
+      `}
     </div>
 
-    <script>
-        (function() {
-            const params = new URLSearchParams(window.location.search);
-            const token = params.get('token');
-            const app = document.getElementById('app');
-            let autoRefreshInterval;
+    <!-- Projects -->
+    <div class="section-title"><span class="icon">📁</span> Your Projects</div>
+    ${projects.length > 0 ? `
+      <div class="projects-grid">
+        ${projects.map(p => renderProjectCard(p, user.role)).join('')}
+      </div>
+    ` : `
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <p>No projects yet. ${user.role === 'admin' ? 'Create one from the admin panel.' : 'Your team will set things up soon!'}</p>
+      </div>
+    `}
 
-            // Access Denied View
-            function renderAccessDenied() {
-                if (autoRefreshInterval) clearInterval(autoRefreshInterval);
-                app.innerHTML = `
-                    <div class="error-page">
-                        <div class="error-title">401</div>
-                        <div class="error-message">Access Denied — Invalid or expired token</div>
-                        <a href="/" class="logout-link" style="color: var(--accent-blue);">Return to Home</a>
-                    </div>
-                `;
-            }
+    <!-- Timeline -->
+    <div class="section-title"><span class="icon">📰</span> Recent Updates</div>
+    ${updates.length > 0 ? `
+      <div class="timeline">
+        ${updates.map(u => renderTimelineItem(u)).join('')}
+      </div>
+    ` : `
+      <div class="empty-state" style="padding: 30px;">
+        <p>No updates yet.</p>
+      </div>
+    `}
+  `;
+}
 
-            // Dashboard View
-            function renderDashboard(clientName) {
-                clientName = clientName || 'Client';
-                app.innerHTML = `
-                    <!-- Top Bar -->
-                    <div class="top-bar">
-                        <div class="logo">Moliam Dashboard</div>
-                        <div class="client-name">${escapeHtml(clientName)}</div>
-                        <a href="/" class="logout-link">Logout</a>
-                    </div>
+function renderProjectCard(p, role) {
+  const statusLabels = {
+    onboarding: 'Onboarding', in_progress: 'In Progress',
+    review: 'In Review', active: 'Active',
+    paused: 'Paused', completed: 'Completed'
+  };
+  const typeClass = `type-${p.type}`;
+  const statusClass = `status-${p.status}`;
 
-                    <!-- Stats Row -->
-                    <div class="stats-row" id="stats-container">
-                        ${getLoadingHTML()}
-                    </div>
+  return `
+    <div class="project-card">
+      <div class="project-header">
+        <div class="project-name">${esc(p.name)}</div>
+        <span class="project-type ${typeClass}">${p.type.toUpperCase()}</span>
+      </div>
+      ${role === 'admin' && p.client_name ? `<div style="font-size:0.8rem; color:var(--text-dim); margin-bottom:8px;">Client: ${esc(p.client_name)}${p.client_company ? ' · ' + esc(p.client_company) : ''}</div>` : ''}
+      <div class="status-badge ${statusClass}">
+        <span class="status-dot"></span>
+        ${statusLabels[p.status] || p.status}
+      </div>
+      ${p.notes ? `<div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.5; margin-bottom:12px;">${esc(p.notes)}</div>` : ''}
+      <div class="project-meta">
+        ${p.monthly_rate ? `<div class="meta-item"><span class="meta-label">Monthly</span><br><span class="meta-value">$${p.monthly_rate.toLocaleString()}/mo</span></div>` : ''}
+        ${p.start_date ? `<div class="meta-item"><span class="meta-label">Started</span><br><span class="meta-value">${formatDate(p.start_date)}</span></div>` : ''}
+        ${p.setup_fee ? `<div class="meta-item"><span class="meta-label">Setup Fee</span><br><span class="meta-value">$${p.setup_fee.toLocaleString()}</span></div>` : ''}
+      </div>
+    </div>
+  `;
+}
 
-                    <!-- Two-column Content -->
-                    <div class="content-grid">
-                        <div class="activity-section">
-                            <h2 class="section-title">Activity Feed</h2>
-                            <ul class="activity-list" id="activity-container">
-                                ${getLoadingHTML()}
-                            </ul>
-                        </div>
+function renderTimelineItem(u) {
+  const typeColors = {
+    update: 'update', milestone: 'milestone',
+    deliverable: 'deliverable', report: 'report', invoice: 'invoice'
+  };
+  const typeLabels = {
+    update: '💬 Update', milestone: '🏁 Milestone',
+    deliverable: '📦 Deliverable', report: '📊 Report', invoice: '💰 Invoice'
+  };
 
-                        <div class="messages-section">
-                            <h2 class="section-title">Messages</h2>
-                            <ul class="messages-list" id="messages-container">
-                                ${getLoadingHTML()}
-                            </ul>
-                            <form class="message-form" id="message-form">
-                                <input type="text" class="message-input" placeholder="Type your message..." autocomplete="off">
-                                <button type="submit" class="send-button">Send</button>
-                            </form>
-                        </div>
-                    </div>
+  return `
+    <div class="timeline-item">
+      <div class="timeline-dot-col">
+        <div class="timeline-dot ${typeColors[u.type] || 'update'}"></div>
+        <div class="timeline-line"></div>
+      </div>
+      <div class="timeline-content">
+        <div class="timeline-title">${esc(u.title)}</div>
+        ${u.description ? `<div class="timeline-desc">${esc(u.description)}</div>` : ''}
+        <div class="timeline-meta">
+          <span>${typeLabels[u.type] || u.type}</span>
+          ${u.project_name ? `<span>· ${esc(u.project_name)}</span>` : ''}
+          <span>· ${formatDate(u.created_at)}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
 
-                    <!-- CTA Section -->
-                    <div class="cta-section">
-                        <h3 class="cta-title">Ready to get started?</h3>
-                        <a href="https://calendly.com/visualark/demo" target="_blank" class="cta-button">Book a Call</a>
-                    </div>
-                `;
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 18) return 'Good afternoon';
+  return 'Good evening';
+}
 
-                setupMessageForm();
-            }
+function formatDate(d) {
+  if (!d) return '';
+  try {
+    return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch { return d; }
+}
 
-           function getLoadingHTML() {
-               return `<div class="skeleton" style="height: 60px;"></div>`;
-           }
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
 
-            // Escape HTML to prevent XSS
-            function escapeHtml(text) {
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
-            }
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  try {
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+  } catch {}
+  window.location.href = '/login';
+});
 
-            // Build API URL
-            function apiUrl(action) {
-                return '/api/dashboard?token=' + encodeURIComponent(token) + '&action=' + action;
-            }
-
-            // Fetch stats
-            async function fetchStats() {
-                try {
-                    const response = await fetch(apiUrl('stats'));
-                    if (response.status === 401) {
-                        renderAccessDenied();
-                        return null;
-                    }
-                    if (!response.ok) throw new Error('Failed to fetch stats');
-                    const data = await response.json();
-                    updateStats(data);
-                    // Update client name in top bar
-                    const nameEl = document.querySelector('.client-name');
-                    if (nameEl && data.company) {
-                        nameEl.textContent = data.company;
-                    }
-                    return data;
-                } catch (error) {
-                    console.error('Error fetching stats:', error);
-                    return null;
-                }
-            }
-
-            // Fetch activity
-            async function fetchActivity() {
-                try {
-                    const response = await fetch(apiUrl('activity'));
-                    if (response.status === 401) { renderAccessDenied(); return; }
-                    if (!response.ok) throw new Error('Failed to fetch activity');
-                    const data = await response.json();
-                    updateActivity(data);
-                } catch (error) {
-                    console.error('Error fetching activity:', error);
-                }
-            }
-
-            // Fetch messages
-            async function fetchMessages() {
-                try {
-                    const response = await fetch(apiUrl('messages'));
-                    if (response.status === 401) { renderAccessDenied(); return; }
-                    if (!response.ok) throw new Error('Failed to fetch messages');
-                    const data = await response.json();
-                    updateMessages(data);
-                } catch (error) {
-                    console.error('Error fetching messages:', error);
-                }
-            }
-
-            // Update stats cards
-            function updateStats(stats) {
-                const container = document.getElementById('stats-container');
-                if (!container || !stats) return;
-
-                container.innerHTML = `
-                    <div class="stat-card">
-                        <div class="stat-value">${formatNumber(stats.leads_count)}</div>
-                        <div class="stat-label">Total Activities</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">${formatNumber(stats.messages_count)}</div>
-                        <div class="stat-label">Messages</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">${stats.rating || 'N/A'}</div>
-                        <div class="stat-label">Google Rating</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">${formatNumber(stats.reviews)}</div>
-                        <div class="stat-label">Reviews</div>
-                    </div>
-                `;
-            }
-
-           // Update activity feed
-            function updateActivity(activityList) {
-                const container = document.getElementById('activity-container');
-                if (!container) return;
-
-                if (!activityList || activityList.length === 0) {
-                    container.innerHTML = '<li class="activity-item"><div class="activity-text" style="text-align: center;">📋 No activity yet — your AI agents will start working soon</div></li>';
-                    return;
-                 }
-
-                container.innerHTML = activityList.map(function(item) {
-                    return `
-                         <li class="activity-item">
-                             <div class="activity-time">${formatTime(item.created_at)}</div>
-                             <div class="activity-agent">${escapeHtml(item.agent_name)}:</div>
-                             <div class="activity-text">${escapeHtml(item.description)}</div>
-                         </li>
-                     `;
-                 }).join('');
-            }
-
-          // Update messages panel
-            function updateMessages(messages) {
-                const container = document.getElementById('messages-container');
-                if (!container) return;
-
-                if (!messages || messages.length === 0) {
-                    container.innerHTML = '<li class="message-item"><div class="message-text" style="text-align: center;">💬 No messages yet — send your first message below</div></li>';
-                    return;
-                 }
-
-                container.innerHTML = messages.map(function(msg) {
-                    return `
-                         <li class="message-item">
-                             <div class="message-agent">${escapeHtml(msg.sender)}</div>
-                             <div class="message-text">${escapeHtml(msg.message)}</div>
-                         </li>
-                     `;
-                 }).join('');
-            }
-
-          // Add style for secondary text centering
-            function getMessageContainerEmptyStyle() {
-                return 'text-align: center; color: var(--text-secondary); padding: 1rem;';
-            }
-            function formatNumber(num) {
-                if (num === undefined || num === null) return '0';
-                if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-                if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-                return num.toString();
-            }
-
-            // Format relative time
-            function formatTime(timestamp) {
-                if (!timestamp) return '';
-                var date = new Date(timestamp);
-                var now = new Date();
-                var diff = now - date;
-
-                if (diff < 60000) return 'Just now';
-                if (diff < 3600000) return Math.floor(diff / 60000) + ' minutes ago';
-                if (diff < 86400000) return Math.floor(diff / 3600000) + ' hours ago';
-
-                return date.toLocaleDateString();
-            }
-
-            // Setup message form submission
-            function setupMessageForm() {
-                var form = document.getElementById('message-form');
-                if (!form) return;
-
-                form.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    var input = form.querySelector('.message-input');
-                    var btn = form.querySelector('.send-button');
-                    var message = input.value.trim();
-
-                    if (!token || !message) return;
-
-                    btn.disabled = true;
-                    try {
-                        var response = await fetch(apiUrl('message'), {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ message: message })
-                        });
-
-                        if (response.status === 401) {
-                            renderAccessDenied();
-                            return;
-                        }
-
-                        if (response.ok) {
-                            input.value = '';
-                            await fetchMessages();
-                        }
-                    } catch (error) {
-                        console.error('Error sending message:', error);
-                    } finally {
-                        btn.disabled = false;
-                    }
-                });
-            }
-
-            // Refresh all data
-            async function refreshAll() {
-                var stats = await fetchStats();
-                if (stats) {
-                    fetchActivity();
-                    fetchMessages();
-                }
-            }
-
-            // Initialize dashboard
-            async function init() {
-                if (!token) {
-                    renderAccessDenied();
-                    return;
-                }
-
-                renderDashboard('Loading...');
-                await refreshAll();
-
-                // Auto-refresh every 30 seconds
-                autoRefreshInterval = setInterval(refreshAll, 30000);
-            }
-
-            // Start
-            init();
-        })();
-    </script>
+init();
+</script>
 </body>
 </html>

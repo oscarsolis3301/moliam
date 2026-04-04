@@ -13,16 +13,11 @@ export async function onRequestPost(context) {
   let data;
   try {
     data = await request.json();
-   } catch {
+  } catch {
     return jsonResp(400, { error: true, message: "Invalid JSON body." });
-   }
-
-   // --- Honeypot check ---
-  if (data.website) {
-    return jsonResp(200, { success: true, message: "Thanks!" });
   }
 
-   // --- Validate ---
+  // --- Validate ---
   const name = (data.name || "").trim();
   const email = (data.email || "").toLowerCase().trim();
   const phone = data.phone ? String(data.phone).replace(/[^\d()\-+\s]/g, "").trim() : null;
@@ -110,9 +105,6 @@ export async function onRequestPost(context) {
       }
     }
 
-    // --- Send emails (confirmation to user + notification to admin) ---
-    await sendEmail(email, name, env);
-
     return jsonResp(200, {
       success: true,
       message: "Thanks! We'll be in touch within 1 business day.",
@@ -133,73 +125,12 @@ async function hashSHA256(str) {
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
-// --- CORS Preflight ---
-export async function onRequestOptions() {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      "Access-Control-Allow-Origin": "https://moliam.pages.dev",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-      "Access-Control-Max-Age": "86400",
-    },
-  });
-}
-
-// --- Send confirmation email via MailChannels (free on CF Workers) ---
-async function sendEmail(to, name, env) {
-  try {
-    const adminEmail = env.ADMIN_EMAIL || "hello@moliam.com";
-    
-    // Send confirmation to user
-    await fetch("https://api.mailchannels.net/tx/v1/send", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        personalizations: [{ to: [{ email: to, name: name }] }],
-        from: { email: adminEmail, name: "Moliam" },
-        subject: "We got your message! — Moliam",
-        content: [{
-          type: "text/html",
-          value: `<div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;color:#1f2937">
-            <h2 style="color:#3B82F6">Thanks, ${name}!</h2>
-            <p>We received your message and our team will get back to you within 1 business day.</p>
-            <p>In the meantime, feel free to book a demo call directly:</p>
-            <p><a href="https://calendly.com/visualark/demo" style="background:#3B82F6;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block">Book a Demo</a></p>
-            <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0">
-            <p style="color:#9CA3AF;font-size:13px">Moliam — AI-Powered Operations for Modern Agencies<br>Orange County, CA</p>
-          </div>`
-        }],
-      }),
-    });
-
-    // Send notification to admin
-    await fetch("https://api.mailchannels.net/tx/v1/send", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        personalizations: [{ to: [{ email: adminEmail, name: "Moliam Team" }] }],
-        from: { email: "noreply@moliam.pages.dev", name: "Moliam Contact Form" },
-        subject: `New lead: ${name} (${to})`,
-        content: [{
-          type: "text/plain",
-          value: `New contact form submission:\n\nName: ${name}\nEmail: ${to}\nSubmitted: ${new Date().toISOString()}`
-        }],
-      }),
-    });
-  } catch {
-    // Email failure is non-fatal — D1 + Discord still captured the lead
-  }
-}
-
 function jsonResp(status, body) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "https://moliam.pages.dev",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Origin": "*",
     },
   });
 }

@@ -1,143 +1,116 @@
 /**
- * MOLIAM Client Dashboard API — CloudFlare Pages Function
- * GET  /api/dashboard?token=xxx&action=stats|messages|activity
- * POST /api/dashboard?token=xxx&action=message
+ * GET /api/dashboard
+ * Returns current user's projects + recent updates
+ * Works for both clients (see own stuff) and admins (see everything)
  */
-
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': 'https://moliam.pages.dev',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-function jsonResp(status, body) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
-  });
-}
-
-async function authenticateToken(db, token) {
-  if (!token) return null;
-  return await db.prepare('SELECT * FROM client_profiles WHERE token = ?').bind(token).first();
-}
-
-export async function onRequestOptions() {
-  return new Response(null, { status: 204, headers: { ...CORS_HEADERS, 'Access-Control-Max-Age': '86400' } });
-}
 
 export async function onRequestGet(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
-  const url = new URL(request.url);
-  const token = url.searchParams.get('token');
-  const action = url.searchParams.get('action');
 
-  const profile = await authenticateToken(db, token);
-  if (!profile) {
-    return jsonResp(401, { error: 'Invalid or missing token' });
-  }
+  const token = getSessionToken(request);
+  if (!token) return jsonResp(401, { error: true, message: "Not authenticated." }, request);
 
-  switch (action) {
-    case 'stats': {
-      const leadsCount = await db.prepare(
-        'SELECT COUNT(*) as count FROM client_activity WHERE client_id = ?'
-      ).bind(profile.id).first();
+  try {
+    const session = await db.prepare(
+      "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND u.is_active = 1 AND s.expires_at > datetime('now')"
+    ).bind(token).first();
 
-      const messagesCount = await db.prepare(
-        'SELECT COUNT(*) as count FROM client_messages WHERE client_id = ?'
-      ).bind(profile.id).first();
+    if (!session) return jsonResp(401, { error: true, message: "Session invalid." }, request);
 
-      return jsonResp(200, {
-        company: profile.company_name,
-        contact: profile.contact_name,
-        email: profile.email,
-        plan: profile.plan,
-        leads_count: leadsCount?.count || 0,
-        messages_count: messagesCount?.count || 0,
-        rating: 5.0,
-        reviews: 24,
-      });
+    const isAdmin = session.role === "admin";
+
+    // Get projects
+    let projects;
+    if (isAdmin) {
+      const result = await db.prepare(
+        `SELECT p.*, u.name as client_name, u.company as client_company
+        FROM projects p JOIN users u ON p.user_id = u.id
+        ORDER BY p.updated_at DESC`
+      ).all();
+      projects = result.results;
+    } else {
+      const result = await db.prepare(
+        "SELECT * FROM projects WHERE user_id = ? ORDER BY updated_at DESC"
+      ).bind(session.id).all();
+      projects = result.results;
     }
 
-    case 'messages': {
-      const messages = await db.prepare(
-        'SELECT * FROM client_messages WHERE client_id = ? ORDER BY created_at DESC'
-      ).bind(profile.id).all();
-      return jsonResp(200, messages.results || []);
+    // Get recent updates for user's projects
+    const projectIds = projects.map(p => p.id);
+    let updates = [];
+    if (projectIds.length > 0) {
+      const placeholders = projectIds.map(() => "?").join(",");
+      const result = await db.prepare(
+        `SELECT pu.*, p.name as project_name FROM project_updates pu
+        JOIN projects p ON pu.project_id = p.id
+        WHERE pu.project_id IN (${placeholders})
+        ORDER BY pu.created_at DESC LIMIT 20`
+      ).bind(...projectIds).all();
+      updates = result.results;
     }
 
-    case 'activity': {
-      const activity = await db.prepare(
-        'SELECT * FROM client_activity WHERE client_id = ? ORDER BY created_at DESC LIMIT 20'
-      ).bind(profile.id).all();
-      return jsonResp(200, activity.results || []);
+    // Stats
+    const activeProjects = projects.filter(p => ["active", "in_progress"].includes(p.status)).length;
+    const totalMonthly = projects.reduce((sum, p) => sum + (p.monthly_rate || 0), 0);
+
+    let stats;
+    if (isAdmin) {
+      const clientCount = await db.prepare("SELECT COUNT(*) as c FROM users WHERE role = 'client'").first();
+      const leadCount = await db.prepare("SELECT COUNT(*) as c FROM leads WHERE status = 'new'").first();
+      stats = {
+        total_clients: clientCount.c,
+        active_projects: activeProjects,
+        monthly_revenue: totalMonthly,
+        new_leads: leadCount.c,
+      };
+    } else {
+      stats = {
+        active_projects: activeProjects,
+        total_projects: projects.length,
+        monthly_total: totalMonthly,
+      };
     }
 
-    default:
-      return jsonResp(400, { error: 'Invalid action. Use: stats, messages, activity' });
+    return jsonResp(200, {
+      success: true,
+      user: { id: session.id, name: session.name, email: session.email, role: session.role, company: session.company },
+      projects,
+      updates,
+      stats,
+    }, request);
+
+  } catch (err) {
+    console.error("Dashboard error:", err);
+    return jsonResp(500, { error: true, message: "Server error." }, request);
   }
 }
 
-export async function onRequestPost(context) {
-  const { request, env } = context;
-  const db = env.MOLIAM_DB;
-  const url = new URL(request.url);
-  const token = url.searchParams.get('token');
-  const action = url.searchParams.get('action');
+export async function onRequestOptions() {
+  return new Response(null, { status: 204, headers: {
+    "Access-Control-Allow-Origin": "https://moliam.pages.dev",
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Credentials": "true",
+  }});
+}
 
-  const profile = await authenticateToken(db, token);
-  if (!profile) {
-    return jsonResp(401, { error: 'Invalid or missing token' });
-  }
+function getSessionToken(request) {
+  const cookies = request.headers.get("Cookie") || "";
+  const match = cookies.match(/moliam_session=([a-f0-9]+)/);
+  return match ? match[1] : null;
+}
 
-  if (action === 'message') {
-    let body;
-    try {
-      body = await request.json();
-    } catch {
-      return jsonResp(400, { error: 'Invalid JSON body' });
-    }
+function getAllowedOrigin(request) {
+  const origin = request.headers.get("Origin") || "";
+  if (origin.includes("moliam.pages.dev") || origin.includes("moliam.com") || origin.includes("localhost")) return origin;
+  return "https://moliam.pages.dev";
+}
 
-    const sender = (body.sender || profile.contact_name || 'Client').trim();
-    const message = (body.message || '').trim();
-
-    if (!message) {
-      return jsonResp(400, { error: 'Message cannot be empty' });
-    }
-
-    await db.prepare(
-      "INSERT INTO client_messages (client_id, sender, message, created_at) VALUES (?, ?, ?, datetime('now'))"
-    ).bind(profile.id, sender, message).run();
-
-    // Discord webhook notification (non-fatal)
-    const webhookUrl = env.DISCORD_WEBHOOK_URL || '';
-    if (webhookUrl && webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
-      try {
-        await fetch(webhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            username: 'Moliam Dashboard',
-            embeds: [{
-              title: '💬 New Client Message',
-              color: 0x3B82F6,
-              fields: [
-                { name: 'Company', value: profile.company_name, inline: true },
-                { name: 'From', value: sender, inline: true },
-                { name: 'Message', value: message.slice(0, 1024) },
-              ],
-              timestamp: new Date().toISOString(),
-            }],
-          }),
-        });
-      } catch {
-        // Discord failure is non-fatal
-      }
-    }
-
-    return jsonResp(200, { success: true });
-  }
-
-  return jsonResp(400, { error: 'Invalid action. Use: message' });
+function jsonResp(status, body, request) {
+  return new Response(JSON.stringify(body), { status, headers: {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": request ? getAllowedOrigin(request) : "https://moliam.pages.dev",
+    "Access-Control-Allow-Credentials": "true",
+  }});
 }
