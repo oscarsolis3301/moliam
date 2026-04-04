@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login — Moliam</title>
+<meta name="description" content="Sign in to the Moliam Client Portal">
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,14 +39,32 @@ body {
   overflow: hidden;
 }
 
-/* Animated background */
+/* Animated gradient background */
 .bg-grid {
   position: fixed; inset: 0; z-index: 0;
-  background-image:
+  background:
     radial-gradient(circle at 20% 50%, rgba(59,130,246,0.08) 0%, transparent 50%),
     radial-gradient(circle at 80% 20%, rgba(139,92,246,0.06) 0%, transparent 50%),
     radial-gradient(circle at 50% 80%, rgba(16,185,129,0.04) 0%, transparent 50%);
   animation: bgPulse 8s ease-in-out infinite alternate;
+}
+.bg-gradient-anim {
+  position: fixed; inset: 0; z-index: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(59,130,246,0.07) 0%,
+    rgba(139,92,246,0.05) 25%,
+    rgba(16,185,129,0.04) 50%,
+    rgba(139,92,246,0.06) 75%,
+    rgba(59,130,246,0.08) 100%
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 @keyframes bgPulse {
   0% { opacity: 0.6; }
@@ -111,6 +130,68 @@ body {
 }
 .field input::placeholder { color: var(--text-dim); }
 
+/* Password field wrapper */
+.password-wrapper {
+  position: relative;
+}
+.password-wrapper input {
+  padding-right: 48px;
+}
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color var(--transition-smooth);
+}
+.password-toggle:hover,
+.password-toggle:focus-visible {
+  color: var(--text-secondary);
+}
+.password-toggle:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+.password-toggle .icon-hide { display: none; }
+.password-toggle.active .icon-show { display: none; }
+.password-toggle.active .icon-hide { display: block; }
+
+/* Forgot password link */
+.field-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+.forgot-link {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 0.8rem;
+  transition: color var(--transition-smooth);
+}
+.forgot-link:hover,
+.forgot-link:focus-visible {
+  color: var(--accent-blue);
+}
+.forgot-link:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 .btn-login {
   width: 100%; padding: 14px;
   background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
@@ -123,6 +204,11 @@ body {
 }
 .btn-login:hover {
   transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(59,130,246,0.3);
+}
+.btn-login:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
   box-shadow: 0 8px 24px rgba(59,130,246,0.3);
 }
 .btn-login:active { transform: translateY(0); }
@@ -171,64 +257,127 @@ body {
   transition: color var(--transition-smooth);
 }
 .back-link a:hover { color: var(--accent-blue); }
+.back-link a:focus-visible {
+  color: var(--accent-blue);
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Skip link for keyboard users */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent-blue);
+  color: white;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  z-index: 100;
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: top var(--transition-smooth);
+}
+.skip-link:focus {
+  top: 16px;
+}
 </style>
 </head>
 <body>
-<div class="bg-grid"></div>
+<a href="#loginForm" class="skip-link">Skip to login form</a>
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-gradient-anim" aria-hidden="true"></div>
 
-<div class="login-container">
-  <div class="logo">
+<main class="login-container" role="main">
+  <div class="logo" aria-hidden="true">
     <h1>Moliam</h1>
     <p>Client Portal</p>
   </div>
 
-  <div class="login-card">
-    <h2>Welcome back</h2>
-    <p class="subtitle">Sign in to your dashboard</p>
+  <div class="login-card" role="region" aria-labelledby="login-heading">
+    <h2 id="login-heading">Welcome back</h2>
+    <p class="subtitle" id="login-desc">Sign in to your dashboard</p>
 
-    <div id="alert" class="alert"></div>
+    <div id="alert" class="alert" role="alert" aria-live="assertive" aria-atomic="true"></div>
 
-    <form id="loginForm" autocomplete="on">
+    <form id="loginForm" autocomplete="on" aria-describedby="login-desc" novalidate>
       <div class="field">
         <label for="email">Email</label>
-        <input type="email" id="email" name="email" placeholder="you@company.com" required autocomplete="email" autofocus>
+        <input type="email" id="email" name="email" placeholder="you@company.com" required autocomplete="email" autofocus
+               aria-required="true" tabindex="1"
+               aria-describedby="email-error">
+        <span id="email-error" class="visually-hidden" aria-live="polite"></span>
       </div>
       <div class="field">
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+        <div class="password-wrapper">
+          <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password"
+                 aria-required="true" tabindex="2">
+          <button type="button" class="password-toggle" id="passwordToggle" tabindex="3"
+                  aria-label="Show password" aria-pressed="false">
+            <svg class="icon-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            <svg class="icon-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+              <line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>
+          </button>
+        </div>
+        <div class="field-footer">
+          <a href="#" class="forgot-link" tabindex="4" onclick="event.preventDefault(); showAlert('Password reset is not yet available. Please contact support.', 'error');">Forgot password?</a>
+        </div>
       </div>
-      <button type="submit" class="btn-login" id="loginBtn">
+      <button type="submit" class="btn-login" id="loginBtn" tabindex="5">
         <span class="btn-text">Sign In</span>
-        <div class="spinner"></div>
+        <div class="spinner" aria-hidden="true"></div>
       </button>
     </form>
   </div>
 
   <div class="back-link">
-    <a href="/">← Back to Moliam.com</a>
+    <a href="/" tabindex="6">← Back to Moliam.com</a>
   </div>
-</div>
+</main>
 
 <script>
 const form = document.getElementById('loginForm');
 const btn = document.getElementById('loginBtn');
-const alert = document.getElementById('alert');
+const alertEl = document.getElementById('alert');
+const passwordInput = document.getElementById('password');
+const passwordToggle = document.getElementById('passwordToggle');
+
+// Password show/hide toggle
+passwordToggle.addEventListener('click', () => {
+  const isPassword = passwordInput.type === 'password';
+  passwordInput.type = isPassword ? 'text' : 'password';
+  passwordToggle.classList.toggle('active', isPassword);
+  passwordToggle.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+  passwordToggle.setAttribute('aria-pressed', isPassword ? 'true' : 'false');
+  passwordInput.focus();
+});
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
-  alert.className = 'alert';
-  alert.style.display = 'none';
+  alertEl.className = 'alert';
+  alertEl.style.display = 'none';
+  alertEl.textContent = '';
 
   const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
+  const password = passwordInput.value;
 
   if (!email || !password) {
     showAlert('Please fill in all fields.', 'error');
+    if (!email) document.getElementById('email').focus();
+    else passwordInput.focus();
     return;
   }
 
   btn.classList.add('loading');
   btn.disabled = true;
+  btn.setAttribute('aria-busy', 'true');
 
   try {
     const res = await fetch('/api/auth/login', {
@@ -252,18 +401,21 @@ form.addEventListener('submit', async (e) => {
       showAlert(data.message || 'Login failed.', 'error');
       btn.classList.remove('loading');
       btn.disabled = false;
+      btn.removeAttribute('aria-busy');
+      passwordInput.focus();
     }
   } catch (err) {
     showAlert('Connection error. Please try again.', 'error');
     btn.classList.remove('loading');
     btn.disabled = false;
+    btn.removeAttribute('aria-busy');
   }
 });
 
 function showAlert(msg, type) {
-  alert.textContent = msg;
-  alert.className = `alert ${type}`;
-  alert.style.display = 'block';
+  alertEl.textContent = msg;
+  alertEl.className = `alert ${type}`;
+  alertEl.style.display = 'block';
 }
 
 // If already logged in, redirect
