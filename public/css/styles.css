@@ -1,5 +1,5 @@
 /* ============================================
-   MOLIAM - Modern AI Marketing Agency Styles
+   MOLIAM - Modern AI Marketing Agency Styles (Optimized)
    ============================================ */
 
 /* CSS Variables for consistency */
@@ -16,7 +16,11 @@
 }
 
 /* Global Reset */
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -24,6 +28,11 @@ body {
   color: #fff;
   line-height: 1.6;
   overflow-x: hidden;
+}
+
+/* Performance: Add will-change to animated elements */
+.card:hover, .card::before, nav a::after {
+  will-change: transform, opacity;
 }
 
 /* Navigation */
@@ -183,10 +192,18 @@ h1 {
   background: rgba(30, 41, 59, 0.5);
   border-top: 1px solid rgba(255, 255, 255, 0.07);
   margin-top: -1px;
+  content-visibility: auto;
+  contain-intrinsic-size: 500px;
 }
 
 .section:nth-child(even) {
   background: rgba(30, 41, 59, 0.3);
+}
+
+/* Below-fold sections get content-visibility for performance */
+.section:not(:first-child) {
+  content-visibility: auto;
+  contain-intrinsic-size: 600px;
 }
 
 h2 {

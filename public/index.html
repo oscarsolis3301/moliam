@@ -686,7 +686,24 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15), 0 0 20px rgba(59, 130, 246, 0.1);
 }
 .form-group textarea { resize: vertical; min-height: 100px; }
-.form-group select option { background: var(--bg-deep); }
+   .form-group select option { background: var(--bg-deep); }
+
+/* ─── FORM STATUS MESSAGES ─── */
+#form-status { margin-top: 20px; min-height: 128px; }
+.form-success, .form-error {
+   background: rgba(10, 10, 20, 0.7);
+   border: 1px solid var(--glass-border);
+   border-radius: var(--radius-md);
+   padding: 32px;
+   text-align: center;
+   backdrop-filter: blur(16px);
+   animation: fadeInUp 0.4s ease-out;
+}
+.form-success { border-color: rgba(16, 185, 129, 0.3); box-shadow: 0 0 40px rgba(16, 185, 129, 0.15); }
+.form-error { border-color: rgba(239, 68, 68, 0.3); box-shadow: 0 0 40px rgba(239, 68, 68, 0.15); }
+.form-success h4 { font-size: 20px; margin-bottom: 8px; color: var(--accent-green); }
+.form-error p { font-size: 14px; color: var(--text-secondary); }
+.form-success p { font-size: 14px; color: var(--text-secondary); margin-top: 16px; }
 .form-submit {
   width: 100%; padding: 14px;
   border-radius: var(--radius-sm);
@@ -2017,5 +2034,74 @@ function drawRoom(room, t) {
     pGrad.addColorStop(1, `rgba(${cr},${cg},${cb},0.4)`);
     ctx.fillStyle = pGrad;
     ctx.beginPath();
-    ctx.roundRect(pBarX, pBarY, pBarW * clamp(progress, 0, 1), pBarH, 2);
+   ctx.roundRect(pBarX, pBarY, pBarW * clamp(progress, 0, 1), pBarH, 2);
     ctx.fill();
+
+/* ─── CONTACT FORM HANDLER ─── */
+const contactForm = $('#contact-form');
+const formStatus = $('#form-status');
+const formBtn = $('#form-btn');
+
+if (contactForm && formStatus) {
+   contactForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const submitData = new FormData(contactForm);
+      const data = Object.fromEntries(submitData.entries());
+      
+      // Disable button during submission
+      formBtn.disabled = true;
+      formBtn.textContent = 'Sending...';
+      const originalBtnText = formBtn.textContent;
+      
+      try {
+         const response = await fetch('/api/contact', {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json',
+               'X-Request-ID': crypto.randomUUID()
+            },
+            body: JSON.stringify(data),
+         });
+         
+         const result = await response.json();
+         
+         if (response.ok && result.success === true) {
+            // Success state - show confirmation with animation + sound
+            formStatus.innerHTML = `
+               <div class="form-success">
+                  <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                     <rect width="48" height="48" rx="12" fill="#10B981"/>
+                     <path d="M13.5 24.5L21 32L34.5 18.5" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <h4>Message Sent Successfully!</h4>
+                  <p>${result.message || 'We will be in touch within 1 business day.'}</p>
+               </div>
+            `;
+            
+            // Scroll to form status
+            formStatus.scrollIntoView({ behavior: 'smooth', block: 'center' });
+         } else {
+            // Client-side validation error from API
+            formStatus.innerHTML = `
+               <div class="form-error">
+                  <p>${result.message || 'Something went wrong. Please try again.'}</p>
+               </div>
+            `;
+            formBtn.textContent = originalBtnText;
+            formBtn.disabled = false;
+         }
+         
+      } catch (err) {
+         console.error('Form submission error:', err);
+         formStatus.innerHTML = `
+            <div class="form-error">
+               <p>Network error. Please check your connection and try again.</p>
+            </div>
+         `;
+         formBtn.textContent = originalBtnText || 'Send Message';
+         formBtn.disabled = false;
+      }
+      
+   });
+}
