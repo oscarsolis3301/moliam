@@ -1,114 +1,143 @@
-import { D1_CLIENT } from '../constants.js';
+/**
+ * MOLIAM Client Dashboard API — CloudFlare Pages Function
+ * GET  /api/dashboard?token=xxx&action=stats|messages|activity
+ * POST /api/dashboard?token=xxx&action=message
+ */
 
-export default {
-  async onRequestGet({ request, env }) {
-    const url = new URL(request.url);
-    const action = url.searchParams.get('action');
-    const token = url.searchParams.get('token');
-
-    // Auth check
-    if (!token) {
-      return Response.json({ error: 'Missing token' }, { status: 401 });
-    }
-
-    // Lookup client by token
-    const profileResult = await env.CLIENT_DB.prepare(
-      'SELECT * FROM client_profiles WHERE token = ?'
-    ).bind(token).first();
-
-    if (!profileResult) {
-      return Response.json({ error: 'Invalid token' }, { status: 401 });
-    }
-
-    // Handle different actions
-    switch (action) {
-      case 'stats': {
-        const leadsCount = await env.CLIENT_DB.prepare(
-          `SELECT COUNT(*) as count FROM client_activity WHERE client_id = ?`
-        ).bind(profileResult.id).first();
-        
-        const messagesCount = await env.CLIENT_DB.prepare(
-          `SELECT COUNT(*) as count FROM client_messages WHERE client_id = ?`
-        ).bind(profileResult.id).first();
-
-        const stats = {
-          company: profileResult.company_name,
-          plan: profileResult.plan,
-          leads_count: leadsCount?.count || 0,
-          messages_count: messagesCount?.count || 0,
-          rating: 5.0,
-          reviews: 24
-        };
-
-        return Response.json(stats);
-      }
-
-      case 'messages': {
-        const messages = await env.CLIENT_DB.prepare(
-          `SELECT * FROM client_messages WHERE client_id = ? ORDER BY created_at DESC`
-        ).bind(profileResult.id).all();
-        return Response.json(messages.results);
-      }
-
-      case 'activity': {
-        const activity = await env.CLIENT_DB.prepare(
-          `SELECT * FROM client_activity WHERE client_id = ? ORDER BY created_at DESC LIMIT 20`
-        ).bind(profileResult.id).all();
-        return Response.json(activity.results);
-      }
-
-      default:
-        return Response.json({ error: 'Invalid action' }, { status: 400 });
-    }
-  },
-
-  async onRequestPost({ request, env }) {
-    const url = new URL(request.url);
-    const action = url.searchParams.get('action');
-
-    // Auth check
-    const token = url.searchParams.get('token');
-    if (!token) {
-      return Response.json({ error: 'Missing token' }, { status: 401 });
-    }
-
-    const profileResult = await env.CLIENT_DB.prepare(
-      'SELECT * FROM client_profiles WHERE token = ?'
-    ).bind(token).first();
-
-    if (!profileResult) {
-      return Response.json({ error: 'Invalid token' }, { status: 401 });
-    }
-
-    if (action === 'message') {
-      const body = await request.json();
-      const sender = body.sender || 'Unknown';
-      const message = body.message || '';
-
-      // Save message to D1
-      await env.CLIENT_DB.prepare(`
-        INSERT INTO client_messages (client_id, sender, message)
-        VALUES (?, ?, ?)
-      `).bind(profileResult.id, sender, message).run();
-
-      // Send Discord webhook notification
-      try {
-        if (env.DISCORD_WEBHOOK_URL) {
-          await fetch(env.DISCORD_WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              content: `New message from ${sender} (${profileResult.company_name}): ${message}`
-            })
-          });
-        }
-      } catch (e) {
-        // Silently fail webhook
-      }
-
-      return Response.json({ success: true, message_id: profileResult.id });
-    }
-
-    return Response.json({ error: 'Invalid action' }, { status: 400 });
-  }
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': 'https://moliam.pages.dev',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
 };
+
+function jsonResp(status, body) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+  });
+}
+
+async function authenticateToken(db, token) {
+  if (!token) return null;
+  return await db.prepare('SELECT * FROM client_profiles WHERE token = ?').bind(token).first();
+}
+
+export async function onRequestOptions() {
+  return new Response(null, { status: 204, headers: { ...CORS_HEADERS, 'Access-Control-Max-Age': '86400' } });
+}
+
+export async function onRequestGet(context) {
+  const { request, env } = context;
+  const db = env.MOLIAM_DB;
+  const url = new URL(request.url);
+  const token = url.searchParams.get('token');
+  const action = url.searchParams.get('action');
+
+  const profile = await authenticateToken(db, token);
+  if (!profile) {
+    return jsonResp(401, { error: 'Invalid or missing token' });
+  }
+
+  switch (action) {
+    case 'stats': {
+      const leadsCount = await db.prepare(
+        'SELECT COUNT(*) as count FROM client_activity WHERE client_id = ?'
+      ).bind(profile.id).first();
+
+      const messagesCount = await db.prepare(
+        'SELECT COUNT(*) as count FROM client_messages WHERE client_id = ?'
+      ).bind(profile.id).first();
+
+      return jsonResp(200, {
+        company: profile.company_name,
+        contact: profile.contact_name,
+        email: profile.email,
+        plan: profile.plan,
+        leads_count: leadsCount?.count || 0,
+        messages_count: messagesCount?.count || 0,
+        rating: 5.0,
+        reviews: 24,
+      });
+    }
+
+    case 'messages': {
+      const messages = await db.prepare(
+        'SELECT * FROM client_messages WHERE client_id = ? ORDER BY created_at DESC'
+      ).bind(profile.id).all();
+      return jsonResp(200, messages.results || []);
+    }
+
+    case 'activity': {
+      const activity = await db.prepare(
+        'SELECT * FROM client_activity WHERE client_id = ? ORDER BY created_at DESC LIMIT 20'
+      ).bind(profile.id).all();
+      return jsonResp(200, activity.results || []);
+    }
+
+    default:
+      return jsonResp(400, { error: 'Invalid action. Use: stats, messages, activity' });
+  }
+}
+
+export async function onRequestPost(context) {
+  const { request, env } = context;
+  const db = env.MOLIAM_DB;
+  const url = new URL(request.url);
+  const token = url.searchParams.get('token');
+  const action = url.searchParams.get('action');
+
+  const profile = await authenticateToken(db, token);
+  if (!profile) {
+    return jsonResp(401, { error: 'Invalid or missing token' });
+  }
+
+  if (action === 'message') {
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return jsonResp(400, { error: 'Invalid JSON body' });
+    }
+
+    const sender = (body.sender || profile.contact_name || 'Client').trim();
+    const message = (body.message || '').trim();
+
+    if (!message) {
+      return jsonResp(400, { error: 'Message cannot be empty' });
+    }
+
+    await db.prepare(
+      "INSERT INTO client_messages (client_id, sender, message, created_at) VALUES (?, ?, ?, datetime('now'))"
+    ).bind(profile.id, sender, message).run();
+
+    // Discord webhook notification (non-fatal)
+    const webhookUrl = env.DISCORD_WEBHOOK_URL || '';
+    if (webhookUrl && webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
+      try {
+        await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: 'Moliam Dashboard',
+            embeds: [{
+              title: '💬 New Client Message',
+              color: 0x3B82F6,
+              fields: [
+                { name: 'Company', value: profile.company_name, inline: true },
+                { name: 'From', value: sender, inline: true },
+                { name: 'Message', value: message.slice(0, 1024) },
+              ],
+              timestamp: new Date().toISOString(),
+            }],
+          }),
+        });
+      } catch {
+        // Discord failure is non-fatal
+      }
+    }
+
+    return jsonResp(200, { success: true });
+  }
+
+  return jsonResp(400, { error: 'Invalid action. Use: message' });
+}

@@ -366,23 +366,25 @@
 
             // Access Denied View
             function renderAccessDenied() {
+                if (autoRefreshInterval) clearInterval(autoRefreshInterval);
                 app.innerHTML = `
                     <div class="error-page">
                         <div class="error-title">401</div>
-                        <div class="error-message">Access Denied - Invalid or expired token</div>
+                        <div class="error-message">Access Denied — Invalid or expired token</div>
                         <a href="/" class="logout-link" style="color: var(--accent-blue);">Return to Home</a>
                     </div>
                 `;
             }
 
             // Dashboard View
-            function renderDashboard(clientName = 'Client') {
+            function renderDashboard(clientName) {
+                clientName = clientName || 'Client';
                 app.innerHTML = `
                     <!-- Top Bar -->
                     <div class="top-bar">
                         <div class="logo">Moliam Dashboard</div>
                         <div class="client-name">${escapeHtml(clientName)}</div>
-                        <a href="/dashboard?logout=true" class="logout-link">Logout</a>
+                        <a href="/" class="logout-link">Logout</a>
                     </div>
 
                     <!-- Stats Row -->
@@ -437,55 +439,55 @@
                 return div.innerHTML;
             }
 
-            // Fetch and update dashboard stats
-            async function fetchDashboard(token) {
-                try {
-                    const response = await fetch(`/api/dashboard?token=${encodeURIComponent(token)}`);
-                    
-                    if (!response.ok) {
-                        if (response.status === 401) {
-                            renderAccessDenied();
-                            return null;
-                        }
-                        throw new Error('Failed to fetch dashboard data');
-                    }
+            // Build API URL
+            function apiUrl(action) {
+                return '/api/dashboard?token=' + encodeURIComponent(token) + '&action=' + action;
+            }
 
+            // Fetch stats
+            async function fetchStats() {
+                try {
+                    const response = await fetch(apiUrl('stats'));
+                    if (response.status === 401) {
+                        renderAccessDenied();
+                        return null;
+                    }
+                    if (!response.ok) throw new Error('Failed to fetch stats');
                     const data = await response.json();
-                    updateStats(data.stats);
+                    updateStats(data);
+                    // Update client name in top bar
+                    const nameEl = document.querySelector('.client-name');
+                    if (nameEl && data.company) {
+                        nameEl.textContent = data.company;
+                    }
                     return data;
                 } catch (error) {
-                    console.error('Error fetching dashboard:', error);
+                    console.error('Error fetching stats:', error);
                     return null;
                 }
             }
 
-            // Fetch and update activity feed
-            async function fetchActivity(token, clientName) {
+            // Fetch activity
+            async function fetchActivity() {
                 try {
-                    const response = await fetch(`/api/dashboard?token=${encodeURIComponent(token)}&client=${encodeURIComponent(clientName)}`);
-                    
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch activity');
-                    }
-
+                    const response = await fetch(apiUrl('activity'));
+                    if (response.status === 401) { renderAccessDenied(); return; }
+                    if (!response.ok) throw new Error('Failed to fetch activity');
                     const data = await response.json();
-                    updateActivity(data.activity || []);
+                    updateActivity(data);
                 } catch (error) {
                     console.error('Error fetching activity:', error);
                 }
             }
 
-            // Fetch and update messages
-            async function fetchMessages(token, clientName) {
+            // Fetch messages
+            async function fetchMessages() {
                 try {
-                    const response = await fetch(`/api/dashboard?token=${encodeURIComponent(token)}&client=${encodeURIComponent(clientName)}`);
-                    
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch messages');
-                    }
-
+                    const response = await fetch(apiUrl('messages'));
+                    if (response.status === 401) { renderAccessDenied(); return; }
+                    if (!response.ok) throw new Error('Failed to fetch messages');
                     const data = await response.json();
-                    updateMessages(data.messages || []);
+                    updateMessages(data);
                 } catch (error) {
                     console.error('Error fetching messages:', error);
                 }
@@ -498,15 +500,15 @@
 
                 container.innerHTML = `
                     <div class="stat-card">
-                        <div class="stat-value">${formatNumber(stats.totalLeads)}</div>
-                        <div class="stat-label">Total Leads</div>
+                        <div class="stat-value">${formatNumber(stats.leads_count)}</div>
+                        <div class="stat-label">Total Activities</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">${formatNumber(stats.activeCampaigns)}</div>
-                        <div class="stat-label">Active Campaigns</div>
+                        <div class="stat-value">${formatNumber(stats.messages_count)}</div>
+                        <div class="stat-label">Messages</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">${stats.googleRating || 'N/A'}</div>
+                        <div class="stat-value">${stats.rating || 'N/A'}</div>
                         <div class="stat-label">Google Rating</div>
                     </div>
                     <div class="stat-card">
@@ -519,32 +521,42 @@
             // Update activity feed
             function updateActivity(activityList) {
                 const container = document.getElementById('activity-container');
-                if (!container || !activityList || activityList.length === 0) return;
+                if (!container) return;
 
-                const itemsHTML = activityList.map(item => `
-                    <li class="activity-item">
-                        <div class="activity-time">${formatTime(item.timestamp)}</div>
-                        <div class="activity-agent">${escapeHtml(item.agentName)}:</div>
-                        <div class="activity-text">${escapeHtml(item.message)}</div>
-                    </li>
-                `).join('');
+                if (!activityList || activityList.length === 0) {
+                    container.innerHTML = '<li class="activity-item"><div class="activity-text">No activity yet.</div></li>';
+                    return;
+                }
 
-                container.innerHTML = itemsHTML;
+                container.innerHTML = activityList.map(function(item) {
+                    return `
+                        <li class="activity-item">
+                            <div class="activity-time">${formatTime(item.created_at)}</div>
+                            <div class="activity-agent">${escapeHtml(item.agent_name)}:</div>
+                            <div class="activity-text">${escapeHtml(item.description)}</div>
+                        </li>
+                    `;
+                }).join('');
             }
 
             // Update messages panel
             function updateMessages(messages) {
                 const container = document.getElementById('messages-container');
-                if (!container || !messages || messages.length === 0) return;
+                if (!container) return;
 
-                const itemsHTML = messages.map(msg => `
-                    <li class="message-item">
-                        <div class="message-agent">${escapeHtml(msg.agentName)}</div>
-                        <div class="message-text">${escapeHtml(msg.message)}</div>
-                    </li>
-                `).join('');
+                if (!messages || messages.length === 0) {
+                    container.innerHTML = '<li class="message-item"><div class="message-text">No messages yet.</div></li>';
+                    return;
+                }
 
-                container.innerHTML = itemsHTML;
+                container.innerHTML = messages.map(function(msg) {
+                    return `
+                        <li class="message-item">
+                            <div class="message-agent">${escapeHtml(msg.sender)}</div>
+                            <div class="message-text">${escapeHtml(msg.message)}</div>
+                        </li>
+                    `;
+                }).join('');
             }
 
             // Format numbers
@@ -557,35 +569,36 @@
 
             // Format relative time
             function formatTime(timestamp) {
-                const date = new Date(timestamp);
-                const now = new Date();
-                const diff = now - date;
+                if (!timestamp) return '';
+                var date = new Date(timestamp);
+                var now = new Date();
+                var diff = now - date;
 
                 if (diff < 60000) return 'Just now';
-                if (diff < 3600000) return `${Math.floor(diff / 60000)} minutes ago`;
-                if (diff < 86400000) return `${Math.floor(diff / 3600000)} hours ago`;
-                
+                if (diff < 3600000) return Math.floor(diff / 60000) + ' minutes ago';
+                if (diff < 86400000) return Math.floor(diff / 3600000) + ' hours ago';
+
                 return date.toLocaleDateString();
             }
 
             // Setup message form submission
             function setupMessageForm() {
-                const form = document.getElementById('message-form');
+                var form = document.getElementById('message-form');
                 if (!form) return;
 
-                form.addEventListener('submit', async (e) => {
+                form.addEventListener('submit', async function(e) {
                     e.preventDefault();
-                    const input = form.querySelector('.message-input');
-                    const message = input.value.trim();
+                    var input = form.querySelector('.message-input');
+                    var btn = form.querySelector('.send-button');
+                    var message = input.value.trim();
 
                     if (!token || !message) return;
 
+                    btn.disabled = true;
                     try {
-                        const response = await fetch(`/api/dashboard?token=${encodeURIComponent(token)}`, {
+                        var response = await fetch(apiUrl('message'), {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
+                            headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ message: message })
                         });
 
@@ -594,61 +607,42 @@
                             return;
                         }
 
-                        input.value = '';
-                        
-                        // Re-fetch to update the messages list
-                        const urlParams = new URLSearchParams(window.location.search);
-                        const client = urlParams.get('client');
-                        if (client) {
-                            await fetchMessages(token, client);
+                        if (response.ok) {
+                            input.value = '';
+                            await fetchMessages();
                         }
                     } catch (error) {
                         console.error('Error sending message:', error);
+                    } finally {
+                        btn.disabled = false;
                     }
                 });
             }
 
+            // Refresh all data
+            async function refreshAll() {
+                var stats = await fetchStats();
+                if (stats) {
+                    fetchActivity();
+                    fetchMessages();
+                }
+            }
+
             // Initialize dashboard
             async function init() {
-                if (params.get('logout')) {
+                if (!token) {
                     renderAccessDenied();
                     return;
                 }
 
-                if (!token) {
-                    const client = params.get('client');
-                    renderDashboard(client || 'Client');
-                    return;
-                }
-
-                renderDashboard();
-
-                // Fetch dashboard data with token
-                const data = await fetchDashboard(token);
-                if (!data) return;
-
-                // Extract client name if provided
-                const urlParams = new URLSearchParams(window.location.search);
-                const clientName = urlParams.get('client') || 'Client';
-
-                // Fetch activity and messages separately (simulating the ac...vity and ac...ages endpoints)
-                fetchActivity(token, clientName);
-                fetchMessages(token, clientName);
+                renderDashboard('Loading...');
+                await refreshAll();
 
                 // Auto-refresh every 30 seconds
-                autoRefreshInterval = setInterval(() => {
-                    fetchDashboard(token).then(data => {
-                        const urlParams = new URLSearchParams(window.location.search);
-                        const clientName = urlParams.get('client') || 'Client';
-                        if (data) {
-                            fetchActivity(token, clientName);
-                            fetchMessages(token, clientName);
-                        }
-                    });
-                }, 30000); // 30 seconds
+                autoRefreshInterval = setInterval(refreshAll, 30000);
             }
 
-            // Start the dashboard
+            // Start
             init();
         })();
     </script>
