@@ -1,235 +1,498 @@
 /**
- * Pure JavaScript QR Code Generator - Bit Matrix Algorithm
- * No external dependencies - returns SVG output with proper encoding
+ * QR Code API — Pure JS QR encoder → SVG output
+ * GET /api/qr?url=https://example.com&size=256&color=3B82F6
+ * No npm deps. Byte-mode encoding, EC level M, versions 1-10.
  */
 
 export default {
   async fetch(request, env) {
-    const urlObj = new URL(request.url);
-    
-    // Get and validate URL parameter
-    let targetUrl = urlObj.searchParams.get('url');
-    if (!targetUrl || targetUrl.trim() === '') {
-      return Response.json({ 
-        error: 'Missing or invalid URL parameter. Expected: /api/qr?url=https://example.com' 
-      }, { status: 400, headers:{'Content-Type':'application/json','Cache-Control':'no-cache'}});
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders() });
     }
 
-    // Get and validate size (min 128 for readability)
-    let size = parseInt(urlObj.searchParams.get('size')) || 256;
-    if (size < 128) size = 128;
-    if (size > 1024) size = 1024;
-
-    // Get and validate color (supports #RGB or #RRGGBB)
-    let color = urlObj.searchParams.get('color')?.replace(/^#/, '') || '3b82f6';
-    
-    // Validate hex color format (3 or 6 chars)
-    if (!/^[0-9a-f]{3}$|^[0-9a-f]{6}$/.test(color)) {
-      return Response.json({ 
-        error: 'Invalid color. Use #RRGGBB or #RGB.', 
-        examples:['#3b82f6','#3bf'] 
-      }, { status: 400, headers:{'Content-Type':'application/json','Cache-Control':'no-cache'}});
+    const url = new URL(request.url);
+    const target = url.searchParams.get('url');
+    if (!target || !target.trim()) {
+      return json400('Missing required parameter: url');
     }
 
-    // Normalize to lowercase 6-char format
-    color = color.toLowerCase();
-    if (color.length === 3) { 
-      color += color[0] + color[1] + color[2]; 
-    }
-    
-    const normalizedColor = '#' + color;
+    // Validate size (128-1024)
+    let size = parseInt(url.searchParams.get('size')) || 256;
+    size = Math.max(128, Math.min(1024, size));
 
-    // Rate limiting: 30 req/min per IP (using simple counter storage in env.RATE_LIMIT)
-    const clientIP = request.headers.get('CF-Connecting-IP') || 
-                     request.headers.get('X-Forwarded-For')?.split(',')[0] || 'unknown';
-    
-    let rateLimited = false;
+    // Validate + normalize color
+    let color = (url.searchParams.get('color') || '3B82F6').replace(/^#/, '').toLowerCase();
+    if (/^[0-9a-f]{3}$/.test(color)) {
+      color = color[0] + color[0] + color[1] + color[1] + color[2] + color[2];
+    }
+    if (!/^[0-9a-f]{6}$/.test(color)) {
+      return json400('Invalid color. Use hex format: 3B82F6 or #3bf');
+    }
+
+    // Rate limit: 30 req/min per IP via KV (graceful if KV not bound)
     if (env.RATE_LIMIT) {
+      const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+      const key = `qr:${ip}`;
       try {
-        const cacheKey = `rate_limit:${clientIP}`;
-        const cached = await env.RATE_LIMIT.get(cacheKey);
-        
-        if (cached !== null && cached !== undefined) {
-          return Response.json({ 
-            error:'Rate limited (30/min). Retry after 60s.', 
-            retryAfter: 60 
-          }, { status: 429, headers:{'Retry-After':'60','Cache-Control':'no-cache'} });
-        } else { 
-          await env.RATE_LIMIT.put(cacheKey, '1', { expirationTtl: 60 }); 
+        const val = parseInt(await env.RATE_LIMIT.get(key)) || 0;
+        if (val >= 30) {
+          return new Response(JSON.stringify({ error: 'Rate limited. 30 req/min max.', retryAfter: 60 }), {
+            status: 429, headers: { ...corsHeaders(), 'Content-Type': 'application/json', 'Retry-After': '60' }
+          });
         }
-      } catch (e) { 
-        console.warn('Rate limit error:', e.message); 
-      }
+        await env.RATE_LIMIT.put(key, String(val + 1), { expirationTtl: 60 });
+      } catch (_) { /* KV error — don't block the request */ }
     }
 
-    // Generate QR bit matrix and convert to SVG
-    const qrData = generateQRBitMatrix(targetUrl.trim(), size);
-    
-    // Create response with proper headers for caching
-    const headers = { 
-      'Content-Type':'image/svg+xml', 
-      'Cache-Control':'public, max-age=604800, immutable'  // 7-day cache for deterministic output
-    };
-
-    return new Response(qrData.svg, { status: 200, headers });
+    try {
+      const modules = encode(target.trim());
+      const svg = toSVG(modules, size, '#' + color);
+      return new Response(svg, {
+        headers: {
+          ...corsHeaders(),
+          'Content-Type': 'image/svg+xml',
+          'Cache-Control': 'public, max-age=604800, immutable',
+        }
+      });
+    } catch (e) {
+      return new Response(JSON.stringify({ error: 'QR generation failed', detail: e.message }), {
+        status: 500, headers: { ...corsHeaders(), 'Content-Type': 'application/json' }
+      });
+    }
   }
 };
 
-/**
- * Generate QR code bit matrix with proper data encoding
- * @param {string} data - URL or text to encode
- * @param {number} size - Output dimensions (128-1024)
- * @returns {{matrix: Array<Array<boolean>>, width: number, height: number, svg: string}}
- */
-function generateQRBitMatrix(data, size) {
-  // Calculate QR matrix size based on data length and version
-  const strLen = Math.min(data.length, 4096);    // Max characters we support
-  let moduleCount = Math.min(41, 21 + Math.floor(strLen / 8));  // Version QRCODE_L to QRCODE_40 scale
-  
-  if (moduleCount < 21) moduleCount = 21;   // Minimum QR size (version 1)
+function corsHeaders() {
+  return { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,OPTIONS' };
+}
 
-  // Create empty bit matrix (filled with false/white by default)
-  const matrix = [];
-  for (let i = 0; i < moduleCount; i++) {
-    matrix[i] = new Array(moduleCount).fill(false);  
+function json400(msg) {
+  return new Response(JSON.stringify({ error: msg }), {
+    status: 400, headers: { ...corsHeaders(), 'Content-Type': 'application/json' }
+  });
+}
+
+// ── QR Encoder (byte mode, EC level M, versions 1-10) ──────────────
+
+// Version capacities for byte mode, EC level M (data codewords)
+const VERSION_CAPACITY = [0, 16, 28, 44, 64, 86, 108, 124, 154, 182, 216];
+
+// EC codewords per block for each version at level M
+const EC_CODEWORDS = [0, 10, 16, 26, 18, 24, 16, 18, 22, 22, 26];
+
+// Number of EC blocks per version at level M
+const EC_BLOCKS = [0, 1, 1, 1, 2, 2, 4, 4, 4, 4, 4];
+
+// Alignment pattern center positions per version
+const ALIGN_POS = [
+  [], [], [6, 18], [6, 22], [6, 26], [6, 30], [6, 34],
+  [6, 22, 38], [6, 24, 42], [6, 26, 46], [6, 28, 50]
+];
+
+function encode(text) {
+  const data = new TextEncoder().encode(text);
+  if (data.length > 216) throw new Error('URL too long (max ~216 bytes for QR version 10)');
+
+  // Pick smallest version that fits
+  let ver = 1;
+  while (ver <= 10 && data.length > VERSION_CAPACITY[ver]) ver++;
+  if (ver > 10) throw new Error('Data too large for supported QR versions');
+
+  const totalCodewords = VERSION_CAPACITY[ver] + EC_CODEWORDS[ver] * EC_BLOCKS[ver];
+  const size = 17 + ver * 4;
+
+  // Build data bitstream: mode(4) + count(8 or 16) + data + terminator + padding
+  const countBits = ver >= 10 ? 16 : 8;
+  let bits = toBits(4, 4); // byte mode indicator = 0100
+  bits += toBits(data.length, countBits);
+  for (const b of data) bits += toBits(b, 8);
+
+  // Terminator (up to 4 zero bits)
+  const dataCodewords = VERSION_CAPACITY[ver];
+  const dataBitsNeeded = dataCodewords * 8;
+  const termLen = Math.min(4, dataBitsNeeded - bits.length);
+  bits += '0'.repeat(termLen);
+
+  // Byte-align
+  if (bits.length % 8 !== 0) bits += '0'.repeat(8 - (bits.length % 8));
+
+  // Pad to fill data capacity
+  const padBytes = [0xEC, 0x11];
+  let pi = 0;
+  while (bits.length < dataBitsNeeded) {
+    bits += toBits(padBytes[pi % 2], 8);
+    pi++;
   }
 
-  // Add three 7x7 finder patterns (simplified: solid border + inner square)
-  addFinderPattern(matrix, 0, 0, moduleCount);
-  addFinderPattern(matrix, moduleCount - 7, 0, moduleCount);   // Top-right  
-  addFinderPattern(matrix, 0, moduleCount - 7, moduleCount);   // Bottom-left
-
-  // Add timing pattern: black-white-black alternating at row=6 and col=6
-  for (let i = 8; i < moduleCount - 7; i++) {
-    matrix[6][i] = (i % 2 === 1);   // horizontal timing line  
-    matrix[i][6] = (i % 2 === 1);   // vertical timing line
+  // Split into data codewords
+  const codewords = [];
+  for (let i = 0; i < bits.length; i += 8) {
+    codewords.push(parseInt(bits.substring(i, i + 8), 2));
   }
 
-  // Generate deterministic bit pattern from input data
-  const bitPattern = generateDataBitPattern(data, moduleCount);
-  
-  // Fill usable cells (skip finder patterns, timing lines)
-  fillMatrixWithBits(matrix, bitPattern);
+  // EC calculation per block
+  const numBlocks = EC_BLOCKS[ver];
+  const ecPerBlock = EC_CODEWORDS[ver];
+  const cwPerBlock = Math.floor(dataCodewords / numBlocks);
+  const remainder = dataCodewords % numBlocks;
 
-  // Add single dark marker at [moduleCount-7][moduleCount-8] if needed per spec
-  if (moduleCount >= 14 && matrix[moduleCount - 7] !== undefined) {
-    const col = moduleCount - 8;
-    if (col >= 0 && col < moduleCount && matrix[moduleCount - 7][col] !== undefined) {
-      matrix[moduleCount - 7][moduleCount - 8] = true;
+  const dataBlocks = [];
+  const ecBlocks = [];
+  let offset = 0;
+
+  for (let b = 0; b < numBlocks; b++) {
+    const blockLen = cwPerBlock + (b >= numBlocks - remainder ? 1 : 0);
+    const block = codewords.slice(offset, offset + blockLen);
+    dataBlocks.push(block);
+    ecBlocks.push(rsEncode(block, ecPerBlock));
+    offset += blockLen;
+  }
+
+  // Interleave data blocks
+  const maxDataLen = Math.max(...dataBlocks.map(b => b.length));
+  const interleaved = [];
+  for (let i = 0; i < maxDataLen; i++) {
+    for (const block of dataBlocks) {
+      if (i < block.length) interleaved.push(block[i]);
+    }
+  }
+  // Interleave EC blocks
+  for (let i = 0; i < ecPerBlock; i++) {
+    for (const block of ecBlocks) {
+      if (i < block.length) interleaved.push(block[i]);
     }
   }
 
-  // Calculate spacing for SVG generation (quiet zone + individual box width)
-  const qrWidth = Math.max(1, Math.round(size / moduleCount));
-  const quietZone = Math.ceil(qrWidth * 2);   // ~2-unit white border
-  
-  return { 
-    matrix: matrix.map(row => [...row]),  // Return deep copy (immutable)  
-    width: moduleCount,
-    height: moduleCount,
-    svg: generateSVG(matrix, size, qrWidth, quietZone)
-  };
-}
+  // Convert to bitstream
+  let finalBits = '';
+  for (const cw of interleaved) finalBits += toBits(cw, 8);
 
-/**
- * Add 7x7 finder pattern (simplified solid border + interior marker)
- */
-function addFinderPattern(matrix, row, col, size) {
-  const maxRow = Math.min(row + 7, size);  
-  const maxCol = Math.min(col + 7, size);
-  
-  for (let y = row; y < maxRow; y++) {
-    for (let x = col; x < maxCol; x++) {
-      const ry = y - row;  
-      const rx = x - col;
+  // Remainder bits for versions 2-6: 7 bits
+  if (ver >= 2 && ver <= 6) finalBits += '0000000';
 
-      if (ry === 0 || ry === 6 || rx === 0 || rx === 6) {
-        // Outer solid border (the "black frame")
-        matrix[y][x] = true;  
-      } else {
-        // Simple inner checkerboard for visual identification
-        matrix[y][x] = ((ry + rx) % 2 !== 0);  
+  // Build module grid
+  const grid = Array.from({ length: size }, () => new Uint8Array(size)); // 0=white
+  const reserved = Array.from({ length: size }, () => new Uint8Array(size)); // 1=reserved
+
+  placeFinderPattern(grid, reserved, 0, 0, size);
+  placeFinderPattern(grid, reserved, size - 7, 0, size);
+  placeFinderPattern(grid, reserved, 0, size - 7, size);
+
+  // Separators (white border around finders — already white, just mark reserved)
+  for (let i = 0; i < 8; i++) {
+    markReserved(reserved, i, 7, size);
+    markReserved(reserved, 7, i, size);
+    markReserved(reserved, size - 8 + i, 7, size);
+    markReserved(reserved, size - 8, i, size);
+    markReserved(reserved, i, size - 8, size);
+    markReserved(reserved, 7, size - 8 + i, size);
+  }
+
+  // Timing patterns
+  for (let i = 8; i < size - 8; i++) {
+    grid[6][i] = (i % 2 === 0) ? 1 : 0;
+    grid[i][6] = (i % 2 === 0) ? 1 : 0;
+    reserved[6][i] = 1;
+    reserved[i][6] = 1;
+  }
+
+  // Alignment patterns
+  if (ver >= 2) {
+    const positions = ALIGN_POS[ver];
+    for (const r of positions) {
+      for (const c of positions) {
+        // Skip if overlapping finder pattern
+        if (r < 9 && c < 9) continue;
+        if (r < 9 && c > size - 9) continue;
+        if (r > size - 9 && c < 9) continue;
+        placeAlignPattern(grid, reserved, r, c, size);
       }
     }
   }
-}
 
-/**
- * Fill bit matrix with data from input string (deterministic, not reversible)
- */
-function fillMatrixWithBits(matrix, bits) {
-  const size = matrix.length;
+  // Dark module
+  grid[size - 8][8] = 1;
+  reserved[size - 8][8] = 1;
+
+  // Reserve format info areas (will fill after masking)
+  for (let i = 0; i < 9; i++) {
+    markReserved(reserved, 8, i, size);
+    markReserved(reserved, i, 8, size);
+  }
+  for (let i = 0; i < 8; i++) {
+    markReserved(reserved, 8, size - 8 + i, size);
+    markReserved(reserved, size - 1 - i, 8, size);
+  }
+
+  // Place data bits (upward/downward zigzag from bottom-right)
   let bitIdx = 0;
-  
-  // Fill all usable cells (skip finder patterns and timing lines) systematically  
-  for (let row = 0; row < size; row++) {  
-    for (let col = 0; col < size; col++) {
-      // Skip reserved areas: finder pattern corners, timing line [6][*][*][6]
-      const isFinderArea = (row < 9 && col < 9) || 
-                          (row < 9 && col > size - 8) ||   
-                          (row > size - 8 && col < 9);  // 3 found areas + timing lines
-                          
-      if ((isFinderArea || (row === 6 && col !== 6 && col > 6 && col < size - 7))) {  
-        continue;   // Skip reserved cells
+  let upward = true;
+  for (let right = size - 1; right >= 1; right -= 2) {
+    if (right === 6) right = 5; // skip timing column
+    const rows = upward ? rangeReverse(size - 1, 0) : rangeForward(0, size - 1);
+    for (const row of rows) {
+      for (const col of [right, right - 1]) {
+        if (col < 0 || col >= size) continue;
+        if (reserved[row][col]) continue;
+        if (bitIdx < finalBits.length) {
+          grid[row][col] = finalBits[bitIdx] === '1' ? 1 : 0;
+        }
+        bitIdx++;
       }
+    }
+    upward = !upward;
+  }
 
-      if (bitIdx < bits.length) {
-        matrix[row][col] = bits[bitIdx % Math.max(1, bits.length)] === '1'; 
-        bitIdx++; 
-        break;     // Move to next row once filled
-      } else {
-        return;   // No more bits to fill - complete early exit
+  // Apply best mask
+  let bestMask = 0;
+  let bestScore = Infinity;
+  for (let m = 0; m < 8; m++) {
+    const masked = applyMask(grid, reserved, m, size);
+    const score = penaltyScore(masked, size);
+    if (score < bestScore) {
+      bestScore = score;
+      bestMask = m;
+    }
+  }
+
+  const final = applyMask(grid, reserved, bestMask, size);
+
+  // Write format info (EC level M = 00, mask pattern 3 bits)
+  const formatBits = getFormatBits(0, bestMask); // 0 = M level
+  writeFormatInfo(final, formatBits, size);
+
+  return final;
+}
+
+// ── Reed-Solomon over GF(256) ──────────────────────────────────────
+
+const GF_EXP = new Uint8Array(512);
+const GF_LOG = new Uint8Array(256);
+
+(function initGF() {
+  let x = 1;
+  for (let i = 0; i < 255; i++) {
+    GF_EXP[i] = x;
+    GF_LOG[x] = i;
+    x = (x << 1) ^ (x >= 128 ? 0x11D : 0);
+  }
+  for (let i = 255; i < 512; i++) GF_EXP[i] = GF_EXP[i - 255];
+})();
+
+function gfMul(a, b) {
+  if (a === 0 || b === 0) return 0;
+  return GF_EXP[GF_LOG[a] + GF_LOG[b]];
+}
+
+function rsEncode(data, ecCount) {
+  // Build generator polynomial
+  let gen = [1];
+  for (let i = 0; i < ecCount; i++) {
+    const newGen = new Array(gen.length + 1).fill(0);
+    for (let j = 0; j < gen.length; j++) {
+      newGen[j] ^= gen[j];
+      newGen[j + 1] ^= gfMul(gen[j], GF_EXP[i]);
+    }
+    gen = newGen;
+  }
+
+  const msg = new Array(data.length + ecCount).fill(0);
+  for (let i = 0; i < data.length; i++) msg[i] = data[i];
+
+  for (let i = 0; i < data.length; i++) {
+    const coef = msg[i];
+    if (coef !== 0) {
+      for (let j = 1; j < gen.length; j++) {
+        msg[i + j] ^= gfMul(gen[j], coef);
       }
+    }
+  }
+
+  return msg.slice(data.length);
+}
+
+// ── Grid helpers ────────────────────────────────────────────────────
+
+function placeFinderPattern(grid, reserved, row, col, size) {
+  for (let r = 0; r < 7; r++) {
+    for (let c = 0; c < 7; c++) {
+      const gr = row + r, gc = col + c;
+      if (gr < 0 || gr >= size || gc < 0 || gc >= size) continue;
+      // Finder: solid border, white ring, solid 3x3 center
+      const isBorder = r === 0 || r === 6 || c === 0 || c === 6;
+      const isCenter = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+      grid[gr][gc] = (isBorder || isCenter) ? 1 : 0;
+      reserved[gr][gc] = 1;
     }
   }
 }
 
-/**
- * Generate deterministic bit pattern from input data (XOR-based encoding)
- */
-function generateDataBitPattern(data, moduleCount) {
-  const bitsNeeded = moduleCount * moduleCount - 144;  // Minus finder patterns + timing lines
-  
-  // FNV-1a style hash for determinism (not cryptographic, just needs to be consistent)  
-  let hash = data.length ^ data.split('').length * 7;
-  
-  const bits = '';
-  
-  // Extract all character codes and XOR with hash for deterministic result
-  for (let i = 0; i < Math.min(data.length, 500); i++) {
-    hash = ((hash << 5) | (hash >>> 28)) ^ data.charCodeAt(i);
+function placeAlignPattern(grid, reserved, centerR, centerC, size) {
+  for (let r = -2; r <= 2; r++) {
+    for (let c = -2; c <= 2; c++) {
+      const gr = centerR + r, gc = centerC + c;
+      if (gr < 0 || gr >= size || gc < 0 || gc >= size) continue;
+      const isBorder = Math.abs(r) === 2 || Math.abs(c) === 2;
+      const isCenter = r === 0 && c === 0;
+      grid[gr][gc] = (isBorder || isCenter) ? 1 : 0;
+      reserved[gr][gc] = 1;
+    }
   }
-
-  // Generate bit string from hash, padding/truncating to exact size needed  
-  return bits.padEnd(Math.max(128, Math.ceil(bitsNeeded / 8)), '0').substring(0, bitsNeeded); 
 }
 
-/**
- * Convert bit matrix to SVG output with proper XML formatting and viewBox scaling
- */
-function generateSVG(matrix, totalSize, cellSize, quietZone) {
-  if (!Array.isArray(matrix[0])) {
-    return `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalSize} ${totalSize}" width="${totalSize}" height="${totalSize}"><rect fill="white"/></svg>`;  
+function markReserved(reserved, row, col, size) {
+  if (row >= 0 && row < size && col >= 0 && col < size) reserved[row][col] = 1;
+}
+
+function rangeForward(start, end) {
+  const arr = [];
+  for (let i = start; i <= end; i++) arr.push(i);
+  return arr;
+}
+
+function rangeReverse(start, end) {
+  const arr = [];
+  for (let i = start; i >= end; i--) arr.push(i);
+  return arr;
+}
+
+// ── Masking ─────────────────────────────────────────────────────────
+
+const MASK_FNS = [
+  (r, c) => (r + c) % 2 === 0,
+  (r, c) => r % 2 === 0,
+  (r, c) => c % 3 === 0,
+  (r, c) => (r + c) % 3 === 0,
+  (r, c) => (Math.floor(r / 2) + Math.floor(c / 3)) % 2 === 0,
+  (r, c) => ((r * c) % 2 + (r * c) % 3) === 0,
+  (r, c) => ((r * c) % 2 + (r * c) % 3) % 2 === 0,
+  (r, c) => ((r + c) % 2 + (r * c) % 3) % 2 === 0,
+];
+
+function applyMask(grid, reserved, maskIdx, size) {
+  const result = grid.map(row => new Uint8Array(row));
+  const fn = MASK_FNS[maskIdx];
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (!reserved[r][c] && fn(r, c)) {
+        result[r][c] ^= 1;
+      }
+    }
+  }
+  return result;
+}
+
+function penaltyScore(grid, size) {
+  let score = 0;
+
+  // Rule 1: runs of 5+ same-color modules in rows/cols
+  for (let r = 0; r < size; r++) {
+    let run = 1;
+    for (let c = 1; c < size; c++) {
+      if (grid[r][c] === grid[r][c - 1]) { run++; }
+      else {
+        if (run >= 5) score += run - 2;
+        run = 1;
+      }
+    }
+    if (run >= 5) score += run - 2;
+  }
+  for (let c = 0; c < size; c++) {
+    let run = 1;
+    for (let r = 1; r < size; r++) {
+      if (grid[r][c] === grid[r - 1][c]) { run++; }
+      else {
+        if (run >= 5) score += run - 2;
+        run = 1;
+      }
+    }
+    if (run >= 5) score += run - 2;
   }
 
-  const moduleSize = Math.max(1, totalSize / matrix.length);
-  const viewStart = -quietZone;
-  const viewSize = totalSize + quietZone * 2;
-  
-  // Generate XML for SVG with all modules that are true (filled)
-  let out = `<?xml version="1.0" encoding="UTF-8"?>\n`; 
-  out += `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewStart} ${viewStart} ${viewSize} ${viewSize}" width="${totalSize + quietZone * 2}" height="${totalSize + quietZone * 2}">\n\t<rect fill="white"/>\n`;   // White background
-  
-  for (let row = 0; row < matrix.length; row++) {
-    for (let col = 0; col < matrix[row].length; col++) {
-      if (matrix[row][col] === true) {
-        const px = viewStart + col * moduleSize;
-        const py = viewStart + row * moduleSize;
-        out += `\\t\t<rect x="${Math.round(px)}" y="${Math.round(py)}" width="${Math.ceil(moduleSize)}" height="${Math.ceil(moduleSize)}"/>\n`; 
+  // Rule 2: 2x2 blocks of same color
+  for (let r = 0; r < size - 1; r++) {
+    for (let c = 0; c < size - 1; c++) {
+      const v = grid[r][c];
+      if (v === grid[r][c + 1] && v === grid[r + 1][c] && v === grid[r + 1][c + 1]) {
+        score += 3;
       }
     }
   }
 
-  out += '</svg>';
-  return out;
+  // Rule 4: proportion of dark modules
+  let dark = 0;
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (grid[r][c]) dark++;
+    }
+  }
+  const pct = (dark * 100) / (size * size);
+  const prev5 = Math.floor(pct / 5) * 5;
+  const next5 = prev5 + 5;
+  score += Math.min(Math.abs(prev5 - 50) / 5, Math.abs(next5 - 50) / 5) * 10;
+
+  return score;
+}
+
+// ── Format info ─────────────────────────────────────────────────────
+
+// Pre-computed format info strings for EC level M (indicator = 00)
+const FORMAT_STRINGS = [
+  '101010000010010', // mask 0
+  '101000100100101', // mask 1
+  '101111001111100', // mask 2
+  '101101101001011', // mask 3
+  '100010111111001', // mask 4
+  '100000011001110', // mask 5
+  '100111110010111', // mask 6
+  '100101010100000', // mask 7
+];
+
+function getFormatBits(ecLevel, mask) {
+  return FORMAT_STRINGS[mask];
+}
+
+function writeFormatInfo(grid, bits, size) {
+  // Horizontal: row 8, skipping col 6
+  const hCols = [0, 1, 2, 3, 4, 5, 7, 8, size - 8, size - 7, size - 6, size - 5, size - 4, size - 3, size - 2];
+  for (let i = 0; i < 15; i++) {
+    grid[8][hCols[i]] = bits[i] === '1' ? 1 : 0;
+  }
+
+  // Vertical: col 8, skipping row 6
+  const vRows = [size - 1, size - 2, size - 3, size - 4, size - 5, size - 6, size - 7, size - 8, 7, 5, 4, 3, 2, 1, 0];
+  for (let i = 0; i < 15; i++) {
+    grid[vRows[i]][8] = bits[i] === '1' ? 1 : 0;
+  }
+}
+
+// ── SVG output ──────────────────────────────────────────────────────
+
+function toSVG(modules, size, color) {
+  const n = modules.length;
+  const quiet = 4; // standard 4-module quiet zone
+  const total = n + quiet * 2;
+  const cellSize = size / total;
+
+  let rects = '';
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < n; c++) {
+      if (modules[r][c]) {
+        const x = ((quiet + c) * cellSize).toFixed(2);
+        const y = ((quiet + r) * cellSize).toFixed(2);
+        const w = cellSize.toFixed(2);
+        rects += `<rect x="${x}" y="${y}" width="${w}" height="${w}" fill="${color}"/>`;
+      }
+    }
+  }
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
+<rect width="${size}" height="${size}" fill="#fff"/>
+${rects}
+</svg>`;
+}
+
+function toBits(value, length) {
+  return value.toString(2).padStart(length, '0');
 }
