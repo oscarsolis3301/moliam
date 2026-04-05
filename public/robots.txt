@@ -1,4 +1,24 @@
+# Moliam AI Operations Platform - robots.txt
 User-agent: *
 Allow: /
+
+# Allow all public pages (homepage, portfolio, book, privacy, terms)
+Allow: /
+Allow: /portfolio.html
+Allow: /book.html
+Allow: /qrdashboard.html
+Allow: /privacy.html
+Allow: /terms.html
+Allow: /404.html
+
+# Disallow admin/dashboard paths for crawlers (login required)
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /login
+
+# Sitemap location
 Sitemap: https://moliam.pages.dev/sitemap.xml
+
+# Crawl-delay optional (Google ignores this, but some bots respect it)
+Crawl-delay: 1
 
