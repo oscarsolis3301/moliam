@@ -7,30 +7,6 @@
     <changefreq>weekly</changefreq>
   </url>
   <url>
-    <loc>https://moliam.com/login</loc>
-    <lastmod>2026-04-05</lastmod>
-    <priority>0.8</priority>
-    <changefreq>daily</changefreq>
-  </url>
-  <url>
-    <loc>https://moliam.com/dashboard</loc>
-    <lastmod>2026-04-05</lastmod>
-    <priority>0.8</priority>
-    <changefreq>daily</changefreq>
-  </url>
-  <url>
-    <loc>https://moliam.com/admin</loc>
-    <lastmod>2026-04-05</lastmod>
-    <priority>0.8</priority>
-    <changefreq>daily</changefreq>
-  </url>
-  <url>
-    <loc>https://moliam.com/hq</loc>
-    <lastmod>2026-04-05</lastmod>
-    <priority>0.7</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  <url>
     <loc>https://moliam.com/portfolio</loc>
     <lastmod>2026-04-05</lastmod>
     <priority>0.7</priority>
