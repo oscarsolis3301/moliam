@@ -97,8 +97,15 @@ export async function onRequestPost(context) {
       // leads table might not exist — skip
     }
 
-    // --- Discord webhook ---
-    await sendWebhook(env, { name, email, phone, company, message, service: data.service, score, subId });
+    // --- Discord webhook (include social media fields) ---
+    const socials = {
+      website: (data.website || "").trim(),
+      gbp: (data.gbp || "").trim(),
+      facebook: (data.facebook || "").trim(),
+      instagram: (data.instagram || "").trim(),
+      yelp: (data.yelp || "").trim(),
+    };
+    await sendWebhook(env, { name, email, phone, company, message, service: data.service, score, subId, socials });
 
     return jsonResp(200, {
       success: true,
@@ -108,7 +115,7 @@ export async function onRequestPost(context) {
 
   } catch (err) {
     // Even if D1 completely fails, still send webhook and return success to user
-    await sendWebhook(env, { name, email, phone, company, message, service: data.service, score: 0, subId: 0 });
+    await sendWebhook(env, { name, email, phone, company, message, service: data.service, score: 0, subId: 0, socials });
     return jsonResp(200, {
       success: true,
       message: "Thanks! We'll be in touch within 1 business day.",
@@ -117,31 +124,49 @@ export async function onRequestPost(context) {
   }
 }
 
-async function sendWebhook(env, { name, email, phone, company, message, service, score, subId }) {
-  const webhookUrl = env.DISCORD_WEBHOOK_URL || "https://discord.com/api/webhooks/1490158275918954716/erp8SH34JHhMSztPXfRoPcxgPUj5B0GMA4n7RSluod5t8Su009bAcRh-rk5XlY4nseqy";
+async function sendWebhook(env, { name, email, phone, company, message, service, score, subId, socials }) {
+  const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
   if (!webhookUrl || !webhookUrl.startsWith("https://discord.com/api/webhooks/")) return;
 
   try {
     const svcRaw = (service || "").toLowerCase();
     const svcLabel = { website: "Website Build", gbp: "GBP Optimization", lsa: "Google LSA", retainer: "Full Retainer", other: "Other" }[svcRaw] || service || "—";
+
+    // Build fields array
+    const fields = [
+      { name: "📧 Email", value: email, inline: true },
+      { name: "📱 Phone", value: phone || "—", inline: true },
+      { name: "🏢 Company", value: company || "—", inline: true },
+      { name: "🎯 Service", value: svcLabel, inline: true },
+      { name: "📊 Lead Score", value: `**${score}**/100`, inline: true },
+    ];
+
+    // Add social media fields if provided
+    const s = socials || {};
+    const socialLines = [];
+    if (s.website) socialLines.push(`🌐 [Website](${s.website})`);
+    if (s.gbp) socialLines.push(`📍 [Google Business](${s.gbp})`);
+    if (s.facebook) socialLines.push(`📘 [Facebook](${s.facebook})`);
+    if (s.instagram) socialLines.push(`📸 ${s.instagram.startsWith("http") ? `[Instagram](${s.instagram})` : `@${s.instagram.replace("@","")}`}`);
+    if (s.yelp) socialLines.push(`⭐ [Yelp](${s.yelp})`);
+
+    if (socialLines.length > 0) {
+      fields.push({ name: "🔗 Online Presence", value: socialLines.join("\n") });
+    }
+
+    fields.push({ name: "💬 Message", value: (message || "—").length > 300 ? message.slice(0, 297) + "…" : (message || "—") });
+
     await fetch(webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         username: "Moliam Lead",
-        avatar_url: "https://moliam.com/moliam-star.jpg",
+        avatar_url: "https://moliam.com/logo.png",
         content: "<@251822830574895104> New lead submitted!",
         embeds: [{
           title: "🔔 New Lead — " + name,
           color: score >= 50 ? 0x10B981 : score >= 25 ? 0xF59E0B : 0x3B82F6,
-          fields: [
-            { name: "📧 Email", value: email, inline: true },
-            { name: "📱 Phone", value: phone || "—", inline: true },
-            { name: "🏢 Company", value: company || "—", inline: true },
-            { name: "🎯 Service", value: svcLabel, inline: true },
-            { name: "📊 Lead Score", value: `**${score}**/100`, inline: true },
-            { name: "💬 Message", value: (message || "—").length > 300 ? message.slice(0, 297) + "…" : (message || "—") },
-          ],
+          fields,
           footer: { text: `Lead #${subId} • moliam.com` },
           timestamp: new Date().toISOString(),
         }],

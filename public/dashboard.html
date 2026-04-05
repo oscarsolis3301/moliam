@@ -582,6 +582,15 @@ function openMessagingPanel() {
   
   body.appendChild(panel);
   setTimeout(() => panel.classList.add('open'), 10);
+
+  // Enter key to send (attached once per panel open)
+  document.getElementById('messageInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
   refreshMessages();
 }
 
@@ -664,12 +673,6 @@ function renderMessages() {
 
 function sendMessage() {
   const input = document.getElementById('messageInput');
-    addEventListener('keydown', (e) => {
-       if (e.key === 'Enter' && !e.shiftKey) {
-           e.preventDefault();
-          sendMessage();
-       }
-    }, { passive: true });
   const text = input.value.trim();
   
   if (!text) return;
@@ -754,32 +757,7 @@ setInterval(() => {
 
 init();
 
-
-let windowAdminClientsLoaded = false;
-
-// Admin client selector UI for Bug 6 fix
-function buildClientSelectorHTML() {
-   if (typeof currentUser === 'undefined' || currentUser.role !== 'admin') return '';
-   
-    if (!windowAdminClientsLoaded) { // Lazy-load when first opening panel  
-       fetch('/api/dashboard', { credentials: 'include' })
-         .then(r => r.json())
-         .then(data => { 
-             windowAdminClients = (data.stats?.total_clients || 0).toString().length > 1 ? [{id:0,name:'View All'}] : [];
-             windowAdminClientsLoaded = true;
-           });
-    }
-   
-    return '<select id="adminClientSelector" class="client-selector" style="background:rgba(59,130,246,0.1);border:1px solid rgba(255, 255, 255, 0.08);border-radius:8px;padding:4px 12px;color:white;font-size:13px;min-width:150px;margin-left:12px;display:block;" onchange="openMessagingPanelWithClient(this.value)">' +
-       '<option value="">All Clients</option>' +
-       (windowAdminClients || [{id:0,name:'Wait loading...'}]).map(c => '<option value="'+c.id+'"'+(adminClientIdFilter===parseInt(c.id)?' selected':'')+'>'+esc(c.name||'Client #'+c.id)+'</option>').join('') +
-       '</select>';
-}
-
-function openMessagingPanelWithClient(clientId = null) {
-    if (document.getElementById('messagingPanel')) return;
-    
-   document.querySelector('.msg-header-container').innerHTML += buildClientSelectorHTML(); // Append after init completes  
-}</script>
+// TODO: admin client selector — Ada will spec the client list API endpoint first
+</script>
 </body>
 </html>

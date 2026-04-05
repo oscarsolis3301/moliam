@@ -1347,11 +1347,11 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   .section-subtitle { font-size: 15px; padding: 0 4px; line-height: 1.6; }
   .section-label { font-size: 11px; }
 
-  #how-it-works { padding: 64px 20px; overflow: hidden; }
+  #how-it-works { padding: 64px 12px; overflow: hidden; }
   .steps-grid { grid-template-columns: 1fr; gap: 24px; }
   .steps-grid::before { display: none; }
   .step-card:not(:last-child)::after { display: none; }
-  .step-card { overflow: hidden; padding: 32px 24px 28px; }
+  .step-card { overflow: hidden; padding: 24px 16px 20px; width: 100%; min-width: 0; }
 
   #why-ai { padding: 64px 20px; }
   #why-ai .steps-grid { grid-template-columns: 1fr !important; gap: 16px; }
@@ -1377,7 +1377,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   .service-card { padding: 24px 20px; }
   .steps-grid { grid-template-columns: 1fr; }
   .steps-grid::before { display: none; }
-  .step-card { padding: 28px 20px 24px; }
+  #how-it-works { padding: 48px 8px; }
+  .step-card { padding: 20px 14px 16px; }
+  .step-card h3 { font-size: 1.1rem; }
+  .step-card p { font-size: 0.88rem; line-height: 1.65; }
   .footer-inner { flex-direction: column; text-align: center; }
   .footer-links { flex-direction: column; gap: 12px; }
   #hud { padding: 0 12px; }
@@ -2043,7 +2046,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
         <!-- Step 5: Website & Social Media -->
         <div class="pf-step pf-step--future" data-step="5">
           <h3 class="pf-step-title">Got a website or socials?</h3>
-          <p class="pf-step-desc">We'll research your online presence before our call</p>
+          <p class="pf-step-desc">Helps us tailor the call to your needs</p>
           <div class="pf-step-content">
             <input type="url" id="pf-website" class="pf-input" placeholder="https://yourbusiness.com" autocomplete="url" style="margin-bottom:12px">
             <input type="text" id="pf-social-google" class="pf-input" placeholder="Google Business Profile URL" style="margin-bottom:12px">
