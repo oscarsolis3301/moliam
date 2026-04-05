@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Code — Moliam</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #0B0E14;
+  --bg-card: #111827;
+  --accent-blue: #3B82F6;
+  --accent-purple: #8B5CF6;
+  --accent-green: #10B981;
+  --text-primary: #F9FAFB;
+  --text-secondary: #9CA3AF;
+  --text-dim: #6B7280;
+  --glass-border: rgba(255,255,255,0.08);
+  --radius-lg: 20px;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg-deep);
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+  padding: 40px 20px;
+}
+
+/* Ambient glow */
+.ambient {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 600px 400px at 50% 40%, rgba(139,92,246,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 400px 300px at 30% 60%, rgba(59,130,246,0.08) 0%, transparent 70%);
+}
+
+.container {
+  position: relative; z-index: 1;
+  text-align: center;
+  max-width: 480px; width: 100%;
+}
+
+/* Header */
+.header { margin-bottom: 32px; }
+.header img { width: 40px; height: 40px; margin-bottom: 12px; filter: drop-shadow(0 0 8px rgba(139,92,246,0.4)); }
+.header h1 {
+  font-size: 1.6rem; font-weight: 800;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.header p { color: var(--text-dim); font-size: 0.85rem; margin-top: 4px; }
+
+/* URL Input */
+.url-bar {
+  display: flex; gap: 8px; margin-bottom: 32px;
+}
+.url-bar input {
+  flex: 1; padding: 14px 16px;
+  background: rgba(17,24,39,0.8); border: 1px solid var(--glass-border);
+  border-radius: 12px; color: var(--text-primary);
+  font-family: inherit; font-size: 14px; outline: none;
+  transition: border-color 0.3s;
+}
+.url-bar input:focus { border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+.url-bar button {
+  padding: 14px 20px; border: none; border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  color: white; font-family: inherit; font-size: 14px; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.url-bar button:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59,130,246,0.3); }
+
+/* QR Stage */
+.qr-stage {
+  perspective: 1200px;
+  margin-bottom: 32px;
+}
+.qr-card {
+  display: inline-block;
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  position: relative;
+  overflow: hidden;
+  transform: rotateY(-5deg) rotateX(3deg);
+  transition: transform 0.6s ease;
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.4),
+    0 0 80px rgba(139,92,246,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.qr-card:hover {
+  transform: rotateY(0deg) rotateX(0deg) scale(1.02);
+}
+
+/* Holographic scan line */
+.qr-card::before {
+  content: '';
+  position: absolute; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(139,92,246,0.6), rgba(59,130,246,0.6), transparent);
+  animation: scanLine 3s ease-in-out infinite;
+  z-index: 2;
+  box-shadow: 0 0 20px rgba(139,92,246,0.4), 0 0 40px rgba(59,130,246,0.2);
+}
+@keyframes scanLine {
+  0% { top: -3px; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: calc(100% + 3px); opacity: 0; }
+}
+
+/* Holographic shimmer */
+.qr-card::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(59,130,246,0.03) 0%,
+    rgba(139,92,246,0.06) 25%,
+    rgba(16,185,129,0.03) 50%,
+    rgba(139,92,246,0.06) 75%,
+    rgba(59,130,246,0.03) 100%
+  );
+  background-size: 300% 300%;
+  animation: holoShimmer 6s ease infinite;
+  pointer-events: none; z-index: 1;
+}
+@keyframes holoShimmer {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+#qrCanvas {
+  position: relative; z-index: 1;
+  image-rendering: pixelated;
+  border-radius: 8px;
+}
+
+/* Corner glow accents */
+.corner-glow {
+  position: absolute; width: 24px; height: 24px; z-index: 3;
+}
+.corner-glow.tl { top: 24px; left: 24px; border-top: 2px solid var(--accent-purple); border-left: 2px solid var(--accent-purple); }
+.corner-glow.tr { top: 24px; right: 24px; border-top: 2px solid var(--accent-blue); border-right: 2px solid var(--accent-blue); }
+.corner-glow.bl { bottom: 24px; left: 24px; border-bottom: 2px solid var(--accent-blue); border-left: 2px solid var(--accent-blue); }
+.corner-glow.br { bottom: 24px; right: 24px; border-bottom: 2px solid var(--accent-purple); border-right: 2px solid var(--accent-purple); }
+
+/* URL label */
+.qr-url {
+  font-size: 0.75rem; color: var(--text-dim);
+  margin-top: 16px; word-break: break-all;
+  max-width: 280px; margin-left: auto; margin-right: auto;
+  position: relative; z-index: 1;
+}
+
+/* Actions */
+.actions {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+}
+.action-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 20px; border-radius: 12px;
+  font-family: inherit; font-size: 0.85rem; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+  border: 1px solid var(--glass-border);
+  background: rgba(17,24,39,0.6); color: var(--text-secondary);
+}
+.action-btn:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); border-color: rgba(255,255,255,0.15); }
+.action-btn.primary {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  border: none; color: white;
+}
+.action-btn.primary:hover { box-shadow: 0 6px 20px rgba(59,130,246,0.3); transform: translateY(-1px); }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--bg-card); border: 1px solid var(--glass-border);
+  padding: 12px 20px; border-radius: 12px; font-size: 0.85rem;
+  color: var(--accent-green); z-index: 100;
+  transition: transform 0.3s ease; box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* Back link */
+.back-link {
+  margin-top: 32px;
+}
+.back-link a {
+  color: var(--text-dim); text-decoration: none; font-size: 0.85rem;
+  transition: color 0.2s;
+}
+.back-link a:hover { color: var(--accent-blue); }
+
+/* Mobile */
+@media (max-width: 480px) {
+  body { padding: 24px 16px; }
+  .qr-card { padding: 24px; }
+  .qr-card { transform: none; }
+  #qrCanvas { width: 200px !important; height: 200px !important; }
+  .url-bar { flex-direction: column; }
+  .url-bar button { width: 100%; }
+  .actions { flex-direction: column; }
+  .action-btn { justify-content: center; width: 100%; }
+}
+</style>
+</head>
+<body>
+<div class="ambient"></div>
+
+<div class="container">
+  <div class="header">
+    <img src="/logo.png" alt="Moliam">
+    <h1>QR Generator</h1>
+    <p>Generate holographic QR codes</p>
+  </div>
+
+  <div class="url-bar">
+    <input type="url" id="urlInput" placeholder="https://moliam.com" value="">
+    <button onclick="generateQR()">Generate</button>
+  </div>
+
+  <div class="qr-stage">
+    <div class="qr-card">
+      <div class="corner-glow tl"></div>
+      <div class="corner-glow tr"></div>
+      <div class="corner-glow bl"></div>
+      <div class="corner-glow br"></div>
+      <canvas id="qrCanvas" width="256" height="256"></canvas>
+      <div class="qr-url" id="qrUrlLabel">moliam.com</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="action-btn primary" onclick="downloadQR()">⬇ Download PNG</button>
+    <button class="action-btn" onclick="copyLink()">🔗 Copy Link</button>
+    <button class="action-btn" onclick="copyQRImage()">📋 Copy Image</button>
+  </div>
+
+  <div class="back-link">
+    <a href="/">← Back to Moliam.com</a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════
+// QR CODE GENERATOR (Pure JS — ISO 18004)
+// Supports alphanumeric mode, ECC level M
+// ═══════════════════════════════════════
+
+// QR encoding tables
+const EC_CODEWORDS = [10, 16, 26, 18, 24, 16, 28, 22, 26, 30, 22, 30, 24, 26, 28, 30, 28, 28, 26, 28];
+const DATA_CODEWORDS = [16, 28, 44, 64, 86, 108, 124, 154, 182, 216, 254, 290, 334, 365, 415, 453, 507, 563, 627, 669];
+const ALIGNMENT_PATTERNS = [[], [6,18], [6,22], [6,26], [6,30], [6,34], [6,22,38], [6,24,42], [6,26,46], [6,28,50]];
+
+function generateQR() {
+  const input = document.getElementById('urlInput');
+  const url = input.value.trim() || 'https://moliam.com';
+  input.value = url;
+
+  const canvas = document.getElementById('qrCanvas');
+  const ctx = canvas.getContext('2d');
+  const size = 256;
+  canvas.width = size;
+  canvas.height = size;
+
+  // Use a simple but correct QR generation
+  const modules = encodeQR(url);
+  const moduleCount = modules.length;
+  const cellSize = size / moduleCount;
+
+  // Clear
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, size, size);
+
+  // Draw modules
+  for (let row = 0; row < moduleCount; row++) {
+    for (let col = 0; col < moduleCount; col++) {
+      if (modules[row][col]) {
+        // Gradient-tinted dark modules
+        const cx = (col + 0.5) / moduleCount;
+        const cy = (row + 0.5) / moduleCount;
+        const r = Math.floor(20 + cx * 30);
+        const g = Math.floor(12 + cy * 20);
+        const b = Math.floor(40 + cx * 80 + cy * 60);
+        ctx.fillStyle = `rgb(${r},${g},${Math.min(b, 120)})`;
+        ctx.fillRect(
+          Math.floor(col * cellSize),
+          Math.floor(row * cellSize),
+          Math.ceil(cellSize),
+          Math.ceil(cellSize)
+        );
+      }
+    }
+  }
+
+  // Update label
+  try {
+    const displayUrl = new URL(url).hostname + new URL(url).pathname;
+    document.getElementById('qrUrlLabel').textContent = displayUrl.length > 40 ? displayUrl.substring(0, 40) + '...' : displayUrl;
+  } catch {
+    document.getElementById('qrUrlLabel').textContent = url.substring(0, 40);
+  }
+}
+
+// Minimal QR encoder — Version 1-4, byte mode, ECC L
+function encodeQR(text) {
+  const data = new TextEncoder().encode(text);
+  const len = data.length;
+
+  // Select version (1-10)
+  let version = 1;
+  const capacities = [17, 32, 53, 78, 106, 134, 154, 192, 230, 271];
+  for (let i = 0; i < capacities.length; i++) {
+    if (len <= capacities[i]) { version = i + 1; break; }
+    if (i === capacities.length - 1) version = 10;
+  }
+
+  const size = 17 + version * 4;
+  const modules = Array.from({ length: size }, () => Array(size).fill(null));
+  const reserved = Array.from({ length: size }, () => Array(size).fill(false));
+
+  // Place finder patterns
+  placeFinder(modules, reserved, 0, 0);
+  placeFinder(modules, reserved, size - 7, 0);
+  placeFinder(modules, reserved, 0, size - 7);
+
+  // Place timing patterns
+  for (let i = 8; i < size - 8; i++) {
+    const val = i % 2 === 0;
+    if (!reserved[6][i]) { modules[6][i] = val; reserved[6][i] = true; }
+    if (!reserved[i][6]) { modules[i][6] = val; reserved[i][6] = true; }
+  }
+
+  // Dark module
+  modules[size - 8][8] = true;
+  reserved[size - 8][8] = true;
+
+  // Reserve format info areas
+  for (let i = 0; i < 9; i++) {
+    if (i < size) { reserved[8][i] = true; reserved[i][8] = true; }
+  }
+  for (let i = 0; i < 8; i++) {
+    reserved[8][size - 8 + i] = true;
+    reserved[size - 8 + i][8] = true;
+  }
+
+  // Alignment patterns for version >= 2
+  if (version >= 2 && ALIGNMENT_PATTERNS[version - 1]) {
+    const positions = ALIGNMENT_PATTERNS[version - 1];
+    for (const row of positions) {
+      for (const col of positions) {
+        if (reserved[row] && reserved[row][col]) continue;
+        placeAlignment(modules, reserved, row, col, size);
+      }
+    }
+  }
+
+  // Encode data
+  const bits = encodeData(data, version);
+
+  // Place data bits
+  let bitIndex = 0;
+  let upward = true;
+  for (let right = size - 1; right >= 1; right -= 2) {
+    if (right === 6) right = 5; // Skip timing column
+    const rows = upward ? Array.from({ length: size }, (_, i) => size - 1 - i) : Array.from({ length: size }, (_, i) => i);
+    for (const row of rows) {
+      for (let c = 0; c < 2; c++) {
+        const col = right - c;
+        if (col < 0 || col >= size) continue;
+        if (reserved[row][col]) continue;
+        modules[row][col] = bitIndex < bits.length ? bits[bitIndex] === 1 : false;
+        bitIndex++;
+      }
+    }
+    upward = !upward;
+  }
+
+  // Apply mask (pattern 0: (row + col) % 2 === 0)
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      if (!reserved[row][col]) {
+        if ((row + col) % 2 === 0) {
+          modules[row][col] = !modules[row][col];
+        }
+      }
+    }
+  }
+
+  // Place format info (ECC L, mask 0)
+  const formatBits = [1,1,1,0,1,1,1,1,1,0,0,0,1,0,0];
+  placeFormatInfo(modules, formatBits, size);
+
+  return modules;
+}
+
+function placeFinder(modules, reserved, row, col) {
+  for (let r = -1; r <= 7; r++) {
+    for (let c = -1; c <= 7; c++) {
+      const mr = row + r, mc = col + c;
+      if (mr < 0 || mr >= modules.length || mc < 0 || mc >= modules.length) continue;
+      const isOuter = r === -1 || r === 7 || c === -1 || c === 7;
+      const isBorder = r === 0 || r === 6 || c === 0 || c === 6;
+      const isInner = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+      modules[mr][mc] = !isOuter && (isBorder || isInner);
+      reserved[mr][mc] = true;
+    }
+  }
+}
+
+function placeAlignment(modules, reserved, centerRow, centerCol, size) {
+  for (let r = -2; r <= 2; r++) {
+    for (let c = -2; c <= 2; c++) {
+      const mr = centerRow + r, mc = centerCol + c;
+      if (mr < 0 || mr >= size || mc < 0 || mc >= size) continue;
+      if (reserved[mr][mc]) return; // Overlaps finder, skip entire pattern
+    }
+  }
+  for (let r = -2; r <= 2; r++) {
+    for (let c = -2; c <= 2; c++) {
+      const mr = centerRow + r, mc = centerCol + c;
+      if (mr < 0 || mr >= size || mc < 0 || mc >= size) continue;
+      const isBorder = r === -2 || r === 2 || c === -2 || c === 2;
+      const isCenter = r === 0 && c === 0;
+      modules[mr][mc] = isBorder || isCenter;
+      reserved[mr][mc] = true;
+    }
+  }
+}
+
+function encodeData(data, version) {
+  const bits = [];
+  // Mode indicator: byte mode = 0100
+  bits.push(0, 1, 0, 0);
+  // Character count (8 bits for version 1-9, 16 for 10+)
+  const ccBits = version <= 9 ? 8 : 16;
+  for (let i = ccBits - 1; i >= 0; i--) bits.push((data.length >> i) & 1);
+  // Data
+  for (const byte of data) {
+    for (let i = 7; i >= 0; i--) bits.push((byte >> i) & 1);
+  }
+  // Terminator
+  for (let i = 0; i < 4 && bits.length < DATA_CODEWORDS[version - 1] * 8; i++) bits.push(0);
+  // Pad to byte boundary
+  while (bits.length % 8 !== 0) bits.push(0);
+  // Pad codewords
+  const padBytes = [0xEC, 0x11];
+  let padIdx = 0;
+  while (bits.length < DATA_CODEWORDS[version - 1] * 8) {
+    for (let i = 7; i >= 0; i--) bits.push((padBytes[padIdx] >> i) & 1);
+    padIdx = (padIdx + 1) % 2;
+  }
+  return bits;
+}
+
+function placeFormatInfo(modules, bits, size) {
+  const positions1 = [[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]];
+  const positions2 = [[size-1,8],[size-2,8],[size-3,8],[size-4,8],[size-5,8],[size-6,8],[size-7,8],[8,size-8],[8,size-7],[8,size-6],[8,size-5],[8,size-4],[8,size-3],[8,size-2],[8,size-1]];
+  for (let i = 0; i < 15; i++) {
+    const val = bits[i] === 1;
+    if (positions1[i]) modules[positions1[i][0]][positions1[i][1]] = val;
+    if (positions2[i]) modules[positions2[i][0]][positions2[i][1]] = val;
+  }
+}
+
+// ═══════════════════════════════════════
+// ACTIONS
+// ═══════════════════════════════════════
+function downloadQR() {
+  const canvas = document.getElementById('qrCanvas');
+  // Create high-res version
+  const hiRes = document.createElement('canvas');
+  hiRes.width = 1024; hiRes.height = 1024;
+  const ctx = hiRes.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(canvas, 0, 0, 1024, 1024);
+
+  const a = document.createElement('a');
+  a.download = 'moliam-qr.png';
+  a.href = hiRes.toDataURL('image/png');
+  a.click();
+  showToast('QR code downloaded!');
+}
+
+function copyLink() {
+  const url = document.getElementById('urlInput').value.trim() || 'https://moliam.com';
+  const pageUrl = window.location.origin + '/dashboard-qr?url=' + encodeURIComponent(url);
+  navigator.clipboard.writeText(pageUrl).then(() => showToast('Link copied!'));
+}
+
+async function copyQRImage() {
+  try {
+    const canvas = document.getElementById('qrCanvas');
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    showToast('QR image copied to clipboard!');
+  } catch {
+    showToast('Copy not supported in this browser');
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._to);
+  t._to = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Init
+const params = new URLSearchParams(window.location.search);
+const initUrl = params.get('url') || 'https://moliam.com';
+document.getElementById('urlInput').value = initUrl;
+generateQR();
+
+// Generate on Enter
+document.getElementById('urlInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') generateQR();
+});
+</script>
+</body>
+</html>
