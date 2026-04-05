@@ -167,7 +167,7 @@ export async function onRequestPost(context) {
                  { name: "Company", value: escapeHTML(companyRaw || ""), inline: true },
                  { name: "Service Interest", value: service || "Not specified" },
                  { name: "Budget Range", value: budgetRange || "Not specified" },
-                 { name: "Lead Score", value: `${leadScore}/100 ${leadScore >= 60 ? "(HOT)" : leadScore >= 40 ? "(WARM)" : "(COLD)")`, inline: true },
+                 { name: "Lead Score", value: `${leadScore}/100 ${leadScore >= 60 ? "(HOT)" : leadScore >= 40 ? "(WARM)" : "(COLD)"}`, inline: true },
                  { name: "Message", value: escapeHTML(messageRaw.slice(0, 1024)), inline: false },
                ],
               timestamp: new Date().toISOString(),
