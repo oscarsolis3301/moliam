@@ -18,7 +18,7 @@ export async function onRequestGet(context) {
 
     if (!session) return jsonResp(401, { error: true, message: "Session invalid." }, request);
 
-    const isAdmin = session.role === "admin";
+    const isAdmin = session.role === "admin" || session.role === "superadmin";
 
     // Get projects
     let projects;

@@ -26,13 +26,16 @@ export async function onRequestGet(context) {
       return jsonResp(401, { error: true, message: "Session expired." }, request);
     }
 
+    // Normalize superadmin → admin for frontend
+    const displayRole = session.role === 'superadmin' ? 'admin' : session.role;
+
     return jsonResp(200, {
       success: true,
       user: {
         id: session.user_id,
         email: session.email,
         name: session.name,
-        role: session.role,
+        role: displayRole,
         company: session.company,
         phone: session.phone,
         avatar_url: session.avatar_url,

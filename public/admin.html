@@ -528,6 +528,66 @@ input[type="checkbox"] {
 <!-- Toast container -->
 <div class="toast" id="toast"></div>
 
+<!-- Edit Client Modal -->
+<div class="modal-overlay" id="editModal" style="display:none; position:fixed; inset:0; z-index:300; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); align-items:center; justify-content:center;">
+  <div style="background:var(--bg-building); border:1px solid var(--glass-border); border-radius:var(--radius-lg); padding:32px; max-width:520px; width:90%; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+      <h3 style="font-size:1.1rem; font-weight:700;" id="editModalTitle">Edit Client</h3>
+      <button onclick="closeEditModal()" style="background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:1.2rem; padding:4px 8px;">✕</button>
+    </div>
+    <div id="editAlert"></div>
+    <form id="editForm" novalidate>
+      <input type="hidden" id="edit-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" id="edit-name" placeholder="Full name">
+        </div>
+        <div class="form-group">
+          <label>Company</label>
+          <input type="text" id="edit-company" placeholder="Company name">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="edit-email" placeholder="email@company.com">
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="tel" id="edit-phone" placeholder="(949) 555-0100">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Role</label>
+          <select id="edit-role">
+            <option value="client">Client</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="edit-active">
+            <option value="1">Active</option>
+            <option value="0">Inactive</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label>New Password (leave blank to keep current)</label>
+          <input type="text" id="edit-password" placeholder="Min 6 characters">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" id="editBtn">Save Changes</button>
+        <button type="button" class="btn-secondary" onclick="closeEditModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
 let clients = [];
 let projects = [];
@@ -889,10 +949,12 @@ function renderClientsTab() {
             <th></th>
             <th class="sortable" data-sort="name">Client <span class="sort-icon">↕</span></th>
             <th>Email</th>
+            <th>Role</th>
             <th class="sortable" data-sort="projects">Projects <span class="sort-icon">↕</span></th>
             <th class="sortable" data-sort="revenue">Monthly Rev <span class="sort-icon">↕</span></th>
             <th>Status</th>
             <th>Last Login</th>
+            <th>Actions</th>
           </tr></thead>
           <tbody id="clientTableBody">
             ${renderClientRows(getFilteredClients())}
@@ -928,10 +990,19 @@ function renderClientRows(clientList) {
   if (clientList.length === 0) {
     return '<tr><td colspan="8" style="text-align:center; padding:40px; color:var(--text-dim);">No clients match your search</td></tr>';
   }
+  const roleStyles = {
+    admin: 'background:rgba(139,92,246,0.15);color:#C4B5FD;',
+    superadmin: 'background:rgba(245,158,11,0.15);color:#FCD34D;',
+    client: 'background:rgba(59,130,246,0.15);color:#93C5FD;'
+  };
+  const roleLabels = { admin: 'Admin', superadmin: 'Super Admin', client: 'Client' };
+
   return clientList.map(c => {
     const isExpanded = expandedClients.has(c.id);
     const isSelected = selectedClients.has(c.id);
     const clientProjects = getProjectsForClient(c.id);
+    const rStyle = roleStyles[c.role] || roleStyles.client;
+    const rLabel = roleLabels[c.role] || c.role || 'Client';
     return `
       <tr class="client-row ${isExpanded ? 'expanded' : ''} ${isSelected ? 'selected' : ''}" data-id="${c.id}">
         <td class="checkbox-cell" onclick="event.stopPropagation();">
@@ -942,13 +1013,18 @@ function renderClientRows(clientList) {
         </td>
         <td><span class="client-name">${esc(c.name)}</span>${c.company ? `<br><span class="client-company">${esc(c.company)}</span>` : ''}</td>
         <td class="client-email">${esc(c.email)}</td>
+        <td><span class="badge" style="${rStyle}">${rLabel}</span></td>
         <td>${c.project_count || 0}</td>
         <td style="font-weight:600;">$${(c.monthly_revenue || 0).toLocaleString()}</td>
         <td><span class="badge ${c.is_active ? 'badge-active' : 'badge-inactive'}">${c.is_active ? 'Active' : 'Inactive'}</span></td>
         <td style="color:var(--text-dim); font-size:0.8rem;">${c.last_login ? formatDate(c.last_login) : 'Never'}</td>
+        <td onclick="event.stopPropagation();" style="white-space:nowrap;">
+          <button class="btn-sm btn-secondary" onclick="openEditModal(${c.id})" title="Edit">✏️</button>
+          <button class="btn-sm btn-danger" onclick="deleteClient(${c.id}, '${esc(c.name).replace(/'/g, "\\'")}')\" title="Delete">🗑️</button>
+        </td>
       </tr>
       <tr class="client-detail-row ${isExpanded ? '' : 'hidden'}" data-detail-id="${c.id}">
-        <td colspan="8">
+        <td colspan="10">
           <div class="client-detail-content">
             ${clientProjects.length > 0 ? `
               <div style="margin-bottom:8px; font-size:0.78rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.06em; font-weight:600;">
@@ -1635,6 +1711,113 @@ function debounce(fn, ms) {
     clearTimeout(timer);
     timer = setTimeout(() => fn.apply(this, args), ms);
   };
+}
+
+// ═══════════════════════════════════════
+// EDIT CLIENT MODAL
+// ═══════════════════════════════════════
+function openEditModal(clientId) {
+  const c = clients.find(x => x.id === clientId);
+  if (!c) return;
+  document.getElementById('edit-id').value = c.id;
+  document.getElementById('edit-name').value = c.name || '';
+  document.getElementById('edit-email').value = c.email || '';
+  document.getElementById('edit-company').value = c.company || '';
+  document.getElementById('edit-phone').value = c.phone || '';
+  document.getElementById('edit-role').value = c.role || 'client';
+  document.getElementById('edit-active').value = c.is_active ? '1' : '0';
+  document.getElementById('edit-password').value = '';
+  document.getElementById('editModalTitle').textContent = `Edit — ${c.name}`;
+  clearAlert('editAlert');
+
+  const modal = document.getElementById('editModal');
+  modal.style.display = 'flex';
+  document.getElementById('edit-name').focus();
+}
+
+function closeEditModal() {
+  document.getElementById('editModal').style.display = 'none';
+}
+
+// Close modal on outside click
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) closeEditModal();
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && document.getElementById('editModal').style.display === 'flex') {
+    closeEditModal();
+  }
+});
+
+document.getElementById('editForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('editBtn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+  clearAlert('editAlert');
+
+  const clientId = document.getElementById('edit-id').value;
+  const payload = {
+    name: document.getElementById('edit-name').value.trim(),
+    email: document.getElementById('edit-email').value.trim(),
+    company: document.getElementById('edit-company').value.trim(),
+    phone: document.getElementById('edit-phone').value.trim(),
+    role: document.getElementById('edit-role').value,
+    is_active: document.getElementById('edit-active').value === '1',
+  };
+
+  const pw = document.getElementById('edit-password').value.trim();
+  if (pw) {
+    if (pw.length < 6) {
+      showAlert('editAlert', 'Password must be at least 6 characters.', 'error');
+      btn.disabled = false; btn.textContent = 'Save Changes';
+      return;
+    }
+    payload.password = pw;
+  }
+
+  try {
+    const res = await fetch(`/api/admin/clients/${clientId}`, {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('Client updated!', 'success');
+      closeEditModal();
+      setTimeout(() => location.reload(), 800);
+    } else {
+      showAlert('editAlert', data.message || 'Update failed.', 'error');
+    }
+  } catch (err) {
+    showAlert('editAlert', 'Connection error.', 'error');
+  }
+  btn.disabled = false; btn.textContent = 'Save Changes';
+});
+
+// ═══════════════════════════════════════
+// DELETE CLIENT
+// ═══════════════════════════════════════
+async function deleteClient(clientId, name) {
+  if (!confirm(`Delete "${name}" and ALL their data (projects, updates)? This cannot be undone.`)) return;
+  if (!confirm(`Final confirmation: permanently delete ${name}?`)) return;
+
+  try {
+    const res = await fetch(`/api/admin/clients/${clientId}`, {
+      method: 'DELETE', credentials: 'include',
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.message, 'success');
+      setTimeout(() => location.reload(), 800);
+    } else {
+      showToast(data.message || 'Delete failed.', 'error');
+    }
+  } catch (err) {
+    showToast('Connection error.', 'error');
+  }
 }
 
 // Logout

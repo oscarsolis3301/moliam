@@ -67,13 +67,16 @@ export async function onRequestPost(context) {
       `moliam_session=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`
     );
 
+    // Normalize superadmin → admin for frontend routing
+    const displayRole = user.role === 'superadmin' ? 'admin' : user.role;
+
     return new Response(JSON.stringify({
       success: true,
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role,
+        role: displayRole,
         company: user.company,
       }
     }), { status: 200, headers });
