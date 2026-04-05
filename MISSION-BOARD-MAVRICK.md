@@ -15,7 +15,7 @@
 
 ---
 
-### TASK 1: Invoice Section in Dashboard ⬜ HIGH
+### TASK 1: Invoice Section in Dashboard ✅ DONE
 Add an invoice/billing section to the client dashboard.
 
 **What to build:**
@@ -32,7 +32,7 @@ Add an invoice/billing section to the client dashboard.
 
 ---
 
-### TASK 2: Health Check Dashboard Widget ⬜ MEDIUM
+### TASK 2: Health Check Dashboard Widget ✅ DONE (Ada-built)
 Add a small system status indicator to the admin dashboard view.
 
 **What to build:**
@@ -52,3 +52,5 @@ Add a small system status indicator to the admin dashboard view.
 | Messaging UI in dashboard | 2026-04-05 | Ada-fixed: Enter key, send btn, dead code removed |
 | QR Code API `/api/qr` | 2026-04-05 | Ada-built: full rewrite, byte-mode encoder + RS EC |
 | Embedded Calendly widget | Pre-sprint | Already in book.html |
+| Invoice section in dashboard | 2026-04-05 | Mavrick-built, Ada CSS fix |
+| Health check widget | 2026-04-05 | Ada-built after Mavrick's version had JS outside script tag |
