@@ -1,0 +1,16 @@
+# Cloudflare Pages routing rules for Moliam
+
+# Explicitly serve HTML files as static pages
+/qrdashboard.html -> /qrdashboard.html 200
+/login.html -> /login.html 200
+/dashboard.html -> /dashboard.html 200
+/admin.html -> /admin.html 200
+/portfolio.html -> /portfolio.html 200
+/book.html -> /book.html 200
+/hq.html -> /hq.html 200
+/privacy.html -> /privacy.html 200
+/terms.html -> /terms.html 200
+
+# Default to index.html for homepage and unknown routes (SPA fallback)
+/ -> /index.html 200
+/* -> /index.html 200
