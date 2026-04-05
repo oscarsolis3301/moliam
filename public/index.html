@@ -645,83 +645,485 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 
 /* ═══════════════════════════════════════════
-   CONTACT SECTION
+   PROGRESSIVE FORM
    ═══════════════════════════════════════════ */
-#contact {
-  position: relative; z-index: 1;
-  padding: 120px 24px;
-  max-width: 640px; margin: 0 auto;
-}
-.contact-form {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-xl);
-  padding: 40px;
+/* ══════════════════════════════════════════════════════════
+   Progressive Form — Moliam Contact Section
+   Self-contained with pf- prefix. Requires Inter font.
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Card Container ── */
+.progressive-form-card {
+  max-width: 620px;
+  margin: 40px auto 0;
+  background: rgba(17, 24, 39, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 24px;
+  padding: 40px 40px 32px;
+  position: relative;
 }
-.form-group { margin-bottom: 20px; }
-.form-group label {
-  display: block; font-size: 13px;
-  font-weight: 600; color: var(--text-secondary);
-  margin-bottom: 8px;
+
+/* ── Progress Bar ── */
+.pf-progress {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
 }
-.form-group input,
-.form-group textarea,
-.form-group select {
-  width: 100%; padding: 12px 16px;
+
+.pf-progress-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.pf-progress-fill {
+  height: 100%;
+  width: 16.666%;
+  background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+  border-radius: 4px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pf-step-indicator {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim, #6B7280);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  min-width: 36px;
+  text-align: right;
+}
+
+.pf-step-current {
+  color: var(--text-primary, #F9FAFB);
+}
+
+.pf-step-sep {
+  margin: 0 2px;
+  opacity: 0.5;
+}
+
+/* ── Steps Container ── */
+.pf-steps {
+  position: relative;
+  overflow: hidden;
+  transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Individual Step ── */
+.pf-step {
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, transform;
+}
+
+.pf-step--active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: all;
+  position: relative;
+}
+
+.pf-step--prev {
+  opacity: 0;
+  transform: translateX(-30px);
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.pf-step--future {
+  opacity: 0;
+  transform: translateX(30px);
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+/* ── Step Typography ── */
+.pf-step-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary, #F9FAFB);
+  margin: 0 0 6px;
+  line-height: 1.3;
+}
+
+.pf-step-desc {
+  font-size: 14px;
+  color: var(--text-secondary, #9CA3AF);
+  margin: 0 0 24px;
+  line-height: 1.5;
+}
+
+.pf-step-content {
+  min-height: 60px;
+}
+
+/* ── Input Styles ── */
+.pf-input {
+  display: block;
+  width: 100%;
   background: rgba(10, 10, 20, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  font-family: inherit; font-size: 14px;
-  transition: all var(--transition-fast);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: var(--text-primary, #F9FAFB);
+  padding: 14px 16px;
+  font-size: 15px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.5;
   outline: none;
-}
-.form-group input:focus,
-.form-group textarea:focus,
-.form-group select:focus {
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15), 0 0 20px rgba(59, 130, 246, 0.1);
-}
-.form-group textarea { resize: vertical; min-height: 100px; }
-   .form-group select option { background: var(--bg-deep); }
-
-/* ─── FORM STATUS MESSAGES ─── */
-#form-status { margin-top: 20px; min-height: 128px; }
-.form-success, .form-error {
-   background: rgba(10, 10, 20, 0.7);
-   border: 1px solid var(--glass-border);
-   border-radius: var(--radius-md);
-   padding: 32px;
-   text-align: center;
-   backdrop-filter: blur(16px);
-   animation: fadeInUp 0.4s ease-out;
-}
-.form-success { border-color: rgba(16, 185, 129, 0.3); box-shadow: 0 0 40px rgba(16, 185, 129, 0.15); }
-.form-error { border-color: rgba(239, 68, 68, 0.3); box-shadow: 0 0 40px rgba(239, 68, 68, 0.15); }
-.form-success h4 { font-size: 20px; margin-bottom: 8px; color: var(--accent-green); }
-.form-error p { font-size: 14px; color: var(--text-secondary); }
-.form-success p { font-size: 14px; color: var(--text-secondary); margin-top: 16px; }
-.form-submit {
-  width: 100%; padding: 14px;
-  border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-  color: white; font-size: 15px; font-weight: 600;
-  transition: all var(--transition-smooth);
-  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.25);
-}
-.form-submit:hover {
-  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.35);
-  transform: scale(1.03);
-}
-.form-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-#form-status {
-  margin-top: 12px; font-size: 13px;
-  text-align: center; min-height: 20px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
 }
 
+.pf-input::placeholder {
+  color: var(--text-dim, #6B7280);
+}
+
+.pf-input:focus {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.pf-input.pf-input--error {
+  border-color: #EF4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.pf-textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* ── Service Pills ── */
+.pf-pills {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pf-pill {
+  display: block;
+  cursor: pointer;
+  position: relative;
+}
+
+.pf-pill-radio {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.pf-pill-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: rgba(10, 10, 20, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  transition: all 0.25s ease;
+}
+
+.pf-pill:hover .pf-pill-label {
+  border-color: rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.pf-pill-radio:checked + .pf-pill-label {
+  border-color: #3B82F6;
+  background: rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.3), 0 0 20px rgba(59, 130, 246, 0.08);
+}
+
+.pf-pill-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary, #F9FAFB);
+}
+
+.pf-pill-price {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-blue, #3B82F6);
+  white-space: nowrap;
+}
+
+/* ── Review Summary ── */
+.pf-review {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(10, 10, 20, 0.3);
+}
+
+.pf-review-row {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.pf-review-row:last-child {
+  border-bottom: none;
+}
+
+.pf-review-row--message {
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pf-review-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim, #6B7280);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 70px;
+  flex-shrink: 0;
+}
+
+.pf-review-value {
+  font-size: 14px;
+  color: var(--text-primary, #F9FAFB);
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+.pf-review-value:empty::after {
+  content: '—';
+  color: var(--text-dim, #6B7280);
+}
+
+/* ── Form Status ── */
+.pf-form-status {
+  margin-top: 16px;
+  font-size: 14px;
+  text-align: center;
+  min-height: 20px;
+  line-height: 1.5;
+}
+
+.pf-form-status--success {
+  color: #10B981;
+}
+
+.pf-form-status--error {
+  color: #EF4444;
+}
+
+/* ── Navigation ── */
+.pf-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.pf-nav-btn {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 14px 32px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  outline: none;
+  white-space: nowrap;
+}
+
+.pf-nav-btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+/* Back button */
+.pf-nav-back {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary, #9CA3AF);
+}
+
+.pf-nav-back:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary, #F9FAFB);
+}
+
+.pf-nav-back[hidden] {
+  display: none;
+}
+
+/* Continue / Submit button */
+.pf-nav-next,
+.pf-nav-submit {
+  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  color: #fff;
+  margin-left: auto;
+}
+
+.pf-nav-next:hover,
+.pf-nav-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.25);
+}
+
+.pf-nav-next:active,
+.pf-nav-submit:active {
+  transform: translateY(0);
+}
+
+.pf-nav-next:disabled,
+.pf-nav-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.pf-nav-submit[hidden] {
+  display: none;
+}
+
+.pf-nav-next[hidden] {
+  display: none;
+}
+
+/* ── Shake Animation ── */
+@keyframes pf-shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+.pf-shake {
+  animation: pf-shake 0.5s ease-in-out;
+}
+
+/* ── Success Checkmark ── */
+@keyframes pf-check-in {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.pf-success-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.15);
+  margin: 0 auto 16px;
+  animation: pf-check-in 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pf-success-icon svg {
+  width: 28px;
+  height: 28px;
+  color: #10B981;
+}
+
+/* ══════════════════════════════════════
+   Responsive
+   ══════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .progressive-form-card {
+    padding: 28px 24px 24px;
+    border-radius: 20px;
+    margin-top: 32px;
+  }
+
+  .pf-progress {
+    margin-bottom: 24px;
+  }
+
+  .pf-step-title {
+    font-size: 20px;
+  }
+
+  .pf-step-desc {
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  .pf-nav {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+
+  .pf-nav-btn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .pf-nav-next,
+  .pf-nav-submit {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .progressive-form-card {
+    padding: 24px 18px 20px;
+    border-radius: 16px;
+    margin-top: 24px;
+  }
+
+  .pf-step-title {
+    font-size: 18px;
+  }
+
+  .pf-step-desc {
+    font-size: 12px;
+    margin-bottom: 16px;
+  }
+
+  .pf-input {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+
+  .pf-pill-label {
+    padding: 12px 14px;
+  }
+
+  .pf-pill-name {
+    font-size: 14px;
+  }
+
+  .pf-pill-price {
+    font-size: 12px;
+  }
+
+  .pf-nav-btn {
+    padding: 12px 24px;
+    font-size: 13px;
+  }
+
+  .pf-review-row {
+    padding: 10px 12px;
+  }
+}
 /* ═══════════════════════════════════════════
    FOOTER
    ═══════════════════════════════════════════ */
@@ -858,51 +1260,116 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
    RESPONSIVE
    ═══════════════════════════════════════════ */
 @media (max-width: 768px) {
+  /* Prevent ALL horizontal overflow on mobile */
+  html, body { overflow-x: hidden; max-width: 100vw; }
+  * { max-width: 100%; box-sizing: border-box; }
+  section, div, canvas { max-width: 100vw; }
+
+  /* Nav */
   .hamburger { display: flex; }
   #hud .center { display: none; }
   #hud .nav-links { display: none; }
+  #hud { padding: 0 16px; }
+  #sparkline-container { display: none; }
+  .uptime-display { display: none; }
+
+  /* Hero — generous spacing, no cramping */
+  #hero { padding: 100px 20px 60px; min-height: auto; }
+  #hero h1 { font-size: clamp(28px, 8vw, 44px); line-height: 1.1; margin-bottom: 16px; }
+  #hero .tagline { font-size: 15px; padding: 0 4px; line-height: 1.6; margin-bottom: 36px; }
+  .cta-group { flex-direction: column; gap: 12px; align-items: center; width: 100%; }
+  .btn-primary, .btn-secondary { width: 100%; justify-content: center; padding: 16px 24px; font-size: 16px; min-height: 52px; }
+  .scroll-indicator { display: none; }
+
+  /* Stats bar — 2x2 grid on mobile, not cramped row */
+  .reveal[style*="gap:48px"] {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 20px 16px !important;
+    padding: 28px 20px !important;
+    justify-items: center;
+  }
+  .reveal[style*="gap:48px"] > div {
+    min-width: 0 !important;
+  }
+  .reveal[style*="gap:48px"] > div > div:first-child {
+    font-size: 1.6rem !important;
+  }
+  .reveal[style*="gap:48px"] > div > div:last-child {
+    font-size: 0.65rem !important;
+    white-space: nowrap;
+  }
+
+  /* HQ section — compact on mobile, canvas still visible but not dominant */
   #activity-sidebar { display: none; }
-  #hq-section { height: 70vh; position: relative; }
+  #hq-section {
+    height: auto;
+    min-height: 240px;
+    max-height: 320px;
+    position: relative;
+    overflow: hidden;
+    flex-direction: column;
+  }
+  #hq-canvas-wrap { overflow: hidden; max-width: 100vw; height: 260px; }
   .hq-mobile-note {
     display: block;
     text-align: center;
     font-size: 12px;
     color: var(--text-dim);
-    padding: 8px 16px;
-    background: rgba(59, 130, 246, 0.08);
-    border: 1px solid rgba(59, 130, 246, 0.15);
+    padding: 10px 16px;
+    background: rgba(59, 130, 246, 0.06);
+    border: 1px solid rgba(59, 130, 246, 0.12);
     border-radius: var(--radius-sm);
-    margin: 12px 24px 0;
+    margin: 8px 20px 0;
   }
-  .contact-form { padding: 24px; }
-  #contact { padding: 80px 16px; max-width: 100%; }
-  #sparkline-container { display: none; }
-  .uptime-display { display: none; }
-  .services-grid { grid-template-columns: 1fr; gap: 20px; }
-  #services { padding: 80px 16px; }
+
+  /* Content sections — consistent spacing */
+  #services { padding: 64px 20px; }
+  .services-grid { grid-template-columns: 1fr; gap: 16px; }
+  .service-card { padding: 28px 24px; }
+  .section-title { font-size: clamp(24px, 6vw, 34px); margin-bottom: 12px; }
+  .section-subtitle { font-size: 15px; padding: 0 4px; line-height: 1.6; }
+  .section-label { font-size: 11px; }
+
+  #how-it-works { padding: 64px 20px; overflow: hidden; }
   .steps-grid { grid-template-columns: 1fr; gap: 24px; }
   .steps-grid::before { display: none; }
-  #hero { padding: 100px 20px 60px; min-height: auto; }
-  #hero h1 { font-size: clamp(28px, 8vw, 48px); }
-  #hero .tagline { font-size: 15px; }
-  .cta-group { flex-direction: column; gap: 12px; align-items: center; }
-  .footer-inner { flex-direction: column; text-align: center; gap: 16px; }
-  .footer-links { justify-content: center; }
+  .step-card:not(:last-child)::after { display: none; }
+  .step-card { overflow: hidden; padding: 32px 24px 28px; }
+
+  #why-ai { padding: 64px 20px; }
+  #why-ai .steps-grid { grid-template-columns: 1fr !important; gap: 16px; }
+  #why-ai .step-card h3 { font-size: 18px; white-space: normal; overflow: visible; }
+  #testimonials { padding: 64px 20px; }
+  .testimonials-grid { grid-template-columns: 1fr; gap: 16px; }
+
+  #contact { padding: 64px 20px; max-width: 100%; }
+
+  /* Footer */
+  .footer-inner { flex-direction: column; text-align: center; gap: 16px; padding: 0 20px; }
+  .footer-links { flex-wrap: wrap; justify-content: center; gap: 16px; }
+  .case-stats { flex-wrap: wrap; gap: 12px; }
 }
+
 @media (max-width: 480px) {
+  #hero { padding: 90px 16px 48px; }
   #hero h1 { font-size: 26px; }
   #hero .tagline { font-size: 14px; }
-  .section-title { font-size: 24px; }
+  .section-title { font-size: 22px; }
   .section-subtitle { font-size: 14px; }
   .services-grid { grid-template-columns: 1fr; }
-  .form-row { grid-template-columns: 1fr !important; }
-  .service-card { padding: 24px; }
+  .service-card { padding: 24px 20px; }
   .steps-grid { grid-template-columns: 1fr; }
   .steps-grid::before { display: none; }
-  .contact-form { padding: 16px; }
+  .step-card { padding: 28px 20px 24px; }
   .footer-inner { flex-direction: column; text-align: center; }
   .footer-links { flex-direction: column; gap: 12px; }
-  #hud { padding: 0 16px; }
+  #hud { padding: 0 12px; }
+  #hq-section { max-height: 260px; }
+  #hq-canvas-wrap { height: 220px; }
+  .reveal[style*="gap:48px"] > div > div:first-child {
+    font-size: 1.4rem !important;
+  }
 }
 /* Hide mobile note on desktop */
 .hq-mobile-note { display: none; }
@@ -1259,7 +1726,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
         <li>Built in under 72 hours</li>
         <li>Mobile-first approach</li>
       </ul>
-      <div class="card-price">$600 <span class="starts">build</span> + $150<span class="period">/mo</span></div>
+      <div class="card-price">$300 <span class="starts">setup</span> + $100<span class="period">/mo</span></div>
     </div>
     <div class="service-card">
       <div class="card-icon" style="background:rgba(16,185,129,0.1)">📍</div>
@@ -1271,7 +1738,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
         <li>Photo optimization</li>
         <li>Local ranking tracking</li>
       </ul>
-      <div class="card-price">$300<span class="period">/mo</span></div>
+      <div class="card-price">$200<span class="period">/mo</span></div>
     </div>
     <div class="service-card">
       <div class="card-icon" style="background:rgba(245,158,11,0.1)">⚡</div>
@@ -1283,7 +1750,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
         <li>Budget optimization</li>
         <li>Monthly ROI reporting</li>
       </ul>
-      <div class="card-price">$500 <span class="starts">setup</span> + $400<span class="period">/mo</span></div>
+      <div class="card-price">$300 <span class="starts">setup</span> + $250<span class="period">/mo</span></div>
     </div>
     <div class="service-card">
       <div class="card-icon" style="background:rgba(139,92,246,0.1)">🚀</div>
@@ -1295,7 +1762,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
         <li>Weekly strategy calls</li>
         <li>Dedicated account manager</li>
       </ul>
-      <div class="card-price">$1,500<span class="period">/mo</span></div>
+      <div class="card-price">$800<span class="period">/mo</span></div>
     </div>
   </div>
 </section>
@@ -1402,7 +1869,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
         <span>How long does it take to build a website?</span>
         <span class="faq-chevron">▸</span>
       </button>
-      <div class="faq-answer"><div class="faq-answer-inner">Our AI agents can build a fully custom, responsive website in under 72 hours. We handle design, development, SEO optimization, and deployment — all included in the $600 flat fee.</div></div>
+      <div class="faq-answer"><div class="faq-answer-inner">Our AI agents can build a fully custom, responsive website in under 72 hours. We handle design, development, SEO optimization, and deployment — all included in a $300 setup fee with $100/mo ongoing support.</div></div>
     </div>
     <div class="faq-item">
       <button class="faq-question" aria-expanded="false">
@@ -1503,62 +1970,184 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   <p class="section-subtitle">
     Tell us about your business and we'll show you exactly how our AI can help you grow.
   </p>
-  <form class="contact-form" id="contact-form" action="/api/contact" method="POST">
-    <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-      <div class="form-group">
-        <label for="cf-name">Name *</label>
-        <input type="text" id="cf-name" name="name" required placeholder="Your name" autocomplete="name">
-      </div>
-      <div class="form-group">
-        <label for="cf-email">Email *</label>
-        <input type="email" id="cf-email" name="email" required placeholder="you@company.com" autocomplete="email">
-      </div>
-    </div>
-    <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-      <div class="form-group">
-        <label for="cf-phone">Phone</label>
-        <input type="tel" id="cf-phone" name="phone" placeholder="(949) 555-0100" autocomplete="tel">
-      </div>
-      <div class="form-group">
-        <label for="cf-company">Company</label>
-        <input type="text" id="cf-company" name="company" placeholder="Your business name" autocomplete="organization">
-      </div>
-    </div>
-    <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-      <div class="form-group">
-        <label for="cf-service">Service Interest</label>
-        <select id="cf-service" name="service">
-          <option value="">Select a service...</option>
-          <option value="website">Website Build ($600 + $150/mo)</option>
-          <option value="gbp">GBP Optimization ($300/mo)</option>
-          <option value="lsa">Google LSA ($500 + $400/mo)</option>
-          <option value="retainer">Full Retainer ($1,500/mo)</option>
-          <option value="other">Other / Not sure</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="cf-budget">Budget Range</label>
-        <select id="cf-budget" name="budget">
-          <option value="">Select budget...</option>
-          <option value="under-500">Under $500</option>
-          <option value="500-1000">$500 — $1,000</option>
-          <option value="1000-2000">$1,000 — $2,000</option>
-          <option value="2000-plus">$2,000+</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group">
-      <label for="cf-message">Message *</label>
-      <textarea id="cf-message" name="message" required placeholder="Tell us about your business and what you're looking for..."></textarea>
-    </div>
-    <button type="submit" class="form-submit" id="form-btn">Send Message</button>
-    <p style="font-size:12px; color:var(--text-dim); margin-top:12px; text-align:center;">
-      Or skip the form — <a href="https://calendly.com/visualark/demo" target="_blank" rel="noopener" style="color:var(--accent-blue); text-decoration:underline;">book a free 15-min demo call</a>
-    </p>
-    <div id="form-status"></div>
-  </form>
-</section>
 
+  <div class="progressive-form-card">
+    <form id="contact-form" class="progressive-form" novalidate>
+      <!-- Progress -->
+      <div class="pf-progress">
+        <div class="pf-progress-bar">
+          <div class="pf-progress-fill" id="pf-progress-fill"></div>
+        </div>
+        <div class="pf-step-indicator">
+          <span class="pf-step-current" id="pf-step-current">1</span>
+          <span class="pf-step-sep">/</span>
+          <span class="pf-step-total">8</span>
+        </div>
+      </div>
+
+      <!-- Steps container -->
+      <div class="pf-steps" id="pf-steps">
+
+        <!-- Step 1: Name -->
+        <div class="pf-step pf-step--active" data-step="1">
+          <h3 class="pf-step-title">What's your name?</h3>
+          <p class="pf-step-desc">Let's start with the basics</p>
+          <div class="pf-step-content">
+            <input type="text" id="pf-name" class="pf-input" placeholder="Your name" autocomplete="name" required>
+          </div>
+        </div>
+
+        <!-- Step 2: Email -->
+        <div class="pf-step pf-step--future" data-step="2">
+          <h3 class="pf-step-title">What's your email?</h3>
+          <p class="pf-step-desc">We'll use this to get in touch</p>
+          <div class="pf-step-content">
+            <input type="email" id="pf-email" class="pf-input" placeholder="you@company.com" autocomplete="email" required>
+          </div>
+        </div>
+
+        <!-- Step 3: Phone -->
+        <div class="pf-step pf-step--future" data-step="3">
+          <h3 class="pf-step-title">What's your phone number?</h3>
+          <p class="pf-step-desc">So we can reach you directly</p>
+          <div class="pf-step-content">
+            <input type="tel" id="pf-phone" class="pf-input" placeholder="(949) 555-0100" autocomplete="tel" maxlength="14">
+          </div>
+        </div>
+
+        <!-- Step 4: Business Name -->
+        <div class="pf-step pf-step--future" data-step="4">
+          <h3 class="pf-step-title">What's your business name?</h3>
+          <p class="pf-step-desc">Optional, but helps us prepare</p>
+          <div class="pf-step-content">
+            <input type="text" id="pf-company" class="pf-input" placeholder="Your company or brand name" autocomplete="organization">
+          </div>
+        </div>
+
+        <!-- Step 5: Website & Social Media -->
+        <div class="pf-step pf-step--future" data-step="5">
+          <h3 class="pf-step-title">Got a website or socials?</h3>
+          <p class="pf-step-desc">We'll research your online presence before our call</p>
+          <div class="pf-step-content">
+            <input type="url" id="pf-website" class="pf-input" placeholder="https://yourbusiness.com" autocomplete="url" style="margin-bottom:12px">
+            <input type="text" id="pf-social-google" class="pf-input" placeholder="Google Business Profile URL" style="margin-bottom:12px">
+            <input type="text" id="pf-social-facebook" class="pf-input" placeholder="Facebook page URL" style="margin-bottom:12px">
+            <input type="text" id="pf-social-instagram" class="pf-input" placeholder="Instagram @handle or URL" style="margin-bottom:12px">
+            <input type="text" id="pf-social-yelp" class="pf-input" placeholder="Yelp business page URL">
+          </div>
+        </div>
+
+        <!-- Step 6: Service Interest -->
+        <div class="pf-step pf-step--future" data-step="6">
+          <h3 class="pf-step-title">What service are you interested in?</h3>
+          <p class="pf-step-desc">Select what fits your needs</p>
+          <div class="pf-step-content">
+            <div class="pf-pills" id="pf-pills">
+              <label class="pf-pill">
+                <input type="radio" name="pf-service" value="website" class="pf-pill-radio">
+                <span class="pf-pill-label">
+                  <span class="pf-pill-name">Website Build</span>
+                  <span class="pf-pill-price">$300 + $100/mo</span>
+                </span>
+              </label>
+              <label class="pf-pill">
+                <input type="radio" name="pf-service" value="gbp" class="pf-pill-radio">
+                <span class="pf-pill-label">
+                  <span class="pf-pill-name">GBP Optimization</span>
+                  <span class="pf-pill-price">$200/mo</span>
+                </span>
+              </label>
+              <label class="pf-pill">
+                <input type="radio" name="pf-service" value="lsa" class="pf-pill-radio">
+                <span class="pf-pill-label">
+                  <span class="pf-pill-name">Google LSA</span>
+                  <span class="pf-pill-price">$300 + $250/mo</span>
+                </span>
+              </label>
+              <label class="pf-pill">
+                <input type="radio" name="pf-service" value="retainer" class="pf-pill-radio">
+                <span class="pf-pill-label">
+                  <span class="pf-pill-name">Full Retainer</span>
+                  <span class="pf-pill-price">$800/mo</span>
+                </span>
+              </label>
+              <label class="pf-pill">
+                <input type="radio" name="pf-service" value="other" class="pf-pill-radio">
+                <span class="pf-pill-label">
+                  <span class="pf-pill-name">Not Sure Yet</span>
+                  <span class="pf-pill-price">Let's talk</span>
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 7: Project Details -->
+        <div class="pf-step pf-step--future" data-step="7">
+          <h3 class="pf-step-title">Tell us about your project</h3>
+          <p class="pf-step-desc">Share your goals or challenges</p>
+          <div class="pf-step-content">
+            <textarea id="pf-message" class="pf-input pf-textarea" placeholder="What are you looking to achieve? Any specific goals or pain points..." rows="5"></textarea>
+          </div>
+        </div>
+
+        <!-- Step 8: Review & Submit -->
+        <div class="pf-step pf-step--future" data-step="8">
+          <h3 class="pf-step-title">Almost there!</h3>
+          <p class="pf-step-desc">Review your info</p>
+          <div class="pf-step-content">
+            <div class="pf-review" id="pf-review">
+              <div class="pf-review-row">
+                <span class="pf-review-label">Name</span>
+                <span class="pf-review-value" id="pf-review-name"></span>
+              </div>
+              <div class="pf-review-row">
+                <span class="pf-review-label">Email</span>
+                <span class="pf-review-value" id="pf-review-email"></span>
+              </div>
+              <div class="pf-review-row">
+                <span class="pf-review-label">Phone</span>
+                <span class="pf-review-value" id="pf-review-phone"></span>
+              </div>
+              <div class="pf-review-row">
+                <span class="pf-review-label">Business</span>
+                <span class="pf-review-value" id="pf-review-company"></span>
+              </div>
+              <div class="pf-review-row">
+                <span class="pf-review-label">Website</span>
+                <span class="pf-review-value" id="pf-review-website"></span>
+              </div>
+              <div class="pf-review-row">
+                <span class="pf-review-label">Socials</span>
+                <span class="pf-review-value" id="pf-review-socials"></span>
+              </div>
+              <div class="pf-review-row">
+                <span class="pf-review-label">Service</span>
+                <span class="pf-review-value" id="pf-review-service"></span>
+              </div>
+              <div class="pf-review-row pf-review-row--message">
+                <span class="pf-review-label">Message</span>
+                <span class="pf-review-value" id="pf-review-message"></span>
+              </div>
+            </div>
+            <div class="pf-form-status" id="pf-form-status"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Navigation -->
+      <div class="pf-nav">
+        <button type="button" id="pf-back" class="pf-nav-btn pf-nav-back" aria-label="Go back">← Back</button>
+        <button type="button" id="pf-next" class="pf-nav-btn pf-nav-next" aria-label="Continue">Continue →</button>
+        <button type="submit" id="pf-submit" class="pf-nav-btn pf-nav-submit" aria-label="Submit form">Submit →</button>
+      </div>
+    </form>
+    <p style="font-size:12px; color:var(--text-dim, #6B7280); margin-top:16px; text-align:center;">
+      Or skip the form — <a href="https://calendly.com/visualark/demo" target="_blank" rel="noopener" style="color:var(--accent-blue, #3B82F6); text-decoration:underline;">book a free 15-min demo call</a>
+    </p>
+  </div>
+</section>
 <!-- ═══════════════════════ CTA BANNER ═══════════════════════ -->
 <section class="reveal" style="padding:80px 24px; text-align:center; background:linear-gradient(135deg, rgba(59,130,246,0.08), rgba(139,92,246,0.08)); border-top:1px solid rgba(255,255,255,0.05);">
   <h2 style="font-size:clamp(1.8rem, 3vw, 2.4rem); font-weight:800; margin-bottom:12px;">Ready to Grow Your Business?</h2>
@@ -1723,11 +2312,20 @@ let hoveredBot = null;
 
 function resizeCanvas() {
   const wrap = $('#hq-canvas-wrap');
-  W = canvas.width = wrap.clientWidth;
-  H = canvas.height = wrap.clientHeight;
+  const dpr = window.devicePixelRatio || 1;
+  let displayW = wrap.clientWidth || wrap.offsetWidth || window.innerWidth;
+  let displayH = wrap.clientHeight || wrap.offsetHeight || 400;
+  // Fallback for collapsed reveal elements
+  if (displayH < 50) displayH = Math.min(400, window.innerHeight * 0.5);
+  if (displayW < 50) displayW = window.innerWidth;
+  canvas.width = displayW * dpr;
+  canvas.height = displayH * dpr;
+  canvas.style.width = displayW + 'px';
+  canvas.style.height = displayH + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  W = displayW;
+  H = displayH;
 }
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
 
 /* ─── ROOMS ─── */
 const ROOM_DEFS = [
@@ -1742,13 +2340,14 @@ const ROOM_DEFS = [
 let rooms = [];
 
 function layoutRooms() {
-  const margin = 40;
-  const cols = W > 900 ? 3 : 2;
+  const isMobile = W < 600;
+  const margin = isMobile ? 12 : 40;
+  const cols = W > 900 ? 3 : (isMobile ? 3 : 2);
   const rows = Math.ceil(ROOM_DEFS.length / cols);
-  const padTop = 40;
-  const padBottom = 20;
-  const gapX = 24;
-  const gapY = 24;
+  const padTop = isMobile ? 12 : 40;
+  const padBottom = isMobile ? 8 : 20;
+  const gapX = isMobile ? 8 : 24;
+  const gapY = isMobile ? 8 : 24;
   const availW = W - margin * 2 - gapX * (cols - 1);
   const availH = H - padTop - padBottom - margin - gapY * (rows - 1);
   const rw = availW / cols;
@@ -1962,6 +2561,7 @@ function drawRoom(room, t) {
   ctx.fill();
 
   // Main face with gradient fill
+  if (!isFinite(x) || !isFinite(y) || !isFinite(h) || h <= 0) return;
   const roomGrad = ctx.createLinearGradient(x, y, x, y + h);
   if (isActive) {
     roomGrad.addColorStop(0, `rgba(${cr},${cg},${cb},0.18)`);
@@ -1985,14 +2585,14 @@ function drawRoom(room, t) {
     ctx.fill();
   }
 
-  // Room icon (emoji) — larger, centered in upper area
-  ctx.font = '28px sans-serif';
+  // Room icon (emoji)
+  ctx.font = (W < 600 ? '14px' : '28px') + ' sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(icon, x + w / 2, y + h * 0.38);
 
   // Label — centered below icon
-  ctx.font = '600 14px Inter, sans-serif';
+  ctx.font = '600 ' + (W < 600 ? '8' : '14') + 'px Inter, sans-serif';
   ctx.fillStyle = isActive ? '#F9FAFB' : '#9CA3AF';
   ctx.textAlign = 'center';
   ctx.fillText(label, x + w / 2, y + h * 0.62);
@@ -2034,74 +2634,864 @@ function drawRoom(room, t) {
     pGrad.addColorStop(1, `rgba(${cr},${cg},${cb},0.4)`);
     ctx.fillStyle = pGrad;
     ctx.beginPath();
-   ctx.roundRect(pBarX, pBarY, pBarW * clamp(progress, 0, 1), pBarH, 2);
+    ctx.roundRect(pBarX, pBarY, pBarW * clamp(progress, 0, 1), pBarH, 2);
     ctx.fill();
+  }
 
-/* ─── CONTACT FORM HANDLER ─── */
-const contactForm = $('#contact-form');
-const formStatus = $('#form-status');
-const formBtn = $('#form-btn');
-
-if (contactForm && formStatus) {
-   contactForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const submitData = new FormData(contactForm);
-      const data = Object.fromEntries(submitData.entries());
-      
-      // Disable button during submission
-      formBtn.disabled = true;
-      formBtn.textContent = 'Sending...';
-      const originalBtnText = formBtn.textContent;
-      
-      try {
-         const response = await fetch('/api/contact', {
-            method: 'POST',
-            headers: {
-               'Content-Type': 'application/json',
-               'X-Request-ID': crypto.randomUUID()
-            },
-            body: JSON.stringify(data),
-         });
-         
-         const result = await response.json();
-         
-         if (response.ok && result.success === true) {
-            // Success state - show confirmation with animation + sound
-            formStatus.innerHTML = `
-               <div class="form-success">
-                  <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                     <rect width="48" height="48" rx="12" fill="#10B981"/>
-                     <path d="M13.5 24.5L21 32L34.5 18.5" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  <h4>Message Sent Successfully!</h4>
-                  <p>${result.message || 'We will be in touch within 1 business day.'}</p>
-               </div>
-            `;
-            
-            // Scroll to form status
-            formStatus.scrollIntoView({ behavior: 'smooth', block: 'center' });
-         } else {
-            // Client-side validation error from API
-            formStatus.innerHTML = `
-               <div class="form-error">
-                  <p>${result.message || 'Something went wrong. Please try again.'}</p>
-               </div>
-            `;
-            formBtn.textContent = originalBtnText;
-            formBtn.disabled = false;
-         }
-         
-      } catch (err) {
-         console.error('Form submission error:', err);
-         formStatus.innerHTML = `
-            <div class="form-error">
-               <p>Network error. Please check your connection and try again.</p>
-            </div>
-         `;
-         formBtn.textContent = originalBtnText || 'Send Message';
-         formBtn.disabled = false;
-      }
-      
-   });
+  // Active count badge
+  if (activeCount > 0) {
+    const bx = x + w - 24;
+    const by = y + 16;
+    ctx.save();
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(bx, by, 11, 0, PI2);
+    ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = '#fff';
+    ctx.font = '700 11px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(activeCount, bx, by);
+    ctx.textBaseline = 'alphabetic';
+  }
 }
+
+/* ─── DRAW BOT ─── */
+function drawBot(bot, t) {
+  const { x, y, color, initials, state, task, thinkAngle, trail, radius } = bot;
+  const R = W < 600 ? 12 : 20;
+  const isOffline = state === 'offline';
+  const drawColor = isOffline ? '#4B5563' : color;
+  const [cr, cg, cb] = hexRGB(drawColor);
+
+  // Dim offline bots
+  if (isOffline) ctx.globalAlpha = 0.45;
+
+  // Particle trail (fading dots in bot's color)
+  for (const tp of trail) {
+    ctx.beginPath();
+    ctx.arc(tp.x, tp.y, tp.r, 0, PI2);
+    ctx.fillStyle = `rgba(${cr},${cg},${cb},${tp.a * 0.5})`;
+    ctx.fill();
+  }
+
+  // Drop shadow
+  ctx.beginPath();
+  ctx.ellipse(x, y + R + 5, R * 0.65, 4, 0, 0, PI2);
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.fill();
+
+  // Outer status ring (background)
+  const ringColor = isOffline ? '#374151' :
+                    state === 'working' ? '#10B981' :
+                    state === 'thinking' ? '#F59E0B' :
+                    state === 'moving' ? '#3B82F6' : 'rgba(107,114,128,0.3)';
+  ctx.beginPath();
+  ctx.arc(x, y, R + 4, 0, PI2);
+  ctx.strokeStyle = `rgba(${hexRGB(ringColor === 'rgba(107,114,128,0.3)' ? '#6B7280' : ringColor).join(',')},0.25)`;
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // Animated rotating ring (for working/thinking/moving)
+  if (state === 'working' || state === 'thinking' || state === 'moving') {
+    const speed = state === 'working' ? 0.004 : state === 'thinking' ? 0.002 : 0.003;
+    const arcLen = state === 'working' ? 2.2 : 1.5;
+    const angle = (t * speed) % PI2;
+    ctx.beginPath();
+    ctx.arc(x, y, R + 4, angle, angle + arcLen);
+    ctx.strokeStyle = ringColor;
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+
+    // Second arc segment for working (double spinner)
+    if (state === 'working') {
+      ctx.beginPath();
+      ctx.arc(x, y, R + 4, angle + Math.PI, angle + Math.PI + 1.2);
+      ctx.strokeStyle = ringColor;
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+      ctx.lineCap = 'butt';
+    }
+  }
+
+  // Avatar circle with gradient
+  if (!isFinite(x) || !isFinite(y) || !isFinite(R) || R <= 0) return;
+  const grad = ctx.createRadialGradient(x - 5, y - 5, 0, x, y, R);
+  grad.addColorStop(0, `rgba(${Math.min(255,cr+30)},${Math.min(255,cg+30)},${Math.min(255,cb+30)},1)`);
+  grad.addColorStop(1, `rgba(${Math.max(0,cr-30)},${Math.max(0,cg-30)},${Math.max(0,cb-30)},1)`);
+  ctx.save();
+  ctx.shadowColor = color;
+  ctx.shadowBlur = state === 'working' ? 12 : 6;
+  ctx.beginPath();
+  ctx.arc(x, y, R, 0, PI2);
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.restore();
+
+  // Initials (single letter, larger)
+  ctx.fillStyle = '#fff';
+  ctx.font = '700 15px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(initials, x, y + 1);
+
+  // Thinking orbiting dots
+  if (state === 'thinking') {
+    for (let i = 0; i < 3; i++) {
+      const a = thinkAngle + (i * PI2 / 3);
+      const dx = Math.cos(a) * (R + 12);
+      const dy = Math.sin(a) * (R + 12);
+      ctx.beginPath();
+      ctx.arc(x + dx, y + dy, 3.5, 0, PI2);
+      ctx.fillStyle = `rgba(${cr},${cg},${cb},${0.4 + 0.3 * Math.sin(thinkAngle * 2 + i)})`;
+      ctx.fill();
+    }
+  }
+
+  // Offline label
+  if (isOffline) {
+    ctx.font = '600 9px Inter, sans-serif';
+    ctx.fillStyle = 'rgba(107,114,128,0.6)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('OFFLINE', x, y + R + 18);
+    ctx.fillText(bot.role, x, y + R + 30);
+    ctx.textBaseline = 'alphabetic';
+    // dim the whole bot
+    ctx.globalAlpha = 1;
+    return; // skip task label for offline bots
+  }
+
+  // Task label (wider for longer task names)
+  if (task && (state === 'working' || state === 'thinking')) {
+    const labelText = task.length > 28 ? task.slice(0, 26) + '…' : task;
+    ctx.font = '500 10px Inter, sans-serif';
+    const tw = ctx.measureText(labelText).width;
+    const lx = x - tw / 2 - 10;
+    const ly = y - R - 24;
+
+    // Label background with bot-color accent
+    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+    ctx.beginPath();
+    ctx.roundRect(lx, ly, tw + 20, 20, 8);
+    ctx.fill();
+    ctx.strokeStyle = `rgba(${cr},${cg},${cb},0.4)`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(lx, ly, tw + 20, 20, 8);
+    ctx.stroke();
+
+    ctx.fillStyle = '#E5E7EB';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(labelText, x, ly + 10);
+  }
+
+  ctx.textBaseline = 'alphabetic';
+}
+
+/* ─── HOVER DETECTION ─── */
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  mouseX = e.clientX - rect.left;
+  mouseY = e.clientY - rect.top;
+
+  hoveredBot = null;
+  for (const bot of bots) {
+    const dx = mouseX - bot.x;
+    const dy = mouseY - bot.y;
+    if (dx * dx + dy * dy < (24) ** 2) {
+      hoveredBot = bot;
+      break;
+    }
+  }
+
+  const tooltip = $('#bot-tooltip');
+  if (hoveredBot) {
+    tooltip.classList.add('visible');
+    tooltip.style.left = (e.clientX + 16) + 'px';
+    tooltip.style.top = (e.clientY - 16) + 'px';
+    $('#tt-avatar').style.background = hoveredBot.color;
+    $('#tt-avatar').textContent = hoveredBot.initials;
+    $('#tt-name').textContent = hoveredBot.name;
+    $('#tt-role').textContent = hoveredBot.role;
+    $('#tt-task').textContent = hoveredBot.task || '—';
+    $('#tt-done').textContent = hoveredBot.tasksDone;
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    const s = String(elapsed % 60).padStart(2, '0');
+    $('#tt-uptime').textContent = `${m}:${s}`;
+  } else {
+    tooltip.classList.remove('visible');
+  }
+});
+
+canvas.addEventListener('mouseleave', () => {
+  hoveredBot = null;
+  $('#bot-tooltip').classList.remove('visible');
+});
+
+/* ─── AMBIENT HQ PARTICLES ─── */
+let hqParticles = [];
+function initHQParticles() {
+  hqParticles = [];
+  const count = Math.floor((W * H) / 18000);
+  for (let i = 0; i < count; i++) {
+    hqParticles.push({
+      x: rand(0, W), y: rand(0, H),
+      r: rand(0.5, 1.8),
+      a: rand(0.08, 0.25),
+      dx: rand(-0.2, 0.2),
+      dy: rand(-0.15, 0.15),
+      phase: rand(0, PI2),
+    });
+  }
+}
+initHQParticles();
+window.addEventListener('resize', initHQParticles);
+
+function drawHQParticles(t) {
+  for (const p of hqParticles) {
+    p.x += p.dx;
+    p.y += p.dy;
+    p.phase += 0.008;
+    if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+    if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+    const alpha = p.a * (0.5 + 0.5 * Math.sin(p.phase));
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, PI2);
+    ctx.fillStyle = `rgba(100, 140, 200, ${alpha})`;
+    ctx.fill();
+  }
+}
+
+/* ─── MAIN LOOP ─── */
+let lastT = now();
+
+function mainLoop(t) {
+  const dt = Math.min(t - lastT, 50);
+  lastT = t;
+
+  // Guard: skip render when canvas has no valid dimensions (reveal collapsed)
+  if (!W || !H || !isFinite(W) || !isFinite(H) || W < 10 || H < 10) {
+    resizeCanvas();
+    if (W > 10 && H > 10) layoutRooms();
+    requestAnimationFrame(mainLoop);
+    return;
+  }
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Ambient background particles
+  drawHQParticles(t);
+
+  // Title bar in canvas
+  ctx.fillStyle = '#F9FAFB';
+  if (W < 600) {
+    ctx.font = '700 11px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('⚡ AI Operations HQ', 12, 10);
+  } else {
+    ctx.font = '700 16px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('⚡ AI Operations HQ', 40, 30);
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '400 12px Inter, sans-serif';
+    ctx.fillText('Real-time agent activity', 230, 30);
+  }
+
+  tickBots(dt);
+
+  // Draw rooms
+  for (const room of rooms) drawRoom(room, t);
+
+  // Draw bots
+  for (const bot of bots) drawBot(bot, t);
+
+  // Connection lines (subtle, dashed)
+  ctx.globalAlpha = 0.08;
+  ctx.setLineDash([4, 4]);
+  for (let i = 0; i < bots.length; i++) {
+    for (let j = i + 1; j < bots.length; j++) {
+      if (bots[i].roomIdx === bots[j].roomIdx) {
+        ctx.beginPath();
+        ctx.moveTo(bots[i].x, bots[i].y);
+        ctx.lineTo(bots[j].x, bots[j].y);
+        ctx.strokeStyle = '#9CA3AF';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+  }
+  ctx.setLineDash([]);
+  ctx.globalAlpha = 1;
+
+  requestAnimationFrame(mainLoop);
+}
+requestAnimationFrame(mainLoop);
+
+/* ─── SPARKLINE UPDATER ─── */
+setInterval(() => {
+  sparkData.push(sparkData[sparkData.length - 1]);
+  sparkData.shift();
+  sparkData[sparkData.length - 1] = 0;
+  drawSparkline();
+}, 5000);
+drawSparkline();
+
+/* ─── UPDATE BOT STATUS PANEL ─── */
+function updateBotStatusPanel() {
+  const container = $('#bot-status-list');
+  container.innerHTML = bots.map(b => `
+    <div class="bot-status-row">
+      <div class="bot-status-dot" style="background:${b.color};box-shadow:0 0 6px ${b.color}"></div>
+      <span class="bot-status-name" style="color:${b.color}">${b.name}</span>
+      <span class="bot-status-task">${b.task || 'Idle'}</span>
+    </div>
+  `).join('');
+}
+setInterval(updateBotStatusPanel, 1000);
+updateBotStatusPanel();
+
+
+/* ─── INITIAL FEED ─── */
+addFeedItem('⚡ Moliam HQ initialized — all systems nominal', '#3B82F6');
+addFeedItem('🤖 5 AI agents deployed and ready', '#10B981');
+addFeedItem('📊 Connected to analytics pipeline', '#8B5CF6');
+addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
+
+/* ─── FAQ ACCORDION ─── */
+(function() {
+  const faqItems = document.querySelectorAll('.faq-item');
+  faqItems.forEach(function(item) {
+    item.querySelector('.faq-question').addEventListener('click', function() {
+      const isActive = item.classList.contains('active');
+      faqItems.forEach(function(i) { i.classList.remove('active'); i.querySelector('.faq-question').setAttribute('aria-expanded', 'false'); });
+      if (!isActive) { item.classList.add('active'); this.setAttribute('aria-expanded', 'true'); }
+    });
+  });
+})();
+
+/* ─── SCROLL REVEAL (IntersectionObserver) ─── */
+(function() {
+  const revealEls = document.querySelectorAll('.reveal');
+  let revealedCount = 0;
+  const totalReveal = revealEls.length;
+
+  const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+        revealedCount++;
+        // Re-init canvas when HQ section becomes visible
+        if (entry.target.id === 'hq-canvas-wrap') {
+          setTimeout(function() {
+            resizeCanvas(); layoutRooms();
+            // Re-init bot positions from freshly laid-out rooms
+            bots.forEach(function(bot, i) {
+              var room = rooms[bot.roomIdx] || rooms[i % rooms.length];
+              if (room && isFinite(room.x) && isFinite(room.y)) {
+                bot.x = room.x + room.w / 2;
+                bot.y = room.y + room.h / 2;
+                bot.targetX = bot.x;
+                bot.targetY = bot.y;
+              }
+            });
+          }, 150);
+        }
+        if (revealedCount >= totalReveal) {
+          observer.disconnect();
+        }
+      }
+    });
+  }, { threshold: 0.05 });
+
+  revealEls.forEach(function(el) {
+    observer.observe(el);
+  });
+})();
+
+})();
+
+/* ─── HAMBURGER MENU ─── */
+(function() {
+  const btn = document.getElementById('hamburger-btn');
+  const menu = document.getElementById('mobile-menu');
+  if (!btn || !menu) return;
+
+  function toggleMenu() {
+    const isOpen = btn.classList.toggle('open');
+    menu.classList.toggle('open');
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  }
+
+  btn.addEventListener('click', toggleMenu);
+
+  menu.querySelectorAll('a').forEach(function(link) {
+    link.addEventListener('click', function() {
+      btn.classList.remove('open');
+      menu.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && menu.classList.contains('open')) {
+      btn.classList.remove('open');
+      menu.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  });
+})();
+</script>
+<script>
+/* ══════════════════════════════════════════════════════════
+   Progressive Form — Moliam Contact Section
+   Self-contained IIFE. No dependencies.
+   ══════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  // ── DOM refs ──
+  var form = document.getElementById('contact-form');
+  if (!form) return;
+
+  var stepsContainer = document.getElementById('pf-steps');
+  var progressFill = document.getElementById('pf-progress-fill');
+  var stepCurrentEl = document.getElementById('pf-step-current');
+  var btnBack = document.getElementById('pf-back');
+  var btnNext = document.getElementById('pf-next');
+  var btnSubmit = document.getElementById('pf-submit');
+  var statusEl = document.getElementById('pf-form-status');
+
+  var steps = stepsContainer.querySelectorAll('.pf-step');
+  var totalSteps = steps.length;
+  var currentStep = 1;
+
+  // ── Service labels map ──
+  var serviceLabels = {
+    website: 'Website Build — $300 + $100/mo',
+    gbp: 'GBP Optimization — $200/mo',
+    lsa: 'Google LSA — $300 + $250/mo',
+    retainer: 'Full Retainer — $800/mo',
+    other: 'Not Sure Yet'
+  };
+
+  // ── Init ──
+  function init() {
+    updateUI();
+    bindEvents();
+    focusCurrentInput();
+  }
+
+  // ── Update UI for current step ──
+  function updateUI() {
+    // Progress bar
+    var pct = (currentStep / totalSteps) * 100;
+    progressFill.style.width = pct + '%';
+    stepCurrentEl.textContent = currentStep;
+
+    // Step visibility
+    for (var i = 0; i < steps.length; i++) {
+      var step = steps[i];
+      var num = i + 1;
+      step.classList.remove('pf-step--active', 'pf-step--prev', 'pf-step--future');
+
+      if (num === currentStep) {
+        step.classList.add('pf-step--active');
+      } else if (num < currentStep) {
+        step.classList.add('pf-step--prev');
+      } else {
+        step.classList.add('pf-step--future');
+      }
+    }
+
+    // Animate container height
+    var activeStep = steps[currentStep - 1];
+    // Briefly make it relative for measurement
+    requestAnimationFrame(function () {
+      stepsContainer.style.height = activeStep.offsetHeight + 'px';
+    });
+
+    // Navigation buttons
+    btnBack.hidden = currentStep === 1;
+    btnNext.hidden = currentStep === totalSteps;
+    btnSubmit.hidden = currentStep !== totalSteps;
+
+    // Populate review on last step
+    if (currentStep === totalSteps) {
+      populateReview();
+    }
+  }
+
+  // ── Populate review step ──
+  function populateReview() {
+    var nameVal = getValue('pf-name');
+    var emailVal = getValue('pf-email');
+    var phoneVal = getValue('pf-phone');
+    var companyVal = getValue('pf-company');
+    var websiteVal = getValue('pf-website');
+    var socials = [
+      getValue('pf-social-google'),
+      getValue('pf-social-facebook'),
+      getValue('pf-social-instagram'),
+      getValue('pf-social-yelp')
+    ].filter(function(s) { return s; });
+    var serviceVal = getSelectedService();
+    var messageVal = getValue('pf-message');
+
+    setReview('pf-review-name', nameVal);
+    setReview('pf-review-email', emailVal);
+    setReview('pf-review-phone', phoneVal || '—');
+    setReview('pf-review-company', companyVal || '—');
+    setReview('pf-review-website', websiteVal || '—');
+    setReview('pf-review-socials', socials.length ? socials.join(', ') : '—');
+    setReview('pf-review-service', serviceLabels[serviceVal] || '—');
+    setReview('pf-review-message', messageVal || '—');
+  }
+
+  function getValue(id) {
+    var el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+  }
+
+  function getSelectedService() {
+    var checked = form.querySelector('input[name="pf-service"]:checked');
+    return checked ? checked.value : '';
+  }
+
+  function setReview(id, text) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = text;
+  }
+
+  // ── Focus first input on step ──
+  function focusCurrentInput() {
+    var activeStep = steps[currentStep - 1];
+    var input = activeStep.querySelector('input, textarea, select');
+    if (input) {
+      setTimeout(function () {
+        input.focus();
+      }, 100);
+    }
+  }
+
+  // ── Validation ──
+  function validateStep(stepNum) {
+    switch (stepNum) {
+      case 1: // Name
+        return validateRequired('pf-name', 'Please enter your name');
+      case 2: // Email
+        return validateEmail();
+      case 3: // Phone (optional)
+        return true;
+      case 4: // Company (optional)
+        return true;
+      case 5: // Website & Socials (optional)
+        return true;
+      case 6: // Service (required)
+        var checked = form.querySelector('input[name="pf-service"]:checked');
+        if (!checked) {
+          var pills = document.getElementById('pf-pills');
+          if (pills) { pills.classList.add('pf-shake'); setTimeout(function(){ pills.classList.remove('pf-shake'); }, 500); }
+          return false;
+        }
+        return true;
+      case 7: // Message (optional)
+        return true;
+      default:
+        return true;
+    }
+  }
+
+  function validateRequired(id, msg) {
+    var el = document.getElementById(id);
+    if (!el || !el.value.trim()) {
+      shakeInput(el);
+      return false;
+    }
+    clearError(el);
+    return true;
+  }
+
+  function validateEmail() {
+    var el = document.getElementById('pf-email');
+    if (!el) return false;
+    var val = el.value.trim();
+    // Basic email regex
+    var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!val || !re.test(val)) {
+      shakeInput(el);
+      return false;
+    }
+    clearError(el);
+    return true;
+  }
+
+  function shakeInput(el) {
+    if (!el) return;
+    el.classList.add('pf-input--error');
+    el.classList.remove('pf-shake');
+    // Force reflow
+    void el.offsetWidth;
+    el.classList.add('pf-shake');
+    el.addEventListener('animationend', function handler() {
+      el.classList.remove('pf-shake');
+      el.removeEventListener('animationend', handler);
+    });
+    el.focus();
+  }
+
+  function clearError(el) {
+    if (el) el.classList.remove('pf-input--error');
+  }
+
+  // ── Navigation ──
+  function goNext() {
+    if (currentStep >= totalSteps) return;
+    if (!validateStep(currentStep)) return;
+
+    currentStep++;
+    updateUI();
+    focusCurrentInput();
+  }
+
+  function goBack() {
+    if (currentStep <= 1) return;
+    currentStep--;
+    updateUI();
+    focusCurrentInput();
+  }
+
+  // ── Phone Formatting ──
+  function formatPhone(value) {
+    // Strip non-digits
+    var digits = value.replace(/\D/g, '');
+    // Limit to 10 digits
+    digits = digits.substring(0, 10);
+
+    if (digits.length === 0) return '';
+    if (digits.length <= 3) return '(' + digits;
+    if (digits.length <= 6) return '(' + digits.substring(0, 3) + ') ' + digits.substring(3);
+    return '(' + digits.substring(0, 3) + ') ' + digits.substring(3, 6) + '-' + digits.substring(6);
+  }
+
+  // ── Submit ──
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    var btn = btnSubmit;
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    statusEl.textContent = '';
+    statusEl.className = 'pf-form-status';
+
+    var payload = {
+      name: getValue('pf-name'),
+      email: getValue('pf-email'),
+      phone: getValue('pf-phone'),
+      company: getValue('pf-company'),
+      website: getValue('pf-website'),
+      socials: {
+        google: getValue('pf-social-google'),
+        facebook: getValue('pf-social-facebook'),
+        instagram: getValue('pf-social-instagram'),
+        yelp: getValue('pf-social-yelp')
+      },
+      service: getSelectedService(),
+      message: getValue('pf-message'),
+      screenResolution: window.screen.width + 'x' + window.screen.height
+    };
+
+    fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.success) {
+          showSuccess(data.message || 'Message sent! We\'ll be in touch soon.');
+        } else {
+          showError(data.message || 'Something went wrong. Please try again.');
+          btn.disabled = false;
+          btn.textContent = 'Submit →';
+        }
+      })
+      .catch(function () {
+        showError('Connection error. Please try again.');
+        btn.disabled = false;
+        btn.textContent = 'Submit →';
+      });
+  }
+
+  function showSuccess(msg) {
+    var reviewEl = document.getElementById('pf-review');
+    if (reviewEl) reviewEl.style.display = 'none';
+
+    // Replace step content with success message
+    statusEl.className = 'pf-form-status pf-form-status--success';
+    statusEl.innerHTML =
+      '<div class="pf-success-icon">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
+          '<polyline points="20 6 9 17 4 12"></polyline>' +
+        '</svg>' +
+      '</div>' +
+      '<div style="font-size:18px; font-weight:600; color:#F9FAFB; margin-bottom:6px;">Thank you!</div>' +
+      '<div style="font-size:14px; color:#9CA3AF;">' + escapeHtml(msg) + '</div>';
+
+    // Hide nav
+    btnBack.hidden = true;
+    btnSubmit.hidden = true;
+    btnNext.hidden = true;
+
+    // Update step title
+    var activeStep = steps[currentStep - 1];
+    var title = activeStep.querySelector('.pf-step-title');
+    var desc = activeStep.querySelector('.pf-step-desc');
+    if (title) title.textContent = 'All done!';
+    if (desc) desc.textContent = '';
+
+    // Re-measure height
+    requestAnimationFrame(function () {
+      stepsContainer.style.height = activeStep.offsetHeight + 'px';
+    });
+
+    // Reset after 3s
+    setTimeout(function () {
+      resetForm();
+    }, 3000);
+  }
+
+  function showError(msg) {
+    statusEl.className = 'pf-form-status pf-form-status--error';
+    statusEl.textContent = '❌ ' + msg;
+  }
+
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }
+
+  function resetForm() {
+    form.reset();
+    currentStep = 1;
+
+    // Reset review
+    var reviewEl = document.getElementById('pf-review');
+    if (reviewEl) reviewEl.style.display = '';
+
+    // Reset status
+    statusEl.textContent = '';
+    statusEl.className = 'pf-form-status';
+
+    // Reset step titles
+    var lastStep = steps[steps.length - 1];
+    if (lastStep) {
+      var title = lastStep.querySelector('.pf-step-title');
+      var desc = lastStep.querySelector('.pf-step-desc');
+      if (title) title.textContent = 'Almost there!';
+      if (desc) desc.textContent = 'Review your info';
+    }
+
+    // Reset submit button
+    btnSubmit.disabled = false;
+    btnSubmit.textContent = 'Submit →';
+
+    // Clear all error states
+    var errorInputs = form.querySelectorAll('.pf-input--error');
+    for (var i = 0; i < errorInputs.length; i++) {
+      errorInputs[i].classList.remove('pf-input--error');
+    }
+
+    updateUI();
+    focusCurrentInput();
+  }
+
+  // ── Event Bindings ──
+  function bindEvents() {
+    btnNext.addEventListener('click', goNext);
+    btnBack.addEventListener('click', goBack);
+    form.addEventListener('submit', handleSubmit);
+
+    // Enter key advances (except in textarea)
+    form.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        var tag = e.target.tagName.toLowerCase();
+        if (tag === 'textarea') return; // Allow enter in textarea
+        e.preventDefault();
+
+        if (currentStep < totalSteps) {
+          goNext();
+        } else {
+          // On review step, trigger submit
+          handleSubmit(e);
+        }
+      }
+    });
+
+    // Phone formatting
+    var phoneInput = document.getElementById('pf-phone');
+    if (phoneInput) {
+      phoneInput.addEventListener('input', function () {
+        var cursorPos = phoneInput.selectionStart;
+        var oldLen = phoneInput.value.length;
+        phoneInput.value = formatPhone(phoneInput.value);
+        var newLen = phoneInput.value.length;
+        // Adjust cursor position
+        var newCursor = cursorPos + (newLen - oldLen);
+        phoneInput.setSelectionRange(newCursor, newCursor);
+      });
+    }
+
+    // Clear error on input
+    var allInputs = form.querySelectorAll('.pf-input');
+    for (var i = 0; i < allInputs.length; i++) {
+      allInputs[i].addEventListener('input', function () {
+        this.classList.remove('pf-input--error');
+      });
+    }
+
+    // Service pill click auto-advance (small delay for visual feedback)
+    var pills = form.querySelectorAll('.pf-pill-radio');
+    for (var j = 0; j < pills.length; j++) {
+      pills[j].addEventListener('change', function () {
+        setTimeout(function () {
+          goNext();
+        }, 300);
+      });
+    }
+
+    // Resize observer for dynamic height
+    if (typeof ResizeObserver !== 'undefined') {
+      var ro = new ResizeObserver(function () {
+        var active = steps[currentStep - 1];
+        if (active && active.classList.contains('pf-step--active')) {
+          stepsContainer.style.height = active.offsetHeight + 'px';
+        }
+      });
+      for (var k = 0; k < steps.length; k++) {
+        ro.observe(steps[k]);
+      }
+    }
+  }
+
+  // ── Start ──
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>

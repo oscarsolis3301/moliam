@@ -67,8 +67,6 @@ CREATE TABLE IF NOT EXISTS submissions (
   message TEXT NOT NULL,
   user_agent TEXT,
   screen_resolution TEXT,
-  service TEXT,              -- Lead capture v2: Retainer/LSA/GBP/Website
-  budget_range TEXT,         -- Lead capture v2: Under-500/1000-2000/2000-plus
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
