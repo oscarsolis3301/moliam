@@ -1,5 +1,5 @@
 /**
- * MOLIAM Contact Form — CloudFlare Pages Function
+ * MOLIAM Contact Form — CloudFlare Pages Function (Production-Grade v2.1)
  * POST /api/contact
  *
  * Deps: D1 database bound as MOLIAM_DB in wrangler.toml
@@ -17,12 +17,24 @@ export async function onRequestPost(context) {
     return jsonResp(400, { error: true, message: "Invalid JSON body." });
   }
 
+  /* ─── XSS SAFETY: HTML Entity Escaping Helper ─── */
+  function escapeHTML(str) {
+    return String(str)
+       .replace(/&/g, '&amp;')
+       .replace(/</g, '&lt;')
+       .replace(/>/g, '&gt;')
+       .replace(/"/g, '&quot;')
+       .replace(/'/g, '&#39;');
+  }
+
   /* ─── FIELD EXTRACTION ─── */
-  const name = (data.name || "").trim();
+  const nameRaw = (data.name || "").trim();
+  const name = escapeHTML(nameRaw); // XSS-safe storage
   const email = (data.email || "").toLowerCase().trim();
   const phone = data.phone ? String(data.phone).replace(/[^\d()\-+\s]/g, "").trim() : null;
-  const company = data.company ? String(data.company).trim() : null;
-  const message = (data.message || "").trim();
+  const companyRaw = (data.company || "").trim();
+  const messageRaw = (data.message || "").trim();
+  const message = escapeHTML(messageRaw); // XSS-safe storage
   const service = (data.service || "").trim().toLowerCase();
   const budgetRange = (data.budget || "").trim().toLowerCase();
 
@@ -55,9 +67,9 @@ export async function onRequestPost(context) {
 
   // --- Validation ---
   const errors = [];
-  if (name.length < 2) errors.push("Name must be at least 2 characters.");
+  if (nameRaw.length < 2) errors.push("Name must be at least 2 characters.");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push("Valid email required.");
-  if (message.length < 10) errors.push("Message must be at least 10 characters.");
+  if (messageRaw.length < 10) errors.push("Message must be at least 10 characters.");
   if (errors.length) return jsonResp(400, { error: true, message: errors.join(" ") });
 
   // --- Rate limiting (5 per 6 min window per IP) ---
@@ -66,8 +78,8 @@ export async function onRequestPost(context) {
 
   try {
     const rl = await db.prepare(
-      "SELECT request_count, window_start FROM rate_limits WHERE hash_ip = ?"
-    ).bind(ipHash).first();
+       "SELECT request_count, window_start FROM rate_limits WHERE hash_ip = ?"
+     ).bind(ipHash).first();
 
     if (rl) {
       const windowAge = Date.now() - new Date(rl.window_start).getTime();
@@ -79,17 +91,17 @@ export async function onRequestPost(context) {
           });
         }
         await db.prepare(
-          "UPDATE rate_limits SET request_count = request_count + 1 WHERE hash_ip = ?"
-        ).bind(ipHash).run();
+           "UPDATE rate_limits SET request_count = request_count + 1 WHERE hash_ip = ?"
+         ).bind(ipHash).run();
       } else {
         await db.prepare(
-          "UPDATE rate_limits SET request_count = 1, window_start = datetime('now') WHERE hash_ip = ?"
-        ).bind(ipHash).run();
+           "UPDATE rate_limits SET request_count = 1, window_start = datetime('now') WHERE hash_ip = ?"
+         ).bind(ipHash).run();
       }
     } else {
       await db.prepare(
-        "INSERT INTO rate_limits (hash_ip, request_count, window_start, last_request_timestamp) VALUES (?, 1, datetime('now'), datetime('now'))"
-      ).bind(ipHash).run();
+         "INSERT INTO rate_limits (hash_ip, request_count, window_start, last_request_timestamp) VALUES (?, 1, datetime('now'), datetime('now'))"
+       ).bind(ipHash).run();
     }
 
     // --- Insert submission to D1 ---
@@ -100,13 +112,13 @@ export async function onRequestPost(context) {
     let sub;
     try {
       sub = await db.prepare(
-        "INSERT INTO submissions (name, email, phone, company, message, user_agent, screen_resolution, service, budget_range) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-      ).bind(name, email, phone, company, message, ua, screenRes, service, budgetRange).run();
+         "INSERT INTO submissions (name, email, phone, company, message, user_agent, screen_resolution, service, budget_range) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+       ).bind(name, email, phone, company, message, ua, screenRes, service, budgetRange).run();
     } catch (colErr) {
       // Fallback: original schema without service/budget_range columns
       sub = await db.prepare(
-        "INSERT INTO submissions (name, email, phone, company, message, user_agent, screen_resolution) VALUES (?, ?, ?, ?, ?, ?, ?)"
-      ).bind(name, email, phone, company, message, ua, screenRes).run();
+         "INSERT INTO submissions (name, email, phone, company, message, user_agent, screen_resolution) VALUES (?, ?, ?, ?, ?, ?, ?)"
+       ).bind(name, email, phone, company, message, ua, screenRes).run();
     }
 
     const subId = sub.meta.last_row_id;
@@ -114,25 +126,25 @@ export async function onRequestPost(context) {
     // --- Lead analytics (optional — table may not exist yet) ---
     try {
       await db.prepare(
-        "INSERT INTO lead_analytics (submission_id, service_interest, budget_range, score, score_category) VALUES (?, ?, ?, ?, ?)"
-      ).bind(subId, service, budgetRange, leadScore, leadScore >= 50 ? "hot" : leadScore >= 30 ? "warm" : "cold").run();
+         "INSERT INTO lead_analytics (submission_id, service_interest, budget_range, score, score_category) VALUES (?, ?, ?, ?, ?)"
+       ).bind(subId, service, budgetRange, leadScore, leadScore >= 50 ? "hot" : leadScore >= 30 ? "warm" : "cold").run();
     } catch (e) {
-      console.warn("lead_analytics not available:", e.message);
+      console.warn(JSON.stringify({ level: "warn", event: "lead_analytics_unavailable", submissionId: subId, error: e.message }));
     }
 
     // --- Lead record (optional — score column may not exist yet) ---
     try {
       await db.prepare(
-        "INSERT INTO leads (submission_id, status, score, created_at) VALUES (?, 'new', ?, datetime('now'))"
-      ).bind(subId, leadScore).run();
+         "INSERT INTO leads (submission_id, status, score, created_at) VALUES (?, 'new', ?, datetime('now'))"
+       ).bind(subId, leadScore).run();
     } catch (e) {
       // Fallback: insert without score column
       try {
         await db.prepare(
-          "INSERT INTO leads (submission_id, status, created_at) VALUES (?, 'new', datetime('now'))"
-        ).bind(subId).run();
+           "INSERT INTO leads (submission_id, status, created_at) VALUES (?, 'new', datetime('now'))"
+         ).bind(subId).run();
       } catch (e2) {
-        console.warn("leads insert failed:", e2.message);
+        console.warn(JSON.stringify({ level: "warn", event: "leads_insert_failed", submissionId: subId, error: e2.message }));
       }
     }
 
@@ -146,24 +158,24 @@ export async function onRequestPost(context) {
           body: JSON.stringify({
             username: "MOLIAM Contact",
             embeds: [{
-              title: "📩 New Lead — Score: " + leadScore,
+              title: `📩 New Lead — Score: ${leadScore}`,
               color: leadScore >= 60 ? 0xef4444 : leadScore >= 40 ? 0xf59e0b : 0x10b981,
               fields: [
-                { name: "Name", value: name, inline: true },
-                { name: "Email", value: email, inline: true },
-                { name: "Phone", value: phone || "—", inline: true },
-                { name: "Company", value: company || "—", inline: true },
-                { name: "Service Interest", value: service || "Not specified" },
-                { name: "Budget Range", value: budgetRange || "Not specified" },
-                { name: "Lead Score", value: leadScore + "/100 " + (leadScore >= 60 ? "(HOT)" : leadScore >= 40 ? "(WARM)" : "(COLD)"), inline: true },
-                { name: "Message", value: message.slice(0, 1024) },
-              ],
+                 { name: "Name", value: escapeHTML(nameRaw), inline: true },
+                 { name: "Email", value: email, inline: true },
+                 { name: "Phone", value: phone || "—", inline: true },
+                 { name: "Company", value: escapeHTML(companyRaw || ""), inline: true },
+                 { name: "Service Interest", value: service || "Not specified" },
+                 { name: "Budget Range", value: budgetRange || "Not specified" },
+                 { name: "Lead Score", value: `${leadScore}/100 ${leadScore >= 60 ? "(HOT)" : leadScore >= 40 ? "(WARM)" : "(COLD)")`, inline: true },
+                 { name: "Message", value: escapeHTML(messageRaw.slice(0, 1024)), inline: false },
+               ],
               timestamp: new Date().toISOString(),
             }],
           }),
         });
       } catch (whErr) {
-        console.warn("Discord webhook failed:", whErr.message);
+        console.warn(JSON.stringify({ level: "warn", event: "webhook_failed", submissionId: subId, leadScore, error: whErr.message }));
       }
     }
 
@@ -176,7 +188,7 @@ export async function onRequestPost(context) {
     });
 
   } catch (err) {
-    console.error("D1 error:", err);
+    console.error(JSON.stringify({ level: "error", event: "d1_error", message: err.message }));
     return jsonResp(500, {
       error: true,
       message: "Something went wrong. Please email us directly.",
