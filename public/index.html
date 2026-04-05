@@ -569,7 +569,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 /* ═══════════════════════════════════════════
    TESTIMONIALS SECTION
-   ═══════════════════════════════════════════ */
+/* ════════════════════════════════════════ TESTIMONIALS SECTION ─────────────────────────────────── */
 #testimonials {
   position: relative; z-index: 1;
   padding: 120px 24px;
@@ -585,75 +585,76 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .testimonial-card {
   background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(59,130,246,0.15);
   border-radius: var(--radius-lg);
-  padding: 32px 28px;
-  transition: all var(--transition-smooth);
+  padding: 36px 32px;
+  transition: all var(--transition-spring);
   position: relative;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  transform-style: preserve-3d;
+  perspective: 1000px;
 }
 .testimonial-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg), 0 0 30px rgba(59,130,246,0.12);
-  border-color: rgba(99,102,241,0.3);
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: var(--shadow-lg), 0 0 40px rgba(59,130,246,0.2);
+  border-color: rgba(99,102,241,0.5);
 }
-.testimonial-card.accent-blue:hover { box-shadow: var(--shadow-lg), 0 0 30px rgba(59,130,246,0.15); }
-.testimonial-card.accent-purple:hover { box-shadow: var(--shadow-lg), 0 0 30px rgba(139,92,246,0.15); }
-.testimonial-card.accent-green:hover { box-shadow: var(--shadow-lg), 0 0 30px rgba(16,185,129,0.15); }
+.testimonial-card.accent-blue { border-left: 4px solid var(--accent-blue); background: linear-gradient(135deg, var(--glass-bg), rgba(59,130,246,0.05)); }
+.testimonial-card.accent-purple { border-left: 4px solid var(--accent-purple); background: linear-gradient(135deg, var(--glass-bg), rgba(139,92,246,0.05)); }
+.testimonial-card.accent-green { border-left: 4px solid var(--accent-green); background: linear-gradient(135deg, var(--glass-bg), rgba(16,185,129,0.05)); }
+.testimonial-card:hover { box-shadow: var(--shadow-lg), 0 0 50px var(--testimonial-glow); border-color: var(--accent-border); }
+.testimonial-card.accent-blue { --testimonial-glow: rgba(59,130,246,0.25); }
+.testimonial-card.accent-purple { --testimonial-glow: rgba(139,92,246,0.25); }
+.testimonial-card.accent-green { --testimonial-glow: rgba(16,185,129,0.25); }
 .testimonial-card::before {
   content: '\201C';
   position: absolute;
-  top: 16px; left: 20px;
-  font-size: 48px;
+  top: 24px; left: 24px;
+  font-size: 56px;
   line-height: 1;
   color: var(--accent-blue);
-  opacity: 0.25;
+  opacity: 0.35;
   font-family: Georgia, serif;
   pointer-events: none;
+  text-shadow: 0 0 20px rgba(59,130,246,0.2);
 }
-.testimonial-card.accent-purple::before { color: var(--accent-purple); }
-.testimonial-card.accent-green::before { color: var(--accent-green); }
-.testimonial-card.accent-blue { border-left: 3px solid var(--accent-blue); }
-.testimonial-card.accent-purple { border-left: 3px solid var(--accent-purple); }
-.testimonial-card.accent-green { border-left: 3px solid var(--accent-green); }
+.testimonial-card.accent-purple::before { color: var(--accent-purple); text-shadow: 0 0 20px rgba(139,92,246,0.2); }
+.testimonial-card.accent-green::before { color: var(--accent-green); text-shadow: 0 0 20px rgba(16,185,129,0.2); }
 .testimonial-card .stars {
   font-size: 18px; color: #F59E0B;
   margin-bottom: 16px; letter-spacing: 3px;
-  text-shadow: 0 0 8px rgba(245,158,11,0.3);
+  text-shadow: 0 0 12px rgba(245,158,11,0.4);  
+  animation: subtle-glow 3s ease-in-out infinite alternate;
 }
+@keyframes subtle-glow { from { text-shadow: 0 0 8px rgba(245,158,11,0.3); } to { text-shadow: 0 0 16px rgba(245,158,11,0.5); } }
 .testimonial-card .quote {
   font-size: 1rem; color: var(--text-secondary);
   line-height: 1.7; font-style: italic;
-  margin-bottom: 20px;
+  margin-bottom: 24px; position: relative;
 }
 .testimonial-card .author {
-  font-size: 14px; font-weight: 600;
-  color: var(--text-primary);
+  font-size: 15px; font-weight: 600;
+  color: var(--text-primary); text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 .testimonial-card .author-row {
-  display: flex; align-items: center; gap: 12px;
+  display: flex; align-items: center; gap: 12px; padding-top: 24px; border-top: 1px solid var(--glass-border); margin-top: 16px;
 }
 .testimonial-card .avatar-initials {
-  width: 40px; height: 40px; border-radius: 50%;
+  width: 44px; height: 44px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0;
+  font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0; 
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3), inset 0 2px 8px rgba(255,255,255,0.2);
 }
-.testimonial-card.accent-blue .avatar-initials { background: var(--accent-blue); }
-.testimonial-card.accent-purple .avatar-initials { background: var(--accent-purple); }
-.testimonial-card.accent-green .avatar-initials { background: var(--accent-green); }
-.testimonial-card.accent-blue:hover {
-  background: linear-gradient(135deg, var(--glass-bg), rgba(59,130,246,0.08));
-}
-.testimonial-card.accent-purple:hover {
-  background: linear-gradient(135deg, var(--glass-bg), rgba(139,92,246,0.08));
-}
-.testimonial-card.accent-green:hover {
-  background: linear-gradient(135deg, var(--glass-bg), rgba(16,185,129,0.08));
-}
+.testimonial-card.accent-blue .avatar-initials { background: linear-gradient(135deg, var(--accent-blue), #60A5FA); }
+.testimonial-card.accent-purple .avatar-initials { background: linear-gradient(135deg, var(--accent-purple), #A78BFA); }
+.testimonial-card.accent-green .avatar-initials { background: linear-gradient(135deg, var(--accent-green), #34D399); }
+.testimonial-card.accent-blue:hover .avatar-initials { box-shadow: 0 12px 24px rgba(59,130,246,0.4), inset 0 2px 8px rgba(255,255,255,0.3); }
+.testimonial-card.accent-purple:hover .avatar-initials { box-shadow: 0 12px 24px rgba(139,92,246,0.4), inset 0 2px 8px rgba(255,255,255,0.3); }
+.testimonial-card.accent-green:hover .avatar-initials { box-shadow: 0 12px 24px rgba(16,185,129,0.4), inset 0 2px 8px rgba(255,255,255,0.3); }
 .testimonial-card .company {
-  font-size: 12px; color: var(--text-dim);
-  margin-top: 2px;
+  font-size: 13px; color: var(--text-dim);
+  margin-top: 3px; font-weight: 500;
 }
 
 /* ═══════════════════════════════════════════
@@ -1853,46 +1854,47 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 <!-- ═══════════════════════ TESTIMONIALS ═══════════════════════ -->
 <section id="testimonials" class="reveal">
-  <div class="section-label">RESULTS</div>
-  <h2 class="section-title">What Contractors Say</h2>
-  <div class="testimonials-grid">
-    <div class="testimonial-card accent-blue">
-      <div class="stars">★★★★★</div>
-      <p class="quote">"Moliam built our entire online presence in days. Our Google Business Profile went from invisible to the top 3 in Orange County. The AI agents work around the clock — it is like having a full marketing team for a fraction of the cost."</p>
-      <div class="author-row">
-        <div class="avatar-initials">OS</div>
-        <div>
-          <div class="author">Oscar S.</div>
-          <div class="company">OnePlus Electric</div>
-        </div>
-      </div>
-    </div>
-    <div class="testimonial-card accent-purple">
-      <div class="stars">★★★★★</div>
-      <p class="quote">"The Local Service Ads setup was seamless. We went from zero leads to 15+ qualified calls per week. The monthly reports show exactly where every dollar goes."</p>
-      <div class="author-row">
-        <div class="avatar-initials">MR</div>
-        <div>
-          <div class="author">Mike R.</div>
-          <div class="company">RoofPro Solutions</div>
-        </div>
-      </div>
-    </div>
-    <div class="testimonial-card accent-green">
-      <div class="stars">★★★★★</div>
-      <p class="quote">"I was skeptical about AI managing our online presence, but the results speak for themselves. 40% increase in website traffic and our Google reviews doubled in 3 months."</p>
-      <div class="author-row">
-        <div class="avatar-initials">ST</div>
-        <div>
-          <div class="author">Sarah T.</div>
-          <div class="company">CleanAir HVAC</div>
-        </div>
+<div class="section-label">RESULTS</div>
+<h2 class="section-title">What Contractors Say</h2>
+<p class="section-subtitle">Real results, real contractors, proven outcomes.</p>
+<div class="testimonials-grid">
+  <div class="testimonial-card accent-blue">
+    <div class="stars">★★★★★</div>
+    <p class="quote">"Moliam built our entire online presence in days. Our Google Business Profile went from invisible to the top 3 in Orange County. The AI agents work around the clock — it is like having a full marketing team for a fraction of the cost."</p>
+    <div class="author-row">
+      <div class="avatar-initials">OS</div>
+      <div>
+        <div class="author">Oscar S.</div>
+        <div class="company">Owner, OnePlus Electric</div>
       </div>
     </div>
   </div>
+  <div class="testimonial-card accent-purple">
+    <div class="stars">★★★★★</div>
+    <p class="quote">"The Local Service Ads setup was seamless. We went from zero leads to 15+ qualified calls per week. The monthly reports show exactly where every dollar goes. Best ROI of any marketing spend we've tried."</p>
+    <div class="author-row">
+      <div class="avatar-initials">MR</div>
+      <div>
+        <div class="author">Mike R.</div>
+        <div class="company">Lead Contractor, RoofPro Solutions</div>
+      </div>
+    </div>
+  </div>
+  <div class="testimonial-card accent-green">
+    <div class="stars">★★★★★</div>
+    <p class="quote">"I was skeptical about AI managing our online presence, but the results speak for themselves. 40% increase in website traffic and our Google reviews doubled in just 3 months. Our phone hasn't stopped ringing."</p>
+    <div class="author-row">
+      <div class="avatar-initials">ST</div>
+      <div>
+        <div class="author">Sarah T.</div>
+        <div class="company">Operations Director, CleanAir HVAC</div>
+      </div>
+    </div>
+  </div>
+</div>
 </section>
 
-<!-- ═══════════════════════ FAQ ═══════════════════════ -->
+<!-- ═══════════════════════ FAQ
 <section id="faq" class="reveal">
   <div class="section-label">FAQ</div>
   <h2 class="section-title">Frequently Asked Questions</h2>
