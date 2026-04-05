@@ -1,8 +1,12 @@
-.DS_Store
-node_modules/
-*.log
-*.tmp
-.next/
-*.new
-.wrangler/
 
+.DS_Store
+.next/
+.wrangler/
+*.log
+*.new
+*.tmp
+MISSION-BOARD-*.md
+MISSION-BOARD-MAVRICK.md
+MISSION-BOARD.md
+node_modules/
+TASK-BOARD*.md
