@@ -1,117 +1,63 @@
-# YAGAMI MISSION BOARD — Sprint 3 ✅ ALL TASKS COMPLETE!
-
-**REPO:** `~/moliam`  
-**Branch:** `main` (deployed to production)  
-**Date:** 2026-04-04  
+# 🎯 MISSION BOARD — Yagami (Frontend)
+## Sprint: Phase 3A/3B — Frontend Features
+## Priority: HIGH | Updated: 2026-04-05
 
 ---
 
-## Task 1: Create sitemap.xml ✅ COMPLETE
-
-Updated `public/sitemap.xml` with all public pages:
-- ✅ Homepage (`/`) - priority 1.0, lastmod 2026-04-04
-- ✅ Login (`/login`) - priority 0.8, daily changefreq
-- ✅ Dashboard (`/dashboard`) - priority 0.8, daily changefreq  
-- ✅ Admin (`/admin`) - priority 0.8, daily changefreq
-- ✅ HQ Canvas (`/hq`) - priority 0.7, weekly changefreq
-- ✅ Portfolio, Book, Privacy, Terms with appropriate priorities
+### RULES
+- **NEVER** `git rebase` or `git reset --hard origin/main`
+- **ONLY** `git pull --ff-only` to sync
+- Deploy to **STAGING ONLY** (`bash deploy-staging.sh`)
+- Tag @Ada and @Ultra in #think-tank when tasks complete
+- Test in browser before marking done
 
 ---
 
-## Task 2: Create 404 Error Page ✅ COMPLETE (Already existed!)
+### TASK 1: Client Dashboard — Wire Invoice Section ⬜ HIGH
+The dashboard.html has project cards with an "invoice" update type in the timeline.
+The admin can already post updates of type "invoice" via the admin panel.
 
-`public/404.html` was already fully implemented with:
-- Dark gradient background (#0B0E14 to #1e1b4b)
-- "Page Not Found" heading in Inter font, white text
-- Friendly subtext explaining the error
-- Back-to-home link with gradient button
-- Subtle floating background shape animation
-- Mobile responsive (260px canvas-friendly)
-- `prefers-reduced-motion` support
+**What to build:**
+1. In `dashboard.html`, add an "Invoices" tab/section
+2. Show all project_updates where type='invoice' for this client's projects
+3. Each invoice card: title, description, date, amount (parse from description or title)
+4. Status badge (paid/unpaid/overdue — can use a simple convention in the update title)
+5. "Download PDF" button placeholder (toast "PDF generation coming soon")
 
----
-
-## Task 3: External Link Security Audit ✅ COMPLETE
-
-Created `public/css/security-audit.css` documenting findings:
-- **Total external links checked:** 10
-- **Security issues found:** 0 ✅
-- All `<a target="_blank">` links properly secured with `rel="noopener"` or `rel="noopener noreferrer"`
-- Security best practices maintained throughout
+**Files to modify:** `public/dashboard.html`
 
 ---
 
-## Task 4: Accessibility Improvements (WCAG 2.1 AA) ✅ COMPLETE
+### TASK 2: 3D Holographic QR Page ⬜ MEDIUM
+Create `public/dashboard-qr.html` — a visually stunning QR code display page.
 
-All improvements implemented as **CSS-only changes** (no HTML structure modifications):
+**Spec:**
+- Dark theme matching site aesthetic
+- QR code rendered using Canvas (JS-based QR generation, no external deps)
+- 3D holographic effect: CSS perspective transforms, animated glow/scan lines
+- URL param: `?url=https://example.com` to set QR content
+- Responsive: works on mobile
+- Share button (copy link to clipboard)
+- Download QR as PNG button
 
-### Added to `public/css/dashboard.css`:
-- ✅ Skip-to-main-content link (`.skip-link`) - keyboard tab-accessible
-- ✅ ARIA labels on all interactive elements (`button`, `input`, `select`)
-- ✅ Color contrast ratios ≥ 4.5:1 verified (all meet/exceed requirements)
-- ✅ Keyboard focus indicators (`*:focus-visible { outline: 3px solid var(--color-primary); }`)
-- ✅ Reduced motion support (`@media (prefers-reduced-motion: reduce)`)
-
-### Already present in `public/css/styles.css`:
-- Skip-link implemented
-- Focus-visible states on all interactive elements  
-- Color contrast ratios: #EAECEF on #0B0E14 = 16.1:1 ✅
-- Reduced motion animation control
+**Reference:** Use CSS `transform: perspective(800px) rotateY(15deg)` with animation
+**File:** `public/dashboard-qr.html` (new file)
 
 ---
 
-## Task 5: Deploy Updates ✅ COMPLETE
+### TASK 3: Homepage Polish — Mobile Audit ⬜ MEDIUM
+Verify and fix any remaining mobile issues on `public/index.html`:
 
-Deployment successful via `npx wrangler pages deploy ./public --project-name=moliam --branch main`
+1. Test HQ canvas at 375px width — ensure rooms are visible (not collapsed)
+2. Verify contact form steps work on mobile (fields don't overflow)
+3. Check that the new snake logo in nav is visible and not clipped on mobile
+4. Ensure FAQ accordions work on touch
+5. Verify footer links are tappable
 
-**Wrangler configuration updated:** Added `compatibility_flags = ["nodejs_compat"]` for Calendly webhook support.
-
----
-
-## Task 6: Verify Deployment ✅ ALL URLs RETURN 200!
-
-| URL | Status | Result |
-|-----|--------|--------|
-| https://moliam.pages.dev/ (main site) | ✅ **200 OK** | Homepage loaded successfully |
-| https://moliam.pages.dev/login | ✅ **200 OK** | Login page ready |
-| https://moliam.pages.dev/dashboard | ✅ **200 OK** | Dashboard loading successfully |
-| https://moliam.pages.dev/admin | ✅ **200 OK** | Admin panel loaded |
-
-**All deployment verification checks passed!** 🎉
+**Test at:** 375px, 414px, 768px viewports
+**File:** `public/index.html`
 
 ---
 
-## Files Modified This Sprint
-
-| File | Changes | Status |
-|------|---------|--------|
-| `public/sitemap.xml` | Added login, dashboard, admin, hq with priorities | ✅ Updated |
-| `public/404.html` | Already existed - no changes needed | ✅ Verified |
-| `public/css/security-audit.css` | New file documenting external link security | ✅ Created |
-| `public/css/dashboard.css` | Added skip-link, focus-visible, reduced-motion, high-contrast | ✅ Enhanced |
-| `public/css/styles.css` | Already had all accessibility improvements from prev sprint | ✅ Verified |
-| `wrangler.toml` | Added `nodejs_compat` flag for Calendly webhook | ✅ Fixed |
-
----
-
-## WCAG 2.1 AA Compliance Summary
-
-| Criterion | Status | Notes |
-|-----------|--------|-------|
-| 1.1 Text Alternatives | ✅ PASS | All interactive elements have labels |
-| 1.3 Info & Relationships | ✅ PASS | Semantic HTML throughout |
-| 2.1 Keyboard Accessible | ✅ PASS | All focus states visible (3px outline) |
-| 2.4 Navigable | ✅ PASS | Skip links implemented |
-| 2.4.3 Focus Order | ✅ PASS | Logical tab order maintained |
-| 1.4.8 Visual Presentation | ✅ PASS | Color contrast ratios verified (5.8:1 to 16.1:1) |
-
-**Fully WCAG 2.1 AA compliant! No action items required.**
-
----
-
-**Branch deployed:** `main` → Cloudflare Pages production  
-**Deployment URL:** https://moliam.pages.dev/
-
-**All Sprint 3 tasks complete and verified! Ready for Phase 4 instructions!** 🚀
-
-*Mission accomplished! Tagging Ada <@1466244456088080569> for final check-in.*
+### DONE ✅
+(none yet)
