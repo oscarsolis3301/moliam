@@ -49,9 +49,10 @@
   }
 }
 </script>
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="apple-touch-icon" href="/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -135,11 +136,19 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 #hud .left { display: flex; align-items: center; gap: 12px; }
 #hud .logo {
+  display: flex; align-items: center; gap: 8px;
   font-size: 15px; font-weight: 800;
   letter-spacing: 0.12em;
   background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
+  text-decoration: none;
+}
+#hud .logo-icon {
+  width: 28px; height: 28px;
+  object-fit: contain;
+  -webkit-text-fill-color: initial;
+  filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.4));
 }
 #hud .status-pill {
   display: flex; align-items: center; gap: 6px;
@@ -1140,11 +1149,18 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   flex-wrap: wrap; gap: 24px;
 }
 .footer-brand {
+  display: flex; align-items: center; gap: 8px;
   font-size: 14px; font-weight: 800;
   letter-spacing: 0.1em;
   background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+.footer-brand .logo-icon {
+  width: 24px; height: 24px;
+  object-fit: contain;
+  -webkit-text-fill-color: initial;
+  filter: drop-shadow(0 0 4px rgba(139, 92, 246, 0.3));
 }
 .footer-copy { font-size: 13px; color: var(--text-dim); }
 .footer-ai {
@@ -1598,7 +1614,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 <!-- ═══════════════════════ HUD NAV ═══════════════════════ -->
 <header id="hud">
   <div class="left">
-    <span class="logo">Moliam</span>
+    <a href="#" class="logo"><img src="/logo.png" alt="Moliam" class="logo-icon">Moliam</a>
     <span class="status-pill"><span class="dot"></span> Systems Online</span>
   </div>
   <div class="center">
@@ -2164,7 +2180,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 <!-- ═══════════════════════ FOOTER ═══════════════════════ -->
 <footer id="footer">
   <div class="footer-inner">
-    <span class="footer-brand">Moliam</span>
+    <span class="footer-brand"><img src="/logo.png" alt="Moliam" class="logo-icon">Moliam</span>
     <span class="footer-copy">&copy; 2026 Moliam. All rights reserved. Orange County, CA.</span>
     <span class="footer-ai">Powered by AI</span>
     <div class="footer-links">
