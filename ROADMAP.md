@@ -34,17 +34,17 @@ Single source of truth per client: lead → booking → onboarding → communica
 | Booking API (CRUD, confirm/cancel/reschedule) | ✅ Done | Agents |
 | Calendly webhook receiver (HMAC verified) | ✅ Done | Agents |
 | Pre-qualification scoring API | ✅ Done | Agents |
-| QR Code API (`/api/qr`) — SVG generator | ❌ Not started | Mavrick |
+| QR Code API (`/api/qr`) — SVG generator | ✅ Done | Ada |
 | 3D Holographic QR page | ❌ In progress | Yagami |
-| Embedded Calendly (inline widget) | ❌ Not started | Mavrick |
+| Embedded Calendly (inline widget) | ✅ Done | Pre-sprint |
 
 ### 3B — Unified Client Portal (~30% done)
 | Item | Status | Owner |
 |------|--------|-------|
 | Client dashboard (project view, stats, timeline) | ✅ Done | Agents |
 | Messaging API (GET/POST, Discord webhook) | ✅ Done | Agents |
-| Messaging UI in dashboard | ⬜ In progress | Mavrick |
-| Invoice section in dashboard | ⬜ Queued | Yagami |
+| Messaging UI in dashboard | ✅ Done | Ada/Mavrick |
+| Invoice section in dashboard | ⬜ In progress | Mavrick |
 | Unified contact record model | ❌ Not started | — |
 | Invoice generation system | ❌ Not started | — |
 | Per-client booking history on timeline | ❌ Not started | — |
@@ -75,6 +75,6 @@ Single source of truth per client: lead → booking → onboarding → communica
 | Agent | Current Task | Status |
 |-------|-------------|--------|
 | **Ada** | Orchestration, auth system, production deploys | ✅ Active |
-| **Mavrick** | Dashboard messaging UI (Task 1) | 🔄 Working |
+| **Mavrick** | Invoice section + health widget (Task 1-2) | 🔄 Working |
 | **Yagami** | 3D QR page (Task 2) | 🔄 Working |
 | **Ultra** | Available for complex features | ⏸ Standby |
