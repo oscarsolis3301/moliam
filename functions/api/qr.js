@@ -4,63 +4,64 @@
  * No npm deps. Byte-mode encoding, EC level M, versions 1-10.
  */
 
-export default {
-  async fetch(request, env) {
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders() });
-    }
+// CF Pages Functions use onRequest* exports, not export default { fetch }
+export async function onRequestGet(context) {
+  const { request, env } = context;
 
-    const url = new URL(request.url);
-    const target = url.searchParams.get('url');
-    if (!target || !target.trim()) {
-      return json400('Missing required parameter: url');
-    }
-
-    // Validate size (128-1024)
-    let size = parseInt(url.searchParams.get('size')) || 256;
-    size = Math.max(128, Math.min(1024, size));
-
-    // Validate + normalize color
-    let color = (url.searchParams.get('color') || '3B82F6').replace(/^#/, '').toLowerCase();
-    if (/^[0-9a-f]{3}$/.test(color)) {
-      color = color[0] + color[0] + color[1] + color[1] + color[2] + color[2];
-    }
-    if (!/^[0-9a-f]{6}$/.test(color)) {
-      return json400('Invalid color. Use hex format: 3B82F6 or #3bf');
-    }
-
-    // Rate limit: 30 req/min per IP via KV (graceful if KV not bound)
-    if (env.RATE_LIMIT) {
-      const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
-      const key = `qr:${ip}`;
-      try {
-        const val = parseInt(await env.RATE_LIMIT.get(key)) || 0;
-        if (val >= 30) {
-          return new Response(JSON.stringify({ error: 'Rate limited. 30 req/min max.', retryAfter: 60 }), {
-            status: 429, headers: { ...corsHeaders(), 'Content-Type': 'application/json', 'Retry-After': '60' }
-          });
-        }
-        await env.RATE_LIMIT.put(key, String(val + 1), { expirationTtl: 60 });
-      } catch (_) { /* KV error — don't block the request */ }
-    }
-
-    try {
-      const modules = encode(target.trim());
-      const svg = toSVG(modules, size, '#' + color);
-      return new Response(svg, {
-        headers: {
-          ...corsHeaders(),
-          'Content-Type': 'image/svg+xml',
-          'Cache-Control': 'public, max-age=604800, immutable',
-        }
-      });
-    } catch (e) {
-      return new Response(JSON.stringify({ error: 'QR generation failed', detail: e.message }), {
-        status: 500, headers: { ...corsHeaders(), 'Content-Type': 'application/json' }
-      });
-    }
+  const url = new URL(request.url);
+  const target = url.searchParams.get('url');
+  if (!target || !target.trim()) {
+    return json400('Missing required parameter: url');
   }
-};
+
+  // Validate size (128-1024)
+  let size = parseInt(url.searchParams.get('size')) || 256;
+  size = Math.max(128, Math.min(1024, size));
+
+  // Validate + normalize color
+  let color = (url.searchParams.get('color') || '3B82F6').replace(/^#/, '').toLowerCase();
+  if (/^[0-9a-f]{3}$/.test(color)) {
+    color = color[0] + color[0] + color[1] + color[1] + color[2] + color[2];
+  }
+  if (!/^[0-9a-f]{6}$/.test(color)) {
+    return json400('Invalid color. Use hex format: 3B82F6 or #3bf');
+  }
+
+  // Rate limit: 30 req/min per IP via KV (graceful if KV not bound)
+  if (env.RATE_LIMIT) {
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const key = `qr:${ip}`;
+    try {
+      const val = parseInt(await env.RATE_LIMIT.get(key)) || 0;
+      if (val >= 30) {
+        return new Response(JSON.stringify({ error: 'Rate limited. 30 req/min max.', retryAfter: 60 }), {
+          status: 429, headers: { ...corsHeaders(), 'Content-Type': 'application/json', 'Retry-After': '60' }
+        });
+      }
+      await env.RATE_LIMIT.put(key, String(val + 1), { expirationTtl: 60 });
+    } catch (_) { /* KV error — don't block the request */ }
+  }
+
+  try {
+    const modules = encode(target.trim());
+    const svg = toSVG(modules, size, '#' + color);
+    return new Response(svg, {
+      headers: {
+        ...corsHeaders(),
+        'Content-Type': 'image/svg+xml',
+        'Cache-Control': 'public, max-age=604800, immutable',
+      }
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: 'QR generation failed', detail: e.message }), {
+      status: 500, headers: { ...corsHeaders(), 'Content-Type': 'application/json' }
+    });
+  }
+}
+
+export async function onRequestOptions() {
+  return new Response(null, { headers: corsHeaders() });
+}
 
 function corsHeaders() {
   return { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,OPTIONS' };
