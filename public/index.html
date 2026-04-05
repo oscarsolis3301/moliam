@@ -270,6 +270,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   color: white; font-size: 15px; font-weight: 600;
   transition: all var(--transition-smooth);
   box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+  min-height: 44px; min-width: 44px; /* WCAG 2.1 AA - Minimum tap target size */
 }
 .btn-primary:hover {
   transform: translateY(-2px);
@@ -283,11 +284,13 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   color: var(--text-primary); font-size: 15px; font-weight: 500;
   transition: all var(--transition-smooth);
   backdrop-filter: blur(10px);
+  min-height: 44px; min-width: 44px; /* WCAG 2.1 AA - Minimum tap target size */
 }
 .btn-secondary:hover {
   background: rgba(255,255,255,0.08);
   transform: translateY(-2px);
 }
+
 .scroll-indicator {
   position: absolute; bottom: 32px;
   display: flex; flex-direction: column;
@@ -1685,22 +1688,21 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     all powered by AI agents that work 24/7. Built for Orange County contractors 
     who want to dominate local search.
   </p>
-  <div class="cta-group">
-    <a href="https://calendly.com/visualark/demo" target="_blank" rel="noopener" class="btn-primary">
-      <span>Book a Free Demo</span>
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </a>
-    <a href="#services" class="btn-secondary">See Our Work</a>
-  </div>
-  <div class="scroll-indicator">
-    <span>Scroll to explore</span>
-    <div class="chevron"></div>
-  </div>
-</section>
+<div class="cta-group">
+     <a href="/book" target="_blank" rel="noopener" class="btn-primary" aria-label="Book your free demo with Moliam - Schedule a call to get started">
+       <span>Book Your Free Demo</span>
+       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+     </a>
+     <a href="#services" class="btn-secondary" aria-label="View our portfolio of work">See Our Work</a>
+   </div>
+   <div class="scroll-indicator">
+     <span>Scroll to explore</span>
+     <div class="chevron"></div>
+   </div>
+   </section>
 
-<!-- ═══════════════════════ STATS BAR ═══════════════════════ -->
-<div class="reveal" style="display:flex; justify-content:center; gap:48px; flex-wrap:wrap; padding:32px 24px; background:rgba(17,24,39,0.5); border-top:1px solid rgba(255,255,255,0.05); border-bottom:1px solid rgba(255,255,255,0.05);">
-  <div style="text-align:center;"><div style="font-size:2rem; font-weight:800; color:#3B82F6;">50+</div><div style="font-size:0.7rem; color:#6B7280; text-transform:uppercase; letter-spacing:0.08em; margin-top:4px;">Clients Served</div></div>
+<!-- ═══════════════════════ HQ VISUALIZATION ═══════════════════════ -->
+<section id="hq-section">
   <div style="text-align:center;"><div style="font-size:2rem; font-weight:800; color:#10B981;">5.0★</div><div style="font-size:0.7rem; color:#6B7280; text-transform:uppercase; letter-spacing:0.08em; margin-top:4px;">Google Rating</div></div>
   <div style="text-align:center;"><div style="font-size:2rem; font-weight:800; color:#8B5CF6;">72hr</div><div style="font-size:0.7rem; color:#6B7280; text-transform:uppercase; letter-spacing:0.08em; margin-top:4px;">Avg Delivery</div></div>
   <div style="text-align:center;"><div style="font-size:2rem; font-weight:800; color:#F59E0B;">24/7</div><div style="font-size:0.7rem; color:#6B7280; text-transform:uppercase; letter-spacing:0.08em; margin-top:4px;">AI Operations</div></div>
@@ -2174,23 +2176,23 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
         <button type="submit" id="pf-submit" class="pf-nav-btn pf-nav-submit" aria-label="Submit form">Submit →</button>
       </div>
     </form>
-    <p style="font-size:12px; color:var(--text-dim, #6B7280); margin-top:16px; text-align:center;">
-      Or skip the form — <a href="https://calendly.com/visualark/demo" target="_blank" rel="noopener" style="color:var(--accent-blue, #3B82F6); text-decoration:underline;">book a free 15-min demo call</a>
-    </p>
+<p style="font-size:12px; color:var(--text-dim, #6B7280); margin-top:16px; text-align:center;">
+       Or skip the form — <a href="/book" target="_blank" rel="noopener" style="color:var(--accent-blue, #3B82F6); text-decoration:underline;" aria-label="Book a free 15-minute demo call">Book a Free 15-Min Demo Call</a>
+      </p>
   </div>
 </section>
 <!-- ═══════════════════════ CTA BANNER ═══════════════════════ -->
 <section class="reveal" style="padding:80px 24px; text-align:center; background:linear-gradient(135deg, rgba(59,130,246,0.08), rgba(139,92,246,0.08)); border-top:1px solid rgba(255,255,255,0.05);">
-  <h2 style="font-size:clamp(1.8rem, 3vw, 2.4rem); font-weight:800; margin-bottom:12px;">Ready to Grow Your Business?</h2>
-  <p style="color:#9CA3AF; margin-bottom:32px; max-width:520px; margin-left:auto; margin-right:auto; line-height:1.6;">Join 50+ Orange County contractors already using Moliam to dominate local search. Book a free demo — no commitment, no pressure.</p>
-  <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
-    <a href="https://calendly.com/visualark/demo" target="_blank" rel="noopener" class="btn-primary" style="display:inline-flex;">
-      <span>Book Your Free Demo</span>
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </a>
-    <a href="#contact" class="btn-secondary" style="display:inline-flex;">Or Send a Message</a>
-  </div>
-</section>
+         <h2 style="font-size:clamp(1.8rem, 3vw, 2.4rem); font-weight:800; margin-bottom:12px;">Ready to Grow Your Business?</h2>
+         <p style="color:#9CA3AF; margin-bottom:32px; max-width:520px; margin-left:auto; margin-right:auto; line-height:1.6;">Join 50+ Orange County contractors already using Moliam to dominate local search. Book a free demo — no commitment, no pressure.</p>
+         <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+           <a href="/book" target="_blank" rel="noopener" class="btn-primary" style="display:inline-flex;" aria-label="Book your free demo with Moliam - Schedule a call to get started">
+             <span>Book Your Free Demo</span>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+           </a>
+           <a href="#contact" class="btn-secondary" style="display:inline-flex;" aria-label="Send us a message to learn about our services">Or Send a Message</a>
+         </div>
+       </section>
 
 <!-- ═══════════════════════ FOOTER ═══════════════════════ -->
 <footer id="footer">
