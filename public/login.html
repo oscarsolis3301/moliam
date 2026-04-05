@@ -33,10 +33,12 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
   color: var(--text-primary);
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Animated gradient background */
@@ -79,6 +81,10 @@ body {
 
 .logo {
   text-align: center; margin-bottom: 40px;
+  transition: all 0.3s ease;
+}
+.logo img {
+  transition: all 0.3s ease;
 }
 .logo h1 {
   font-size: 2.4rem; font-weight: 800;
@@ -86,10 +92,26 @@ body {
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: -0.02em;
+  transition: all 0.3s ease;
 }
 .logo p {
   color: var(--text-dim); font-size: 0.85rem; margin-top: 4px;
   letter-spacing: 0.1em; text-transform: uppercase;
+  transition: all 0.3s ease;
+}
+/* Collapse branding when form is focused on mobile */
+body.form-focused .logo {
+  margin-bottom: 16px;
+}
+body.form-focused .logo img {
+  width: 32px !important; height: 32px !important;
+  margin-bottom: 4px !important;
+}
+body.form-focused .logo h1 {
+  font-size: 1.4rem;
+}
+body.form-focused .logo p {
+  font-size: 0; margin: 0; opacity: 0; height: 0; overflow: hidden;
 }
 
 .login-card {
@@ -115,14 +137,16 @@ body {
   text-transform: uppercase; letter-spacing: 0.05em;
 }
 .field input {
-  width: 100%; padding: 14px 16px;
+  width: 100%; padding: 16px 16px;
   background: var(--bg-deep);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: var(--radius-md);
   color: var(--text-primary);
-  font-family: inherit; font-size: 0.95rem;
+  font-family: inherit; font-size: 16px; /* 16px prevents iOS zoom on focus */
   transition: border-color var(--transition-smooth), box-shadow var(--transition-smooth);
   outline: none;
+  -webkit-appearance: none;
+  min-height: 52px; /* Large tap target */
 }
 .field input:focus {
   border-color: var(--accent-blue);
@@ -282,6 +306,53 @@ body {
 .skip-link:focus {
   top: 16px;
 }
+
+/* ═══ MOBILE ═══ */
+@media (max-width: 480px) {
+  body {
+    align-items: flex-start;
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+  .login-container { padding: 0 16px; }
+  .logo { margin-bottom: 24px; }
+  .logo img { width: 40px !important; height: 40px !important; margin-bottom: 8px !important; }
+  .logo h1 { font-size: 1.8rem; }
+  .login-card {
+    padding: 28px 20px;
+    border-radius: 16px;
+  }
+  .login-card h2 { font-size: 1.2rem; }
+  .field { margin-bottom: 16px; }
+  .field label { font-size: 0.75rem; margin-bottom: 6px; }
+  .password-wrapper input { padding-right: 52px; }
+  .password-toggle { right: 8px; padding: 8px; }
+  .btn-login {
+    min-height: 52px;
+    font-size: 1rem;
+    border-radius: 12px;
+  }
+  .back-link { margin-top: 20px; }
+}
+@media (max-width: 380px) {
+  body { padding-top: 24px; }
+  .logo img { width: 32px !important; height: 32px !important; }
+  .logo h1 { font-size: 1.5rem; }
+  .login-card { padding: 24px 16px; }
+}
+/* Keyboard open on mobile — push form up */
+@media (max-height: 500px) {
+  body { align-items: flex-start; padding-top: 16px; }
+  .logo { margin-bottom: 12px; }
+  .logo img { display: none !important; }
+  .logo h1 { font-size: 1.2rem; }
+  .logo p { display: none; }
+  .login-card { padding: 20px 16px; }
+  .login-card h2 { font-size: 1rem; margin-bottom: 4px; }
+  .login-card .subtitle { margin-bottom: 16px; font-size: 0.8rem; }
+  .field { margin-bottom: 12px; }
+  .back-link { margin-top: 12px; }
+}
 </style>
 </head>
 <body>
@@ -418,6 +489,28 @@ function showAlert(msg, type) {
   alertEl.className = `alert ${type}`;
   alertEl.style.display = 'block';
 }
+
+// Mobile: collapse branding when form is focused (keyboard pushes content up)
+const formInputs = document.querySelectorAll('#loginForm input');
+let focusTimeout;
+formInputs.forEach(input => {
+  input.addEventListener('focus', () => {
+    clearTimeout(focusTimeout);
+    document.body.classList.add('form-focused');
+    // Scroll form into view on mobile
+    setTimeout(() => {
+      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+  });
+  input.addEventListener('blur', () => {
+    focusTimeout = setTimeout(() => {
+      // Only remove if no other input is focused
+      if (!document.activeElement || !document.activeElement.closest('#loginForm input')) {
+        document.body.classList.remove('form-focused');
+      }
+    }, 200);
+  });
+});
 
 // If already logged in, redirect
 (async () => {
