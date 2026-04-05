@@ -12,6 +12,12 @@
 export async function onRequestPost(context) {
   const { request, env } = context;
 
+  // Validate Content-Type header (optional but recommended for API)
+  const contentType = request.headers.get("Content-Type");
+  if (!contentType || !contentType.includes("application/json")) {
+    return jsonResp(415, { error: true, message: "Content-Type must be application/json" });
+  }
+
   let body;
   try {
     body = await request.json();
@@ -19,16 +25,30 @@ export async function onRequestPost(context) {
     return jsonResp(400, { error: true, message: "Invalid JSON body" });
   }
 
-  const clientId = body.clientId;
-  const clientName = body.clientName || "Unknown Client";
-  const messageText = (body.message || "").trim();
+  // Input sanitization helper - strip XSS vectors and normalize strings
+  const sanitizeString = (val) => {
+    if (typeof val !== 'string') return null;
+    return val
+      .replace(/[<>]/g, '')       // Remove angle brackets (basic HTML/XSS prevention)
+      .replace(/["'\n\r]/g, '')   // Remove quotes and control chars
+      .replace(/<script\b[^>]*>.*?<\/script>/gi, '')  // Extra <script> tag scrubbing
+      .replace(/\bjavascript:/i, '').trim();               // Strip javascript: URLs
+  };
 
-  if (!clientId) {
-    return jsonResp(400, { error: true, message: "clientId is required" });
+  const clientId = sanitizeString(body.clientId?.toString());
+  if (!clientId || !/^\d+$/.test(clientId)) {
+    return jsonResp(400, { error: true, message: "Invalid clientId format" });
   }
 
-  if (!messageText) {
+  const clientName = sanitizeString(body.clientName) || sanitizeString("Unknown Client");
+  
+  const messageText = sanitizeString(body.message);
+  if (!messageText || messageText.trim().length === 0) {
     return jsonResp(400, { error: true, message: "message is required" });
+  }
+
+  if (messageText.length > 2000) {
+    return jsonResp(413, { error: true, message: "Message exceeds maximum length (2000 characters)" });
   }
 
   try {
