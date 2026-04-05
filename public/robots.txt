@@ -1,7 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /admin
-Disallow: /dashboard
-Disallow: /api/
+Sitemap: https://moliam.pages.dev/sitemap.xml
 
-Sitemap: https://moliam.com/sitemap.xml

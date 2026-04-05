@@ -1,5 +1,5 @@
 /* ============================================
-   MOLIAM - Modern AI Marketing Agency Styles (Optimized)
+   MOLIAM - Modern AI Marketing Agency Styles
    ============================================ */
 
 /* CSS Variables for consistency */
@@ -16,11 +16,7 @@
 }
 
 /* Global Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -28,11 +24,6 @@ body {
   color: #fff;
   line-height: 1.6;
   overflow-x: hidden;
-}
-
-/* Performance: Add will-change to animated elements */
-.card:hover, .card::before, nav a::after {
-  will-change: transform, opacity;
 }
 
 /* Navigation */
@@ -192,18 +183,10 @@ h1 {
   background: rgba(30, 41, 59, 0.5);
   border-top: 1px solid rgba(255, 255, 255, 0.07);
   margin-top: -1px;
-  content-visibility: auto;
-  contain-intrinsic-size: 500px;
 }
 
 .section:nth-child(even) {
   background: rgba(30, 41, 59, 0.3);
-}
-
-/* Below-fold sections get content-visibility for performance */
-.section:not(:first-child) {
-  content-visibility: auto;
-  contain-intrinsic-size: 600px;
 }
 
 h2 {
@@ -410,119 +393,10 @@ footer {
   background: linear-gradient(180deg, #7c3aed, #db2777);
 }
 
-/* Accessibility - Skip to main content (WCAG 2.1 AA compliant) */
-.skip-link {
-  position: absolute;
-  top: -40px;
-  left: 0;
-  background: var(--color-primary);
-  color: white;
-  padding: 8px 16px;
-  text-decoration: none;
-  font-weight: 600;
-  z-index: 9999;
-  border-radius: 0 0 8px 0;
-}
-
-.skip-link:focus {
-  top: 0;
-  outline: 3px solid var(--color-secondary);
-  outline-offset: 2px;
-}
-
-/* Keyboard focus indicators (visible focus states) */
-*:focus-visible {
-  outline: 3px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
-  outline: 3px solid var(--color-primary);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 6px rgba(61, 122, 255, 0.15);
-}
-
-/* Color contrast ratios ≥ 4.5:1 for text (verified in design system) */
-/* --color-text (#EAECEF) on #0B0E14 background = 16.1:1 ratio ✓ */
-/* --color-text-muted (#818389) on #0B0E14 background = 5.8:1 ratio ✓ */
-
-/* Keyboard navigation improvements */
-button, a, input, select, textarea {
-  cursor: pointer;
-}
-
-a:not(.btn-main):not(.skip-link):hover, button:not(:disabled):hover {
-  opacity: 0.9;
-}
-
-/* Visual hierarchy for screen readers (high contrast mode support) */
-@media (prefers-contrast: more) {
-  --color-border: rgba(255, 255, 255, 0.2);
-  --color-surface: rgba(30, 34, 46, 0.9);
-  :root { font-size: 18px; } /* Larger base size for readability */
-}
-
-/* Error state accessibility (visual + ARIA labels) */
-.form-input:invalid:focus, .form-input:error:focus {
-  outline-color: var(--color-danger);
-  box-shadow: 0 0 0 6px rgba(239, 69, 101, 0.15);
-}
-
-/* Loading state accessibility (speak to screen readers) */
-.loading [aria-busy="true"] {
-  position: relative;
-}
-
-.loading [aria-busy="true"]::after {
-  content: "Loading...";
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--color-text-muted);
-  font-size: 0.875rem;
-}
-
-/* Reduced motion support (WCAG 2.1 Section 2.3.3) */
+/* Accessibility */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition: none !important;
   }
 }
-
-/* Focus trap for modals/dropdowns (accessibility best practice) */
-.modal-open *:focus:not(:disabled) {
-  z-index: 999;
-  position: relative;
-}
-
-/* High contrast mode support */
-@media (prefers-contrast: more) {
-  body { font-size: 18px; line-height: 1.8; }
-  
-  h1, h2, h3, h4, h5, h6 {
-    letter-spacing: 0;
-    word-spacing: 0.1em;
-  }
-  
-  table { font-size: 16px; } /* Minimum readable size */
-}
-
-/* Subtitles/alt text for non-text content (ARIA labels) */
-.icon[aria-label], img[alt] {
-  border: none;
-}
-
-.icon::after {
-  content: attr(aria-label);
-  position: absolute;
-  left: -9999px;
-  top: auto;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-}
-
