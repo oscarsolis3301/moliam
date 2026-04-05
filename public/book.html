@@ -387,8 +387,8 @@ body {
     <div class="calendly-section-header">
       <div class="icon-ring">📅</div>
       <h2>Select a Time That Works for You</h2>
-     </div>
-    <div class="calendly-inline-widget" data-url="https://calendly.com/visualark/demo?hide_gdpr_banner=1&background_color=111827&text_color=f9fafb&primary_color=3b82f6" style="min-width:320px;height:700px;"></div>
+      </div>
+    <div id="calendly-embed" style="min-height:700px;width:100%;max-width:700px;margin:0 auto;"></div>
   </section>
 
   <!-- Fallback Contact -->
@@ -398,24 +398,36 @@ body {
     <div class="contact-methods">
       <a href="mailto:hello@moliam.co" class="contact-pill">
         <span class="pill-icon">✉️</span>
-        hello@moliam.co
+       hello@moliam.co
       </a>
       <a href="https://calendly.com/visualark/demo" target="_blank" rel="noopener" class="contact-pill">
         <span class="pill-icon">📅</span>
-        Open Calendly Directly
+       Open Calendly Directly
       </a>
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <p>© 2025 Moliam — AI-Powered Operations for Modern Agencies</p>
-  </footer>
+   <!-- Calendly Inline Widget -->
+   <div id="calendly-embed" style="min-height:700px;width:100%;max-width:700px;margin:0 auto;"></div>
+   
+   <!-- Footer -->
+   <footer class="footer">
+     <p>© 2025 Moliam — AI-Powered Operations for Modern Agencies</p>
+   </footer>
 
 </main>
 
-<!-- Calendly Widget Script -->
 <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
+<script>
+window.addEventListener('load', function() {
+  Calendly.initInlineWidget({
+    url: 'https://calendly.com/visualark/demo',
+    parentElement: document.getElementById('calendly-embed'),
+    prefill: {},
+    utm: {}
+   });
+});
+</script>
 
 </body>
 </html>
