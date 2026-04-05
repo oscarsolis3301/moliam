@@ -1,11 +1,10 @@
 /*    /index.html    200
-
-/qrdashboard.html   /qrdashboard.html    200
-/login             /login.html          200
-/dashboard         /dashboard.html      200
-/admin             /admin.html          200
-/portfolio         /portfolio.html      200
-/book              /book.html           200
-/hq                /hq.html             200
-/privacy           /privacy.html        200
-/terms             /terms.html          200
+/qrdashboard.html   /qrdashboard.html   200
+/login              /login.html         200
+/dashboard          /dashboard.html     200
+/admin              /admin.html         200
+/portfolio          /portfolio.html     200
+/book               /book.html          200
+/hq                 /hq.html            200
+/privacy            /privacy.html       200
+/terms              /terms.html         200
