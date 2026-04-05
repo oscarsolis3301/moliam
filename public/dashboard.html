@@ -203,6 +203,18 @@
   }
 }
 
+<!-- Invoice Panel CSS -->
+<style>.invoice-panel {position:fixed;inset:0;z-index:950;display:none;align-items:flex-end;justify-content:center;}
+.invoice-panel.open{display:flex}.invoice-overlay{position:absolute;inset:0;background:rgba(11,14,20,0.7);backdrop-filter:blur(8px);opacity:0;transition:opacity 0.3s ease;}
+.invoice-panel.open .invoice-overlay{opacity:1}.invoice-container{position:relative;width:100%;max-width:750px;height:auto;max-height:90vh;background:var(--bg-building);border:1px solid var(--glass-border);border-radius:20px 20px 0 0;display:flex;flex-direction:column;box-shadow:0 -8px 40px rgba(0,0,0,0.35);transform:translateY(100%);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);}
+.invoice-panel.open .invoice-container{transform:translateY(0)}.invoice-header{padding:18px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--glass-border);background:rgba(255,255,255,0.02)}
+.invoice-header h3{font-size:1.1rem;font-weight:700;letter-spacing:-0.01em;display:flex;align-items:center;gap:10px;margin:0}.invoice-close{background:none;border:none;color:var(--text-dim);font-size:1.5rem;cursor:pointer;padding:4px 8px;line-height:1;transition:color 0.2s}
+.invoice-close:hover{color:var(--text-primary)}.invoice-body{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px}.invoice-list{display:flex;flex-direction:column;gap:12px}.invoice-card{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:14px;padding:18px}
+.invoice-card:first-child{margin-top:-2px}.invoice-meta-line{display:flex;justify-content:space-between;margin-bottom:8px;font-size:0.9rem}.invoice-amount{font-weight:700;color:#6EE7B7;font-size:1.1rem}
+.invoice-date{color:var(--text-secondary);font-size:0.85rem}.invoice-period{color:var(--text-primary);font-weight:600;margin:4px 0}.invoice-status-badge{display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;padding:3px 10px;border-radius:100px;letter-spacing:0.08em}
+.invoice-status-paid{background:rgba(16,185,129,0.15);color:#6EE7B7}.invoice-status-pending{background:rgba(245,158,11,0.15);color:#FCD34D}.empty-invoice-state{text-align:center;padding:40px 20px;color:var(--text-dim)}
+.empty-invoice-state .empty-icon{font-size:3rem;margin-bottom:12px}.empty-invoice-state p{font-size:0.9rem}@media (max-width:768px){.invoice-container{border-radius:20px 20px 0 0;height:95vh;max-height:none}
+.invoice-body{padding:18px 20px}.invoice-card{border-radius:10px}</style>
 </style>
 </head>
 <body>
@@ -307,7 +319,7 @@ function renderDashboard(data) {
       <a href="https://calendly.com/visualark/demo" target="_blank" rel="noopener" class="quick-action-btn primary">
         <span class="btn-icon">📅</span> Book a Call
       </a>
-     <button class="quick-action-btn secondary" onclick="showToast('Invoice feature coming soon!', '🧾', 3000)">
+     <button class="quick-action-btn secondary" onclick="openInvoicePanel()">
          <span class="btn-icon">📄</span> View Invoice
        </button>
        <button class="quick-action-btn secondary" onclick="openMessagingPanel()">
@@ -757,7 +769,45 @@ setInterval(() => {
 
 init();
 
-// TODO: admin client selector — Ada will spec the client list API endpoint first
+let windowInvoiceData = [   // Placeholder data (no API - per spec)
+    {id:1,period:'Mar 2026',amount:4950,due_date:'2026-03-15',status:'paid'},
+    {id:2,period:'Feb 2026',amount:4950,due_date:'2026-02-15',status:'paid'},
+    {id:3,period:'Jan 2026',amount:4950,due_date:'2026-01-15',status:'pending'},
+    {id:4,period:'Dec 2025',amount:4950,due_date:'2025-12-15',status:'paid'}];
+
+function openInvoicePanel() {
+   if (document.getElementById('invoicePanel')) return;
+   
+   const body = document.body;
+   const panel = document.createElement('div');
+   panel.id = 'invoicePanel';
+   panel.className = 'invoice-panel';
+   
+   // Build invoice list HTML from placeholder data
+   const invoicesHTML = windowInvoiceData.map(inv => 
+       `<div class="invoice-card">\n` +
+       `  <div class="invoice-meta-line"><span>${esc(inv.period)}</span>`+
+       `<span class="invoice-date">${new Date(inv.due_date).toLocaleDateString()}</span></div>`+
+       `  <div class="invoice-period">Status: <span class="invoice-status-badge invoice-status-${inv.status}">${inv.status.toUpperCase()}</span></div>` +
+       `  <div style="margin-top:8px;display:flex;justify-content:space-between;">`+
+       `    <span>Amount:</span><span class="invoice-amount">$${inv.amount.toLocaleString()}</span></div>` +
+       `  </div>`
+   ).join('');
+   
+   panel.innerHTML = `<div class="invoice-overlay" onclick="closeInvoicePanel()"></div><div class="invoice-container"><div class="invoice-header"><h3>💳 Billing History</h3><button class="invoice-close" onclick="closeInvoicePanel()">×</button></div><div class="invoice-body">${invoicesHTML || '<div class="empty-invoice-state"><span class="empty-icon">🧾</span><p>No invoices yet.</p></div>'}</div></div>`;
+   
+   body.appendChild(panel);
+   setTimeout(() => panel.classList.add('open'), 10);
+}
+
+function closeInvoicePanel() {
+   const panel = document.getElementById('invoicePanel');
+   if (panel) {panel.classList.remove('open');setTimeout(() => panel.remove(), 400);}
+}
+
+// Make invoice panel globally accessible via window API for onclick in button
+window.openInvoicePanel = openInvoicePanel;
+window.closeInvoicePanel = closeInvoicePanel;
 </script>
 </body>
 </html>
