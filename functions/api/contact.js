@@ -33,6 +33,7 @@ export async function onRequestPost(context) {
   const email = (data.email || "").toLowerCase().trim();
   const phone = data.phone ? String(data.phone).replace(/[^\d()\-+\s]/g, "").trim() : null;
   const companyRaw = (data.company || "").trim();
+  const company = escapeHTML(companyRaw);
   const messageRaw = (data.message || "").trim();
   const message = escapeHTML(messageRaw); // XSS-safe storage
   const service = (data.service || "").trim().toLowerCase();
