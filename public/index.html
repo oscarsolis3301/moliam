@@ -1054,9 +1054,113 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   color: #10B981;
 }
 
-/* ══════════════════════════════════════
-   Responsive
-   ══════════════════════════════════════ */
+/* ── Loading Spinner ── */
+@keyframes pf-spinner-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.pf-nav-submit.loading {
+  position: relative;
+  pointer-events: none;
+  padding-left: 48px;
+}
+
+.pf-nav-submit.loading .spinner {
+  display: inline-block;
+}
+
+.pf-nav-submit.loading span:not(.spinner) {
+  opacity: 0.5;
+  transform: scaleX(0.9);
+}
+
+.pf-nav-submit .spinner {
+  display: none;
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: pf-spinner-rotate 0.8s linear infinite;
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.pf-nav-submit .spinner::before {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: pf-spinner-rotate 1.2s linear infinite;
+}
+
+/* ── Toast Notifications ── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  background: rgba(11, 14, 20, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(20px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toast.visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.toast.success {
+  border-color: rgba(16, 185, 129, 0.3);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+}
+
+.toast.success .icon {
+  color: #10B981;
+}
+
+.toast.error {
+  border-color: rgba(239, 68, 68, 0.3);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+}
+
+.toast.error .icon {
+  color: #EF4444;
+}
+
+.toast .icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.toast .message {
+  color: #F9FAFB;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ── Responsive (continued) ── */
+@media (max-width: 768px) {
 
 @media (max-width: 768px) {
   .progressive-form-card {
@@ -2175,7 +2279,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
       <div class="pf-nav">
         <button type="button" id="pf-back" class="pf-nav-btn pf-nav-back" aria-label="Go back">← Back</button>
         <button type="button" id="pf-next" class="pf-nav-btn pf-nav-next" aria-label="Continue">Continue →</button>
-        <button type="submit" id="pf-submit" class="pf-nav-btn pf-nav-submit" aria-label="Submit form">Submit →</button>
+        <button type="submit" id="pf-submit" class="pf-nav-btn pf-nav-submit" aria-label="Submit form"><span class="spinner" aria-hidden="true"></span>Submit →</button>
       </div>
     </form>
 <p style="font-size:12px; color:var(--text-dim, #6B7280); margin-top:16px; text-align:center;">
@@ -3350,20 +3454,30 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
   }
 
   // ── Submit ──
+  function showToast(msg, type) {
+    var toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.innerHTML = '<div class="icon">' + (type === 'success' ? 
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>' :
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="12" y1="20" x2="12" y2="20"/></svg>') + '</div><div class="message">' + escapeHtml(msg) + '</div>';
+    document.body.appendChild(toast);
+    requestAnimationFrame(function() { toast.classList.add('visible'); });
+    setTimeout(function() {
+      toast.classList.remove('visible');
+      setTimeout(function() { if(toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
+    }, 5000);
+  }
+
   function handleSubmit(e) {
     e.preventDefault();
 
     var btn = btnSubmit;
     
-    // Add loading spinner to submit button
-    var btnText = btn.textContent;
-    btn.textContent = '';
-    btn.innerHTML = '<span class="spinner"></span>' + btnText;
-    
-    btn.disabled = true;
+    // Add loading state with spinner (CSS class handles spinner visibility)
+    btn.classList.add('loading');
     statusEl.textContent = '';
     statusEl.className = 'pf-form-status';
-    
+
     // Clear all field errors
     var errorInputs = form.querySelectorAll('.pf-input--error');
     for (var i = 0; i < errorInputs.length; i++) {
@@ -3398,21 +3512,20 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
     })
       .then(function (res) { return res.json(); })
       .then(function (data) {
-        // Remove spinner and restore button text
-        btn.textContent = btnText;
+        // Remove loading state
+        btn.classList.remove('loading');
         
         if (data.success) {
+          showToast('✓ Message sent! We\'ll be in touch soon.', 'success');
           showSuccess(data.message || 'Message sent! We\'ll be in touch soon.');
         } else {
-          showError(data.message || 'Something went wrong. Please try again.');
-          btn.disabled = false;
+          showToast(data.message || 'Something went wrong. Please try again.', 'error');
         }
       })
       .catch(function () {
-        // Remove spinner and restore button text  
-        btn.textContent = btnText;
-        showError('Connection error. Please try again.');
-        btn.disabled = false;
+        // Remove loading state
+        btn.classList.remove('loading');
+        showToast('Connection error. Please check your internet and try again.', 'error');
       });
   }
 
