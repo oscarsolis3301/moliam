@@ -40,7 +40,7 @@
   height: 85vh;
   max-height: 700px;
   background: var(--bg-building);
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px 20px 0 0;
   display: flex;
   flex-direction: column;
@@ -56,7 +56,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.02);
 }
 .messaging-header h3 {
@@ -97,7 +97,7 @@
 .message-bubble {
   max-width: 85%;
   padding: 14px 18px;
-  border-radius: var(--radius-lg);
+  border-radius: 20px;
   font-size: 0.9rem;
   line-height: 1.5;
   animation: messageSlideIn 0.3s ease forwards;
@@ -130,7 +130,7 @@
 }
 .messaging-input-area {
   padding: 18px 24px;
-  border-top: 1px solid var(--glass-border);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   gap: 12px;
   background: rgba(255, 255, 255, 0.02);
@@ -138,8 +138,8 @@
 .messaging-input {
   flex: 1;
   padding: 12px 16px;
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
   background: rgba(17, 24, 39, 0.5);
   color: var(--text-primary);
   font-family: inherit;
@@ -154,7 +154,7 @@
   padding: 12px 24px;
   background: linear-gradient(135deg, var(--accent-blue), #2563EB);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   color: white;
   font-family: inherit;
   font-weight: 600;
@@ -203,8 +203,6 @@
   }
 }
 
-</style>
-</head>
 </style>
 </head>
 <body>
@@ -666,6 +664,12 @@ function renderMessages() {
 
 function sendMessage() {
   const input = document.getElementById('messageInput');
+    addEventListener('keydown', (e) => {
+       if (e.key === 'Enter' && !e.shiftKey) {
+           e.preventDefault();
+          sendMessage();
+       }
+    }, { passive: true });
   const text = input.value.trim();
   
   if (!text) return;
@@ -687,6 +691,8 @@ function sendMessage() {
   .then(data => {
     if (data.success) {
       input.value = '';
+      sendBtn.disabled = false;
+      sendBtn.innerHTML = 'Send';
       refreshMessages();
       showToast('Message sent!', '✓', 3000);
       setTimeout(() => addMyMessage(text), 500);
@@ -732,24 +738,48 @@ function getTimeAgo(date) {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
   
-  if (diffMins < 1) return '< Just now';
+  if (diffMins < 1) return '\u2003Just now';
   if (diffMins < 60) return ` ${diffMins}m ago`;
   if (diffHours < 24) return ` ${diffHours}h ago`;
   return ` ${diffDays}d ago`;
 }
 
-// Admin client selector (only for admin role)
-if (currentUser.role === 'admin') {
-  fetch('/api/dashboard', { credentials: 'include' })
-    .then(res => res.json())
-    .then(data => {
-      if (data.stats && data.stats.total_clients > 0) {
-        // Could add client dropdown here if needed
-      }
-    });
-}
+
+// Auto-refresh every 30 seconds (Bug 5 spec fix)
+setInterval(() => {
+   if (document.getElementById('messagingPanel') && document.getElementById('messagingPanel').classList.contains('open')) {
+       refreshMessages();
+   }
+}, 30000);
 
 init();
-</script>
+
+
+let windowAdminClientsLoaded = false;
+
+// Admin client selector UI for Bug 6 fix
+function buildClientSelectorHTML() {
+   if (typeof currentUser === 'undefined' || currentUser.role !== 'admin') return '';
+   
+    if (!windowAdminClientsLoaded) { // Lazy-load when first opening panel  
+       fetch('/api/dashboard', { credentials: 'include' })
+         .then(r => r.json())
+         .then(data => { 
+             windowAdminClients = (data.stats?.total_clients || 0).toString().length > 1 ? [{id:0,name:'View All'}] : [];
+             windowAdminClientsLoaded = true;
+           });
+    }
+   
+    return '<select id="adminClientSelector" class="client-selector" style="background:rgba(59,130,246,0.1);border:1px solid rgba(255, 255, 255, 0.08);border-radius:8px;padding:4px 12px;color:white;font-size:13px;min-width:150px;margin-left:12px;display:block;" onchange="openMessagingPanelWithClient(this.value)">' +
+       '<option value="">All Clients</option>' +
+       (windowAdminClients || [{id:0,name:'Wait loading...'}]).map(c => '<option value="'+c.id+'"'+(adminClientIdFilter===parseInt(c.id)?' selected':'')+'>'+esc(c.name||'Client #'+c.id)+'</option>').join('') +
+       '</select>';
+}
+
+function openMessagingPanelWithClient(clientId = null) {
+    if (document.getElementById('messagingPanel')) return;
+    
+   document.querySelector('.msg-header-container').innerHTML += buildClientSelectorHTML(); // Append after init completes  
+}</script>
 </body>
 </html>
