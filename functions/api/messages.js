@@ -1,5 +1,3 @@
-import { getSessionToken } from './auth/me.js';
-
 export async function onRequestOptions() {
   return new Response(null, {
     status: 204,
@@ -7,7 +5,7 @@ export async function onRequestOptions() {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Cookie',
-      'Access-Control-Age': '86400'
+      'Access-Control-Max-Age': '86400'
     }
   });
 }
@@ -23,9 +21,9 @@ export async function onRequestPost(context) {
       return jsonResp(401, { error: true, message: "Not authenticated." });
     }
     
-    const authResult = await db.prepare(`
-      SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role, u.company, u.phone FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND u.is_active = 1
-    `).bind(sessionToken).first();
+    const authResult = await db.prepare(
+      "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role, u.company, u.phone FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND u.is_active = 1"
+    ).bind(sessionToken).first();
     
     if (!authResult) {
       return jsonResp(401, { error: true, message: "Session invalid." });
@@ -45,40 +43,49 @@ export async function onRequestPost(context) {
     const message_id = crypto.randomUUID();
     const webhookUrl = env.DISCORD_WEBHOOK_URL;
     
-    if (!webhookUrl) {
-      return jsonResp(500, { error: true, message: "Webhook URL not configured." });
+    // Send Discord notification
+    if (webhookUrl) {
+      await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: '<@251822830574895104> Client message received',
+          embeds: [{
+            title: '💬 New Client Message',
+            description: client_message.substring(0, 1000),
+            color: 0x8B5CF6,
+            fields: [
+              { name: 'Client', value: user_name || 'N/A', inline: true },
+              { name: 'Email', value: authResult.email || 'N/A', inline: true }
+            ],
+            timestamp: new Date().toISOString()
+          }]
+        })
+      });
     }
     
-    // Send Discord notification to admin only for client→admin messages
-    await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        content: '<@2518228305748954716> 💬 Client message in progress...',
-        embeds: [{
-          title: "💬 New Client Message",
-          description: client_message,
-          color: 0x8B5CF6,
-          fields: [
-            { name: "Client", value: user_name || "N/A", inline: true },
-            { name: "ID", value: authResult.email.substring(0, 20) + '...', inline: true }
-          ],
-          timestamp: new Date().toISOString()
-        }]
-      })
-    });
-    
-    // Log to client_messages table
-    await db.prepare(`
-      INSERT INTO client_messages (id, user_email, message_text, created_at, message_type) 
-      VALUES (?, ?, ?, DATETIME("now"), "client_to_admin")
-    `).bind(message_id, authResult.email, client_message).run();
+    // Try to log to client_messages table (may not exist yet — graceful fallback)
+    try {
+      await db.prepare(
+        "INSERT INTO client_messages (id, user_email, message_text, created_at, message_type) VALUES (?, ?, ?, datetime('now'), 'client_to_admin')"
+      ).bind(message_id, authResult.email, client_message).run();
+    } catch (tableErr) {
+      // Table might not exist yet — log to submissions as fallback
+      console.warn('client_messages insert failed, using submissions fallback:', tableErr.message);
+      try {
+        await db.prepare(
+          "INSERT INTO submissions (name, email, message, created_at) VALUES (?, ?, ?, datetime('now'))"
+        ).bind(user_name, authResult.email, '[Client Message] ' + client_message).run();
+      } catch (e2) {
+        console.warn('Fallback insert also failed:', e2.message);
+      }
+    }
     
     return jsonResp(201, { success: true, message_id });
     
   } catch (err) {
-    console.error("Messaging API error:", err);
-    return jsonResp(500, { error: true, message: "Server error." });
+    console.error('Messaging API error:', err);
+    return jsonResp(500, { error: true, message: 'Server error.' });
   }
 }
 
@@ -93,27 +100,33 @@ export async function onRequestGet(context) {
       return jsonResp(401, { error: true, message: "Not authenticated." });
     }
     
-    const authResult = await db.prepare(`
-      SELECT s.user_id, s.expires_at, u.email FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND u.is_active = 1
-    `).bind(sessionToken).first();
+    const authResult = await db.prepare(
+      "SELECT s.user_id, s.expires_at, u.email FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND u.is_active = 1"
+    ).bind(sessionToken).first();
     
     if (!authResult) {
       return jsonResp(401, { error: true, message: "Session invalid or expired." });
     }
     
-    const messages = await db.prepare(`
-      SELECT id, user_email, message_text, created_at, message_type 
-      FROM client_messages 
-      WHERE user_email = ? 
-      ORDER BY created_at DESC 
-      LIMIT 50
-    `).bind(authResult.email).all();
+    // Try client_messages first, fall back gracefully
+    let messages = [];
+    try {
+      const result = await db.prepare(
+        "SELECT id, user_email, message_text, created_at, message_type FROM client_messages WHERE user_email = ? ORDER BY created_at DESC LIMIT 50"
+      ).bind(authResult.email).all();
+      messages = (result.results || []).map(m => ({
+        id: m.id, email: m.user_email, message: m.message_text, created_at: m.created_at
+      }));
+    } catch (e) {
+      // Table doesn't exist yet — return empty
+      console.warn('client_messages query failed:', e.message);
+    }
     
-    return jsonResp(200, { success: true, messages: messages.map(m => ({ id: m.id, email: m.user_email, message: m.message_text, created_at: m.created_at })) });
+    return jsonResp(200, { success: true, messages });
     
   } catch (err) {
-    console.error("Messaging API error:", err);
-    return jsonResp(500, { error: true, message: "Server error." });
+    console.error('Messaging API error:', err);
+    return jsonResp(500, { error: true, message: 'Server error.' });
   }
 }
 
