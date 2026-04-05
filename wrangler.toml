@@ -1,0 +1,26 @@
+# Cloudflare Workers configuration for MOLIAMA
+# Purpose: Define D1 database bindings for lead scoring
+
+[dev]
+port = 8787
+
+[build]
+command = "npm run build"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "moliam-leads"
+database_id = "YOUR_DATABASE_ID_HERE" # Replace with actual D1 database ID
+
+# Example of how to use in code:
+# export interface Env {
+#   DB: D1Database;
+# }
+# 
+# // In your server action or API route:
+# await env DB.prepare(
+#   "INSERT INTO leads (id, name, email, message, score, created_at) VALUES (?, ?, ?, ?, ?, ?)"
+# ).bind([leadId, name, email, message, 0, new Date().toISOString()]).run();
+
+[observability]
+enabled = true
