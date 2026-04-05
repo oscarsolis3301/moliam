@@ -2540,6 +2540,7 @@ function drawRoom(room, t) {
   ctx.fill();
 
   // Main face with gradient fill
+  if (!isFinite(x) || !isFinite(y) || !isFinite(h) || h <= 0) return;
   const roomGrad = ctx.createLinearGradient(x, y, x, y + h);
   if (isActive) {
     roomGrad.addColorStop(0, `rgba(${cr},${cg},${cb},0.18)`);
@@ -2699,6 +2700,7 @@ function drawBot(bot, t) {
   }
 
   // Avatar circle with gradient
+  if (!isFinite(x) || !isFinite(y) || !isFinite(R) || R <= 0) return;
   const grad = ctx.createRadialGradient(x - 5, y - 5, 0, x, y, R);
   grad.addColorStop(0, `rgba(${Math.min(255,cr+30)},${Math.min(255,cg+30)},${Math.min(255,cb+30)},1)`);
   grad.addColorStop(1, `rgba(${Math.max(0,cr-30)},${Math.max(0,cg-30)},${Math.max(0,cb-30)},1)`);
@@ -2969,7 +2971,19 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
         revealedCount++;
         // Re-init canvas when HQ section becomes visible
         if (entry.target.id === 'hq-canvas-wrap') {
-          setTimeout(function() { resizeCanvas(); layoutRooms(); }, 100);
+          setTimeout(function() {
+            resizeCanvas(); layoutRooms();
+            // Re-init bot positions from freshly laid-out rooms
+            bots.forEach(function(bot, i) {
+              var room = rooms[bot.roomIdx] || rooms[i % rooms.length];
+              if (room && isFinite(room.x) && isFinite(room.y)) {
+                bot.x = room.x + room.w / 2;
+                bot.y = room.y + room.h / 2;
+                bot.targetX = bot.x;
+                bot.targetY = bot.y;
+              }
+            });
+          }, 150);
         }
         if (revealedCount >= totalReveal) {
           observer.disconnect();
