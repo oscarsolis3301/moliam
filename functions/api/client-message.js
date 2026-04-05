@@ -3,7 +3,7 @@
  * POST /api/client-message — send client message to Discord webhook with purple embed
  * 
  * Body: { clientId, clientName, message }
- * Webhook URL: https://discord.com/api/webhooks/1490158275918954716/erp8SH34JHhMSztPXfRoPcxgPUj5B0GMA4n7RSluod5t8Su009bAcRh-rk5XlY4nseqy
+ * Webhook URL: env.DISCORD_WEBHOOK_URL (set in CF dashboard)
  * Embed color: 0x8B5CF6 (purple)
  * Tags: <@251822830574895104>
  */
@@ -44,7 +44,7 @@ export async function onRequestPost(context) {
 
 // --- Send to Discord webhook with purple embed and tag ---
 async function sendDiscordWebhook(env, clientId, clientName, messageText) {
-  const webhookUrl = "https://discord.com/api/webhooks/1490158275918954716/erp8SH34JHhMSztPXfRoPcxgPUj5B0GMA4n7RSluod5t8Su009bAcRh-rk5XlY4nseqy";
+  const webhookUrl = env.DISCORD_WEBHOOK_URL;
   
   const preview = messageText.length > 100 ? messageText.slice(0, 100) + "…" : messageText;
   const username = `${clientName} (Client ${clientId})`;
