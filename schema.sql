@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
   name TEXT NOT NULL,
-  role TEXT NOT NULL DEFAULT 'client' CHECK(role IN ('admin', 'client')),
+  role TEXT NOT NULL DEFAULT 'client' CHECK(role IN ('superadmin', 'admin', 'client')),
   company TEXT,
   phone TEXT,
   avatar_url TEXT,
