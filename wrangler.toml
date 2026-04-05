@@ -6,6 +6,3 @@ pages_build_output_dir = "./public"
 binding = "MOLIAM_DB"
 database_name = "moliam-db"
 database_id = "c0f36156-312c-47c0-846f-249fd56ab8b6"
-
-[vars]
-DISCORD_WEBHOOK_URL = "" # Set in CloudFlare dashboard for production
