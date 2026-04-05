@@ -27,10 +27,10 @@
  * CREATE INDEX IF NOT EXISTS idx_contacts_source ON contacts(source);
  */
 
-import { jsonResp } from "./utils/helpers.js";
 
 export async function onRequestGet(context) {
   const url = new URL(context.request.url);
+  const { env } = context;
   const db = env.MOLIAM_DB;
   const params = url.searchParams;
   const statusFilter = params.get("status");
@@ -410,6 +410,7 @@ export async function onRequestPut(context) {
 }
 
 export async function onRequestDelete(context) {
+  const { env } = context;
   const url = new URL(context.request.url);
   const db = env.MOLIAM_DB;
   
@@ -458,6 +459,7 @@ export async function onRequestDelete(context) {
 }
 
 export async function onRequestGetById(context) {
+  const { env } = context;
   const url = new URL(context.request.url);
   const db = env.MOLIAM_DB;
   
