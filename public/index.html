@@ -1726,7 +1726,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
         <li>Built in under 72 hours</li>
         <li>Mobile-first approach</li>
       </ul>
-      <div class="card-price">$600 <span class="starts">build</span> + $150<span class="period">/mo</span></div>
+      <div class="card-price">$300 <span class="starts">setup</span> + $100<span class="period">/mo</span></div>
     </div>
     <div class="service-card">
       <div class="card-icon" style="background:rgba(16,185,129,0.1)">📍</div>
@@ -1738,7 +1738,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
         <li>Photo optimization</li>
         <li>Local ranking tracking</li>
       </ul>
-      <div class="card-price">$300<span class="period">/mo</span></div>
+      <div class="card-price">$200<span class="period">/mo</span></div>
     </div>
     <div class="service-card">
       <div class="card-icon" style="background:rgba(245,158,11,0.1)">⚡</div>
@@ -1750,7 +1750,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
         <li>Budget optimization</li>
         <li>Monthly ROI reporting</li>
       </ul>
-      <div class="card-price">$500 <span class="starts">setup</span> + $400<span class="period">/mo</span></div>
+      <div class="card-price">$300 <span class="starts">setup</span> + $250<span class="period">/mo</span></div>
     </div>
     <div class="service-card">
       <div class="card-icon" style="background:rgba(139,92,246,0.1)">🚀</div>
@@ -1762,7 +1762,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
         <li>Weekly strategy calls</li>
         <li>Dedicated account manager</li>
       </ul>
-      <div class="card-price">$1,500<span class="period">/mo</span></div>
+      <div class="card-price">$800<span class="period">/mo</span></div>
     </div>
   </div>
 </section>
@@ -1869,7 +1869,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
         <span>How long does it take to build a website?</span>
         <span class="faq-chevron">▸</span>
       </button>
-      <div class="faq-answer"><div class="faq-answer-inner">Our AI agents can build a fully custom, responsive website in under 72 hours. We handle design, development, SEO optimization, and deployment — all included in the $600 flat fee.</div></div>
+      <div class="faq-answer"><div class="faq-answer-inner">Our AI agents can build a fully custom, responsive website in under 72 hours. We handle design, development, SEO optimization, and deployment — all included in a $300 setup fee with $100/mo ongoing support.</div></div>
     </div>
     <div class="faq-item">
       <button class="faq-question" aria-expanded="false">
@@ -1981,7 +1981,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
         <div class="pf-step-indicator">
           <span class="pf-step-current" id="pf-step-current">1</span>
           <span class="pf-step-sep">/</span>
-          <span class="pf-step-total">7</span>
+          <span class="pf-step-total">8</span>
         </div>
       </div>
 
@@ -2011,7 +2011,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
           <h3 class="pf-step-title">What's your phone number?</h3>
           <p class="pf-step-desc">So we can reach you directly</p>
           <div class="pf-step-content">
-            <input type="tel" id="pf-phone" class="pf-input" placeholder="(949) 555-0100" autocomplete="tel">
+            <input type="tel" id="pf-phone" class="pf-input" placeholder="(949) 555-0100" autocomplete="tel" maxlength="14">
           </div>
         </div>
 
@@ -2024,8 +2024,21 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
           </div>
         </div>
 
-        <!-- Step 5: Service Interest -->
+        <!-- Step 5: Website & Social Media -->
         <div class="pf-step pf-step--future" data-step="5">
+          <h3 class="pf-step-title">Got a website or socials?</h3>
+          <p class="pf-step-desc">We'll research your online presence before our call</p>
+          <div class="pf-step-content">
+            <input type="url" id="pf-website" class="pf-input" placeholder="https://yourbusiness.com" autocomplete="url" style="margin-bottom:12px">
+            <input type="text" id="pf-social-google" class="pf-input" placeholder="Google Business Profile URL" style="margin-bottom:12px">
+            <input type="text" id="pf-social-facebook" class="pf-input" placeholder="Facebook page URL" style="margin-bottom:12px">
+            <input type="text" id="pf-social-instagram" class="pf-input" placeholder="Instagram @handle or URL" style="margin-bottom:12px">
+            <input type="text" id="pf-social-yelp" class="pf-input" placeholder="Yelp business page URL">
+          </div>
+        </div>
+
+        <!-- Step 6: Service Interest -->
+        <div class="pf-step pf-step--future" data-step="6">
           <h3 class="pf-step-title">What service are you interested in?</h3>
           <p class="pf-step-desc">Select what fits your needs</p>
           <div class="pf-step-content">
@@ -2034,28 +2047,28 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
                 <input type="radio" name="pf-service" value="website" class="pf-pill-radio">
                 <span class="pf-pill-label">
                   <span class="pf-pill-name">Website Build</span>
-                  <span class="pf-pill-price">$600</span>
+                  <span class="pf-pill-price">$300 + $100/mo</span>
                 </span>
               </label>
               <label class="pf-pill">
                 <input type="radio" name="pf-service" value="gbp" class="pf-pill-radio">
                 <span class="pf-pill-label">
                   <span class="pf-pill-name">GBP Optimization</span>
-                  <span class="pf-pill-price">$300/mo</span>
+                  <span class="pf-pill-price">$200/mo</span>
                 </span>
               </label>
               <label class="pf-pill">
                 <input type="radio" name="pf-service" value="lsa" class="pf-pill-radio">
                 <span class="pf-pill-label">
                   <span class="pf-pill-name">Google LSA</span>
-                  <span class="pf-pill-price">$500 + $400/mo</span>
+                  <span class="pf-pill-price">$300 + $250/mo</span>
                 </span>
               </label>
               <label class="pf-pill">
                 <input type="radio" name="pf-service" value="retainer" class="pf-pill-radio">
                 <span class="pf-pill-label">
                   <span class="pf-pill-name">Full Retainer</span>
-                  <span class="pf-pill-price">$1,500/mo</span>
+                  <span class="pf-pill-price">$800/mo</span>
                 </span>
               </label>
               <label class="pf-pill">
@@ -2069,8 +2082,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
           </div>
         </div>
 
-        <!-- Step 6: Project Details -->
-        <div class="pf-step pf-step--future" data-step="6">
+        <!-- Step 7: Project Details -->
+        <div class="pf-step pf-step--future" data-step="7">
           <h3 class="pf-step-title">Tell us about your project</h3>
           <p class="pf-step-desc">Share your goals or challenges</p>
           <div class="pf-step-content">
@@ -2078,8 +2091,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
           </div>
         </div>
 
-        <!-- Step 7: Review & Submit -->
-        <div class="pf-step pf-step--future" data-step="7">
+        <!-- Step 8: Review & Submit -->
+        <div class="pf-step pf-step--future" data-step="8">
           <h3 class="pf-step-title">Almost there!</h3>
           <p class="pf-step-desc">Review your info</p>
           <div class="pf-step-content">
@@ -2099,6 +2112,14 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
               <div class="pf-review-row">
                 <span class="pf-review-label">Business</span>
                 <span class="pf-review-value" id="pf-review-company"></span>
+              </div>
+              <div class="pf-review-row">
+                <span class="pf-review-label">Website</span>
+                <span class="pf-review-value" id="pf-review-website"></span>
+              </div>
+              <div class="pf-review-row">
+                <span class="pf-review-label">Socials</span>
+                <span class="pf-review-value" id="pf-review-socials"></span>
               </div>
               <div class="pf-review-row">
                 <span class="pf-review-label">Service</span>
@@ -3057,10 +3078,10 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
 
   // ── Service labels map ──
   var serviceLabels = {
-    website: 'Website Build — $600',
-    gbp: 'GBP Optimization — $300/mo',
-    lsa: 'Google LSA — $500 + $400/mo',
-    retainer: 'Full Retainer — $1,500/mo',
+    website: 'Website Build — $300 + $100/mo',
+    gbp: 'GBP Optimization — $200/mo',
+    lsa: 'Google LSA — $300 + $250/mo',
+    retainer: 'Full Retainer — $800/mo',
     other: 'Not Sure Yet'
   };
 
@@ -3117,6 +3138,13 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
     var emailVal = getValue('pf-email');
     var phoneVal = getValue('pf-phone');
     var companyVal = getValue('pf-company');
+    var websiteVal = getValue('pf-website');
+    var socials = [
+      getValue('pf-social-google'),
+      getValue('pf-social-facebook'),
+      getValue('pf-social-instagram'),
+      getValue('pf-social-yelp')
+    ].filter(function(s) { return s; });
     var serviceVal = getSelectedService();
     var messageVal = getValue('pf-message');
 
@@ -3124,6 +3152,8 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
     setReview('pf-review-email', emailVal);
     setReview('pf-review-phone', phoneVal || '—');
     setReview('pf-review-company', companyVal || '—');
+    setReview('pf-review-website', websiteVal || '—');
+    setReview('pf-review-socials', socials.length ? socials.join(', ') : '—');
     setReview('pf-review-service', serviceLabels[serviceVal] || '—');
     setReview('pf-review-message', messageVal || '—');
   }
@@ -3165,7 +3195,9 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
         return true;
       case 4: // Company (optional)
         return true;
-      case 5: // Service (required)
+      case 5: // Website & Socials (optional)
+        return true;
+      case 6: // Service (required)
         var checked = form.querySelector('input[name="pf-service"]:checked');
         if (!checked) {
           var pills = document.getElementById('pf-pills');
@@ -3173,7 +3205,7 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
           return false;
         }
         return true;
-      case 6: // Message (optional)
+      case 7: // Message (optional)
         return true;
       default:
         return true;
@@ -3267,6 +3299,13 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
       email: getValue('pf-email'),
       phone: getValue('pf-phone'),
       company: getValue('pf-company'),
+      website: getValue('pf-website'),
+      socials: {
+        google: getValue('pf-social-google'),
+        facebook: getValue('pf-social-facebook'),
+        instagram: getValue('pf-social-instagram'),
+        yelp: getValue('pf-social-yelp')
+      },
       service: getSelectedService(),
       message: getValue('pf-message'),
       screenResolution: window.screen.width + 'x' + window.screen.height
