@@ -3245,15 +3245,45 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
     }
   }
 
+  function showFieldError(el, msg) {
+    if (!el) return;
+    
+    // Add red border and remove any existing status classes
+    el.classList.add('pf-input--error-border');
+    el.classList.remove('pf-shake');
+    
+    // Create or update error message below field
+    var existingError = el.nextElementSibling;
+    if (existingError && existingError.classList.contains('field-error')) {
+      existingError.textContent = msg;
+     } else {
+       var errorMsg = document.createElement('div');
+       errorMsg.className = 'field-error';
+       errorMsg.textContent = msg;
+       el.parentNode.insertBefore(errorMsg, el.nextSibling);
+     }
+    
+     // Remove error on next input
+    var onErrorClear = function() {
+      el.classList.remove('pf-input--error-border');
+      if (errorMsg) errorMsg.remove();
+      el.removeEventListener('input', onErrorClear);
+     };
+    var errorMsg = existingError || (function(e){var ne=e.target.nextSibling;return(ne&&ne.classList.contains('field-error'))?ne:null})(el);
+    el.addEventListener('input', onErrorClear);
+    
+    return false;
+   }
+
   function validateRequired(id, msg) {
     var el = document.getElementById(id);
     if (!el || !el.value.trim()) {
-      shakeInput(el);
+      showFieldError(el, msg);
       return false;
-    }
+     }
     clearError(el);
     return true;
-  }
+   }
 
   function validateEmail() {
     var el = document.getElementById('pf-email');
@@ -3322,10 +3352,25 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
     e.preventDefault();
 
     var btn = btnSubmit;
+    
+    // Add loading spinner to submit button
+    var btnText = btn.textContent;
+    btn.textContent = '';
+    btn.innerHTML = '<span class="spinner"></span>' + btnText;
+    
     btn.disabled = true;
-    btn.textContent = 'Sending…';
     statusEl.textContent = '';
     statusEl.className = 'pf-form-status';
+    
+    // Clear all field errors
+    var errorInputs = form.querySelectorAll('.pf-input--error');
+    for (var i = 0; i < errorInputs.length; i++) {
+      errorInputs[i].classList.remove('pf-input--error');
+      var existingError = errorInputs[i].nextElementSibling;
+      if (existingError && existingError.classList.contains('field-error')) {
+        existingError.remove();
+      }
+    }
 
     var payload = {
       name: getValue('pf-name'),
@@ -3351,18 +3396,21 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
     })
       .then(function (res) { return res.json(); })
       .then(function (data) {
+        // Remove spinner and restore button text
+        btn.textContent = btnText;
+        
         if (data.success) {
           showSuccess(data.message || 'Message sent! We\'ll be in touch soon.');
         } else {
           showError(data.message || 'Something went wrong. Please try again.');
           btn.disabled = false;
-          btn.textContent = 'Submit →';
         }
       })
       .catch(function () {
+        // Remove spinner and restore button text  
+        btn.textContent = btnText;
         showError('Connection error. Please try again.');
         btn.disabled = false;
-        btn.textContent = 'Submit →';
       });
   }
 
