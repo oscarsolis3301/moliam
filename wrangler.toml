@@ -8,8 +8,8 @@ database_name = "moliam-db"
 database_id = "c0f36156-312c-47c0-846f-249fd56ab8b6"
 
 [assets]
-not_found_handling = "404.html"
-html_handling = "static-files"
+not_found_handling = "single-page-application"
+html_handling = "auto-trailing-slash"
 
 [[redirects]]
 for = "/qrdashboard.html"
