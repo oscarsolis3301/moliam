@@ -12,11 +12,13 @@ export async function onRequestGet(context) {
   const db = env.MOLIAM_DB;
 
   try {
+    // Superadmin sees ALL users (admins + clients); regular admin sees clients only
+    const roleFilter = user.role === 'superadmin' ? "u.role != 'superadmin'" : "u.role = 'client'";
     const { results: clients } = await db.prepare(
-      `SELECT u.id, u.email, u.name, u.company, u.phone, u.is_active, u.created_at, u.last_login,
+      `SELECT u.id, u.email, u.name, u.role, u.company, u.phone, u.is_active, u.created_at, u.last_login,
         (SELECT COUNT(*) FROM projects p WHERE p.user_id = u.id) as project_count,
         (SELECT SUM(monthly_rate) FROM projects p WHERE p.user_id = u.id AND p.status IN ('active','in_progress')) as monthly_revenue
-      FROM users u WHERE u.role = 'client' ORDER BY u.created_at DESC`
+      FROM users u WHERE ${roleFilter} ORDER BY u.created_at DESC`
     ).all();
 
     return jsonResp(200, { success: true, clients }, request);
@@ -95,7 +97,7 @@ async function requireAdmin(request, env) {
   ).bind(token).first();
 
   if (!session) return jsonResp(401, { error: true, message: "Session invalid." }, request);
-  if (session.role !== "admin") return jsonResp(403, { error: true, message: "Admin only." }, request);
+  if (session.role !== "admin" && session.role !== "superadmin") return jsonResp(403, { error: true, message: "Admin only." }, request);
 
   return session;
 }

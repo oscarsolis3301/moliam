@@ -97,7 +97,7 @@ async function requireAdmin(request, env) {
     "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND u.is_active = 1 AND s.expires_at > datetime('now')"
   ).bind(token).first();
   if (!session) return jsonResp(401, { error: true, message: "Session invalid." }, request);
-  if (session.role !== "admin") return jsonResp(403, { error: true, message: "Admin only." }, request);
+  if (session.role !== "admin" && session.role !== "superadmin") return jsonResp(403, { error: true, message: "Admin only." }, request);
   return session;
 }
 

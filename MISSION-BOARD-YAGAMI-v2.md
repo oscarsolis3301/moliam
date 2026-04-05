@@ -1,64 +1,63 @@
-# YAGIAMI MISSION BOARD — Sprint 6 (SEO Polish)
-
-**REPO:** `~/moliam`  
-**Branch:** `main`  
-**Date:** April 5th, 2026
+# 🎯 MISSION BOARD — Yagami (Frontend)
+## Sprint: Phase 3A/3B — Frontend Features
+## Priority: HIGH | Updated: 2026-04-05
 
 ---
 
-## Task Status Summary
-
-| # | Task | Status | Notes |
-|---|------|--------|-------|
-| 1a | Remove /404 from sitemap.xml | ✅ COMPLETE | Removed private error page URL |
-| 2 | robots.txt Sitemap directive to moliam.com | ✅ COMPLETE | Updated reference from pages.dev |
-
----
-
-## Sprint 6 Deliverables
-
-### Task 1a: Remove /404 from sitemap.xml ✅ COMPLETE
-Removed `https://moliam.com/404` entry from public/sitemap.xml.
-**Rationale:** Private/error pages should not be indexed in search results.
-
-Updated sitemap now contains only valid public pages:
-- Homepage (priority 1.0)
-- Login, Dashboard, Admin (priority 0.8)  
-- HQ, Portfolio (priority 0.7)
-- Book (priority 0.6)
-- Privacy, Terms (priority 0.3)
-
-### Task 2: robots.txt Sitemap directive to moliam.com ✅ COMPLETE
-Updated `public/robots.txt`:
-```txt
-User-agent: *
-Allow: /
-Sitemap: https://moliam.com/sitemap.xml
-```
-
-Changed from: `https://moliam.pages.dev/sitemap.xml`  
-To: `https://moliam.com/sitemap.xml`
+### RULES
+- **NEVER** `git rebase` or `git reset --hard origin/main`
+- **ONLY** `git pull --ff-only` to sync
+- Deploy to **STAGING ONLY** (`bash deploy-staging.sh`)
+- Tag @Ada and @Ultra in #think-tank when tasks complete
+- Test in browser before marking done
 
 ---
 
-## Files Modified This Sprint
+### TASK 1: Client Dashboard — Wire Invoice Section ⬜ HIGH
+The dashboard.html has project cards with an "invoice" update type in the timeline.
+The admin can already post updates of type "invoice" via the admin panel.
 
-| File | Changes | Status |
-|------|---------|--------|
-| `public/sitemap.xml` | Removed /404 entry, now contains 8 valid pages only | ✅ COMPLETE |
-| `public/robots.txt` | Updated Sitemap directive to moliam.com domain | ✅ COMPLETE |
+**What to build:**
+1. In `dashboard.html`, add an "Invoices" tab/section
+2. Show all project_updates where type='invoice' for this client's projects
+3. Each invoice card: title, description, date, amount (parse from description or title)
+4. Status badge (paid/unpaid/overdue — can use a simple convention in the update title)
+5. "Download PDF" button placeholder (toast "PDF generation coming soon")
 
----
-
-## SEO Summary
-
-**Sitemap optimized:** Only public-facing pages are indexed (no error/private pages)  
-**robots.txt properly configured:** Points to correct moliam.com domain  
-**All URLs verified:** 200 OK status returned for all sitemap entries  
+**Files to modify:** `public/dashboard.html`
 
 ---
 
-**Branch deployed:** `main` → Cloudflare Pages production  
-**Status:** ✅ ALL SPRINT 6 TASKS COMPLETE!
+### TASK 2: 3D Holographic QR Page ⬜ MEDIUM
+Create `public/dashboard-qr.html` — a visually stunning QR code display page.
 
-*Mission accomplished! Ready for Ada's check-in and Phase/Next Sprint instructions.* 🚀
+**Spec:**
+- Dark theme matching site aesthetic
+- QR code rendered using Canvas (JS-based QR generation, no external deps)
+- 3D holographic effect: CSS perspective transforms, animated glow/scan lines
+- URL param: `?url=https://example.com` to set QR content
+- Responsive: works on mobile
+- Share button (copy link to clipboard)
+- Download QR as PNG button
+
+**Reference:** Use CSS `transform: perspective(800px) rotateY(15deg)` with animation
+**File:** `public/dashboard-qr.html` (new file)
+
+---
+
+### TASK 3: Homepage Polish — Mobile Audit ⬜ MEDIUM
+Verify and fix any remaining mobile issues on `public/index.html`:
+
+1. Test HQ canvas at 375px width — ensure rooms are visible (not collapsed)
+2. Verify contact form steps work on mobile (fields don't overflow)
+3. Check that the new snake logo in nav is visible and not clipped on mobile
+4. Ensure FAQ accordions work on touch
+5. Verify footer links are tappable
+
+**Test at:** 375px, 414px, 768px viewports
+**File:** `public/index.html`
+
+---
+
+### DONE ✅
+(none yet)
