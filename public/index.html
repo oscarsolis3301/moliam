@@ -57,6 +57,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 /* ═══════════════════════════════════════════
    DESIGN TOKENS
    ═══════════════════════════════════════════ */
@@ -1629,7 +1630,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 <!-- ═══════════════════════ HUD NAV ═══════════════════════ -->
 <header id="hud">
   <div class="left">
-    <a href="#" class="logo"><img src="/logo.png" alt="Moliam" class="logo-icon" width="200" height="197">Moliam</a>
+    <a href="/" class="logo" aria-label="Moliam home"><img src="/logo.png" alt="Moliam" class="logo-icon" width="200" height="197">Moliam</a>
     <!-- status pill removed for cleaner production look -->
   </div>
   <div class="center">
@@ -1652,9 +1653,9 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   </div>
   <div class="right">
     <nav class="nav-links">
-      <a href="#hq-section">HQ</a>
-      <a href="#services">Services</a>
-      <a href="#contact">Contact</a>
+      <a href="#hq-section" aria-label="AI Operations section">HQ</a>
+      <a href="#services" aria-label="Services section">Services</a>
+      <a href="#contact" aria-label="Contact form">Contact</a>
       <a href="/login" style="color:var(--accent-blue)">Client Portal</a>
     </nav>
     <button class="hamburger" id="hamburger-btn" aria-label="Toggle menu">
@@ -1666,10 +1667,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 <!-- Mobile Menu Overlay -->
 <div class="mobile-menu-overlay" id="mobile-menu">
   <a href="#hq-canvas-wrap">Watch AI Work</a>
-  <a href="#services">Services</a>
-  <a href="#how-it-works">How It Works</a>
+  <a href="#services" aria-label="Services section">Services</a>
+  <a href="#how-it-works" aria-label="How it works section">How It Works</a>
   <a href="/login" style="color:var(--accent-blue)">Client Portal</a>
-  <a href="#contact">Contact</a>
+  <a href="#contact" aria-label="Contact form">Contact</a>
 </div>
 
 <!-- ═══════════════════════ HERO ═══════════════════════ -->
@@ -2024,7 +2025,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
           <h3 class="pf-step-title">What's your name?</h3>
           <p class="pf-step-desc">Let's start with the basics</p>
           <div class="pf-step-content">
-            <input type="text" id="pf-name" class="pf-input" placeholder="Your name" autocomplete="name" required>
+            <label for="pf-name" class="sr-only">Full name</label><input type="text" id="pf-name" class="pf-input" placeholder="Your name" autocomplete="name" required>
           </div>
         </div>
 
@@ -2033,7 +2034,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
           <h3 class="pf-step-title">What's your email?</h3>
           <p class="pf-step-desc">We'll use this to get in touch</p>
           <div class="pf-step-content">
-            <input type="email" id="pf-email" class="pf-input" placeholder="you@company.com" autocomplete="email" required>
+            <label for="pf-email" class="sr-only">Email address</label><input type="email" id="pf-email" class="pf-input" placeholder="you@company.com" autocomplete="email" required>
           </div>
         </div>
 
@@ -2042,7 +2043,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
           <h3 class="pf-step-title">What's your phone number?</h3>
           <p class="pf-step-desc">So we can reach you directly</p>
           <div class="pf-step-content">
-            <input type="tel" id="pf-phone" class="pf-input" placeholder="(949) 555-0100" autocomplete="tel" maxlength="14">
+            <label for="pf-phone" class="sr-only">Phone number</label><input type="tel" id="pf-phone" class="pf-input" placeholder="(949) 555-0100" autocomplete="tel" maxlength="14">
           </div>
         </div>
 
@@ -2051,7 +2052,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
           <h3 class="pf-step-title">What's your business name?</h3>
           <p class="pf-step-desc">Optional, but helps us prepare</p>
           <div class="pf-step-content">
-            <input type="text" id="pf-company" class="pf-input" placeholder="Your company or brand name" autocomplete="organization">
+            <label for="pf-company" class="sr-only">Company name</label><input type="text" id="pf-company" class="pf-input" placeholder="Your company or brand name" autocomplete="organization">
           </div>
         </div>
 
@@ -2060,11 +2061,11 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
           <h3 class="pf-step-title">Got a website or socials?</h3>
           <p class="pf-step-desc">Helps us tailor the call to your needs</p>
           <div class="pf-step-content">
-            <input type="url" id="pf-website" class="pf-input" placeholder="https://yourbusiness.com" autocomplete="url" style="margin-bottom:12px">
-            <input type="text" id="pf-social-google" class="pf-input" placeholder="Google Business Profile URL" style="margin-bottom:12px">
-            <input type="text" id="pf-social-facebook" class="pf-input" placeholder="Facebook page URL" style="margin-bottom:12px">
-            <input type="text" id="pf-social-instagram" class="pf-input" placeholder="Instagram @handle or URL" style="margin-bottom:12px">
-            <input type="text" id="pf-social-yelp" class="pf-input" placeholder="Yelp business page URL">
+            <label for="pf-website" class="sr-only">Website URL</label><input type="url" id="pf-website" class="pf-input" placeholder="https://yourbusiness.com" autocomplete="url" style="margin-bottom:12px">
+            <label for="pf-social-google" class="sr-only">Google Business Profile URL</label><input type="text" id="pf-social-google" class="pf-input" placeholder="Google Business Profile URL" style="margin-bottom:12px">
+            <label for="pf-social-facebook" class="sr-only">Facebook page URL</label><input type="text" id="pf-social-facebook" class="pf-input" placeholder="Facebook page URL" style="margin-bottom:12px">
+            <label for="pf-social-instagram" class="sr-only">Instagram handle or URL</label><input type="text" id="pf-social-instagram" class="pf-input" placeholder="Instagram @handle or URL" style="margin-bottom:12px">
+            <label for="pf-social-yelp" class="sr-only">Yelp business page URL</label><input type="text" id="pf-social-yelp" class="pf-input" placeholder="Yelp business page URL">
           </div>
         </div>
 
@@ -2199,8 +2200,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     <span class="footer-copy">&copy; 2026 Moliam. All rights reserved. Orange County, CA.</span>
     <span class="footer-ai">Powered by AI</span>
     <div class="footer-links">
-      <a href="#services">Services</a>
-      <a href="#contact">Contact</a>
+      <a href="#services" aria-label="Services section">Services</a>
+      <a href="#contact" aria-label="Contact form">Contact</a>
       <a href="/book">Book a Demo</a>
       <a href="/login">Client Portal</a>
       <a href="/privacy">Privacy</a>
