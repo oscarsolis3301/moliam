@@ -305,7 +305,7 @@ async function sendAutoRetryNotice(appointment) {
   }
 }
 
-ffunction json(body, status = 200) {
+function json(body, status = 200) {
   return new Response(JSON.stringify(body), { 
     status, 
     headers: { 
