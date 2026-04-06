@@ -1,8 +1,1 @@
-export async function onRequestGet(context) {
-  return new Response(JSON.stringify({
-    url: "https://calendly.com/visualark/demo",
-    embed: true
-  }), {
-    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-  });
-}
+export async function onRequestGet(context) { return new Response(JSON.stringify({ url: "https://calendly.com/visualark/demo", embed: true }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }); }
