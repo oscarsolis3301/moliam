@@ -22,9 +22,9 @@ export async function onRequestPost(context) {
   }
 
   try {
-    // Find user
-    const user = await db.prepare(
-      "SELECT id, email, name, role, company, password_hash, is_active FROM users WHERE email = ?"
+     // Find user
+     const user = await db.prepare(
+       "SELECT id, email, name, role, company, password_hash, is_active FROM users WHERE email = ?"
     ).bind(email).first();
 
     if (!user) {

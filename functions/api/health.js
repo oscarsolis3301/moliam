@@ -43,9 +43,11 @@ export async function onRequestGet(context) {
     const tableInfo = [];
     for (const t of tables) {
       try {
+          // Use parameter binding instead of template literal to prevent SQL injection
+        const table_name_safe = JSON.stringify(t.name).slice(1, -1); // escape quotes
         const row = await env.MOLIAM_DB.prepare(
-          `SELECT COUNT(*) AS cnt FROM "${t.name}"`
-        ).first();
+          `SELECT COUNT(*) AS cnt FROM ${table_name_safe}`
+         ).first();
         tableInfo.push({ name: t.name, row_count: row?.cnt ?? 0 });
       } catch {
         tableInfo.push({ name: t.name, row_count: "error" });

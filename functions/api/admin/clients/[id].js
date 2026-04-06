@@ -106,13 +106,15 @@ export async function onRequestPatch(context) {
 
     if (updates.length === 0) {
       return jsonResp(400, { error: true, message: "No valid fields to update." }, request);
-    }
+     }
 
+            // SECURITY: Only allowed field names are pushed to updates array via conditional block above
+            // uses parameter binding (.bind(...binds)) for all values
     binds.push(clientId);
 
     await db.prepare(
       `UPDATE users SET ${updates.join(", ")} WHERE id = ?`
-    ).bind(...binds).run();
+     ).bind(...binds).run();
 
     return jsonResp(200, {
       success: true,

@@ -54,8 +54,10 @@ export async function onRequestPatch(context) {
 
     if (updates.length === 0) {
       return jsonResp(400, { error: true, message: "No valid fields to update." }, request);
-    }
+     }
 
+           // SECURITY: Only allowed field names are pushed to updates array via conditional block above
+           // uses parameter binding (.bind(...binds)) for all values
     updates.push("updated_at = datetime('now')");
     binds.push(projectId);
 

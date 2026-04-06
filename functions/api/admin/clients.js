@@ -13,11 +13,12 @@ export async function onRequestGet(context) {
 
   try {
     // Superadmin sees ALL users (admins + clients); regular admin sees clients only
+           // SECURITY: roleFilter is pre-validated from user.role, not attacker-controlled
     const roleFilter = user.role === 'superadmin' ? "u.role != 'superadmin'" : "u.role = 'client'";
-    const { results: clients } = await db.prepare(
+           const { results: clients } = await db.prepare(
       `SELECT u.id, u.email, u.name, u.role, u.company, u.phone, u.is_active, u.created_at, u.last_login,
-        (SELECT COUNT(*) FROM projects p WHERE p.user_id = u.id) as project_count,
-        (SELECT SUM(monthly_rate) FROM projects p WHERE p.user_id = u.id AND p.status IN ('active','in_progress')) as monthly_revenue
+         (SELECT COUNT(*) FROM projects p WHERE p.user_id = u.id) as project_count,
+         (SELECT SUM(monthly_rate) FROM projects p WHERE p.user_id = u.id AND p.status IN ('active','in_progress')) as monthly_revenue
       FROM users u WHERE ${roleFilter} ORDER BY u.created_at DESC`
     ).all();
 

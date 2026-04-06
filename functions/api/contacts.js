@@ -45,28 +45,29 @@ export async function onRequestGet(context) {
     
     // Apply filters
     if (statusFilter || searchQuery) {
-      baseQuery += " WHERE 1=1";
+      let queryBuilder = `SELECT id, name, email, phone, company, source, lead_score, status, notes, created_at, updated_at FROM contacts WHERE 1=1`;
+      
+      const bindValues = [];
       
       if (statusFilter) {
         const validStatuses = ["new", "contacted", "qualified", "booked", "client", "inactive"];
         if (!validStatuses.includes(statusFilter.toLowerCase())) {
           return jsonResp(400, { error: true, message: `Invalid status. Must be one of: ${validStatuses.join(", ")}` });
-        }
-        baseQuery += ` AND LOWER(status) = '${statusFilter.toLowerCase()}'`;
-      }
+         }
+        queryBuilder += " AND LOWER(status) = ?";
+        bindValues.push(statusFilter.toLowerCase());
+       }
 
       if (searchQuery) {
-        const sanitizedSearch = searchQuery.replace(/'/g, "''");
-        baseQuery += ` AND (LOWER(name) LIKE '%${sanitizedSearch}%' 
-                             OR LOWER(email) LIKE '%${sanitizedSearch}%' 
-                             OR LOWER(phone) LIKE '%${sanitizedSearch}%' 
-                             OR LOWER(company) LIKE '%${sanitizedSearch}%')`;
-      }
-    }
+        // Use parameterized LIKE with proper escaping - don't concatenate user input
+        const searchPattern = `%${(searchQuery || '').replace(/[\\'"]/g, '')}%`;
+        queryBuilder += " AND (LOWER(name) LIKE ? OR LOWER(email) LIKE ? OR LOWER(phone) LIKE ? OR LOWER(company) LIKE ?)";
+        bindValues.push(searchPattern, searchPattern, searchPattern, searchPattern);
+       }
+     
+      queryBuilder += " ORDER BY created_at DESC";
 
-    baseQuery += " ORDER BY created_at DESC";
-
-    const result = await db.prepare(baseQuery).all();
+    const result = await db.prepare(queryBuilder).bind(...bindValues).all();
     
     // Transform raw rows to clean contacts array
     const contacts = (result.results || []).map(row => ({
@@ -368,9 +369,11 @@ export async function onRequestPut(context) {
     // Bind contact ID last for the WHERE clause
     bindValues.push(contactId);
 
+             // SECURITY: partialFields only contains allowed field names from ALLOWED_FIELDS array validated above
+             // uses parameter binding (.bind(...bindValues)) for all user data
     if (partialFields.length === 0) {
       return jsonResp(400, { success: false, message: "No valid fields to update." });
-    }
+      }
 
     const updateQuery = `UPDATE contacts SET ${partialFields.join(", ")}, updated_at = datetime('now') WHERE id = ?`;
     
