@@ -62,10 +62,10 @@ export async function onRequestGet(context) {
     return jsonResp(200, {
       success: true,
       invoices: invoicesResult.results,
-      pagination: { page, limit, total: parseInt(totalCount), pages: Math.ceil(total / limit) }
-    }, request);
+      pagination: { page, limit, total: parseInt(totalCount), pages: Math.ceil(totalCount / limit) }
+      }, request);
 
-  } catch (err) {
+   } catch (err) {
     console.error("List invoices error:", err);
     return jsonResp(500, { error: true, message: "Server error." }, request);
   }

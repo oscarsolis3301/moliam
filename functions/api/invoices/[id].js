@@ -81,7 +81,8 @@ export async function onRequestPut(context) {
 
   // Clients can only update their own invoices or admins
   if (session.role === 'client' && currentInvoice.contact_id !== session.id) {
-    return jsonResp(403, { error: true, message: "Access denied to this invoice." }, request):
+    return jsonResp(403, { error: true, message: "Access denied to this invoice." }, request);
+  }
 
   const { status, notes } = data;
   const now = new Date().toISOString();
@@ -97,26 +98,31 @@ export async function onRequestPut(context) {
       query += `status = ?,`;
       params.push(status);
 
-      // Auto-update timestamps for state transitions
+       // Auto-update timestamps for state transitions
       if (status === 'sent') {
         query += `sent_at = ?,`;
         params.push(now);
-      } else if (status === 'paid') {
-        query += `sent_at = ${currentInvoice.sent_at ? "'" + currentInvoice.sent_at + "'" : 'null'}, paid_at = ?`;
-        params.push(now);
-      } else {
+       } else if (status === 'paid') {
+        query += `sent_at = ?, paid_at = ?`;
+        params.push(currentInvoice.sent_at || null, now);
+       } else {
         query += `sent_at = null, paid_at = null`;
-      }
+       }
     }
 
     if (notes !== undefined) {
       query += ` notes = ?,`;
-      params.push(notes || 'null');
-    }
+      params.push(notes || null);
 
-    // Remove trailing comma and add WHERE clause - but we already added a condition branch above that doesn't end with comma... fix this
-query = query.slice(0, query.endsWith(',') ? -1 : 0) + " WHERE id = ?";
-params.push(id);
+     }
+
+     // Remove trailing comma and add WHERE clause - fix the logic to always handle trailing comma
+    if (query.endsWith(',')) {
+      query = query.slice(0, -1) + " WHERE id = ?";
+    } else {
+      query += " WHERE id = ?";
+    }
+    params.push(id);
 
 const result = await db.prepare(query).bind(...params).run();
 

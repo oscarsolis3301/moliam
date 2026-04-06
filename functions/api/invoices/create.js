@@ -83,11 +83,10 @@ function jsonResp(status, body, request) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
-       "Content-Type": "application/json",
-       "Access-Control-Allow-Origin": request ? (request.headers.get("Origin") || "https://moliam.pages.dev") : "https://moliam.pages.dev",
-       "Access-Control-Allow-Credentials": "true"
-     }
-   });
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      }
+    });
 }
 
 export async function onRequestOptions() {
