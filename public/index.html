@@ -3473,7 +3473,7 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
 
     var btn = btnSubmit;
     
-    // Add loading state with spinner (CSS class handles spinner visibility)
+    // Add loading state with spinner (disabled state prevents double-submit)
     btn.classList.add('loading');
     statusEl.textContent = '';
     statusEl.className = 'pf-form-status';
@@ -3512,7 +3512,6 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
     })
       .then(function (res) { return res.json(); })
       .then(function (data) {
-        // Remove loading state
         btn.classList.remove('loading');
         
         if (data.success) {
@@ -3523,7 +3522,6 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
         }
       })
       .catch(function () {
-        // Remove loading state
         btn.classList.remove('loading');
         showToast('Connection error. Please check your internet and try again.', 'error');
       });
