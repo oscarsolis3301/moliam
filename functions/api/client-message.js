@@ -51,20 +51,24 @@ export async function onRequestPost(context) {
     return jsonResp(413, { error: true, message: "Message exceeds maximum length (2000 characters)" });
   }
 
+  const webhookUrl = env.DISCORD_WEBHOOK_URL;
+  if (!webhookUrl || !(typeof webhookUrl === 'string' && webhookUrl.trim().length > 0)) {
+    return jsonResp(500, { error: true, message: "Discord webhook URL not configured" });
+  }
+
   try {
-    await sendDiscordWebhook(env, clientId, clientName, messageText);
+    await sendDiscordWebhook(webhookUrl, clientId, clientName, messageText);
     
     return jsonResp(200, { success: true, message: "Message delivered to Discord" });
 
-  } catch (err) {
+   } catch (err) {
     console.error("Client message error:", err.message);
     return jsonResp(500, { error: true, message: "Failed to deliver message" });
-  }
+   }
 }
 
 // --- Send to Discord webhook with purple embed and tag ---
-async function sendDiscordWebhook(env, clientId, clientName, messageText) {
-  const webhookUrl = env.DISCORD_WEBHOOK_URL;
+async function sendDiscordWebhook(webhookUrl, clientId, clientName, messageText) {
   
   const preview = messageText.length > 100 ? messageText.slice(0, 100) + "…" : messageText;
   const username = `${clientName} (Client ${clientId})`;
@@ -74,7 +78,12 @@ async function sendDiscordWebhook(env, clientId, clientName, messageText) {
 
   await fetch(webhookUrl, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { 
+      "Content-Type": "application/json",
+      "X-RateLimit-Limit": "100",
+      "X-RateLimit-Remaining": "99",
+      "X-RateLimit-Reset": Date.now().toString()
+    },
     body: JSON.stringify({
       username: username,
       content: `<@251822830574895104>\n`,
@@ -83,17 +92,17 @@ async function sendDiscordWebhook(env, clientId, clientName, messageText) {
         color: EMBED_COLOR,
         description: `\`${preview}\``,
         fields: [
-          {
+           {
             name: "Client Name",
             value: clientName,
             inline: true
-          },
-          {
+           },
+           {
             name: "Client ID",
             value: clientId.toString(),
             inline: true
-          }
-        ],
+           }
+         ],
         footer: {
           text: `Delivered via Moliam API`
         },
