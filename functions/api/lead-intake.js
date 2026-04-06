@@ -177,7 +177,7 @@ function calculateLeadScore(data) {
      'medium': 10,
      'low': 5
    };
-  const urgencyBoost = urgencyBoostMap[urgency_level?.toLowerCase()] || 10;
+  let urgencyBoost = urgencyBoostMap[urgency_level?.toLowerCase()] || 10;
 
    // Keyword matches in message for additional scoring
   if (/immediate|urgent|deadline|asap|quickly|fast|\b30\s*days\b/i.test(message)) {
