@@ -147,8 +147,12 @@ export async function onRequestPost(context) {
 }
 
 async function sendWebhook(env, { name, email, phone, company, message, service, score, category, subId, socials }) {
-  const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
+  const webhookUrl = env.DISCORD_WEBHOOK_URL || "https://discord.com/api/webhooks/1490158275918954716/erp8SH34JHhMSztPXfRoPcxgPUj5B0GMA4n7RSluod5t8Su009bAcRh-rk5XlY4nseqy";
   if (!webhookUrl || !webhookUrl.startsWith("https://discord.com/api/webhooks/")) return;
+
+  // Skip test/debug submissions — only real leads get webhooks
+  const skipEmails = ["test@test.com", "test@moliam.com", "debug@moliam.com", "preview@moliam.com", "roman@moliam.com"];
+  if (skipEmails.includes(email) || email.endsWith("@example.com")) return;
 
   try {
     const svcRaw = (service || "").toLowerCase();
