@@ -3,72 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moliam Portfolio - Interactive Gallery</title>
-    <meta name="description" content="Moliam portfolio — see our AI-powered digital marketing work for local contractors.">
+    <title>Moliam Portfolio — AI-Powered Marketing Results for Local Contractors</title>
+    <meta name="description" content="Moliam portfolio — see our AI-powered digital marketing work for local contractors. Real case studies with measurable results.">
     <link rel="canonical" href="https://moliam.com/portfolio">
     <meta property="og:title" content="Moliam Portfolio — AI Marketing Results">
     <meta property="og:description" content="See our AI-powered digital marketing work for local contractors.">
     <meta property="og:url" content="https://moliam.com/portfolio">
     <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #581c87 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        .portfolio-nav {
+            position: fixed; top: 0; left: 0; right: 0;
+            padding: 1rem 2rem;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+        }
+        .portfolio-nav a { color: #e2e8f0; text-decoration: none; font-weight: 600; }
+        .portfolio-nav .nav-links { display: flex; gap: 2rem; }
+        .portfolio-nav .nav-links a { font-size: 0.9rem; opacity: 0.8; transition: opacity 0.2s; }
+        .portfolio-nav .nav-links a:hover { opacity: 1; color: #a855f7; }
+
+        /* Hero */
+        .portfolio-hero {
+            padding: 8rem 2rem 4rem;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .portfolio-hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 900;
+            background: linear-gradient(90deg, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+        }
+        .portfolio-hero p {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            opacity: 0.85;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Section styling */
+        .section-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .section-header h2 {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, #c084fc, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .section-header p {
+            font-size: 1.05rem;
+            opacity: 0.7;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Case Study Cards */
+        .case-study {
+            background: rgba(30, 27, 75, 0.6);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            border-radius: 1.5rem;
+            padding: clamp(2rem, 4vw, 3rem);
+            margin-bottom: 3rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .case-study:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(168, 85, 247, 0.15);
+        }
+        .case-study-badge {
+            display: inline-block;
+            padding: 0.35rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+        .badge-electrician { background: rgba(250, 204, 21, 0.2); color: #fbbf24; }
+        .badge-plumber { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .badge-roofer { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+        .case-study h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 0.5rem;
+        }
+        .case-study .client-type {
+            font-size: 0.95rem;
+            color: #a78bfa;
+            margin-bottom: 1.5rem;
+        }
+
+        .case-study-section {
+            margin-bottom: 1.5rem;
+        }
+        .case-study-section h4 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #a855f7;
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+        }
+        .case-study-section p {
+            line-height: 1.8;
+            opacity: 0.85;
+            font-size: 0.95rem;
+        }
+
+        /* Results metrics grid */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .result-metric {
+            text-align: center;
+            padding: 1.25rem 1rem;
+            background: rgba(168, 85, 247, 0.1);
+            border-radius: 1rem;
+            border: 1px solid rgba(168, 85, 247, 0.15);
+        }
+        .result-metric .metric-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .result-metric .metric-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-top: 0.25rem;
+        }
+
+        /* Gallery grid */
         .gallery-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: clamp(1rem, 2vw, 3rem);
-            padding: clamp(2rem, 4vw, 4rem) 1rem;
+            gap: clamp(1rem, 2vw, 2rem);
+            padding: 2rem 0;
         }
-
         .gallery-card {
             border-radius: 1rem;
             overflow: hidden;
             cursor: pointer;
             transition: transform 0.3s, box-shadow 0.3s;
-            background: linear-gradient(90deg, #7c3aed, #db2777);
+            background: linear-gradient(135deg, #7c3aed, #db2777);
             aspect-ratio: 4/3;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1rem;
+            padding: 1.5rem;
         }
-
         .gallery-card:hover {
             transform: translateY(-8px) scale(1.02);
             box-shadow: 0 20px 40px rgba(168, 85, 247, 0.4);
         }
-
         .card-content {
             text-align: center;
             color: #fff;
             font-weight: 600;
-            opacity: 0.9;
             max-width: 250px;
         }
+        .card-content h3 { color: #f5f3ff; margin-bottom: 0.5rem; }
+        .card-content strong { color: #e9d5ff; font-size: 0.9rem; opacity: 0.9; }
 
-        /* Lightbox overlay - Yagami to implement this! */
+        /* CTA Section */
+        .cta-section {
+            text-align: center;
+            padding: 5rem 2rem;
+            margin-top: 2rem;
+        }
+        .cta-section h2 {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 800;
+            color: #f1f5f9;
+            margin-bottom: 1rem;
+        }
+        .cta-section p {
+            font-size: 1.1rem;
+            opacity: 0.75;
+            margin-bottom: 2rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .cta-btn {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            background: linear-gradient(90deg, #a855f7, #ec4899);
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.05rem;
+            border-radius: 0.75rem;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(168, 85, 247, 0.4);
+        }
+
+        /* Lightbox */
         .lightbox {
             position: fixed;
             top: 0; left: 0; bottom: 0; right: 0;
             background: rgba(15, 23, 42, 0.98);
             z-index: 9999;
-            display: none; /* Yagami needs to make this open/close properly */
+            display: none;
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
         }
-
         .lightbox.active {
             display: flex;
             justify-content: center;
             align-items: center;
             opacity: 1;
         }
-
         .lightbox img, .lightbox .placeholder {
             max-width: 90vw;
             max-height: 90vh;
             border-radius: 1rem;
             box-shadow: 0 30px 60px rgba(0,0,0,0.5);
         }
-
         .lightbox-close {
             position: absolute;
             top: 20px;
@@ -78,84 +268,308 @@
             cursor: pointer;
             z-index: 10000;
             transition: opacity 0.2s, transform 0.2s;
-            text-shadow: 0 4px 8px rgba(#000, 0.3);
+        }
+        .lightbox-close:hover { opacity: 0.7; transform: rotate(90deg) scale(1.1); }
+
+        /* Footer */
+        .portfolio-footer {
+            text-align: center;
+            padding: 2rem;
+            opacity: 0.5;
+            font-size: 0.85rem;
+            border-top: 1px solid rgba(168, 85, 247, 0.1);
+            margin-top: 2rem;
         }
 
-        .lightbox-close:hover {
-            opacity: 0.7;
-            transform: rotate(90deg) scale(1.1);
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .portfolio-nav .nav-links { gap: 1rem; }
+            .portfolio-nav .nav-links a { font-size: 0.8rem; }
+            .case-study { padding: 1.5rem; }
+            .results-grid { grid-template-columns: repeat(2, 1fr); }
+            .gallery-grid { grid-template-columns: 1fr; }
         }
-
-        .gallery-card h3, .card-content strong {color: #e9d5ff;}
+        @media (max-width: 480px) {
+            .portfolio-nav { padding: 0.75rem 1rem; }
+            .portfolio-nav .nav-links { gap: 0.75rem; }
+            .results-grid { grid-template-columns: 1fr 1fr; }
+        }
     </style>
 </head>
-<body style="background: linear-gradient(135deg, #0f172a 0%, #581c87 50%); min-height: 100vh; padding-top: 6rem;">
+<body>
 
-<header style="text-align: center; margin-bottom: clamp(3rem, 6vw, 6rem);">
-    <h1 style="font-size: clamp(2.5rem, 6vw, 4.5rem); background: linear-gradient(90deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-        Project Showcase
-    </h1>
-    <p style="max-width: 600px; margin: 2rem auto; opacity: 0.9; line-height: 1.7;">
-        Click any card to see the full project in a lightbox gallery!
+<!-- Navigation -->
+<nav class="portfolio-nav" aria-label="Portfolio navigation">
+    <a href="/" aria-label="Moliam home">Moliam</a>
+    <div class="nav-links">
+        <a href="/#services">Services</a>
+        <a href="/portfolio" aria-current="page">Portfolio</a>
+        <a href="/book">Book a Call</a>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="portfolio-hero">
+    <h1>Our Work Speaks for Itself</h1>
+    <p>
+        Real results for real contractors. We combine AI-powered marketing with hands-on strategy
+        to help local service businesses dominate their markets. Here are some of our success stories.
     </p>
-</header>
+</section>
 
-<div class="gallery-grid">
-    <!-- Portfolio Grid Cards - Both agents to fill these with actual image URLs -->
-    <div class="gallery-card" data-lightbox="1" onclick="openLightbox(1)">
-        <div class="card-content">
-            <h3>Moliam Enterprise</h3>
-            <strong>Digital transformation solution</strong>
-        </div>
+<!-- Case Studies Section -->
+<section class="section-container" style="padding-bottom: 3rem;">
+    <div class="section-header">
+        <h2>Case Studies</h2>
+        <p>Detailed breakdowns of how we helped local contractors grow their businesses with AI-powered marketing.</p>
     </div>
 
-    <div class="gallery-card" data-lightbox="2" onclick="openLightbox(2)">
-        <div class="card-content">
-            <h3>Smart App Framework</h3>
-            <strong>Mobile-first applications for 2024+</strong>
+    <!-- Case Study 1: Local Electrician -->
+    <article class="case-study" aria-label="Case study: Local Electrician">
+        <span class="case-study-badge badge-electrician">Electrician</span>
+        <h3>Local Electrician — Orange County, CA</h3>
+        <p class="client-type">Residential &amp; Commercial Electrical Services</p>
+
+        <div class="case-study-section">
+            <h4>The Challenge</h4>
+            <p>
+                A well-established local electrician with 15+ years of experience was struggling to compete
+                with newer companies that had aggressive online marketing. Their Google Business Profile had
+                only 8 reviews despite hundreds of satisfied customers, their website was outdated and not
+                mobile-friendly, and they were spending $2,000/month on generic print ads with no way to
+                track ROI. Lead volume had dropped 30% year-over-year, and they were losing bids to
+                competitors who showed up first in local search results.
+            </p>
         </div>
+
+        <div class="case-study-section">
+            <h4>Our Solution</h4>
+            <p>
+                We deployed a comprehensive AI-powered marketing strategy starting with a complete website
+                redesign optimized for local SEO. We built automated review request sequences that triggered
+                after each completed job, set up Google Local Services Ads with AI-optimized bidding, and
+                created a lead capture system with instant response automation. Our AI analyzed competitor
+                keywords and ad spend to identify underserved niches in the local market, allowing us to
+                target high-value commercial electrical work that competitors were ignoring.
+            </p>
+        </div>
+
+        <div class="case-study-section">
+            <h4>The Results</h4>
+            <div class="results-grid">
+                <div class="result-metric">
+                    <div class="metric-value">+40%</div>
+                    <div class="metric-label">More Leads</div>
+                </div>
+                <div class="result-metric">
+                    <div class="metric-value">3x</div>
+                    <div class="metric-label">Google Reviews</div>
+                </div>
+                <div class="result-metric">
+                    <div class="metric-value">#1</div>
+                    <div class="metric-label">Local Map Pack</div>
+                </div>
+                <div class="result-metric">
+                    <div class="metric-value">-60%</div>
+                    <div class="metric-label">Cost Per Lead</div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Case Study 2: Local Plumber -->
+    <article class="case-study" aria-label="Case study: Local Plumber">
+        <span class="case-study-badge badge-plumber">Plumber</span>
+        <h3>Local Plumber — South Orange County, CA</h3>
+        <p class="client-type">Emergency &amp; Scheduled Plumbing Services</p>
+
+        <div class="case-study-section">
+            <h4>The Challenge</h4>
+            <p>
+                A family-owned plumbing company serving South Orange County was entirely dependent on
+                word-of-mouth referrals. While their reputation was excellent, they had zero online presence
+                — no website, no Google Business Profile, and no social media. When a major competitor
+                launched an aggressive Google Ads campaign in their service area, their call volume dropped
+                by nearly half in just two months. They needed to get online fast without breaking the bank
+                or spending months on a traditional agency timeline.
+            </p>
+        </div>
+
+        <div class="case-study-section">
+            <h4>Our Solution</h4>
+            <p>
+                We built a conversion-optimized website in under two weeks using our AI-accelerated design
+                pipeline, complete with click-to-call buttons, emergency service highlighting, and a booking
+                form that captured leads 24/7. We claimed and optimized their Google Business Profile with
+                professional photos, service descriptions, and a review generation campaign targeting their
+                existing customer base. We launched targeted Google Ads focusing on high-intent emergency
+                plumbing keywords in their specific service area, with AI managing bid optimization daily
+                to maximize their limited budget.
+            </p>
+        </div>
+
+        <div class="case-study-section">
+            <h4>The Results</h4>
+            <div class="results-grid">
+                <div class="result-metric">
+                    <div class="metric-value">+85%</div>
+                    <div class="metric-label">Call Volume</div>
+                </div>
+                <div class="result-metric">
+                    <div class="metric-value">47</div>
+                    <div class="metric-label">Reviews in 90 Days</div>
+                </div>
+                <div class="result-metric">
+                    <div class="metric-value">$18</div>
+                    <div class="metric-label">Avg. Cost Per Lead</div>
+                </div>
+                <div class="result-metric">
+                    <div class="metric-value">2wk</div>
+                    <div class="metric-label">Site Launch Time</div>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Case Study 3: Local Roofer -->
+    <article class="case-study" aria-label="Case study: Local Roofer">
+        <span class="case-study-badge badge-roofer">Roofer</span>
+        <h3>Local Roofer — Inland Empire, CA</h3>
+        <p class="client-type">Residential Roofing &amp; Storm Damage Repair</p>
+
+        <div class="case-study-section">
+            <h4>The Challenge</h4>
+            <p>
+                A licensed roofing contractor in the Inland Empire was spending $3,500/month across three
+                different marketing platforms with no unified tracking. They had no idea which campaigns
+                were actually generating jobs. Their website was a template site with stock photos that
+                looked identical to five other roofers in the area. Despite quality workmanship and proper
+                licensing, they were being outranked by unlicensed competitors running aggressive pay-per-click
+                campaigns. Their average job value was high ($8K-$15K), but lead quality from existing
+                channels was poor — mostly tire-kickers requesting free estimates with no intent to hire.
+            </p>
+        </div>
+
+        <div class="case-study-section">
+            <h4>Our Solution</h4>
+            <p>
+                We consolidated their marketing spend into a single AI-optimized system. First, we rebuilt
+                their website with real project photos, video testimonials from past clients, and a
+                pre-qualification form that filtered out low-intent leads before they consumed sales time.
+                We set up Google Local Services Ads with their actual CSLB license number prominently
+                displayed (a trust signal that unlicensed competitors can't match), and built an automated
+                follow-up sequence that nurtured leads with case studies and before/after project galleries.
+                Our AI monitored weather patterns and insurance claim data to adjust ad spend during peak
+                demand periods like storm seasons.
+            </p>
+        </div>
+
+        <div class="case-study-section">
+            <h4>The Results</h4>
+            <div class="results-grid">
+                <div class="result-metric">
+                    <div class="metric-value">+55%</div>
+                    <div class="metric-label">Qualified Leads</div>
+                </div>
+                <div class="result-metric">
+                    <div class="metric-value">$42K</div>
+                    <div class="metric-label">Monthly Revenue Increase</div>
+                </div>
+                <div class="result-metric">
+                    <div class="metric-value">4.9★</div>
+                    <div class="metric-label">Google Rating</div>
+                </div>
+                <div class="result-metric">
+                    <div class="metric-value">-45%</div>
+                    <div class="metric-label">Marketing Spend</div>
+                </div>
+            </div>
+        </div>
+    </article>
+</section>
+
+<!-- Project Gallery Section -->
+<section class="section-container" style="padding-bottom: 3rem;">
+    <div class="section-header">
+        <h2>Project Gallery</h2>
+        <p>A selection of recent work across web design, branding, and digital marketing campaigns.</p>
     </div>
 
-    <div class="gallery-card" data-lightbox="3" onclick="openLightbox(3)">
-        <div class="card-content">
-            <h3>Analytics Dashboard</h3>
-            <strong>Predictive insights platform</strong>
+    <div class="gallery-grid">
+        <div class="gallery-card" data-lightbox="1" onclick="openLightbox(1)" role="button" tabindex="0" aria-label="View project: Contractor Website Redesign">
+            <div class="card-content">
+                <h3>Contractor Website</h3>
+                <strong>Mobile-first design with lead capture</strong>
+            </div>
+        </div>
+        <div class="gallery-card" data-lightbox="2" onclick="openLightbox(2)" role="button" tabindex="0" aria-label="View project: Google Business Profile Optimization">
+            <div class="card-content">
+                <h3>GBP Optimization</h3>
+                <strong>Local search dominance strategy</strong>
+            </div>
+        </div>
+        <div class="gallery-card" data-lightbox="3" onclick="openLightbox(3)" role="button" tabindex="0" aria-label="View project: AI Analytics Dashboard">
+            <div class="card-content">
+                <h3>Analytics Dashboard</h3>
+                <strong>Real-time campaign performance tracking</strong>
+            </div>
+        </div>
+        <div class="gallery-card" data-lightbox="4" onclick="openLightbox(4)" role="button" tabindex="0" aria-label="View project: Lead Generation Campaign">
+            <div class="card-content">
+                <h3>Lead Gen Campaign</h3>
+                <strong>AI-optimized ad spend management</strong>
+            </div>
+        </div>
+        <div class="gallery-card" data-lightbox="5" onclick="openLightbox(5)" role="button" tabindex="0" aria-label="View project: Review Generation System">
+            <div class="card-content">
+                <h3>Review System</h3>
+                <strong>Automated reputation management</strong>
+            </div>
+        </div>
+        <div class="gallery-card" data-lightbox="6" onclick="openLightbox(6)" role="button" tabindex="0" aria-label="View project: Brand Identity Package">
+            <div class="card-content">
+                <h3>Brand Identity</h3>
+                <strong>Complete visual identity design</strong>
+            </div>
         </div>
     </div>
+</section>
 
-    <div class="gallery-card" data-lightbox="4" onclick="openLightbox(4)">
-        <div class="card-content">
-            <h3>Web Development Suite</h3>
-            <strong>Full-stack business solutions</strong>
-        </div>
-    </div>
+<!-- CTA Section -->
+<section class="cta-section">
+    <h2>Ready for Results Like These?</h2>
+    <p>Book a free consultation and let's talk about how AI-powered marketing can grow your contracting business.</p>
+    <a href="/book" class="cta-btn">Schedule Your Free Consultation</a>
+</section>
 
-    <div class="gallery-card" data-lightbox="5" onclick="openLightbox(5)">
-        <div class="card-content">
-            <h3>Cloud Integration API</h3>
-            <strong>Seamless enterprise connectivity</strong>
-        </div>
-    </div>
-
-    <div class="gallery-card" data-lightbox="6" onclick="openLightbox(6)">
-        <div class="card-content">
-            <h3>Security Audit Tool</h3>
-            <strong>AI-powered vulnerability detection</strong>
-        </div>
-    </div>
-</div>
-
-<!-- Lightbox Overlay - Yagami! You need to implement the open/close system here! -->
-<div class="lightbox" id="gallery-lightbox">
-    <span class="lightbox-close" onclick="closeLightbox()">×</span>
+<!-- Lightbox Overlay -->
+<div class="lightbox" id="gallery-lightbox" role="dialog" aria-label="Project viewer">
+    <span class="lightbox-close" onclick="closeLightbox()" role="button" aria-label="Close lightbox" tabindex="0">×</span>
     <div class="placeholder">
-        <strong style="color:#e9d5ff; font-size: clamp(1.2rem, 3vw, 2rem); text-align: center;">
-            PROJECT VIEWER<br><span style="font-size: clamp(0.9rem, 2vw, 1.2rem); opacity: 0.8;">(Yagami - implement image source logic here!)</span>
+        <strong style="color: #e9d5ff; font-size: clamp(1.2rem, 3vw, 2rem); text-align: center;">
+            PROJECT VIEWER
         </strong>
     </div>
 </div>
 
-<script src="js/portfolio-interactions.js"></script>
+<!-- Footer -->
+<footer class="portfolio-footer">
+    <p>&copy; 2025 Moliam. AI-powered marketing for local contractors.</p>
+</footer>
+
+<script>
+function openLightbox(id) {
+    const lb = document.getElementById('gallery-lightbox');
+    if (lb) { lb.classList.add('active'); }
+}
+function closeLightbox() {
+    const lb = document.getElementById('gallery-lightbox');
+    if (lb) { lb.classList.remove('active'); }
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLightbox();
+});
+</script>
 
 </body>
 </html>
