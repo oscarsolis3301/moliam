@@ -503,7 +503,7 @@ export async function onRequestGetById(context) {
   }
 }
 
-ffunction jsonResp(status, body) {
+function jsonResp(status, body) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {

@@ -219,7 +219,7 @@ async function hashSHA256(str) {
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
-Ffunction jsonResp(status, body) {
+function jsonResp(status, body) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
