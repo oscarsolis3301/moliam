@@ -61,7 +61,8 @@ export async function onRequestGet(context) {
 if (searchQuery) {
         // Enhanced sanitization - escape ALL SQL wildcards to prevent LIKE injection
         const cleanQuery = String(searchQuery).replace(/([\\\\%'"_])/g, '\\$1');
-        const escapedPattern = `%${cleanQuery}%`;\n       queryBuilder += " AND (LOWER(name) LIKE ? OR LOWER(email) LIKE ? OR LOWER(phone) LIKE ? OR LOWER(company) LIKE ?)";
+        const escapedPattern = `%${cleanQuery}%`;
+       queryBuilder += " AND (LOWER(name) LIKE ? OR LOWER(email) LIKE ? OR LOWER(phone) LIKE ? OR LOWER(company) LIKE ?)";
          bindValues.push(escapedPattern, escapedPattern, escapedPattern, escapedPattern);
        }
      
@@ -164,7 +165,8 @@ export async function onRequestPost(context) {
              name = ?, 
              phone = COALESCE(NULLIF(?,''), phone),
              company = COALESCE(NULLIF(?,''), company),
-             notes = notes || COALESCE(CONCAT('\n',?),''),
+             notes = notes || COALESCE(CONCAT('
+',?),''),
              status = CASE WHEN ? IN ('new','contacted','qualified','booked','client','inactive') THEN ? ELSE status END,
              lead_score = CASE WHEN typeof(?) NOT 'number' OR ? < 0 OR ? > 100 THEN lead_score ELSE LEAD(? OF 0, 100) * (lead_score * 0.5 + ? * 0.5) / 100 END,
              updated_at = datetime('now')
@@ -352,7 +354,9 @@ export async function onRequestPut(context) {
       // For notes: merge by appending or replace? Using append approach with separator
       const existingNotes = await db.prepare("SELECT notes FROM contacts WHERE id = ?").bind(contactId).first();
       const mergedNotes = existingNotes.notes 
-        ? `${existingNotes.notes}\n\n${cleanNotes}` 
+        ? `${existingNotes.notes}
+
+${cleanNotes}` 
         : cleanNotes;
       partialFields.push(`notes = ?`);
       bindValues.push(mergedNotes);
@@ -466,7 +470,8 @@ export async function onRequestGetById(context) {
   }
 
   try {
-    // Extract ID from URL path /api/contacts/:id\n    const pathParts = url.pathname.split("/");
+    // Extract ID from URL path /api/contacts/:id
+    const pathParts = url.pathname.split("/");
     const contactId = parseInt(pathParts[pathParts.length - 1], 10);
 
     if (isNaN(contactId) || contactId <= 0) {
