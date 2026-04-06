@@ -60,7 +60,7 @@ export async function onRequestGet(context) {
 
 if (searchQuery) {
         // Enhanced sanitization - escape ALL SQL wildcards to prevent LIKE injection
-        const cleanQuery = String(searchQuery).replace(/([\\\\%'"_])/\g, '\\$1');
+        const cleanQuery = String(searchQuery).replace(/([\\\\%'"_])/g, '\\$1');
         const escapedPattern = `%${cleanQuery}%`;\n       queryBuilder += " AND (LOWER(name) LIKE ? OR LOWER(email) LIKE ? OR LOWER(phone) LIKE ? OR LOWER(company) LIKE ?)";
          bindValues.push(escapedPattern, escapedPattern, escapedPattern, escapedPattern);
        }
