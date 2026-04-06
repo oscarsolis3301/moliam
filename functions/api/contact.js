@@ -1,13 +1,13 @@
 /**
- * MOLIAM Contact Form — CloudFlare Pages Function
- * POST /api/contact
+ * MOLIAM Contact Form — CloudFlare Pages Function v3
+ * POST /api/contact — Enhanced with lead scoring and auto-categorization
  */
 
 export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
-  // --- Parse body ---
+   // --- Parse body ---
   let data;
   try {
     data = await request.json();
@@ -15,7 +15,7 @@ export async function onRequestPost(context) {
     return jsonResp(400, { error: true, message: "Invalid JSON body." });
   }
 
-  // --- Validate ---
+   // --- Validate ---
   const name = (data.name || "").trim();
   const email = (data.email || "").toLowerCase().trim();
   const phone = data.phone ? String(data.phone).replace(/[^\d()\-+\s]/g, "").trim() : null;
@@ -28,21 +28,21 @@ export async function onRequestPost(context) {
   if (message.length < 10) errors.push("Message must be at least 10 characters.");
   if (errors.length) return jsonResp(400, { error: true, message: errors.join(" ") });
 
-  // --- Check D1 availability ---
+   // --- Check D1 availability ---
   if (!db) {
-    // D1 not bound — still send webhook and return success
-    await sendWebhook(env, { name, email, phone, company, message, service: data.service, score: 0, subId: 0 });
+     // D1 not bound — still send webhook and return success
+    await sendWebhook(env, { name, email, phone, company, message, service: data.service, score: 0, category: "cold", subId: 0 });
     return jsonResp(200, { success: true, message: "Thanks! We'll be in touch within 1 business day.", submissionId: 0 });
   }
 
   try {
-    // --- Rate limiting (best effort) ---
+     // --- Rate limiting (best effort) ---
     try {
       const ip = request.headers.get("cf-connecting-ip") || "unknown";
       const ipHash = await hashSHA256(ip);
       const rl = await db.prepare(
-        "SELECT request_count, window_start FROM rate_limits WHERE hash_ip = ?"
-      ).bind(ipHash).first();
+         "SELECT request_count, window_start FROM rate_limits WHERE hash_ip = ?"
+       ).bind(ipHash).first();
 
       if (rl) {
         const windowAge = Date.now() - new Date(rl.window_start).getTime();
@@ -56,48 +56,73 @@ export async function onRequestPost(context) {
         }
       } else {
         await db.prepare(
-          "INSERT INTO rate_limits (hash_ip, request_count, window_start, last_request_timestamp) VALUES (?, 1, datetime('now'), datetime('now'))"
-        ).bind(ipHash).run();
+           "INSERT INTO rate_limits (hash_ip, request_count, window_start, last_request_timestamp) VALUES (?, 1, datetime('now'), datetime('now'))"
+         ).bind(ipHash).run();
       }
     } catch {
       // Rate limiting table might not exist — skip, don't fail the submission
     }
 
-    // --- Insert submission ---
+    // --- Ensure submissions table has lead_score column ---
+    try {
+      await db.prepare("ALTER TABLE submissions ADD COLUMN lead_score INTEGER DEFAULT 0").run();
+    } catch {
+      // Column already exists or no need to modify
+    }
+    
+    try {
+      await db.prepare("ALTER TABLE submissions ADD COLUMN category TEXT DEFAULT 'cold'").run();
+    } catch {
+      // Column already exists
+    }
+
+     // --- Insert submission ---
     const ua = request.headers.get("user-agent") || "";
     const screenRes = data.screenResolution || "";
     let subId = 0;
 
     try {
       const sub = await db.prepare(
-        "INSERT INTO submissions (name, email, phone, company, message, user_agent, screen_resolution) VALUES (?, ?, ?, ?, ?, ?, ?)"
-      ).bind(name, email, phone, company, message, ua, screenRes).run();
+         "INSERT INTO submissions (name, email, phone, company, message, user_agent, screen_resolution, lead_score, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+       ).bind(name, email, phone, company, message, ua, screenRes, 0, "cold").run();
       subId = sub.meta.last_row_id;
     } catch {
-      // If submissions table schema is wrong, try minimal insert
+      // If submissions table schema is wrong, try minimal insert without new columns
       try {
         const sub = await db.prepare(
-          "INSERT INTO submissions (name, email, phone, message) VALUES (?, ?, ?, ?)"
-        ).bind(name, email, phone, message).run();
+           "INSERT INTO submissions (name, email, phone, message) VALUES (?, ?, ?, ?)"
+         ).bind(name, email, phone, message).run();
         subId = sub.meta.last_row_id;
       } catch {
         // Table might not exist at all — continue without DB
       }
     }
 
-    // --- Lead scoring ---
-    const score = calculateLeadScore({ phone, company, service: data.service, budget: data.budget, timeline: data.timeline, message });
+     // --- Lead scoring with clear service-based tiers ---
+    const scoreResult = calculateLeadScore(data.service, data.budget, data.timeline);
+    const score = scoreResult.score;
+    const category = scoreResult.category; // hot (80+), warm (40-79), cold (<40)
 
-    // --- Create lead (best effort) ---
+     // --- Update submission with lead_score and category if we have a valid subId ---
+    if (subId > 0) {
+      try {
+        await db.prepare("UPDATE submissions SET lead_score = ?, category = ? WHERE id = ?")
+          .bind(score, category, subId).run();
+      } catch {
+        // Ignore update failures
+      }
+    }
+
+     // --- Create lead (best effort) ---
     try {
       await db.prepare(
-        "INSERT INTO leads (submission_id, status, score, created_at) VALUES (?, 'new', ?, datetime('now'))"
-      ).bind(subId, score).run();
+         "INSERT INTO leads (submission_id, status, score, created_at) VALUES (?, 'new', ?, datetime('now'))"
+       ).bind(subId, score).run();
     } catch {
       // leads table might not exist — skip
     }
 
-    // --- Discord webhook (include social media fields) ---
+     // --- Discord webhook with lead score + priority tag ---
     const socials = {
       website: (data.website || "").trim(),
       gbp: (data.gbp || "").trim(),
@@ -105,17 +130,19 @@ export async function onRequestPost(context) {
       instagram: (data.instagram || "").trim(),
       yelp: (data.yelp || "").trim(),
     };
-    await sendWebhook(env, { name, email, phone, company, message, service: data.service, score, subId, socials });
+    await sendWebhook(env, { name, email, phone, company, message, service: data.service, score, category, subId, socials });
 
     return jsonResp(200, {
       success: true,
       message: "Thanks! We'll be in touch within 1 business day.",
       submissionId: subId,
+      leadScore: score,
+      category: category,
     });
 
   } catch (err) {
-    // Even if D1 completely fails, still send webhook and return success to user
-    await sendWebhook(env, { name, email, phone, company, message, service: data.service, score: 0, subId: 0, socials });
+     // Even if D1 completely fails, still send webhook and return success to user
+    await sendWebhook(env, { name, email, phone, company, message, service: data.service, score: 0, category: "cold", subId: 0 });
     return jsonResp(200, {
       success: true,
       message: "Thanks! We'll be in touch within 1 business day.",
@@ -124,7 +151,7 @@ export async function onRequestPost(context) {
   }
 }
 
-async function sendWebhook(env, { name, email, phone, company, message, service, score, subId, socials }) {
+async function sendWebhook(env, { name, email, phone, company, message, service, score, category, subId, socials }) {
   const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
   if (!webhookUrl || !webhookUrl.startsWith("https://discord.com/api/webhooks/")) return;
 
@@ -132,16 +159,27 @@ async function sendWebhook(env, { name, email, phone, company, message, service,
     const svcRaw = (service || "").toLowerCase();
     const svcLabel = { website: "Website Build", gbp: "GBP Optimization", lsa: "Google LSA", retainer: "Full Retainer", other: "Other" }[svcRaw] || service || "—";
 
-    // Build fields array
+     // Determine priority tag based on lead_score and category
+    let priorityTag = "";
+    if (category === "hot") {
+      priorityTag = "<@1466244456088080569>"; // Ada - hot leads
+    } else if (category === "warm") {
+      priorityTag = "<@1486921534441259098>"; // Ultra - warm leads  
+    } else {
+      priorityTag = ""; // cold leads don't need immediate attention tag
+    }
+
+     // Build fields array with lead score and category
     const fields = [
-      { name: "📧 Email", value: email, inline: true },
-      { name: "📱 Phone", value: phone || "—", inline: true },
-      { name: "🏢 Company", value: company || "—", inline: true },
-      { name: "🎯 Service", value: svcLabel, inline: true },
-      { name: "📊 Lead Score", value: `**${score}**/100`, inline: true },
+       { name: "📧 Email", value: email, inline: true },
+       { name: "📱 Phone", value: phone || "—", inline: true },
+       { name: "🏢 Company", value: company || "—", inline: true },
+       { name: "🎯 Service", value: svcLabel, inline: true },
+       { name: "📊 Lead Score", value: `**${score}/100**`, inline: true },
+       { name: "🏷️ Category", value: `**${category.toUpperCase()}**`, inline: true },
     ];
 
-    // Add social media fields if provided
+     // Add social media fields if provided
     const s = socials || {};
     const socialLines = [];
     if (s.website) socialLines.push(`🌐 [Website](${s.website})`);
@@ -162,10 +200,10 @@ async function sendWebhook(env, { name, email, phone, company, message, service,
       body: JSON.stringify({
         username: "Moliam Lead",
         avatar_url: "https://moliam.com/logo.png",
-        content: "<@251822830574895104> New lead submitted!",
+        content: priorityTag + (priorityTag ? " New high-priority lead! " : " New lead submitted!"),
         embeds: [{
-          title: "🔔 New Lead — " + name,
-          color: score >= 50 ? 0x10B981 : score >= 25 ? 0xF59E0B : 0x3B82F6,
+          title: "🔔" + (category === "hot" ? " HOT LEAD —" : category === "warm" ? " Warm Lead —" : " New Lead —") + name,
+          color: category === "hot" ? 0x10B981 : category === "warm" ? 0xF59E0B : 0x3B82F6,
           fields,
           footer: { text: `Lead #${subId} • moliam.com` },
           timestamp: new Date().toISOString(),
@@ -173,7 +211,7 @@ async function sendWebhook(env, { name, email, phone, company, message, service,
       }),
     });
   } catch {
-    // Webhook failure is never fatal
+     // Webhook failure is never fatal
   }
 }
 
@@ -186,30 +224,57 @@ function jsonResp(status, body) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-    },
-  });
+       "Content-Type": "application/json",
+       "Access-Control-Allow-Origin": "*",
+     },
+   });
 }
 
-function calculateLeadScore({ phone, company, service, budget, timeline, message }) {
+/**
+ * Enhanced Lead Scoring based on service interest (core requirement v3)
+ * Service tiers: retainer=100pts (hot), lsa=80pts, gbp=60pts, website=40pts, other=20pts
+ * Auto-categorization: hot (80+), warm (40-79), cold (<40)
+ */
+function calculateLeadScore(service, budget, timeline) {
   let score = 0;
-  if (phone && phone.replace(/\D/g, "").length >= 7) score += 15;
-  if (company && company.length >= 2) score += 10;
   const svc = (service || "").toLowerCase();
-  if (svc.includes("retainer")) score += 30;
-  else if (svc.includes("lsa")) score += 25;
-  else if (svc.includes("gbp")) score += 20;
-  else if (svc.includes("website") || svc.includes("web")) score += 15;
+
+   // SERVICE-BASED SCORING — Core v3 requirement: priority by service type
+  if (svc.includes("retainer")) {
+    score += 100; // retainer = 100pts (hot)
+  } else if (svc.includes("lsa") || svc.includes("google_ads")) {
+    score += 80; // lsa = 80pts
+  } else if (svc.includes("gbp") || svc.includes("google_business")) {
+    score += 60; // gbp = 60pts  
+  } else if (svc.includes("website") || svc.includes("web build")) {
+    score += 40; // website = 40pts
+  } else {
+    score += 20; // other = 20pts
+  }
+
+   // Budget bonus: adds 5-15 points
   const bgt = (budget || "").toLowerCase();
-  if (bgt.includes("5k") || bgt.includes("5000") || bgt.includes("10k")) score += 25;
-  else if (bgt.includes("2.5k") || bgt.includes("2500")) score += 20;
-  else if (bgt.includes("1k") || bgt.includes("1000")) score += 10;
+  if (bgt.includes("10k+") || bgt.includes("10000") || bgt.includes("enterprise")) score += 15;
+  else if (bgt.includes("5k") || bgt.includes("5000")) score += 10;
+  else if (bgt.includes("2.5k") || bgt.includes("2500")) score += 7;
+  else if (bgt.includes("1k") || bgt.includes("1000")) score += 5;
+
+   // Timeline urgency bonus: adds 0-20 points
   const tl = (timeline || "").toLowerCase();
-  if (tl.includes("immediate") || tl.includes("asap")) score += 20;
-  else if (tl.includes("1-2") || tl.includes("week")) score += 15;
+  if (tl.includes("immediate") || tl.includes("asap") || tl.includes("today")) score += 20;
+  else if (tl.includes("1-2") || tl.includes("this week") || tl.includes("week")) score += 15;
   else if (tl.includes("month")) score += 10;
-  else if (tl.includes("explor")) score += 5;
-  if (message && message.length > 50) score += 10;
-  return Math.max(0, Math.min(100, score));
+  else if (tl.includes("explor") || tl.includes("soon")) score += 5;
+
+   // Auto-categorization based on final score
+  let category = "cold";
+  if (score >= 80) {
+    category = "hot";
+  } else if (score >= 40 && score < 80) {
+    category = "warm";
+  } else {
+    category = "cold";
+  }
+
+  return { score: Math.max(0, Math.min(100, score)), category };
 }
