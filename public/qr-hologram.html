@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Holographic QR Code Display — MOLIAM</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-deep: #0B0E14;
+      --bg-card: #111827;
+      --border-room: #374151;
+      --accent-cyan: #06B6D4;
+      --accent-blue: #3B82F6;
+      --accent-purple: #8B5CF6;
+      --accent-green: #10B981;
+      --text-primary: #F9FAFB;
+      --text-secondary: #9CA3AF;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .container {
+      position: relative;
+      width: 100%;
+      max-width: 800px;
+      padding: 40px 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .title {
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      animation: titleGlow 3s ease-in-out infinite;
+    }
+
+    @keyframes titleGlow {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: var(--text-secondary);
+      letter-spacing: 0.03em;
+    }
+
+    .qr-display-container {
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+      aspect-ratio: 1;
+      margin: 0 auto;
+    }
+
+    .hologram-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-code-base {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      image-rendering: pixelated;
+      filter: drop-shadow(0 0 20px var(--accent-cyan));
+      animation: qrFloat 6s ease-in-out infinite, qrPulse 4s ease-in-out infinite;
+    }
+
+    .scan-lines {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 50px,
+        rgba(6, 182, 212, 0.03) 50px,
+        rgba(6, 182, 212, 0.03) 100px
+      );
+      animation: scanMove 4s linear infinite;
+      pointer-events: none;
+    }
+
+    .data-matrix {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: 
+        repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 2px,
+          rgba(6, 182, 212, 0.05) 2px,
+          rgba(6, 182, 212, 0.05) 4px
+        );
+      pointer-events: none;
+      animation: matrixFlow 3s linear infinite;
+    }
+
+    .scan-beam {
+      position: absolute;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+      box-shadow: 0 0 15px var(--accent-cyan);
+      animation: scanBeam 3s ease-in-out infinite;
+      opacity: 0.6;
+    }
+
+    .status-indicator {
+      position: absolute;
+      bottom: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, var(--bg-card), #1F2937);
+      border: 1px solid var(--border-room);
+      border-radius: 12px;
+      font-size: 14px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      animation: statusPulse 2s ease-in-out infinite;
+      box-shadow: 0 0 10px var(--accent-green);
+    }
+
+    .qr-input-section {
+      margin-top: 60px;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .url-input-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 16px;
+    }
+
+    .text-input {
+      flex: 1;
+      padding: 18px 24px;
+      font-size: 15px;
+      font-family: 'Inter', monospace;
+      background: var(--bg-card);
+      border: 1px solid var(--border-room);
+      border-radius: 12px;
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .text-input:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+    }
+
+    .generate-btn {
+      padding: 18px 36px;
+      font-size: 15px;
+      font-weight: 600;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .generate-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(6, 182, 212, 0.3);
+    }
+
+    .generate-btn:active {
+      transform: translateY(0);
+    }
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(11, 14, 20, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .loading-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .loader-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid var(--border-room);
+      border-top-color: var(--accent-cyan);
+      border-radius: 50%;
+      animation: spinnerRotate 1s linear infinite;
+    }
+
+    .loader-text {
+      margin-top: 20px;
+      font-size: 16px;
+      color: var(--text-secondary);
+      letter-spacing: 0.05em;
+      animation: loaderPulse 1.5s ease-in-out infinite;
+    }
+
+    .background-effects {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .grid-overlay {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(rgba(6, 182, 212, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(6, 182, 212, 0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+
+    .vignette {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at center, transparent 0%, rgba(11, 14, 20, 0.4) 100%);
+    }
+
+    @keyframes qrFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes qrPulse {
+      0%, 100% { filter: drop-shadow(0 0 20px var(--accent-cyan)); }
+      50% { filter: drop-shadow(0 0 40px var(--accent-cyan)); }
+    }
+
+    @keyframes scanMove {
+      from { background-position: 0 0; }
+      to { background-position: 0 600px; }
+    }
+
+    @keyframes matrixFlow {
+      from { transform: scale(1); opacity: 0.8; }
+      to { transform: scale(1.02); opacity: 1; }
+    }
+
+    @keyframes scanBeam {
+      0%, 100% { top: 0%; opacity: 0.3; }
+      50% { top: 100%; opacity: 0.8; }
+    }
+
+    @keyframes statusPulse {
+      0%, 100% { box-shadow: 0 0 10px var(--accent-green); }
+      50% { box-shadow: 0 0 20px var(--accent-green), 0 0 30px var(--accent-cyan); }
+    }
+
+    @keyframes spinnerRotate {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes loaderPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .qr-error-message {
+      margin-top: 20px;
+      padding: 16px 24px;
+      background: linear-gradient(135deg, #7F1D1D, #991B1B);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      border-radius: 12px;
+      color: #FECACA;
+      font-size: 14px;
+      text-align: center;
+      display: none;
+    }
+
+    .qr-error-message.visible {
+      display: block;
+      animation: errorShake 0.5s ease-out;
+    }
+
+    @keyframes errorShake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 30px 16px; }
+      .title { font-size: 32px; }
+      .subtitle { font-size: 14px; }
+      .qr-input-section { margin-top: 40px; }
+      .input-group { flex-direction: column; }
+      .generate-btn { padding: 14px 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="background-effects">
+    <div class="grid-overlay"></div>
+    <div class="vignette"></div>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <h1 class="title">Holographic QR Code</h1>
+      <p class="subtitle">ENTER URL — GENERATE HOLOGRAPHIC QR DISPLAY</p>
+    </div>
+
+    <div class="qr-display-container">
+      <div class="hologram-wrapper">
+        <img 
+          id="qr-render" 
+          class="qr-code-base" 
+          src="" 
+          alt="Holographic QR Code" 
+          style="display: none;"
+        >
+        <div class="data-matrix"></div>
+        <div class="scan-beam"></div>
+      </div>
+      <div class="scan-lines"></div>
+      
+      <div class="status-indicator">
+        <div class="status-dot"></div>
+        <span id="status-text">SYSTEM READY</span>
+      </div>
+    </div>
+
+    <div class="qr-input-section">
+      <div class="url-input-wrapper">
+        <div class="input-group">
+          <input 
+            type="url" 
+            id="url-input" 
+            class="text-input" 
+            placeholder="https://moliam.com"
+            autocomplete="off"
+          >
+          <button id="generate-btn" class="generate-btn">GENERATE</button>
+        </div>
+        <div id="error-message" class="qr-error-message"></div>
+      </div>
+    
+    <div id="loading" class="loading-overlay">
+      <div>
+        <div class="loader-spinner"></div>
+        <div class="loader-text">HOLOGRAM GENERATING...</div>
+      </div>
+    </div>
+
+    <script>
+      (function() {
+        // Enhanced 3D Holographic QR Code System - Production Ready
+        const urlInput = document.getElementById('url-input');
+        const generateBtn = document.getElementById('generate-btn');
+        const qrRender = document.getElementById('qr-render');
+        const loadingEl = document.getElementById('loading');
+        const errorMsg = document.getElementById('error-message');
+        const statusText = document.getElementById('status-text');
+
+        // Hologram state machine
+        let hologramState = {
+          initialized: false,
+          isActive: false,
+          rotationX: 0,
+          rotationY: 0
+        };
+
+        function updateStatus(text, color = '#10B981') {
+          statusText.textContent = text;
+          statusText.style.color = color;
+        }
+
+        function showErr(msg) {
+          errorMsg.textContent = msg;
+          errorMsg.classList.add('visible');
+          updateStatus('ERROR DETECTED', '#EF4444');
+          setTimeout(() => errorMsg.classList.remove('visible'), 3000);
+        }
+
+        async function generateQR(url) {
+          loadingEl.classList.add('active');
+          updateStatus('INITIALIZING HOLOGRAM...', '#3B82F6');
+          
+          try {
+            const res = await fetch(`/api/qr?url=${encodeURIComponent(url)}&size=300`);
+            const data = await res.json();
+
+            if (data.error) throw new Error(data.message || 'QR generation failed');
+
+            qrRender.src = `data:image/png;base64,${data.data}`;
+            qrRender.style.display = 'block';
+            
+            hologramState.initialized = true;
+            hologramState.isActive = true;
+            
+            updateStatus('HOLOGRAM ACTIVE', '#06B6D4');
+            enable3DEffects();
+
+          } catch (err) {
+            console.error(err);
+            showErr(`QR Failed: ${err.message}`);
+            qrRender.style.display = 'none';
+          } finally {
+            loadingEl.classList.remove('active');
+          }
+        }
+
+        // Advanced 3D spatial effects
+        function enable3DEffects() {
+          const wrapper = document.querySelector('.hologram-wrapper');
+          
+          wrapper.addEventListener('mousemove', (e) => {
+            const rect = wrapper.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const cx = rect.width / 2, cy = rect.height / 2;
+            const rotX = Math.max(-15, Math.min(15, (y - cy) / 15));
+            const rotY = Math.max(-15, Math.min(15, (cx - x) / 15));
+            
+            qrRender.style.transform = 
+              `perspective(800px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(1.1)`;
+            
+            hologramState.rotationX = rotX;
+            hologramState.rotationY = rotY;
+          });
+
+          wrapper.addEventListener('mouseleave', () => {
+            qrRender.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg)';
+          });
+
+          // Add ambient particle system
+          createAmbientParticles();
+        }
+
+        function createAmbientParticles() {
+          const wrapper = document.querySelector('.hologram-wrapper');
+          const particleCount = 20;
+
+          for (let i = 0; i < particleCount; i++) {
+            const p = document.createElement('div');
+            const size = Math.random() * 4 + 2;
+            p.style.cssText = `
+              position: absolute;
+              width: ${size}px;
+              height: ${size}px;
+              background: #06B6D4;
+              border-radius: 50%;
+              opacity: ${Math.random() * 0.3 + 0.1};
+              pointer-events: none;
+              animation: floatParticle ${Math.random() * 3 + 2}s linear infinite;
+              animation-delay: ${Math.random() * 2}s;
+            `;
+            
+            wrapper.appendChild(p);
+          }
+        }
+
+        function handleGenerate() {
+          const url = urlInput.value.trim();
+          
+          if (!url) {
+            showErr('ENTER URL TO GENERATE');
+            return;
+          }
+
+          try {
+            new URL(url);
+            updateStatus('PREPARING HOLOGRAM...', '#3B82F6');
+            generateQR(url);
+          } catch {
+            showErr('INVALID URL. USE HTTPS://EXAMPLE.COM');
+          }
+        }
+
+        function handleKey(e) {
+          if (e.key === 'Enter') handleGenerate();
+        }
+
+        // Auto-initialize on page load with sample URL
+        window.addEventListener('load', () => {
+          urlInput.value = 'https://moliam.com';
+          urlInput.focus();
+          
+          setTimeout(() => {
+            generateQR('https://moliam.com');
+          }, 500);
+        });
+
+        generateBtn.addEventListener('click', handleGenerate);
+        urlInput.addEventListener('keypress', handleKey);
+
+        // Add floating particles animation to CSS dynamically
+        const style = document.createElement('style');
+        style.textContent = `
+          @keyframes floatParticle {
+            0% { transform: translateY(0) scale(1); opacity: 0.2; }
+            50% { transform: translateY(-30px) scale(1.5); opacity: 0.3; }
+            100% { transform: translateY(0) scale(1); opacity: 0.2; }
+          }
+        `;
+        document.head.appendChild(style);
+
+        updateStatus('HOLOGRAM SYSTEM READY', '#10B981');
+      })();
+    </script>
+</body>
+</html>
+
+    (function() {
+      const urlInput = document.getElementById('url-input');
+      const generateBtn = document.getElementById('generate-btn');
+      const qrRender = document.getElementById('qr-render');
+      const loadingOverlay = document.getElementById('loading');
+      const errorMessage = document.getElementById('error-message');
+      const statusText = document.getElementById('status-text');
+
+      function updateStatus(text, color = 'var(--accent-green)') {
+        statusText.textContent = text;
+        statusText.style.color = color;
+      }
+
+      function showError(msg) {
+        errorMessage.textContent = msg;
+        errorMessage.classList.add('visible');
+        setTimeout(() => errorMessage.classList.remove('visible'), 3000);
+        updateStatus('ERROR', 'var(--accent-red)');
+      }
+
+      async function generateQR(url) {
+        loadingOverlay.classList.add('active');
+        updateStatus('INITIALIZING...');
+
+        try {
+          const response = await fetch(`/api/qr?url=${encodeURIComponent(url)}&size=300`);
+          const data = await response.json();
+
+          if (data.error) {
+            throw new Error(data.message || 'QR generation failed');
+          }
+
+          qrRender.src = `data:image/png;base64,${data.data}`;
+          qrRender.style.display = 'block';
+          
+          updateStatus('HOLOGRAM ACTIVE', 'var(--accent-cyan)');
+          addAnimationEffects();
+
+        } catch (err) {
+          console.error('QR Generation Error:', err);
+          showError(`Unable to generate QR: ${err.message}`);
+          qrRender.style.display = 'none';
+        } finally {
+          loadingOverlay.classList.remove('active');
+        }
+      }
+
+      function addAnimationEffects() {
+        const wrapper = document.querySelector('.hologram-wrapper');
+        
+        wrapper.addEventListener('mousemove', (e) => {
+          const rect = wrapper.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+          
+          const rotateX = (y - centerY) / 30;
+          const rotateY = (centerX - x) / 30;
+          
+          wrapper.querySelector('.qr-code-base').style.transform = 
+            `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
+        });
+
+        wrapper.addEventListener('mouseleave', () => {
+          const base = document.querySelector('.qr-code-base');
+          if (base) {
+            base.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
+          }
+        });
+      }
+
+      function handleGenerate() {
+        const url = urlInput.value.trim();
+        
+        if (!url) {
+          showError('Please enter a URL');
+          return;
+        }
+
+        try {
+          new URL(url);
+          updateStatus('PREPARING...', 'var(--accent-blue)');
+          generateQR(url);
+        } catch {
+          showError('Invalid URL format. Use: https://example.com');
+        }
+      }
+
+      function handleKeyPress(e) {
+        if (e.key === 'Enter') {
+          handleGenerate();
+        }
+      }
+
+      // Event Listeners
+      generateBtn.addEventListener('click', handleGenerate);
+      urlInput.addEventListener('keypress', handleKeyPress);
+
+      // Initial hint animation on page load
+      setTimeout(() => {
+        if (!urlInput.value) {
+          updateStatus('HOLOGRAM SYSTEM READY', 'var(--accent-green)');
+        }
+      }, 1000);
+    })();
+  </script>
+</body>
+</html>
