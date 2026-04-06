@@ -10,39 +10,37 @@ export async function onRequestGet(context) {
   const db = env.MOLIAM_DB;
   
     // List all appointments for Ada's dashboard
-  if (context.request.url.includes('/list')) {
+if (context.request.url.includes('/list')) {
     const data = await db.prepare(`
       SELECT a.*, p.qualification_score, p.budget_range, 
              s.name AS lead_name, s.email AS lead_email
       FROM appointments a
-      LEFT JOIN prequalifications p ON a.prequalification_id = p.id
-      LEFT JOIN submissions s ON p.submission_id = s.id
-      ORDER BY a.scheduled_at DESC
-      LIMIT 50
-      `).all({ limit: 50 });
+      LEFT JOIN prequalifications p ON a.prequalification_id = p.id\n       LEFT JOIN submissions s ON p.submission_id = s.id
+      ORDER BY a.scheduled_at DESC\n      LIMIT 50
+       `).all({ limit: 50 });
 
     return new Response(JSON.stringify({ success: true, appointments: data.results }), { 
       status: 200, 
-      headers: { 'Content-Type': 'application/json' } 
-     });
-  }
+      headers: { 'Content-Type': 'application/json', 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY' }
+      });
+   }
 
-   // Get specific appointment
+    // Get specific appointment
   const path = context.request.url.split('/api/appointments/')[1];
   if (path) {
     const id = parseInt(path);
     const data = await db.prepare(
-      "SELECT * FROM appointments WHERE id = ?"
-    ).bind(id).first();
+      \"SELECT * FROM appointments WHERE id = ?\"\n     ).bind(id).first();
 
-    if (!data) return new Response(JSON.stringify({ error: true, message: "Appointment not found" }), { status: 404 });
+    if (!data) return new Response(JSON.stringify({ error: true, message: "Appointment not found" }), { status: 404, headers: { 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY' }});
     
     return new Response(JSON.stringify({ success: true, appointment: data }), { 
       status: 200, 
-      headers: { 'Content-Type': 'application/json' } 
-     });
-  }
+      headers: { 'Content-Type': 'application/json', 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY' }
+      });
+   }
 
+  return json({ error: true, message: "Invalid request" }, 400);
   return json({ error: true, message: "Invalid request" }, 400);
 }
 
@@ -132,22 +130,36 @@ async function createAppointment(context, body) {
     calendar_link 
    } = body;
 
-  if (!prequalification_id || !scheduled_at) {
+if (!prequalification_id || !scheduled_at) {
      return new Response(JSON.stringify({ error: true, message: "Pre-qual ID and scheduled date required" }), { status: 400 });
+   }
+
+  // Input validation
+  const clientName = (client_name || "").trim();
+  if (clientName.length > 254) {
+    return new Response(JSON.stringify({ error: true, message: "Client name cannot exceed 254 characters" }), { status: 400 });
   }
+  const clientEmail = (client_email || "")?.toLowerCase().trim();
+  if (clientEmail && (clientEmail.length > 254 || !/^[^\\s@]+@[^\s@]+\.[^\s@]+$/.test(clientEmail))) {
+     return new Response(JSON.stringify({ error: true, message: "Valid email required" }), { status: 400 });
+   }
+  const calendarLink = (calendar_link || "").trim();
+  if (calendarLink && calendarLink.length > 254) {
+    return new Response(JSON.stringify({ error: true, message: "Calendar link cannot exceed 254 characters" }), { status: 400 });
+   }
 
   const res = await db.prepare(
-    "INSERT INTO appointments (prequalification_id, client_name, client_email, scheduled_at, calendar_link) VALUES (?, ?, ?, ?, ?)"
-  ).bind(prequalification_id, client_name || null, client_email || null, scheduled_at, calendar_link || null).run();
+    \"INSERT INTO appointments (prequalification_id, client_name, client_email, scheduled_at, calendar_link) VALUES (?, ?, ?, ?, ?)\"\n   
+).bind(prequalification_id || null, clientName || null, clientEmail || null, scheduled_at, calendarLink || null).run();
 
-  if (!res.success) {
+if (!res.success) {
      return new Response(JSON.stringify({ error: true, message: "Booking failed" }), { status: 500 });
-  }
+   }
 
-    // Log to audit
-  await logAudit(res.meta.last_row_id, 'booked');
+     // Log to audit
+await logAudit(res.meta.last_row_id, 'booked');
 
-  return new Response(JSON.stringify({ success: true, appointment_id: res.meta.last_row_id }), { status: 201 });
+return new Response(JSON.stringify({ success: true, appointment_id: res.meta.last_row_id }), { status: 201 });
 }
 
 async function updateAppointmentStatus(context, id, status) {
@@ -289,6 +301,25 @@ async function sendAutoRetryNotice(appointment) {
   }
 }
 
-function json(body, status = 200) {
-  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+ffunction json(body, status = 200) {
+  return new Response(JSON.stringify(body), { 
+    status, 
+    headers: { 
+      'Content-Type': 'application/json',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY'
+    } 
+  });
+}
+
+// Wrapper for Responses without json() helper to add security headers consistently
+function jsonResponse(status, body) {
+  return new Response(JSON.stringify(body), { 
+    status, 
+    headers: { 
+      'Content-Type': 'application/json',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY'
+    } 
+  });
 }
