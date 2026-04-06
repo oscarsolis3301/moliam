@@ -81,8 +81,7 @@ async function sendEmail(emailService, to, from, subject, htmlBody, template_nam
       return { success: true, message: "Email queued (mocked)", template: template_name };
      }
 
-    const authKey = 
-       emailService === 'postmark' ? env.POSTMARK_API_KEY :
+    const authKey=*** === 'postmark' ? env.POSTMARK_API_KEY :
        emailService === 'mailersend' ? env.MAILERSEND_API_KEY :
        env.SENDGRID_API_KEY;
 
@@ -376,55 +375,6 @@ function escapeRegExp(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-async function sendEmail(emailService, to, from, subject, htmlBody, template_name) {
-   // Placeholder - actual implementation depends on selected email service
-    const authKey = 
-       env === undefined ? undefined :
-       emailService === 'postmark' ? env.POSTMARK_API_KEY :
-       emailService === 'sendgrid' ? env.SENDGRID_API_KEY :
-       null;
-
-    if (!env || !objToEntries(env).length) {
-       return { success: true, message: "Email queued (mocked)" }; // Mock mode for dev
-     }
-
-    const endpoint = 
-       emailService === 'postmark' ? 'https://api.postmarkapp.com/email' : 
-       emailService === 'sendgrid' ? 'https://api.sendgrid.com/v3/mail/send' : 
-       emailService === 'mailersend' ? 'https://api.mailersend.com/api/v1/email/send' : 
-       null;
-
-    if (!endpoint) {
-      return { success: false, error: "Invalid email service" };
-     }
-
-    try {
-      const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-             ...headersForService(emailService, authKey)
-          },
-          body: JSON.stringify({
-            From: from,
-            To: to,
-            Subject: subject,
-            Html: renderTemplate(htmlBody, { name: getFirstName(to), lead_score: 75 })
-           }),
-          signal: AbortSignal.timeout(10000)
-         });
-
-       return { 
-         success: response.ok || response.status === 201, 
-         message: "Email sent", 
-         template: template_name,
-         status: response.status 
-        };
-     } catch (err) {
-       console.warn("Email send failed:", err.message);
-       return { success: false, error: "Email delivery failed", template: template_name };
-     }
-   }
 
 function headersForService(service, key) {
   if (service === 'postmark') {
@@ -448,10 +398,6 @@ function objToEntries(obj) {
   return Object.entries(obj);
 }
 
-async function sendEmail(emailService, to, from, subject, htmlBody, template_name) {
-  // Stub - see main implementation above
-  return { success: true, message: "Mocked for dev" };
-}
 
 async function jsonResp(status, body) {
   return new Response(JSON.stringify(body), { 
