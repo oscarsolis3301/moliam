@@ -67,31 +67,23 @@ export async function onRequestGet(context) {
      
       queryBuilder += " ORDER BY created_at DESC";
 
-    const result = await db.prepare(queryBuilder).bind(...bindValues).all();
-    
-    // Transform raw rows to clean contacts array
-    const contacts = (result.results || []).map(row => ({
-      id: row.id,
-      name: row.name,
-      email: row.email,
-      phone: row.phone,
-      company: row.company,
-      source: row.source,
-      lead_score: row.lead_score ?? 0,
-      status: row.status,
-      notes: row.notes,
-      created_at: row.created_at,
-      updated_at: row.updated_at
-    }));
-
-    return jsonResp(200, { 
-      success: true, 
-      contacts, 
-      meta: { 
-        total: result.total, 
-        has_filters: !!(statusFilter || searchQuery) 
-      } 
-    });
+      const result = await db.prepare(queryBuilder).bind(...bindValues).all();
+      const contacts = (result.results || []).map(row => ({
+        id: row.id, name: row.name, email: row.email, phone: row.phone,
+        company: row.company, source: row.source, lead_score: row.lead_score ?? 0,
+        status: row.status, notes: row.notes, created_at: row.created_at, updated_at: row.updated_at
+      }));
+      return jsonResp(200, { success: true, contacts, meta: { total: result.total, has_filters: true } });
+    } else {
+      baseQuery += " ORDER BY created_at DESC";
+      const result = await db.prepare(baseQuery).all();
+      const contacts = (result.results || []).map(row => ({
+        id: row.id, name: row.name, email: row.email, phone: row.phone,
+        company: row.company, source: row.source, lead_score: row.lead_score ?? 0,
+        status: row.status, notes: row.notes, created_at: row.created_at, updated_at: row.updated_at
+      }));
+      return jsonResp(200, { success: true, contacts, meta: { total: result.total, has_filters: false } });
+    }
   } catch (err) {
     return jsonResp(500, { error: true, message: err.message || "Database error" });
   }
