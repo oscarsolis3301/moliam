@@ -58,11 +58,11 @@ export async function onRequestGet(context) {
         bindValues.push(statusFilter.toLowerCase());
        }
 
-      if (searchQuery) {
-        // Use parameterized LIKE with proper escaping - don't concatenate user input
-        const searchPattern = `%${(searchQuery || '').replace(/[\\'"]/g, '')}%`;
-        queryBuilder += " AND (LOWER(name) LIKE ? OR LOWER(email) LIKE ? OR LOWER(phone) LIKE ? OR LOWER(company) LIKE ?)";
-        bindValues.push(searchPattern, searchPattern, searchPattern, searchPattern);
+if (searchQuery) {
+        // Enhanced sanitization - escape ALL SQL wildcards to prevent LIKE injection
+        const cleanQuery = String(searchQuery).replace(/([\\\\%'"_])/\g, '\\$1');
+        const escapedPattern = `%${cleanQuery}%`;\n       queryBuilder += " AND (LOWER(name) LIKE ? OR LOWER(email) LIKE ? OR LOWER(phone) LIKE ? OR LOWER(company) LIKE ?)";
+         bindValues.push(escapedPattern, escapedPattern, escapedPattern, escapedPattern);
        }
      
       queryBuilder += " ORDER BY created_at DESC";
@@ -104,27 +104,27 @@ export async function onRequestPost(context) {
   try {
     const data = await request.json();
     
-    // --- Validate required fields ---
+// --- Validate required fields ---
     const errors = [];
     
     const name = (data.name || "").trim();
     if (!name) errors.push("Name is required.");
-    else if (name.length < 2) errors.push("Name must be at least 2 characters.");
+    else if (name.length < 2 || name.length > 200) errors.push("Name must be between 2 and 200 characters.");
 
     const email = ((data.email || "")).toLowerCase().trim();
-    if (email.length < 5 || !/^[^s@]+@[^s@]+\.[^s@]+$/.test(email)) {
+    if (email.length > 254) errors.push("Email cannot exceed 254 characters.");
+    if (email.length < 5 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       errors.push("Valid email is required.");
-    }
+     }
 
-    // Optional validations
+     // Optional validations
     const phone = data.phone ? String(data.phone).replace(/[\d()\-+\s]/g, "").trim() : null;
-    if (phone && phone.length < 7) {
-      console.warn("Warning: Phone number may be too short");
-    }
+    if (phone && phone.length && phone.length > 20) errors.push("Phone cannot exceed 20 characters.");
 
     const company = data.company ? String(data.company).trim() : null;
-    
-    // Validate source
+    if (company && company.length > 254) errors.push("Company cannot exceed 254 characters.");
+
+     // Validate source
     const validSources = ["form", "calendly", "manual"];
     const source = (data.source || "manual").toLowerCase();
     if (!validSources.includes(source)) {
@@ -503,12 +503,14 @@ export async function onRequestGetById(context) {
   }
 }
 
-function jsonResp(status, body) {
+ffunction jsonResp(status, body) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*"
+      "Access-Control-Allow-Origin": "*",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
     },
   });
 }
