@@ -15,8 +15,10 @@ if (context.request.url.includes('/list')) {
       SELECT a.*, p.qualification_score, p.budget_range, 
              s.name AS lead_name, s.email AS lead_email
       FROM appointments a
-      LEFT JOIN prequalifications p ON a.prequalification_id = p.id\n       LEFT JOIN submissions s ON p.submission_id = s.id
-      ORDER BY a.scheduled_at DESC\n      LIMIT 50
+      LEFT JOIN prequalifications p ON a.prequalification_id = p.id
+       LEFT JOIN submissions s ON p.submission_id = s.id
+      ORDER BY a.scheduled_at DESC
+      LIMIT 50
        `).all({ limit: 50 });
 
     return new Response(JSON.stringify({ success: true, appointments: data.results }), { 
@@ -30,7 +32,8 @@ if (context.request.url.includes('/list')) {
   if (path) {
     const id = parseInt(path);
     const data = await db.prepare(
-      \"SELECT * FROM appointments WHERE id = ?\"\n     ).bind(id).first();
+      "SELECT * FROM appointments WHERE id = ?"
+     ).bind(id).first();
 
     if (!data) return new Response(JSON.stringify({ error: true, message: "Appointment not found" }), { status: 404, headers: { 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY' }});
     
@@ -149,7 +152,8 @@ if (!prequalification_id || !scheduled_at) {
    }
 
   const res = await db.prepare(
-    \"INSERT INTO appointments (prequalification_id, client_name, client_email, scheduled_at, calendar_link) VALUES (?, ?, ?, ?, ?)\"\n   
+    "INSERT INTO appointments (prequalification_id, client_name, client_email, scheduled_at, calendar_link) VALUES (?, ?, ?, ?, ?)"
+   
 ).bind(prequalification_id || null, clientName || null, clientEmail || null, scheduled_at, calendarLink || null).run();
 
 if (!res.success) {
