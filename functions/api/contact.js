@@ -7,7 +7,7 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
-     // --- Parse body ---
+   // --- Parse body ---
   let data;
   try {
     data = await request.json();
@@ -44,19 +44,19 @@ export async function onRequestPost(context) {
 
       // Cleanup old rate limit rows (older than 1 hour) before checking/inserting
       try {
-      // Cleanup old rate limit rows (older than 1 hour) before checking/inserting
-       try {
-        await db.prepare("DELETE FROM rate_limits WHERE timestamp < datetime('now', '-1 hour')").run();
+        await db.prepare(
+            "DELETE FROM rate_limits WHERE timestamp < datetime('now', '-1 hour')"
+          ).run();
       } catch {}
 
       const countResult = await db.prepare(
-           "SELECT COUNT(*) as cnt FROM rate_limits WHERE ip = ? AND endpoint = ? AND timestamp > datetime('now', '-1 hour')"
-         ).bind(ipHash, endpoint).first();
+          "SELECT COUNT(*) as cnt FROM rate_limits WHERE ip = ? AND endpoint = ? AND timestamp > datetime('now', '-1 hour')"
+        ).bind(ipHash, endpoint).first();
       const count = countResult?.cnt || 0;
 
       if (count >= 5) {
         return jsonResp(429, { error: true, message: "Too many submissions. Please try again later." });
-       }
+      }
 
       // Under limit - insert rate record and proceed
       await db.prepare(

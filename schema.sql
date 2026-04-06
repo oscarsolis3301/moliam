@@ -203,6 +203,9 @@ CREATE TABLE IF NOT EXISTS rate_limits (
 -- Core indexes
 -- ═══════════════════════════════════════════
 CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
-CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);\nCREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);\nCREATE INDEX IF NOT EXISTS idx_projects_user ON projects(user_id);\nCREATE INDEX IF NOT EXISTS idx_project_updates_project ON project_updates(project_id);\nCREATE INDEX IF NOT EXISTS idx_users_email ON users(email);\nCREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);\n\n-- New compound indexes for efficient multi-column lookups (v3.1)
-CREATE INDEX IF NOT EXISTS idx_rate_limits_ip_endpoint ON rate_limits(ip, endpoint);\nCREATE INDEX IF NOT EXISTS idx_contacts_email_source ON contacts(email, source);\nCREATE INDEX IF NOT EXISTS idx_leads_status_created ON leads(status, created_at DESC);
-
+CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
+CREATE INDEX IF NOT EXISTS idx_projects_user ON projects(user_id);
+CREATE INDEX IF NOT EXISTS idx_project_updates_project ON project_updates(project_id);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);
