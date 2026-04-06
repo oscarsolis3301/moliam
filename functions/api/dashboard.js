@@ -9,13 +9,13 @@ export async function onRequestGet(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
   
-  const token = getSessionToken(request);
+  const token=getSessionToken(request);
   if (!token) return jsonResp(401, { error: true, message: "Not authenticated." }, request);
 
   try {
     const session = await db.prepare(
-         "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1 AND s.expires_at > datetime('now')"
-       ).bind(token).first();
+          "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1 AND s.expires_at > datetime('now')"
+        ).bind(token).first();
 
     if (!session) return jsonResp(401, { error: true, message: "Session invalid." }, request);
 
