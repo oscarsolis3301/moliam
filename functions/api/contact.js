@@ -15,7 +15,7 @@ export async function onRequestPost(context) {
     return jsonResp(400, { error: true, message: "Invalid JSON body." });
   }
 
-   // --- Validate ---
+    // --- Validate ---
   const name = (data.name || "").trim();
   const email = (data.email || "").toLowerCase().trim();
   const phone = data.phone ? String(data.phone).replace(/[^\d()\-+\s]/g, "").trim() : null;
@@ -24,8 +24,12 @@ export async function onRequestPost(context) {
 
   const errors = [];
   if (name.length < 2) errors.push("Name must be at least 2 characters.");
+  if (name.length > 200) errors.push("Name cannot exceed 200 characters.");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push("Valid email required.");
+  if (email.length > 254) errors.push("Email cannot exceed 254 characters.");
+  if (phone && phone.length > 20) errors.push("Phone number cannot exceed 20 characters.");
   if (message.length < 10) errors.push("Message must be at least 10 characters.");
+  if (message.length > 5000) errors.push("Message cannot exceed 5000 characters.");
   if (errors.length) return jsonResp(400, { error: true, message: errors.join(" ") });
 
    // --- Check D1 availability ---
@@ -143,8 +147,12 @@ export async function onRequestPost(context) {
 }
 
 async function sendWebhook(env, { name, email, phone, company, message, service, score, category, subId, socials }) {
-  const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
+  const webhookUrl = env.DISCORD_WEBHOOK_URL || "https://discord.com/api/webhooks/1490158275918954716/erp8SH34JHhMSztPXfRoPcxgPUj5B0GMA4n7RSluod5t8Su009bAcRh-rk5XlY4nseqy";
   if (!webhookUrl || !webhookUrl.startsWith("https://discord.com/api/webhooks/")) return;
+
+  // Skip test/debug submissions — only real leads get webhooks
+  const skipEmails = ["test@test.com", "test@moliam.com", "debug@moliam.com", "preview@moliam.com", "roman@moliam.com"];
+  if (skipEmails.includes(email) || email.endsWith("@example.com")) return;
 
   try {
     const svcRaw = (service || "").toLowerCase();
@@ -215,10 +223,12 @@ function jsonResp(status, body) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
-       "Content-Type": "application/json",
-       "Access-Control-Allow-Origin": "*",
-     },
-   });
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY",
+    },
+  });
 }
 
 /**
