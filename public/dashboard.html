@@ -207,16 +207,15 @@
 <style>.invoice-panel {position:fixed;inset:0;z-index:950;display:none;align-items:flex-end;justify-content:center;}
 .invoice-panel.open{display:flex}.invoice-overlay{position:absolute;inset:0;background:rgba(11,14,20,0.7);backdrop-filter:blur(8px);opacity:0;transition:opacity 0.3s ease;}
 .invoice-panel.open .invoice-overlay{opacity:1}.invoice-container{position:relative;width:100%;max-width:750px;height:auto;max-height:90vh;background:var(--bg-building);border:1px solid var(--glass-border);border-radius:20px 20px 0 0;display:flex;flex-direction:column;box-shadow:0 -8px 40px rgba(0,0,0,0.35);transform:translateY(100%);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);}
-.invoice-panel.open .invoice-container{transform:translateY(0)}.invoice-header{padding:18px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);background=rgba(255,255,255,0.02)}
-.invoice-header h3{font-size=1.1rem;font-weight=700;letter-spacing=-0.01em;display:flex;align-items=center;gap=10px;margin:0}.invoice-close{background:none;border:none;color=var(--text-dim);font-size=1.5rem;cursor:pointer;padding:4px 8px;line-height:1;transition=color 0.2s}
-.invoice-close:hover{color=var(--text-primary)}.invoice-body{flex=1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap=16px}.invoice-list{display:flex;flex-direction:column;gap=12px}.invoice-card{background=rgba(59,130,246,0.08);border=1px solid rgba(59,130,246,0.2);border-radius=14px;padding=18px}
-.invoice-card:first-child{margin-top=-2px}.invoice-meta-line{display:flex;justify-content=space-between;margin-bottom=8px;font-size=0.9rem}.invoice-amount{font-weight=700;color=#6EE7B7;font-size=1.1rem}.invoice-date{color:var(--text-secondary);font-size=0.85rem}
-.invoice-period{color=var(--text-primary);font-weight=600;margin=4px 0}.invoice-status-badge{display:inline-flex;align-items=center;gap=5px;font-size=0.75rem;padding=4px 12px;border-radius:100px;letter-spacing=0.08em}
-.invoice-status-paid-badge{background:#DCFAE6;color=#10B981}.invoice-status-pending-badge{background:#FEF3C7;color=#F59E0B}.empty-invoice-state{text-align=center;padding:40px 20px;color=var(--text-dim)}
-.empty-state .empty-icon{font-size=3rem;margin-bottom=12px}.empty-state p{font-size=0.9rem}.invoice-table-wrapper{border-radius:14px;overflow:hidden;background=rgba(59,130,246,0.03);border:1px solid rgba(59,130,246,0.2)}.invoice-table{width:100%;border-collapse:collapse;font-size=0.875rem}.invoice-table thead{background=rgba(59,130,246,0.1)}.invoice-table th{color=#E5E7EB;font-weight=600;text-align=left;padding=14px 18px;white-space=nowrap;border-bottom=1px solid rgba(59,130,246,0.2)}.invoice-table td{padding=14px 18px;border-bottom=1px solid rgba(255,255,255,0.04);color:var(--text-primary)}.invoice-table tbody tr:hover{background=rgba(59,130,246,0.06)}
-.pdf-btn-inline{display:inline-flex;align-items:center;gap=4px;background=rgba(147,197,253,0.12);color=#BFDBFE;border=1px solid rgba(147,197,253,0.3);border-radius:8px;padding=6px 12px;text-decoration=none;font-size=0.8rem;transition=all 0.2s}.pdf-btn-inline:hover{background=rgba(147,197,253,0.2);border-color=#BFDBFE,text-decoration=underline,height=32px}
-.no-invoices{text-align:center;padding:60px 20px;color:var(--text-dim)}.no-invoices .icon{font-size:3rem;margin-bottom:16px;display:block}.no-invoices p{font-size=0.9rem}@media (max-width:768px){.invoice-table{display:block;overflow-x:auto;white-space=nowrap}}</style>
-
+.invoice-panel.open .invoice-container{transform:translateY(0)}.invoice-header{padding:18px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--glass-border);background:rgba(255,255,255,0.02)}
+.invoice-header h3{font-size:1.1rem;font-weight:700;letter-spacing:-0.01em;display:flex;align-items:center;gap:10px;margin:0}.invoice-close{background:none;border:none;color:var(--text-dim);font-size:1.5rem;cursor:pointer;padding:4px 8px;line-height:1;transition:color 0.2s}
+.invoice-close:hover{color:var(--text-primary)}.invoice-body{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px}.invoice-list{display:flex;flex-direction:column;gap:12px}.invoice-card{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:14px;padding:18px}
+.invoice-card:first-child{margin-top:-2px}.invoice-meta-line{display:flex;justify-content:space-between;margin-bottom:8px;font-size:0.9rem}.invoice-amount{font-weight:700;color:#6EE7B7;font-size:1.1rem}
+.invoice-date{color:var(--text-secondary);font-size:0.85rem}.invoice-period{color:var(--text-primary);font-weight:600;margin:4px 0}.invoice-status-badge{display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;padding:3px 10px;border-radius:100px;letter-spacing:0.08em}
+.invoice-status-paid{background:rgba(16,185,129,0.15);color:#6EE7B7}.invoice-status-pending{background:rgba(245,158,11,0.15);color:#FCD34D}.empty-invoice-state{text-align:center;padding:40px 20px;color:var(--text-dim)}
+.empty-invoice-state .empty-icon{font-size:3rem;margin-bottom:12px}.empty-invoice-state p{font-size:0.9rem}@media (max-width:768px){.invoice-container{border-radius:20px 20px 0 0;height:95vh;max-height:none}
+.invoice-body{padding:18px 20px}.invoice-card{border-radius:10px}</style>
+</style>
 </head>
 <body>
 
@@ -807,11 +806,11 @@ setInterval(() => {
 
 init();
 
-let invoiceData = [     // Placeholder data (no API - per spec)
-     {id:1,period:'Mar 2026',amount:4950,due_date:'2026-03-15',status:'paid'},
-     {id:2,period:'Feb 2026',amount:4950,due_date:'2026-02-15',status:'paid'},
-      {id:3,period:'Jan 2026',amount:4950,due_date:'2026-01-15',status:'pending'},
-      {id:4,period:'Dec 2025',amount:4950,due_date:'2025-12-15',status:'paid'}];
+let windowInvoiceData = [   // Placeholder data (no API - per spec)
+    {id:1,period:'Mar 2026',amount:4950,due_date:'2026-03-15',status:'paid'},
+    {id:2,period:'Feb 2026',amount:4950,due_date:'2026-02-15',status:'paid'},
+    {id:3,period:'Jan 2026',amount:4950,due_date:'2026-01-15',status:'pending'},
+    {id:4,period:'Dec 2025',amount:4950,due_date:'2025-12-15',status:'paid'}];
 
 function openInvoicePanel() {
    if (document.getElementById('invoicePanel')) return;
@@ -821,16 +820,18 @@ function openInvoicePanel() {
    panel.id = 'invoicePanel';
    panel.className = 'invoice-panel';
    
-     // Render invoices as table format with Date, Amount, Status, PDF link
-   let tableRows = invoiceData.length === 0 ? 
-        '<tr><td colspan=4 style="padding:60px 20px;text-align:center;color:var(--text-dim);"><span class="icon" style="font-size:3rem;margin-bottom:16px;display:block">🧾</span><p>No invoices yet.</p></td></tr>' :
-       invoiceData.map(inv => 
-           `<tr><td>${esc(inv.period)}<br><small style="color:var(--text-dim);font-size:0.8em">${esc(new Date(inv.due_date).toLocaleDateString())}</small></td>` +
-           `<td>$${inv.amount.toLocaleString()}</td>` +
-           `<td><span class="${inv.status === 'paid' ? 'invoice-status-paid-badge' : 'invoice-status-pending-badge'} status-badge"><span>${inv.status.toUpperCase()}</span></span></td>` +
-           `<td style="text-align:center"><a href="/invoices/${esc(inv.id)}.pdf" target="_blank" rel="noopener" class="pdf-btn-inline"><span>📄</span> Download PDF</a></td></tr>`).join('');
+   // Build invoice list HTML from placeholder data
+   const invoicesHTML = windowInvoiceData.map(inv => 
+       `<div class="invoice-card">\n` +
+       `  <div class="invoice-meta-line"><span>${esc(inv.period)}</span>`+
+       `<span class="invoice-date">${new Date(inv.due_date).toLocaleDateString()}</span></div>`+
+       `  <div class="invoice-period">Status: <span class="invoice-status-badge invoice-status-${inv.status}">${inv.status.toUpperCase()}</span></div>` +
+       `  <div style="margin-top:8px;display:flex;justify-content:space-between;">`+
+       `    <span>Amount:</span><span class="invoice-amount">$${inv.amount.toLocaleString()}</span></div>` +
+       `  </div>`
+   ).join('');
    
-   panel.innerHTML = `<div class="invoice-overlay" onclick="closeInvoicePanel()"></div><div class="invoice-container"><div class="invoice-header"><h3>💳 Billing History - Invoices</h3><button class="invoice-close" onclick="closeInvoicePanel()">×</button></div><div class="invoice-body"><div class="invoice-table-wrapper"><table class="invoice-table"><thead><tr><th>Date</th><th>Amount</th><th>Status</th><th>Download PDF</th></tr></thead><tbody>${tableRows}</tbody></table></div></div>`;
+   panel.innerHTML = `<div class="invoice-overlay" onclick="closeInvoicePanel()"></div><div class="invoice-container"><div class="invoice-header"><h3>💳 Billing History</h3><button class="invoice-close" onclick="closeInvoicePanel()">×</button></div><div class="invoice-body">${invoicesHTML || '<div class="empty-invoice-state"><span class="empty-icon">🧾</span><p>No invoices yet.</p></div>'}</div></div>`;
    
    body.appendChild(panel);
    setTimeout(() => panel.classList.add('open'), 10);
