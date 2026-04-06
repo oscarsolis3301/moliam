@@ -171,8 +171,8 @@ CREATE TABLE IF NOT EXISTS appointments (
   client_name TEXT,
   client_email TEXT,
 
-   -- Calendar integration data (Cal.com or Calendly)
-  calendar_event_id TEXT,        -- UNIQUE if booked via calendly webhook
+    -- Calendar integration data (Cal.com or Calendly) - restored UNIQUE constraint from v3 to prevent duplicate Calendly webhook inserts
+  calendar_event_id TEXT UNIQUE,         -- UNIQUE if booked via calendly webhook from schema.sql v3
   calendar_link TEXT,
   booking_source TEXT DEFAULT 'web' CHECK(booking_source IN ('web','calendly','manual','phone')),
 
@@ -261,15 +261,16 @@ VALUES (1, 'calendly', 30, 15, 8);
 CREATE TABLE IF NOT EXISTS client_messages (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-   -- Dual FK: optional contact or user sender reference from schema.sql v3 plus client_profiles link
-  contact_id INTEGER,                -- From schema.sql v3 - contacts who messaged
-  sender_id INTEGER,                 -- FK to users.admin for internal notes (v3 style)
-  client_id INTEGER,                 -- Optional FK to client_profiles for B2B accounts
+    -- Dual FK: optional contact or user sender reference from schema.sql v3 plus client_profiles link
+  contact_id INTEGER,                 -- FK to contacts.id for contacts who messaged
+  sender_id INTEGER,                  -- FK to users.admin for internal notes (v3 style)
+  client_id INTEGER,                  -- Optional FK to client_profiles for B2B accounts
 
-   -- Threading and channel support from both sources
+    -- Threading and channel support from both sources - added 'dashboard' alongside existing 'discord' to preserve existing client_messages data with channel='discord' from production
   direction TEXT NOT NULL DEFAULT 'inbound' CHECK(direction IN ('inbound', 'outbound')),
-  channel TEXT DEFAULT 'portal' CHECK(channel IN ('portal', 'email', 'sms', 'dashboard')),
+  channel TEXT DEFAULT 'portal' CHECK(channel IN ('portal', 'email', 'sms', 'discord', 'dashboard')),
   subject TEXT,
+
   body TEXT NOT NULL,
   is_read INTEGER DEFAULT 0,
 
@@ -333,7 +334,7 @@ CREATE TABLE IF NOT EXISTS rate_limits (
   ip TEXT NOT NULL,
   endpoint TEXT NOT NULL,
   timestamp TEXT DEFAULT (datetime('now')),
-  PRIMARY KEY (ip, terminal, timestamp)
+  PRIMARY KEY (ip, endpoint, timestamp)
 );
 
 -- ════════════════════════════════════════════
