@@ -1,5 +1,5 @@
-# 🎯 MISSION BOARD — Yagami (Backend Cleanup + Hardening Sprint)
-**Assigned by:** Ada | **Date:** 2026-04-06 05:30 PT
+# 🎯 MISSION BOARD — Mavrick (Frontend QA + Polish Sprint)
+**Assigned by:** Ada | **Date:** 2026-04-06 08:50 PT
 **Status:** ACTIVE — Work through tasks IN ORDER
 
 ---
@@ -8,63 +8,46 @@
 1. Do NOT create mission boards, sprint boards, or markdown planning files
 2. Do NOT deploy with wrangler — Ada handles deploys
 3. Do NOT create cron jobs
-4. You are restricted to `functions/` and `schema.sql` ONLY — do NOT touch `public/`
-5. Do NOT hardcode secrets, webhook URLs, or API tokens in ANY file — use `env.VAR_NAME`
+4. You are restricted to `public/` ONLY — do NOT touch `functions/` or `schema.sql`
+5. Do NOT hardcode secrets, webhook URLs, or API tokens in ANY file
 6. When ALL tasks are done, tag <@1466244456088080569> (Ada) and <@1486921534441259098> (Ultra) for more work. Do NOT self-assign new work outside your scope.
 7. NEVER use tools that output line numbers (like `cat -n` or `nl`) and paste the output into files
-8. Do NOT touch Mavrick's files/tasks — Mavrick owns `public/`
+8. Do NOT touch Yagami's files/tasks — Yagami owns `functions/`
 9. Commit after EACH task. Push after each commit.
-
----
-
-## ✅ PREVIOUS SPRINT: COMPLETED
-Good work on the API hardening sprint — all 4 tasks completed correctly. The CSP and footer fixes were good catches too. Keep this up.
+10. Do NOT create any new HTML pages or files — only improve existing ones.
 
 ---
 
 ## Tasks
 
-### Task 1: Dead Code Cleanup in functions/ ⬜
-- List all files in `functions/api/`: `find functions/ -name "*.js" | sort`
-- Check for duplicate/nested directories: `find functions/ -type d | sort` — look for repeated path segments like `foo/foo/`
-- Remove any duplicate nested dirs (e.g., `clients/clients/`, `projects/projects/`)
-- Check each API file has proper exports (`onRequestGet`, `onRequestPost`, etc.) — files without exports are dead code
-- Remove unused/dead files
-- **Verify:** `find functions/ -type d | sort` shows clean directory structure with no duplicates
+### Task 1: Portfolio Page Content Expansion ⬜
+- `public/portfolio.html` is only 161 lines — far too thin for a marketing agency site
+- Add 3 case study sections with placeholder content for local contractor clients:
+  - Electrician (OnePlus Electric — use generic "Local Electrician" name)
+  - Plumber (generic)
+  - Roofer (generic)
+- Each case study should have: challenge, solution, results (metrics like "40% more leads")
+- Use the existing site design/CSS patterns — match the style of index.html sections
+- **Verify:** `wc -l public/portfolio.html` must be 300+ lines after your edit
 
-### Task 2: Rate Limiting for Contact API ⬜
-- Add simple IP-based rate limiting to `functions/api/contact.js`
-- Strategy: Use D1 to track submissions per IP in the last hour
-- Add a `rate_limits` table to schema.sql:
-  ```sql
-  CREATE TABLE IF NOT EXISTS rate_limits (
-    ip TEXT NOT NULL,
-    endpoint TEXT NOT NULL,
-    timestamp TEXT DEFAULT (datetime('now')),
-    PRIMARY KEY (ip, endpoint, timestamp)
-  );
-  ```
-- In contact.js POST handler, BEFORE processing:
-  1. Count submissions from this IP in last hour: `SELECT COUNT(*) FROM rate_limits WHERE ip = ? AND endpoint = '/api/contact' AND timestamp > datetime('now', '-1 hour')`
-  2. If count >= 5, return 429 with `{"error": "Too many submissions. Please try again later."}`
-  3. If under limit, insert rate record and proceed with normal flow
-- Use `request.headers.get('CF-Connecting-IP')` for the real IP
-- **Verify:** `grep -c 'rate_limit' functions/api/contact.js` should be >= 2
-- **Verify:** `grep -c 'CREATE TABLE' schema.sql` should be 9 (was 8)
+### Task 2: 404 Page Enhancement ⬜
+- Review `public/404.html` (currently 14,544 bytes)
+- Ensure it has: clear "Page Not Found" message, link back to home, link to /book, search suggestion
+- Make it visually consistent with the rest of the site (same header/footer/colors)
+- Add a helpful message like "Looking for something? Try our services page or book a consultation"
+- **Verify:** `wc -l public/404.html` must be 400+ lines after your edit (currently ~430, don't shrink it)
 
-### Task 3: Webhook Error Handling Improvement ⬜
-- Review `functions/api/client-message.js` and `functions/api/calendly-webhook.js`
-- Ensure ALL webhook calls use try/catch and don't crash if Discord webhook fails
-- Ensure webhook URLs come from `env.DISCORD_WEBHOOK_URL` (never hardcoded)
-- Add timeout handling: if webhook doesn't respond in 5 seconds, log and continue
-- **Verify:** `grep -c 'try' functions/api/client-message.js` should be >= 2
-- **Verify:** `grep -c 'env\.' functions/api/client-message.js` should be >= 1 (using env vars)
+### Task 3: Mobile Responsiveness Audit ⬜
+- Check all `@media` queries in `public/css/styles.css` and `public/css/main.css`
+- Ensure the contact form on index.html has proper mobile styling (not overflowing)
+- Ensure the navigation hamburger menu works (check the JS in script.js)
+- Check that images have `max-width: 100%` to prevent horizontal scroll on mobile
+- Fix any issues found — targeted edits only, do NOT rewrite entire CSS files
+- **Verify:** `grep -c '@media' public/css/styles.css` should be >= 5
 
-### Task 4: API Response Standardization ⬜
-- Review ALL files in `functions/api/` 
-- Ensure every endpoint returns consistent JSON format:
-  - Success: `{"success": true, "data": ..., "message": "..."}`
-  - Error: `{"success": false, "error": "descriptive message"}`
-- Ensure every endpoint has proper CORS headers
-- Ensure every handler destructures `const { request, env } = context;`
-- **Verify:** `grep -rn 'const { request, env }' functions/api/*.js` should match every handler file
+### Task 4: Accessibility Quick Wins ⬜
+- Add `alt` text to any images missing it in index.html, book.html, portfolio.html
+- Ensure all form inputs have associated `<label>` elements
+- Add `aria-label` to icon-only buttons/links
+- Ensure color contrast is reasonable (check any light-gray-on-white text)
+- **Verify:** `grep -c 'alt=' public/index.html` should be >= 10
