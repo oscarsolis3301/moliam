@@ -19,30 +19,30 @@ export async function onRequestPost(context) {
 
   if (!email || !password) {
     return jsonResp(400, { error: true, message: "Email and password required." });
-  }
+   }
 
   try {
-     // Find user
+      // Find user
      const user = await db.prepare(
-       "SELECT id, email, name, role, company, password_hash, is_active FROM users WHERE email = ?"
-    ).bind(email).first();
+        "SELECT id, email, name, role, company, password_hash, is_active FROM users WHERE email = ?"
+     ).bind(email).first();
 
     if (!user) {
       return jsonResp(401, { error: true, message: "Invalid email or password." });
-    }
+     }
 
     if (!user.is_active) {
       return jsonResp(403, { error: true, message: "Account disabled. Contact support." });
-    }
+     }
 
-    // Verify password (SHA-256 based — simple but effective for CF Workers)
+     // Verify password (SHA-256 based — simple but effective for CF Workers)
     const hash = await hashPassword(password);
     if (hash !== user.password_hash) {
       return jsonResp(401, { error: true, message: "Invalid email or password." });
-    }
+     }
 
-    // Create session token
-    const token = await generateToken();
+     // Create session token
+    const token = generateToken();
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days
     const ip = request.headers.get("cf-connecting-ip") || "unknown";
     const ua = request.headers.get("user-agent") || "";
