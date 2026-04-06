@@ -63,18 +63,6 @@ export async function onRequestPost(context) {
       // Rate limiting table might not exist — skip, don't fail the submission
     }
 
-    // --- Ensure submissions table has lead_score column ---
-    try {
-      await db.prepare("ALTER TABLE submissions ADD COLUMN lead_score INTEGER DEFAULT 0").run();
-    } catch {
-      // Column already exists or no need to modify
-    }
-    
-    try {
-      await db.prepare("ALTER TABLE submissions ADD COLUMN category TEXT DEFAULT 'cold'").run();
-    } catch {
-      // Column already exists
-    }
 
      // --- Insert submission ---
     const ua = request.headers.get("user-agent") || "";
