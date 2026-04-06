@@ -147,7 +147,7 @@ export async function onRequestPost(context) {
 }
 
 async function sendWebhook(env, { name, email, phone, company, message, service, score, category, subId, socials }) {
-  const webhookUrl = env.DISCORD_WEBHOOK_URL || "https://discord.com/api/webhooks/1490158275918954716/erp8SH34JHhMSztPXfRoPcxgPUj5B0GMA4n7RSluod5t8Su009bAcRh-rk5XlY4nseqy";
+  const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
   if (!webhookUrl || !webhookUrl.startsWith("https://discord.com/api/webhooks/")) return;
 
   // Skip test/debug submissions — only real leads get webhooks
