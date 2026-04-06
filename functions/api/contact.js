@@ -37,32 +37,33 @@ export async function onRequestPost(context) {
 
   try {
       // --- Rate limiting (best effort) ---
-     // --- Rate limiting (best effort) ---
     try {
       const rawIP = request.headers.get("CF-Connecting-IP") || "unknown";
       const ipHash = await hashSHA256(rawIP);
       const endpoint = "/api/contact";
-      
+
       // Cleanup old rate limit rows (older than 1 hour) before checking/inserting
       try {
         await db.prepare(
-            "DELETE FROM rate_limits WHERE timestamp < datetime('now', '-1 hour')"\n          ).run();
+            "DELETE FROM rate_limits WHERE timestamp < datetime('now', '-1 hour')"
+          ).run();
       } catch {}
 
       const countResult = await db.prepare(
-            "SELECT COUNT(*) as cnt FROM rate_limits WHERE ip = ? AND endpoint = ? AND timestamp > datetime('now', '-1 hour')"\n          ).bind(ipHash, endpoint).first();
+          "SELECT COUNT(*) as cnt FROM rate_limits WHERE ip = ? AND endpoint = ? AND timestamp > datetime('now', '-1 hour')"
+        ).bind(ipHash, endpoint).first();
       const count = countResult?.cnt || 0;
 
       if (count >= 5) {
         return jsonResp(429, { error: true, message: "Too many submissions. Please try again later." });
-        }
-
-        // Under limit - insert rate record and proceed
-      await db.prepare(
-            "INSERT INTO rate_limits (ip, endpoint, timestamp) VALUES (?, ?, datetime('now'))"\n          ).bind(ipHash, endpoint).run();
-      } catch {
-        // Rate limiting table might not exist — skip, don't fail the submission
       }
+
+      // Under limit - insert rate record and proceed
+      await db.prepare(
+          "INSERT INTO rate_limits (ip, endpoint, timestamp) VALUES (?, ?, datetime('now'))"
+        ).bind(ipHash, endpoint).run();
+    } catch {
+      // Rate limiting table might not exist — skip, don't fail the submission
     }
 
 
