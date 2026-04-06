@@ -340,25 +340,67 @@
      </div>
 
      <nav class="links">
-        <a href="/" class="primary-action">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="m3 12 9-9 9 9M5 10v10a1 1 0 001 1h3m10-11v10a1 1 0 01-1 1h-3m-4 0v-5a1 1 0 011-1h2a1 1 0 011 1v5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-         <span>Go Home</span>
+       <a href="/" class="primary-action">
+           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="m3 12 9-9 9 9M5 10v10a1 1 0 001 1h3m10-11v10a1 1 0 01-1 1h-3m-4 0v-5a1 1 0 011-1h2a1 1 0 011 1v5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+           <span>Go Home</span>
         </a>
-       <a href="/#services">
-         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span>Services</span>
-       </a>
-       <a href="/#contact">
-         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8A8.5 8.5 0 0112.5 20a8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7A8.38 8.38 0 014 11.5 8.5 8.5 0 018.7 4a8.38 8.38 0 013.8-.9h.5A8.48 8.48 0 0121 11.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span>Contact</span>
-       </a>
-       <a href="/portal">
-         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span>Client Portal</span>
-       </a>
-     </nav>
-   </div>
+        <!-- Quick Help Navigation Section -->
+        <div class="quick-help-section">
+          <h3>Need help navigating?</h3>
+          <p>We're here to guide you back to where you need to be.</p>
+          <button class="help-btn" onclick="showQuickHelp()">Show Quick Help Options</button>
+        </div>
+         <a href="/#services">
+           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Services</span>
+        </a>
+         <a href="/#contact">
+           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8A8.5 8.5 0 0112.5 20a8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7A8.38 8.38 0 014 11.5 8.5 8.5 0 018.7 4a8.38 8.38 0 013.8-.9h.5A8.48 8.48 0 0121 11.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Contact</span>
+        </a>
+         <a href="/portal">
+           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Client Portal</span>
+        </a>
+         <a href="/book">
+             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="6 12 10 8 16 14"/></svg>
+            <span>Schedule Call</span>
+         </a>
+      </nav>
 
+      <!-- Quick Help Modal Overlay -->
+      <div class="quick-help-overlay" id="quickHelpModal" style="display:none;">
+          <div class="help-modal-content">
+              <h3>Quick Navigation Help</h3>
+              <p>Choose your intended destination:</p>
+              <ul class="help-links-list">
+                <li><a href="/" class="help-link-item"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 3a7 7 0 1 0 0 14A7 7 0 0 0 8 3zm3.5 9c.83 0 1.5-.33 2-.5V14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-1.5c.5.17 1.17.5 2 .5s1.5-.33 2-.5V14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-1.5c.5.17 1.17.5 2 .5z"/></svg> Main Homepage</a></li>
+                <li><a href="/services" class="help-link-item"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M6 2.5A1.5 1.5 0 0 1 7.5 4v1H6a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4.5a1 1 0 0 0 1-1H9.5A1.5 1.5 0 0 1 11 2.5H6z"/></svg> View Services</a></li>
+                <li><a href="/contact" class="help-link-item"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 4h.025C4.796 2.721 5.876 2 7 2h2c1.124 0 2.204.721 2.975 2H13a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h.975zM3 6H2a1 1 0 0 0-1 1v4c0 .552.448 1 1 1h1a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1zm0 7H1a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h2a3 3 0 0 1 3 3v3a3 3 0 0 1-3 3zM7.975 3H8c.486 0 .975.175 1.38.62L11 6H5l1.62-2.38C6.975 3.175 7.486 3 8 3z"/></svg> Contact Support</a></li>
+                <li><a href="/portal" class="help-link-item"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M6 2a2 2 0 1 1 4 0v1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1V2zm-5 3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V5z"/></svg> Client Portal</a></li>
+                <li><a href="/book" class="help-link-item"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 4.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM2 3v1h1V3H2zm11 0v1h1V3h-1zM6.5 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM1 4H0v6h1V4zm15 0h-1v6h1V4z"/></svg> Book Consultation</a></li>
+              </ul>
+              <button class="close-help-btn" onclick="hideQuickHelp()">Close Help</button>
+          </div>
+      </div>
+
+    <script>
+      // Quick help modal show/hide functions (expanded for Task 2)
+      function showQuickHelp() {document.getElementById('quickHelpModal').style.display='flex';}
+      function hideQuickHelp() {document.getElementById('quickHelpModal').style.display='none';}
+      
+      // Search form — prepend site: prefix with improved UX labels
+     document.getElementById('searchForm').addEventListener('submit', function(e) {
+       var input = document.getElementById('searchInput').value.trim();
+       if (!input) { e.preventDefault(); return; }
+       document.getElementById('searchQuery').value = 'site:moliam.pages.dev ' + input;
+     });
+
+      // Click outside modal to close
+     window.addEventListener('click', function(e){if(e.target.id==='quickHelpModal'){hideQuickHelp();}});
+    </script>
+
+    <div class="footer">© <span>Moliam Agency</span></div>
    <div class="footer">© <span>Moliam Agency</span></div>
 
   <script>
