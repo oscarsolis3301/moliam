@@ -209,3 +209,7 @@ CREATE INDEX IF NOT EXISTS idx_projects_user ON projects(user_id);
 CREATE INDEX IF NOT EXISTS idx_project_updates_project ON project_updates(project_id);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);
+-- Compound indexes from 3ed857b → 2708e4a reverted commit, added now per Task 1:
+CREATE INDEX IF NOT EXISTS idx_rate_limits_ip_endpoint ON rate_limits(ip, endpoint);
+CREATE INDEX IF NOT EXISTS idx_contacts_email_source ON contacts(email, source);
+CREATE INDEX IF NOT EXISTS idx_leads_status_created ON leads(status, created_at DESC);
