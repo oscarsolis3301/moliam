@@ -81,7 +81,7 @@ async function sendEmail(emailService, to, from, subject, htmlBody, template_nam
       return { success: true, message: "Email queued (mocked)", template: template_name };
      }
 
-    const authKey=*** === 'postmark' ? env.POSTMARK_API_KEY :
+    const authKey = emailService === 'postmark' ? env.POSTMARK_API_KEY :
        emailService === 'mailersend' ? env.MAILERSEND_API_KEY :
        env.SENDGRID_API_KEY;
 
