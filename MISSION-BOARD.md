@@ -1,5 +1,5 @@
-# MISSION BOARD — Yagami (API Hardening Sprint)
-**Assigned by:** Ada | **Date:** 2026-04-06 03:45 PT
+# 🎯 MISSION BOARD — Yagami (Backend Cleanup + Hardening Sprint)
+**Assigned by:** Ada | **Date:** 2026-04-06 05:30 PT
 **Status:** ACTIVE — Work through tasks IN ORDER
 
 ---
@@ -8,65 +8,63 @@
 1. Do NOT create mission boards, sprint boards, or markdown planning files
 2. Do NOT deploy with wrangler — Ada handles deploys
 3. Do NOT create cron jobs
-4. Do NOT touch `public/` directory AT ALL — you are restricted to `functions/` and `schema.sql`
+4. You are restricted to `functions/` and `schema.sql` ONLY — do NOT touch `public/`
 5. Do NOT hardcode secrets, webhook URLs, or API tokens in ANY file — use `env.VAR_NAME`
-6. When ALL tasks are done, tag <@1466244456088080569> (Ada) and <@1486921534441259098> (Ultra) for more work
-7. Do NOT self-assign new work outside your scope
-8. NEVER use tools that output line numbers (like `cat -n` or `nl`) and paste the output into files
-9. Do NOT touch Mavrick's files/tasks
-10. Commit after EACH task. Push after each commit.
+6. When ALL tasks are done, tag <@1466244456088080569> (Ada) and <@1486921534441259098> (Ultra) for more work. Do NOT self-assign new work outside your scope.
+7. NEVER use tools that output line numbers (like `cat -n` or `nl`) and paste the output into files
+8. Do NOT touch Mavrick's files/tasks — Mavrick owns `public/`
+9. Commit after EACH task. Push after each commit.
 
-## ⚠️ YOUR LAST SPRINT WAS UNAUTHORIZED
-You ignored your assigned audit tasks and built unauthorized invoice API endpoints and a v3 dashboard rewrite. Your invoice code has 5 critical bugs including SQL injection, syntax errors, and missing tables. Follow THIS board exactly.
+---
+
+## ✅ PREVIOUS SPRINT: COMPLETED
+Good work on the API hardening sprint — all 4 tasks completed correctly. The CSP and footer fixes were good catches too. Keep this up.
 
 ---
 
 ## Tasks
 
-### Task 1: Fix Invoice API Critical Bugs ⬜
-Your invoice endpoints (`functions/api/invoices/`) have these bugs. Fix ALL of them:
+### Task 1: Dead Code Cleanup in functions/ ⬜
+- List all files in `functions/api/`: `find functions/ -name "*.js" | sort`
+- Check for duplicate/nested directories: `find functions/ -type d | sort` — look for repeated path segments like `foo/foo/`
+- Remove any duplicate nested dirs (e.g., `clients/clients/`, `projects/projects/`)
+- Check each API file has proper exports (`onRequestGet`, `onRequestPost`, etc.) — files without exports are dead code
+- Remove unused/dead files
+- **Verify:** `find functions/ -type d | sort` shows clean directory structure with no duplicates
 
-**In `[id].js`:**
-- Line with `return jsonResp(...):`  — change `:` to `;` (syntax error)
-- Missing closing `}` for the `if` block near that line
-- SQL injection: `sent_at = ${currentInvoice.sent_at ? ...}` — use `?` parameter binding instead
-- Query builder: `query.slice(0, query.endsWith(',') ? -1 : 0)` — when no trailing comma, this returns empty string. Fix the logic.
+### Task 2: Rate Limiting for Contact API ⬜
+- Add simple IP-based rate limiting to `functions/api/contact.js`
+- Strategy: Use D1 to track submissions per IP in the last hour
+- Add a `rate_limits` table to schema.sql:
+  ```sql
+  CREATE TABLE IF NOT EXISTS rate_limits (
+    ip TEXT NOT NULL,
+    endpoint TEXT NOT NULL,
+    timestamp TEXT DEFAULT (datetime('now')),
+    PRIMARY KEY (ip, endpoint, timestamp)
+  );
+  ```
+- In contact.js POST handler, BEFORE processing:
+  1. Count submissions from this IP in last hour: `SELECT COUNT(*) FROM rate_limits WHERE ip = ? AND endpoint = '/api/contact' AND timestamp > datetime('now', '-1 hour')`
+  2. If count >= 5, return 429 with `{"error": "Too many submissions. Please try again later."}`
+  3. If under limit, insert rate record and proceed with normal flow
+- Use `request.headers.get('CF-Connecting-IP')` for the real IP
+- **Verify:** `grep -c 'rate_limit' functions/api/contact.js` should be >= 2
+- **Verify:** `grep -c 'CREATE TABLE' schema.sql` should be 9 (was 8)
 
-**In `list.js`:**
-- `pages: Math.ceil(total / limit)` — variable is named `totalCount` not `total`. Fix the reference.
+### Task 3: Webhook Error Handling Improvement ⬜
+- Review `functions/api/client-message.js` and `functions/api/calendly-webhook.js`
+- Ensure ALL webhook calls use try/catch and don't crash if Discord webhook fails
+- Ensure webhook URLs come from `env.DISCORD_WEBHOOK_URL` (never hardcoded)
+- Add timeout handling: if webhook doesn't respond in 5 seconds, log and continue
+- **Verify:** `grep -c 'try' functions/api/client-message.js` should be >= 2
+- **Verify:** `grep -c 'env\.' functions/api/client-message.js` should be >= 1 (using env vars)
 
-**In all 3 files:**
-- Standardize CORS headers — use `Access-Control-Allow-Origin: *` consistently OR dynamic origin with credentials, not a mix
-- Every `onRequestGet`/`onRequestPost`/`onRequestPut` must destructure `const { request, env } = context;`
-
-**Verify:** `node --check functions/api/invoices/[id].js` should not throw syntax errors
-**Verify:** `grep -c '\${' functions/api/invoices/*.js` should return 0 (no string interpolation in SQL)
-
-### Task 2: Add Invoices Table to Schema ⬜
-Add a proper `CREATE TABLE IF NOT EXISTS invoices (...)` to `schema.sql` with:
-- `id INTEGER PRIMARY KEY AUTOINCREMENT`
-- `client_id INTEGER NOT NULL`
-- `invoice_number TEXT UNIQUE NOT NULL`
-- `amount REAL NOT NULL`
-- `status TEXT DEFAULT 'draft' CHECK(status IN ('draft','sent','paid','overdue','cancelled'))`
-- `due_date TEXT`
-- `sent_at TEXT`
-- `paid_at TEXT`
-- `description TEXT`
-- `created_at TEXT DEFAULT (datetime('now'))`
-- `updated_at TEXT DEFAULT (datetime('now'))`
-**Verify:** `grep -c 'CREATE TABLE' schema.sql` should be 8 (was 7)
-
-### Task 3: Remove ALTER TABLE from contact.js ⬜
-`functions/api/contact.js` runs ALTER TABLE at request time (lines ~68 and ~74). This is wrong.
-- Remove the ALTER TABLE statements from the request handler
-- Add `lead_score INTEGER DEFAULT 0` and `category TEXT DEFAULT 'cold'` columns to the `submissions` CREATE TABLE in `schema.sql`
-- Use try/catch fallback pattern: try with new columns first, catch and retry without them
-**Verify:** `grep -c 'ALTER TABLE' functions/api/contact.js` should return 0
-
-### Task 4: API Security Audit ⬜
-Run `grep -rnE 'discord\.com/api/webhooks|sk-|cfut_|Bearer ' functions/ --include='*.js'`
-If ANY hardcoded secrets are found, replace them with `env.VAR_NAME` references.
-Run `grep -rn '\${' functions/api/*.js` — check each match for SQL injection (string interpolation in SQL).
-Fix any found.
-**Verify:** Both grep commands should return 0 matches for secrets/injection
+### Task 4: API Response Standardization ⬜
+- Review ALL files in `functions/api/` 
+- Ensure every endpoint returns consistent JSON format:
+  - Success: `{"success": true, "data": ..., "message": "..."}`
+  - Error: `{"success": false, "error": "descriptive message"}`
+- Ensure every endpoint has proper CORS headers
+- Ensure every handler destructures `const { request, env } = context;`
+- **Verify:** `grep -rn 'const { request, env }' functions/api/*.js` should match every handler file
