@@ -1,5 +1,44 @@
+/** Extract session token from cookies */
+function getSessionToken(request) {
+  const cookies = request.headers.get("Cookie") || "";
+  const match = cookies.match(/moliam_session=([a-f0-9]+)/);
+  return match ? match[1] : null;
+}
+
+/** Authenticate user and get session data */
+async function authenticate(db, token) {
+  if (!token || !db) return null;
+  
+  const session = await db.prepare(
+      "SELECT u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
+    ).bind(token).first();
+    
+  return session || null;
+}
+
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const db = env.MOLIAM_DB;
+  
+  // -- GET token from cookies
+  const token = getSessionToken(request);
+  if (!token) {
+    return new Response(JSON.stringify({ success: false, error: "Authentication required" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+    });
+  }
+
+  // -- Validate session exists and fetch user data
+  if (db) {
+    const user = await authenticate(db, token);
+    if (!user) {
+      return new Response(JSON.stringify({ success: false, error: "Invalid or expired session" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
+    }
+  }
   
   try {
     const req = await request.json();

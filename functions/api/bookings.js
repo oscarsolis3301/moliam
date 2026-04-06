@@ -9,7 +9,7 @@ export async function onRequestGet(context) {
   const { env } = context;
   const db = env.MOLIAM_DB;
   
-   // List all appointments for Ada's dashboard
+    // List all appointments for Ada's dashboard
   if (context.request.url.includes('/list')) {
     const data = await db.prepare(`
       SELECT a.*, p.qualification_score, p.budget_range, 
@@ -18,8 +18,8 @@ export async function onRequestGet(context) {
       LEFT JOIN prequalifications p ON a.prequalification_id = p.id
       LEFT JOIN submissions s ON p.submission_id = s.id
       ORDER BY a.scheduled_at DESC
-       LIMIT 50
-     `).all();
+      LIMIT 50
+      `).all({ limit: 50 });
 
     return new Response(JSON.stringify({ success: true, appointments: data.results }), { 
       status: 200, 
@@ -104,8 +104,13 @@ export async function onRequestPut(context) {
   const { scheduled_at, client_timezone } = body;
 
   const res = await db.prepare(
-    "UPDATE appointments SET scheduled_at = ?, updated_at = datetime('now') WHERE id = ?"
-  ).bind(scheduled_at, appointmentId).run();
+     "UPDATE appointments SET scheduled_at = ?, updated_at = datetime('now') WHERE id = ?"
+   ).bind(scheduled_at, appointmentId).run();
+
+  if (!res.success) {
+    console.error("Update failed:", res);
+    return new Response(JSON.stringify({ error: true, message: "Update database failed" }), { status: 500 });
+  }
 
   if (res.success) {
     return new Response(JSON.stringify({ success: true, updated: true }), { status: 200 });
@@ -171,10 +176,13 @@ async function rescheduleAppointment(context, id, newDate) {
   const db = context.env.MOLIAM_DB;
 
   const res = await db.prepare(
-    "UPDATE appointments SET scheduled_at = ?, status = 'rescheduled', updated_at = datetime('now'), reschedule_attempts = reschedule_attempts + 1 WHERE id = ?"
-  ).bind(newDate, id).run();
+      "UPDATE appointments SET scheduled_at = ?, status = 'rescheduled', updated_at = datetime('now'), reschedule_attempts = reschedule_attempts + 1 WHERE id = ?"
+    ).bind(newDate, id).run();
 
-  if (!res.success) return new Response(JSON.stringify({ error: true, message: "Rescheduling failed" }), { status: 500 });
+  if (!res.success) {
+    console.error("Rescheduling failed:", res);
+    return new Response(JSON.stringify({ error: true, message: "Database update failed" }), { status: 500 });
+  }
 
   await logAudit(id, 'rescheduled');
 
@@ -197,15 +205,23 @@ async function handleNoShow(context, id) {
 
   const rescheduleAttempts = (appointment.reschedule_attempts || 0);
   
-   if (rescheduleAttempts >= 2) {
-       // Auto-denial after max attempts
-      await db.prepare(
-        "UPDATE prequalifications SET calendar_access_granted = 0, update_time = datetime('now') WHERE id = ?"
-      ).bind(appointment.prequalification_id).run();
+     if (rescheduleAttempts >= 2) {
+        // Auto-denial after max attempts
+      try {
+        const updateRes = await db.prepare(
+           "UPDATE prequalifications SET calendar_access_granted = 0, update_time = datetime('now') WHERE id = ?"
+         ).bind(appointment.prequalification_id).run();
+
+        if (!updateRes.success) {
+          console.error("Auto-denial DB update failed:", updateRes);
+        }
+      } catch (dbErr) {
+        console.error("Auto-denial exception:", dbErr);
+       }
 
       await logAudit(id, 'auto_denied');
        return new Response(JSON.stringify({ success: true, message: "Lead auto-denied after multiple no-shows" }), { status: 200 });
-    }
+     }
 
   // Auto-reschedule into retry queue
   const now = new Date();
