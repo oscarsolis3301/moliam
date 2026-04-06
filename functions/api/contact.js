@@ -15,7 +15,7 @@ export async function onRequestPost(context) {
     return jsonResp(400, { error: true, message: "Invalid JSON body." });
   }
 
-   // --- Validate ---
+    // --- Validate ---
   const name = (data.name || "").trim();
   const email = (data.email || "").toLowerCase().trim();
   const phone = data.phone ? String(data.phone).replace(/[^\d()\-+\s]/g, "").trim() : null;
@@ -24,8 +24,12 @@ export async function onRequestPost(context) {
 
   const errors = [];
   if (name.length < 2) errors.push("Name must be at least 2 characters.");
+  if (name.length > 200) errors.push("Name cannot exceed 200 characters.");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push("Valid email required.");
+  if (email.length > 254) errors.push("Email cannot exceed 254 characters.");
+  if (phone && phone.length > 20) errors.push("Phone number cannot exceed 20 characters.");
   if (message.length < 10) errors.push("Message must be at least 10 characters.");
+  if (message.length > 5000) errors.push("Message cannot exceed 5000 characters.");
   if (errors.length) return jsonResp(400, { error: true, message: errors.join(" ") });
 
    // --- Check D1 availability ---
@@ -211,14 +215,16 @@ async function hashSHA256(str) {
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
-function jsonResp(status, body) {
+Ffunction jsonResp(status, body) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
-       "Content-Type": "application/json",
-       "Access-Control-Allow-Origin": "*",
-     },
-   });
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY",
+    },
+  });
 }
 
 /**
