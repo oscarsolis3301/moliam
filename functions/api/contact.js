@@ -36,29 +36,23 @@ export async function onRequestPost(context) {
   }
 
   try {
-     // --- Rate limiting (best effort) ---
+      // --- Rate limiting (best effort) ---
     try {
-      const ip = request.headers.get("cf-connecting-ip") || "unknown";
-      const ipHash = await hashSHA256(ip);
-      const rl = await db.prepare(
-         "SELECT request_count, window_start FROM rate_limits WHERE hash_ip = ?"
-       ).bind(ipHash).first();
+      const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+      const endpoint = "/api/contact";
+      const countResult = await db.prepare(
+          "SELECT COUNT(*) as cnt FROM rate_limits WHERE ip = ? AND endpoint = ? AND timestamp > datetime('now', '-1 hour')"
+        ).bind(ip, endpoint).first();
+      const count = countResult?.cnt || 0;
 
-      if (rl) {
-        const windowAge = Date.now() - new Date(rl.window_start).getTime();
-        if (windowAge < 360000 && rl.request_count >= 5) {
-          return jsonResp(429, { error: true, message: "Too many submissions. Please wait a few minutes." });
-        }
-        if (windowAge < 360000) {
-          await db.prepare("UPDATE rate_limits SET request_count = request_count + 1 WHERE hash_ip = ?").bind(ipHash).run();
-        } else {
-          await db.prepare("UPDATE rate_limits SET request_count = 1, window_start = datetime('now') WHERE hash_ip = ?").bind(ipHash).run();
-        }
-      } else {
-        await db.prepare(
-           "INSERT INTO rate_limits (hash_ip, request_count, window_start, last_request_timestamp) VALUES (?, 1, datetime('now'), datetime('now'))"
-         ).bind(ipHash).run();
+      if (count >= 5) {
+        return jsonResp(429, { error: true, message: "Too many submissions. Please try again later." });
       }
+
+      // Under limit - insert rate record and proceed
+      await db.prepare(
+          "INSERT INTO rate_limits (ip, endpoint, timestamp) VALUES (?, ?, datetime('now'))"
+        ).bind(ip, endpoint).run();
     } catch {
       // Rate limiting table might not exist — skip, don't fail the submission
     }

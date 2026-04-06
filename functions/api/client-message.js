@@ -65,28 +65,44 @@ export async function onRequestPost(context) {
       }]
     };
 
-    const webhookUrl = env.DISCORD_WEBHOOK_URL;
-    if (!webhookUrl || !webhookUrl.startsWith("https://discord.com/api/webhooks/")) {
-      console.warn("DISCORD_WEBHOOK_URL not configured or invalid");
-      return new Response(JSON.stringify({ success: true, message: "Message received (webhook not configured)" }), {
+
+       // --- Discord webhook with timeout and error handling ---
+      try {
+        const webhookUrl = env.DISCORD_WEBHOOK_URL;
+        if (webhookUrl && webhookUrl.startsWith("https://discord.com/api/webhooks/")) {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+          try {
+            await fetch(webhookUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+              signal: controller.signal
+            });
+           } catch (fetchErr) {
+             if (fetchErr.name === 'AbortError') {
+               console.warn("Discord webhook timeout after 5s, continuing...");
+             } else {
+               console.warn("Discord webhook fetch failed:", fetchErr.message);
+             }
+           } finally {
+            clearTimeout(timeoutId);
+           }
+         }
+       } catch (webhookError) {
+         // Webhook failure is never fatal - log and continue
+         console.warn("Discord webhook exception:", webhookError.message);
+       }
+
+      return new Response(JSON.stringify({ success: true }), {
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-      });
-    }
-
-    await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-    });
-  } catch (e) {
-    return new Response(JSON.stringify({ success: false, error: "Internal error" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-    });
+       });
+     } catch (e) {
+       return new Response(JSON.stringify({ success: false, error: "Internal error" }), {
+         status: 500,
+         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+        });
   }
 }
 

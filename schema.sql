@@ -100,11 +100,10 @@ CREATE TABLE IF NOT EXISTS leads (
 );
 
 CREATE TABLE IF NOT EXISTS rate_limits (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  hash_ip TEXT NOT NULL UNIQUE,
-  request_count INTEGER DEFAULT 0,
-  window_start TEXT DEFAULT CURRENT_TIMESTAMP,
-  last_request_timestamp TEXT DEFAULT CURRENT_TIMESTAMP
+  ip TEXT NOT NULL,
+  endpoint TEXT NOT NULL,
+  timestamp TEXT DEFAULT (datetime('now')),
+  PRIMARY KEY (ip, endpoint, timestamp)
 );
 
 -- Indexes

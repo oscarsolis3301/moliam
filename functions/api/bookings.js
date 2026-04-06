@@ -6,7 +6,7 @@
  */
 
 export async function onRequestGet(context) {
-  const { env } = context;
+  const { request, env } = context;
   const db = env.MOLIAM_DB;
   
     // List all appointments for Ada's dashboard
@@ -47,7 +47,7 @@ export async function onRequestGet(context) {
 }
 
 export async function onRequestPost(context) {
-  const { env } = context;
+  const { request, env } = context;
   const db = env.MOLIAM_DB;
   
   let body;
@@ -87,7 +87,7 @@ export async function onRequestPost(context) {
 }
 
 export async function onRequestPut(context) {
-  const { env } = context;
+  const { request, env } = context;
   const db = env.MOLIAM_DB;
 
   const path = context.request.url.split('/api/appointments/')[1];
