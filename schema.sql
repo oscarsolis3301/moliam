@@ -67,9 +67,29 @@ CREATE TABLE IF NOT EXISTS submissions (
   message TEXT NOT NULL,
   user_agent TEXT,
   screen_resolution TEXT,
-  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  lead_score INTEGER DEFAULT 0,
+  category TEXT DEFAULT 'cold'
 );
 
+CREATE TABLE IF NOT EXISTS invoices (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  client_id INTEGER NOT NULL,
+  invoice_number TEXT UNIQUE NOT NULL,
+  amount REAL NOT NULL,
+  status TEXT DEFAULT 'draft' CHECK(status IN ('draft','sent','paid','overdue','cancelled')),
+  due_date TEXT,
+  sent_at TEXT,
+  paid_at TEXT,
+  description TEXT,
+  created_at TEXT DEFAULT (datetime('now')),
+  updated_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_invoices_number ON invoices(invoice_number);
+CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
+
+-- Existing tables (keep backward compat)
 CREATE TABLE IF NOT EXISTS leads (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   submission_id INTEGER,
