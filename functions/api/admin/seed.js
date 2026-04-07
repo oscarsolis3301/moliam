@@ -39,20 +39,11 @@ export async function onRequestPost(context) {
      // Insert oscar user - same 5 columns, all parameters correct
     await db.prepare("INSERT INTO users(email, password_hash, role, name, company) VALUES(?, ?, ?, ?, ?)").run("oscar@onepluselectric.com", oscarHash, "client", "Oscar", "OnePlus Electric");
 
-     // Debug check: verify the data actually got inserted
+      // Debug check: verify the data actually got inserted
     const usersResult = await db.prepare("SELECT COUNT(*) as count FROM users").all();
 
-    // Create sessions table - columns: id (auto-increment), user_id, token, created_at
-    await db.prepare("CREATE TABLE sessions(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)").run();
-
-     // Debug: insert session with correct column count = 3 VALUES for user_id, token, created_at (id is autoincrement)
-     try {
-       const sess1 = await db.prepare("INSERT INTO sessions(user_id, token, created_at) VALUES(?, ?, ?)").run(1, "session-token-1", new Date().toISOString());
-       const sess2 = await db.prepare("INSERT INTO sessions(user_id, token, created_at) VALUES(?, ?, ?)").run(2, "session-token-2", new Date().toISOString());
-     } catch (err) {
-       // If there's a column mismatch error, let the outer try-catch handle it with full error message
-       throw err;
-     }
+     // Create sessions table - only 3 columns (user_id, token, created_at) since we don't need id PK in this use case
+    await db.prepare("CREATE TABLE sessions(user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)").run();
 
     return new Response(JSON.stringify({
       success: true,
