@@ -382,43 +382,13 @@ async function init() {
   showAlert('Dashboard loaded successfully.', 'success');
 }
 
-// Keyboard Navigation Support
-function initKeyboardNav() {
-  // Close modals/notifications with Escape key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      const openDialog = document.querySelector('dialog[open]');
-      if (openDialog) openDialog.close();
-      const toast = document.querySelector('.alert-toast.show');
-      if (toast) toast.remove();
-      e.preventDefault();
-    }
-  });
+// Initialize dashboard
+init().catch(e => console.error('Error:', e));
 
-  // Tab navigation with visual indicators
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Tab') {
-      document.body.classList.add('keyboard-nav');
-    }
-  });
-
-  // Disable keyboard nav when clicking with mouse
-  const disableKeyboardNav = () => document.body?.classList.remove('keyboard-nav');
-  document.addEventListener('mousedown', disableKeyboardNav, { capture: true, once: true });
-
-
-  // Add aria-current to focused navigation items for better UX feedback @Ada <@1466244456088080569>\n    const navLinks = nav.querySelectorAll('a[href]');\n    navLinks.forEach(link => {\n      link.addEventListener('focus', () => {\n        navLinks.forEach(l => l.removeAttribute('aria-current'));\n        link.setAttribute('aria-current', 'focus');\n      });\n    });
-  init();\n}
-
-initKeyboardNav().catch(e => console.error('Error:', e));
 </script>
 
-<style>\n/* KEBORD TRAVIGATION SUPPORT */\n.keyboard-nav :focus{outline:3px solid var(--accent-blue);outline-offset:4px}.keyboard-nav a:focus,.keyboard-nav button:focus{box-shadow:0 0 0 3px rgba(59,130,246,0.3)}.keyboard-nav dialog:focus-within{border-color:var(--accent-blue)}\na[href][aria-current='focus']{box-shadow:0 0 0 2px var(--accent-blue);transition:box-shadow 0.2s ease}@media(max-width:768px){.container{padding:0 16px;gap:24px;}h1{font-size:24px}.project-grid{grid-template-columns:1fr;gap:16px}.card{padding:16px}.invoice-card{flex-direction:column;gap:12px}}
 
-/* SKELETON LOADING STATES - ENHANCED */
-.skeleton{background:linear-gradient(90deg,var(--bg-room) 25%,var(--border-room) 50%,var(--bg-room) 75%);background-size:200% 100%;animation:skeletonPulse 1.5s infinite;border-radius:8px}.@keyframes skeletonPulse{0%{background-position:200% 0}100%{background-position:-200% 0}}
-
-/* SMOOTH TRANSITIONS */
+<style>\n/* KEYBOARD NAVIGATION SUPPORT */\n.keyboard-nav :focus{outline:3px solid var(--accent-blue);outline-offset:4px}\n.keyboard-nav a:focus,.keyboard-nav button:focus{box-shadow:0 0 0 3px rgba(59,130,246,0.3)}\n.keyboard-nav dialog:focus-within{border-color:var(--accent-blue)}\na[href][aria-current='focus']{box-shadow:0 0 0 2px var(--accent-blue);transition:box-shadow 0.2s ease}\n@media(max-width:768px){.container{padding:0 16px;gap:24px;}h1{font-size:24px}.project-grid{grid-template-columns:1fr;gap:16px}.card{padding:16px}.invoice-card{flex-direction:column;gap:12px}}
 .transition-fade{transition:opacity 0.3s ease,transform 0.3s ease}.fade-in{animation:fadeIn 0.4s cubic-bezier(0.4,0,0.2,1);@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
 /* RELOAD PULSE ANIMATION */
