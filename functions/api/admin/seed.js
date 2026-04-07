@@ -91,25 +91,25 @@ await db.prepare("DROP TABLE IF EXISTS `sessions`").run();
       throw new Error("Failed to retrieve Oscar ID after insert");
      }
 
-      // Create sessions table in staging with only user_id and token columns (no id PK)
+      // Create sessions table matching login.js schema (user_id, token, created_at)
     await db
-       .prepare(
-         "CREATE TABLE sessions(user_id INTEGER NOT NULL REFERENCES users(id), token TEXT NOT NULL)",
-       )
-       .run();
+        .prepare(
+          "CREATE TABLE sessions(user_id INTEGER NOT NULL REFERENCES users(id), token TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP)",
+        )
+        .run();
 
-    // Insert test sessions for both users - 2 params, 2 placeholders (matches staging schema)
+     // Insert test sessions for both users - 3 params matching table schema (user_id, token, created_at)
     await db
-       .prepare(
-         "INSERT INTO sessions(user_id, token) VALUES(?, ?)",
-       )
-       .run(adminId, "test-session-1");
+        .prepare(
+          "INSERT INTO sessions(user_id, token, created_at) VALUES(?, ?, datetime('now'))",
+        )
+        .run(adminId, "test-session-1");
 
     await db
-       .prepare(
-         "INSERT INTO sessions(user_id, token) VALUES(?, ?)",
-       )
-       .run(oscarId, "test-session-2");
+        .prepare(
+          "INSERT INTO sessions(user_id, token, created_at) VALUES(?, ?, datetime('now'))",
+        )
+        .run(oscarId, "test-session-2");
 
     // Success response
     return new Response(

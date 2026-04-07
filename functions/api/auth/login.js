@@ -22,12 +22,11 @@ export default {
          }
 
 // Hash password with SHA-256: SHA256(password + "_moliam_salt_2026")
-      const message = password + "_moliam_salt_2026";
-      const msgBuffer = new TextEncoder().encode(message);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-      const msg = new Uint8Array(hashBuffer);
-      const passwordHash = Array.from(msg)
-         .map(b => b.toString(16).padStart(2, '0')).join('');
+const encoded = new TextEncoder().encode(password + "_moliam_salt_2026");
+const hash = await crypto.subtle.digest("SHA-256", encoded);
+const passwordHash = Array.from(new Uint8Array(hash))
+  .map((b) => b.toString(16).padStart(2, "0"))
+  .join("");
 
 // Find user in D1 database (env.MOLIAM_DB)
       const users = env.MOLIAM_DB.prepare(`
@@ -63,19 +62,18 @@ export default {
             );
          }
 
-     // Create session with random 64-char hex token (32 bytes = 64 chars)
-      const tokenArray = new Uint8Array(32);
-      crypto.getRandomValues(tokenArray);
-      const msg = new Uint8Array(tokenArray);
-      const tokenArr = Array.from(msg)
-          .map(b => b.toString(16).padStart(2, '0'))
-          .join('');
+// Create session with random 64-char hex token (32 bytes = 64 chars)
+const tokenArray = new Uint8Array(32);
+crypto.getRandomValues(tokenArray);
+const tokenHex = Array.from(new Uint8Array(tokenArray))
+   .map((b) => b.toString(16).padStart(2, "0"))
+   .join("");
 
-    // Store session in sessions table - user_id is FK to users(id), no session id PK needed
+     // Store session in sessions table - user_id is FK to users(id), no session id PK needed
       await env.MOLIAM_DB.prepare(`
         INSERT INTO sessions(user_id, token, created_at)
         VALUES(?, ?, datetime('now'))`
-        ).bind(userResult.id, tokenArr).run();
+         ).bind(userResult.id, tokenHex).run();
 
       return new Response(
         JSON.stringify({ 
