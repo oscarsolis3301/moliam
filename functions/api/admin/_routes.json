@@ -1,7 +1,1 @@
-{
-    "version": 1,
-    "match": [
-     { "route": "api/admin/seed", "methods": ["POST"] },
-      { "route": "api/admin/seed", "methods": ["OPTIONS"] }
-    ]
-}
+{"version":1,"match":[{"route":"api/admin/seed","methods":["POST"]},{"route":"api/admin/seed","methods":["OPTIONS"]}],"_meta":{"routes":["api/admin/_routes.json"]},"generatedAt":"2026-04-07T00:07:00.000Z"}
