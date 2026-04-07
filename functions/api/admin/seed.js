@@ -30,13 +30,13 @@ export async function onRequestPost(context) {
        // Create users table with minimal schema - 5 DATA COLUMNS after id/AI: email + password_hash + role + name + company  
     await db.prepare(`CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'user', name TEXT, company TEXT)`).run();
 
-// Create sessions table with auto-increment id - 4 COLUMNS: id + user_id + token + created_at
+// Create sessions table with auto-increment id - 4 COLUMNS: id + user_id + token + created_at  
     await db.prepare(`CREATE TABLE sessions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)`).run();
 
-// Insert session with all 4 columns: session_id (auto-increment id) + user_id + token + created_at
+// Insert session - SQLite handles auto-increment id, only provide 3 VALUES: user_id + token + created_at
     const now = new Date().toISOString();
-    const randomToken="***" + Math.random().toString(36);
-    await db.prepare(`INSERT INTO sessions (session_id, user_id, token, created_at) VALUES (?, ?, ?, ?)`).run(null, 1, randomToken, now);
+    const randomToken="session_" + Math.random().toString(36);
+    await db.prepare(`INSERT INTO sessions (user_id, token, created_at) VALUES (?, ?, ?)`).run(1, randomToken, now);
 
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
