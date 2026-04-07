@@ -19,16 +19,37 @@
 .status-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;transition:all 0.2s}.status-active{background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(16,185,129,0.05));color:var(--accent-green);border:1px solid rgba(16,185,129,0.3)}.status-pending{background:linear-gradient(135deg,rgba(251,191,36,0.1),rgba(251,191,36,0.05));color:#FBBF24;border:1px solid rgba(251,191,36,0.3)}.status-badge:hover{box-shadow:0 0 8px var(--accent-green);transform:scale(1.05)}
 
 /* BUTTON HOVER EFFECTS */
-.btn{transition:all 0.2s cubic-bezier(0.4,0,0.2,1)}.btn:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(59,130,246,0.3)}.project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:24px;margin-bottom:20px}.project-card{padding:24px;background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.08));border:1px solid rgba(55, 65, 81, 0.5);border-radius:16px;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);animation:floatCard 6s ease-in-out infinite}.project-card:hover{box-shadow:0 12px 40px rgba(59, 130, 246, 0.18),0 0 20px rgba(139, 92, 246, 0.1);border-color:var(--accent-blue);transform:translateY(-4px) scale(1.01)}.@keyframes floatCard{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}#project-section{animation-delay:0ms}#milestones-section{animation-delay:150ms}#invoices-section{animation-delay:300ms}@media (max-width: 768px){.container{padding:24px;gap:24px}.project-grid{grid-template-columns:1fr;gap:16px}.project-card{padding:18px}.project-header h3{font-size:16px;margin-bottom:8px}.project-details{display:flex;flex-direction:column;gap:12px}.detail-row{flex-direction:row;align-items:center}.invoice-card{padding:14px;margin:4px 0}.invoice-label{font-size:11px}.project-actions{flex-direction:column;gap:8px}.btn-primary, .btn-secondary{width:100%;text-align:center}nav.nav-wrapper{padding:0 16px;gap:12px}#milestones-list{max-height:200px}}@media (max-width:480px){h1{font-size:28px}.project-card{border-width:0.5px;padding:14px}section{animation-duration:0.4s}}@media (max-width:768px) and (pointer:coarse){.btn-primary, .btn-secondary,a.btn{min-height:44px}.project-card{padding:16px}nav button, nav a{touch-action:manipulation}}</style>
+.btn{transition:all 0.2s cubic-bezier(0.4,0,0.2,1)}.btn:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(59,130,246,0.3)}.project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:24px;margin-bottom:20px}.project-card{padding:24px;background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.08));border:1px solid rgba(55, 65, 81, 0.5);border-radius:16px;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);animation:floatCard 6s ease-in-out infinite}.project-card:hover{box-shadow:0 12px 40px rgba(59, 130, 246, 0.18),0 0 20px rgba(139, 92, 246, 0.1);border-color:var(--accent-blue);transform:translateY(-4px) scale(1.01)}.@keyframes floatCard{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}#project-section{animation-delay:0ms}#milestones-section{animation-delay:150ms}#invoices-section{animation-delay:300ms}@media (max-width: 768px){.container{padding:24px;gap:24px}.project-grid{grid-template-columns:1fr;gap:16px}.project-card{padding:18px}.project-header h3{font-size:16px;margin-bottom:8px}.project-details{display:flex;flex-direction:column;gap:12px}.detail-row{flex-direction:row;align-items:center}.invoice-card{padding:14px;margin:4px 0}.invoice-label{font-size:11px}.project-actions{flex-direction:column;gap:8px}.btn-primary, .btn-secondary{width:100%;text-align:center}nav.nav-wrapper{padding:0 16px;gap:12px}#milestones-list{max-height:200px}}@media (max-width:480px){h1{font-size:28px}.project-card{border-width:0.5px;padding:14px}section{animation-duration:0.4s}}@media (max-width:768px) and (pointer:coarse){.btn-primary, .btn-secondary,a.btn{min-height:44px}.project-card{padding:16px}nav button, nav a{touch-action:manipulation}}
+
+#page-loading-spinner { display: none; text-align: center; padding: 48px; animation: fadeIn 0.3s ease; }
+.spinner { border: 3px solid rgba(59,130,246,0.2); border-top-color: #3B82F6; width: 32px; height: 32px; border-radius: 50%; margin: 0 auto; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+#error-state { display: none; text-align: center; padding: 48px; background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; animation: slideIn 0.3s ease; }
+#error-state h2 { color: #EF4444; margin-bottom: 12px; }
+#error-state p { color: var(--text-secondary); margin-bottom: 16px; }
+.loading { display: none; text-align: center; padding: 48px; animation: fadeIn 0.3s ease; }</style>
 </head>
 <body>
 <nav><div class="logo">MOLIAMA</div><a href="/" class="back-btn">← Back to Website</a></nav>
 <div id="impersonation-banner"><div class="banner-content">👁 Viewing as <span id="viewing-as"></span> - <a id="exit-btn" href="/dashboard.html">Exit</a></div></div>
-<div class="container">
+<div class="container" role="main" aria-label="User Dashboard">
 <h1>Your Dashboard</h1>
-<section id="project-section"><div class="loading">Loading projects...</div></section>
-<section id="milestones-section" style="display:none"><h2>Milestones Timeline</h2><div id="milestones-list"></div></section>
-<section id="invoices-section" style="display:none"><h2>Invoice Summary</h2><div class="invoice-summary" id="stats-bar"></div></section>
+<section id="project-section" aria-label="Your projects"><div class="loading">Loading projects...</div></section>
+<section id="milestones-section" style="display:none" aria-label="Project milestones timeline"><h2>Milestones Timeline</h2><div id="milestones-list"></div></section>
+<section id="invoices-section" style="display:none" aria-label="Invoice summary and billing status"><h2>Invoice Summary</h2><div class="invoice-summary" id="stats-bar"></div></section>
+
+<!-- Progress loading state for better UX -->
+<div class="loading" id="page-loading-spinner" style="display:none;text-align:center;padding:48px;">
+  <div class="spinner" style="border:3px solid rgba(59,130,246,0.2);border-top-color:#3B82F6;width:32px;height:32px;border-radius:50%;margin:0 auto;"></div>
+  <p style="margin-top:16px;color:var(--text-secondary);font-size:13px;">Loading dashboard data...</p>
+</div>
+
+<!-- Error state UI -->
+<div id="error-state" class="error-state" style="display:none;text-align:center;padding:48px;background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.3);border-radius:12px;">
+  <h2 style="color:#EF4444;margin-bottom:12px;">Unable to Load Dashboard</h2>
+  <p id="error-message" style="color:var(--text-secondary);margin-bottom:16px;"></p>
+  <a href="/dashboard.html" class="btn-primary" style="display:inline-block;padding:10px 20px;background:var(--accent-blue);color:#fff;border:none;border-radius:8px;cursor:pointer;">Refresh Dashboard</a>
+</div>
 <script>
 const API_BASE = '/';
 </script>
