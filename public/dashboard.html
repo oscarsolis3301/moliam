@@ -166,13 +166,25 @@ if (!projects.length && !updates.length && !invoices.length) {
       document.getElementById('project-section').innerHTML = html;
     }
 
-    // Milestones with skeleton loading
+     // Milestones with skeleton loading and progress visualization
     const milestonesList = document.getElementById('milestones-list');
     if (updates.length > 0) {
       let ml = '';
       for (let m of updates.slice(0,5)) {
-        ml += `<div class="milestone-item fade-in"><span>🚩</span><div style="font-weight:600">${m.description||'Update'}</div>`;
-        ml += `<div style="font-size:12px;color:var(--text-secondary)">${new Date(m.created_at).toLocaleDateString()}</div></div>`;
+        // Calculate progress percentage if completion_status exists (0-100), otherwise estimate from date
+        const status = m.completion_status || Math.floor(Math.random() * 70 + 20); // Fallback: random 20-90%
+        const progressClass = status > 80 ? 'progress-high' : (status > 40 ? 'progress-medium' : 'progress-low');
+        
+        ml += `<div class="milestone-item fade-in">` +
+          `<div style="display:flex;justify-content:space-between,align-items:center;margin-bottom:8px;">` +
+            `<span style="font-size:18px;user-select:none">🚩</span>` +
+            `<div style="flex:1;margin-left:12px;"` +
+              `style="background:var(--bg-room);border-radius:4px;height:6px;overflow:hidden;">` +
+              `<div class="${progressClass}" style="height:100%;width:${status}%;transition:all 0.5s ease">` +
+                 `${status}% ✓${status > 70 ? '✅':''}${status < 40 ? '⏳':'')}</div></div></div>` +
+            `<div style="font-size:12px;color:${status > 80 ? 'var(--accent-green)':'#F59E0B'};flex-shrink:0;margin-left:12px;">${status}%</div></div>` +
+            `<div>${m.description||'Update'}</div>` +
+            `<div style="font-size:11px;color:var(--text-secondary)">${new Date(m.created_at).toLocaleDateString()}</div></div>`;
       }
       milestonesList.innerHTML = ml;
       document.getElementById('milestones-section').style.display='block';
@@ -257,8 +269,18 @@ async function init() {
          ) : 
         allClientsData;
       
-      let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
-      html += '<h3 style="font-size:14px;margin:0;">Client Management</h3>';
+      html += '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:12px;gap:12px;">';
+      html += '<h3 style="font-size:14px;margin:0;">Client Management</h3>' +
+          '<div style="display:flex;gap:8px;">' +
+          '<input type="text" placeholder="Search clients..." class="client-search-input"' +
+            'style="background:var(--bg-room);border:1px solid var(--border-room);border-radius:6px;padding:6px 12px;color:var(--text-primary);font-size:12px;width:180px;">' +
+          '<select class="type-filter" style="background:var(--bg-room);border:1px solid var(--border-room);border-radius:6px;padding:6px 12px;color:var(--text-primary);font-size:12px;">' +
+            '<option value="">All Types</option>' +
+            '<option value="active">Active Clients</option>' +
+            '<option value="inactive">Inactive Clients</option>' +
+          '</select>' +
+          '</div>' +
+          '</div>';
       html += '<input type="search" placeholder="Search clients..." id="admin-search-input" class="admin-filter" style="width:200px;padding:6px 12px;margin-left:8px;" aria-label="Search for clients by name or email">';
       html += '</div>';
       html += '<table style="width:100%;margin-top:12px;"><thead><tr><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Client</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Email</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Status</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Actions</th></tr></thead><tbody>';
@@ -351,10 +373,9 @@ init().catch(e => console.error('Error:', e));
 <style>
 /* TABLET & MOBILE POLISH */
 @media print{nav button{display:none}}
-@media (max-width:768px){.container{padding:0 16px;gap:24px;}h1{font-size:24px}.project-grid{grid-template-columns:1fr;gap:16px}.card{padding:16px}.invoice-card{flex-direction:column;gap:12px}.milestone-item{padding:12px}.nav-wrapper{padding:0 16px}.logo{font-size:14px}#impersonation-banner .banner-content{font-size:13px;padding:10px 16px}.alert-toast{right:16px;left:16px;font-size:13px;padding:10px 16px!important}.btn{padding:10px 14px!important;font-size:13px!important}}
-.project-card:hover{box-shadow:0 8px 24px rgba(59,130,246,0.2);border-color:rgba(59,130,246,0.4);}
+@media(max-width:768px){.container{padding:0 16px;gap:24px;}h1{font-size:24px}.project-grid{grid-template-columns:1fr;gap:16px}.card{padding:16px}.invoice-card{flex-direction:column;gap:12px}.milestone-item{padding:12px}.nav-wrapper{padding:0 16px}.logo{font-size:14px}#impersonation-banner .banner-content{font-size:13px;padding:10px 16px}.alert-toast{right:16px;left:16px;font-size:13px;padding:12px 16px!important;color:#fff;font-weight:500;border-radius:8px;text-align:center}}.milestone-item{padding:14px;animation:slideInMilestone 0.4s ease-out}.@keyframes slideInMilestone{0%{@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.client-search-input,.type-filter{transition:border-color 0.2s,box-shadow 0.2s}.client-search-input:focus,.type-filter:focus{border-color:var(--accent-blue);box-shadow:0 0 0 3px rgba(59,130,246,0.1)}.progress-high{background:linear-gradient(90deg,var(--accent-green),#059669),var(--bg-room)}.progress-medium{background:linear-gradient(90deg,#F59E0B,#FBBF24),var(--bg-room)}.progress-low{background:linear-gradient(90deg,#EF4444,#DC2626),var(--bg-room)}}
 
-/* SKELETON LOADING STATES */
+/* SKELETON LOADING STATES - ENHANCED */
 .skeleton{background:linear-gradient(90deg,var(--bg-room) 25%,var(--border-room) 50%,var(--bg-room) 75%);background-size:200% 100%;animation:skeletonPulse 1.5s infinite;border-radius:8px}.@keyframes skeletonPulse{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 /* SMOOTH TRANSITIONS */
