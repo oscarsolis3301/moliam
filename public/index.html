@@ -1680,18 +1680,32 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
      .case-stat { padding: 3px 6px; font-size: 0.85rem; }
 }
 
-/* Tablet enhancement: ensure 2-column grid for iPad Mini to iPad Pro */
+/* Tablet enhancement: ensure consistent 80px vertical padding, 5% horizontal, 2-column grids for iPad Mini to iPad Pro */
 @media (min-width: 769px) and (max-width: 1024px) {
-    .portfolio-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
-     #portfolio { padding: 80px 5%; }
-     #services { padding: 80px 5%; }
-     .services-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
-     .service-card { padding: 32px 26px; }
-     #how-it-works { padding: 90px 5%; }
-     .step-card { padding: 32px 26px; }
-     #testimonials { padding: 80px 5%; }
-      .testimonial-card { padding: 28px 24px; }
-     /* Keep consistent spacing */
+      #hero { padding: 80px 5%; }
+      #services { padding: 80px 5%; }
+      .services-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+      .service-card { padding: 32px 26px; }
+      
+      #how-it-works { padding: 80px 5%; }
+      .steps-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+      .step-card { padding: 32px 26px; }
+      
+      #testimonials { padding: 80px 5%; }
+      .testimonials-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+       .testimonial-card { padding: 28px 24px; }
+       
+      #faq { padding: 80px 5%; }
+      .faq-question { padding: 18px 20px; }
+      
+      /* Portfolio tablet */
+      .portfolio-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+      #portfolio { padding: 80px 5%; }
+       .case-card-inner { padding: 28px 24px; font-size: 0.9rem; }
+      
+      #contact { padding: 80px 5%; }
+      
+      /* Keep consistent spacing - all sections at 80px vertical / 5% horizontal */
 }
 
 /* Extra small mobile: below 390px iPhone SE size */
@@ -1702,8 +1716,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
      #services { padding: 70px 4%; }
 }
 
-/* ═══════════════════════════════════════════
-   FAQ ACCORDION
+/* ════════════════════════════════════════════
+   FAQ ACCORDION (Enhanced interactions + mobile touch optimization)
    ═══════════════════════════════════════════ */
 #faq { padding: 100px 5% 80px; max-width: 800px; margin: 0 auto; }
 .faq-accordion { display: flex; flex-direction: column; gap: 12px; margin-top: 48px; }
@@ -1715,37 +1729,55 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   overflow: hidden;
-  transition: border-color var(--transition-smooth), box-shadow var(--transition-smooth), background var(--transition-fast), border-left-color var(--transition-smooth);
+  transition: all var(--transition-smooth);
+  transform-origin: left center;
 }
-.faq-item:hover { border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.03); }
-.faq-item.active { border-color: var(--accent-blue); border-left-color: var(--accent-blue); box-shadow: var(--shadow-glow-blue); }
+.faq-item:hover { 
+    border-color: rgba(255,255,255,0.15); 
+    background: rgba(255,255,255,0.03);
+    transform: translateX(4px);
+}
+.faq-item.active { 
+    border-color: var(--accent-blue); 
+    border-left-color: var(--accent-blue); 
+    box-shadow: var(--shadow-glow-blue);
+    transform: scale(1.01);
+}
 .faq-question {
   width: 100%; display: flex; align-items: center; justify-content: space-between;
   padding: 20px 24px; background: none; border: none; cursor: pointer;
   color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 1rem;
-  font-weight: 500; text-align: left; gap: 16px; transition: color var(--transition-fast);
+  font-weight: 500; text-align: left; gap: 16px; transition: all var(--transition-fast);
+  user-select: none;
 }
-.faq-question:hover { color: var(--accent-blue); }
+.faq-question:hover { 
+    color: var(--accent-blue);
+    padding-left: 26px; /* Subtle left shift on hover */
+}
 .faq-chevron {
   flex-shrink: 0; color: var(--text-dim);
   display: inline-block; font-size: 1.1rem;
-  transition: transform var(--transition-smooth), color var(--transition-smooth);
+  transition: transform var(--transition-smooth) cubic-bezier(0.4, 0, 0.2, 1), color var(--transition-smooth);
 }
 .faq-item.active .faq-chevron { transform: rotate(90deg); color: var(--accent-blue); }
 .faq-answer {
   max-height: 0; overflow: hidden;
-  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-out 0.1s;
 }
-.faq-item.active .faq-answer { max-height: 300px; }
+.faq-item.active .faq-answer { max-height: 500px; }
 .faq-answer-inner {
   padding: 0 24px 20px; color: var(--text-secondary); font-size: 0.95rem;
   line-height: 1.7; border-top: 1px solid var(--glass-border); padding-top: 16px;
   margin: 0 24px; padding-left: 0; padding-right: 0;
 }
 @media (max-width: 768px) {
-  #faq { padding: 60px 5% 60px; }
-  .faq-question { padding: 16px 18px; font-size: 0.95rem; }
-  .faq-answer-inner { margin: 0 18px; font-size: 0.9rem; }
+   #faq { padding: 72px 5% 72px; }
+   .faq-question { 
+       padding: 18px 20px; 
+       font-size: 0.95rem;
+       min-height: 52px; /* Ensure touch target is large enough */
+   }
+   .faq-answer-inner { margin: 0 18px; font-size: 0.9rem; }
 }
 </style>
 </head>
