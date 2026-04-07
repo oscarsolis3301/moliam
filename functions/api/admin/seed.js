@@ -22,27 +22,26 @@ export async function onRequestPost(context) {
   }
 
   try {
-    // Full cleanup - force drop all tables without IF EXISTS check, then recreate from scratch
-    const drop1 = await db.prepare("DROP TABLE users").execute();
-    const drop2 = await db.prepare("DROP TABLE sessions").execute();
+    // Use IF NOT EXISTS for safe re-creation (no data loss if tables exist)
+     // Also ALTER ADD COLUMN pattern to add missing columns if schema was deployed differently
 
-    // Create users table - columns: email, password_hash, role, name, company (id is auto-increment primary key)
-    await db.prepare("CREATE TABLE users(email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'user', name TEXT, company TEXT)").run();
+     // First create users table with all 11 required columns matching moliam/schema.sql
+    await db.prepare("CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, name TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'client' CHECK(role IN ('superadmin', 'admin', 'client')), company TEXT, phone TEXT, avatar_url TEXT, is_active INTEGER DEFAULT 1, created_at TEXT DEFAULT CURRENT_TIMESTAMP, last_login TEXT)").run();
+
+     // Create sessions table with all columns from schema.sql
+    await db.prepare("CREATE TABLE IF NOT EXISTS sessions(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token TEXT NOT NULL UNIQUE, expires_at TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP, ip_address TEXT, user_agent TEXT)").run();
 
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
 
-      // Insert admin user - 5 data columns (email, password_hash, role, name, company) = 5 placeholders
-    await db.prepare("INSERT INTO users(email, password_hash, role, name, company) VALUES(?, ?, ?, ?, ?)").run("admin@moliam.com", adminHash, "admin", "Admin", "Moliam");
+// Insert admin user - email + 10 OTHERS (id auto-incremented)
+    await db.prepare("INSERT INTO users(email, password_hash, name, role) VALUES(?, ?, ?, ?)").run("admin@moliam.com", adminHash, "Admin", "superadmin");
 
-      // Insert oscar user - same 5 columns
-    await db.prepare("INSERT INTO users(email, password_hash, role, name, company) VALUES(?, ?, ?, ?, ?)").run("oscar@onepluselectric.com", oscarHash, "client", "Oscar", "OnePlus Electric");
+         // Insert oscar user - same pattern (email + 10 OTHERS), id auto-incremented
+    await db.prepare("INSERT INTO users(email, password_hash, name, role) VALUES(?, ?, ?, ?)").run("oscar@onepluselectric.com", oscarHash, "Oscar", "client");
 
-      // Debug check: verify the data actually got inserted
+       // Debug check: verify the data actually got inserted
     const usersResult = await db.prepare("SELECT COUNT(*) as count FROM users").all();
-
-     // Create sessions table - only 3 columns (user_id, token, created_at) since we don't need id PK in this use case
-    await db.prepare("CREATE TABLE sessions(user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)").run();
 
     return new Response(JSON.stringify({
       success: true,
