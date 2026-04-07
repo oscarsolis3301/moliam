@@ -12,58 +12,58 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
-  // Check seed key header for authentication
+   // Check seed key header for authentication
   const seedKey = request.headers.get("x-seed-key");
   if (seedKey !== "moliam2026") {
     return new Response(JSON.stringify({ error: "Invalid seed key" }), {
       status: 403,
       headers: { "Content-Type": "application/json" }
-    });
-  }
+     });
+   }
 
   try {
-    // Drop existing tables to reset schema
+     // Drop existing tables to reset schema
     await db.prepare("DROP TABLE IF EXISTS users").run();
     await db.prepare("DROP TABLE IF EXISTS sessions").run();
 
-    // Create users table - columns: id (auto-increment), email, password_hash, role, name, company
+     // Create users table - columns: id (auto-increment), email, password_hash, role, name, company, is_active, last_login
     await db.prepare(
-      "CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'user', name TEXT, company TEXT)"
-    ).run();
+       "CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'user', name TEXT, company TEXT, is_active INTEGER DEFAULT 1, last_login TEXT)"
+     ).run();
 
-    const adminHash = await hashPassword("Moliam2026!");
-    const oscarHash = await hashPassword("OnePlus2026!");
+     const adminHash = await hashPassword("Moliam2026!");
+     const oscarHash = await hashPassword("OnePlus2026!");
 
-    // Insert admin user
+     // Insert admin user
     await db.prepare(
-      `INSERT INTO users(email, password_hash, role, name, company) VALUES('admin@moliam.com', '${adminHash}', 'admin', 'Admin', 'Moliam')`
-    ).run();
+       "INSERT INTO users(email, password_hash, role, name, company, is_active) VALUES('admin@moliam.com', ?, 'admin', 'Admin', 'Moliam', 1)"
+     ).run(adminHash);
 
-    // Insert oscar user - no id, it's auto-incremented (5 columns, 5 values)
+     // Insert oscar user - no id, it's auto-incremented (5 columns, 5 values)
     await db.prepare(
-      `INSERT INTO users(email, password_hash, role, name, company) VALUES('oscar@onepluselectric.com', '${oscarHash}', 'client', 'Oscar', 'OnePlus Electric')`
-    ).run();
+       "INSERT INTO users(email, password_hash, role, name, company, is_active) VALUES('oscar@onepluselectric.com', ?, 'client', 'Oscar', 'OnePlus Electric', 1)"
+     ).run(oscarHash);
 
-    // Create sessions table - exact schema from login.js INSERT (6 columns: id auto-increment + 5 data cols)
+     // Create sessions table - matches login.js schema (6 columns: id auto-increment + user_id, token, expires_at, ip_address, user_agent)
     await db.prepare(
-      "CREATE TABLE sessions(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, expires_at TEXT NOT NULL, ip_address TEXT, user_agent TEXT)"
-    ).run();
+       "CREATE TABLE sessions(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, expires_at TEXT NOT NULL, ip_address TEXT, user_agent TEXT)"
+     ).run();
 
     return new Response(JSON.stringify({
       success: true,
       message: "Users and sessions tables seeded successfully",
       users: [
-        { email: "admin@moliam.com", role: "admin" },
-        { email: "oscar@onepluselectric.com", role: "client" }
-      ]
-    }), {
+         { email: "admin@moliam.com", role: "admin" },
+         { email: "oscar@onepluselectric.com", role: "client" }
+       ]
+     }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
-    });
-  } catch (err) {
+     });
+   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" }
-    });
-  }
+     });
+   }
 }
