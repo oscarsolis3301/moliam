@@ -41,14 +41,14 @@ export async function onRequestPost(context) {
        // Insert oscar user - same pattern (id auto-incremented)
 await db.prepare(`INSERT INTO users(name, email, password_hash, role, company) VALUES(:name, :email, :password, :role, :company)`).bind({ name: "Oscar", email: "oscar@onepluselectric.com", password: oscarHash, role: "client", company: "OnePlus Electric" }).run();
 
-     // Get actual user IDs from inserted users
+// Get actual user IDs from inserted users
   const allUsers = await db.prepare("SELECT id, email FROM users ORDER BY role DESC").all();
 const adminUser = allUsers.results.find(u => u.email === "admin@moliam.com");
 
-           // Insert test session with production schema (3 columns - matches login.js)
+        // Insert test session with production schema (created_at uses datetime('now'))
    if (adminUser) await db.prepare(`INSERT INTO sessions(user_id, token, created_at) VALUES(?, ?, datetime('now'))`).bind(adminUser.id, "test-session-1").run();
 
-                  // Insert oscar's session - same 3-column pattern as login.js
+                       // Insert oscar's session - same 3-column pattern as login.js
    const oscarUser = allUsers.results.find(u => u.email === "oscar@onepluselectric.com");
    if (oscarUser) await db.prepare(`INSERT INTO sessions(user_id, token, created_at) VALUES(?, ?, datetime('now'))`).bind(oscarUser.id, "test-session-2").run();
 
