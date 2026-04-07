@@ -73,7 +73,7 @@ a.view-btn:hover{background:rgba(59,130,246,0.2);transform:translateY(-1px);}
 </style>
 
 <script>
-const token = localStorage.getItem('auth_token');
+const token = localStorage.getItem('token');</script><script>
 
 // Redirect if not authenticated
 if (!token) {
@@ -81,14 +81,14 @@ if (!token) {
 }
 
 async function initAdminAuthCheck() {
-     // If we're impersonating, verify admin permissions first
+      // If we're impersonating, verify admin permissions first
     const impersonateId = new URL(window.location).searchParams.get('impersonate');
     if (impersonateId) {
         const role = localStorage.getItem('user_role');
         if (role !== 'admin') {
             window.location.href = '/dashboard.html'; // Non-admins can't impersonate
-        }
-    }
+         }
+     }
 }
 
 initAdminAuthCheck();
@@ -107,7 +107,7 @@ async function showImpersonationBanner(client) {
     
     const exitLink = document.querySelector('#impersonation-banner a');
     if (exitLink) exitLink.href = window.location.pathname;
-  }
+   }
 }
 
 async function fetchAdminData() {
@@ -118,11 +118,11 @@ async function fetchAdminData() {
     const res = await fetch(API_BASE + 'api/admin/clients?' + new URLSearchParams(params), {
       headers: { 'Accept': 'application/json' },
       credentials: 'include'
-    });
+     });
     
     if (!res.ok) throw new Error('Fetch failed');
     return await res.json();
-  } catch (e) {
+   } catch (e) {
     console.error('Fetch error:', e);
     return { success: false };
   }
@@ -149,7 +149,7 @@ async function renderAdminDashboard() {
   
 // Render clients - desktop table vs mobile card stack
 if (clients && clients.length > 0) {
-    // Desktop: table layout
+     // Desktop: table layout
     const isMobile = window.innerWidth <= 768;
     
     if (!isMobile) {
@@ -160,27 +160,27 @@ if (clients && clients.length > 0) {
         const clientName = c.name || 'Untitled Client';
         
         html += '<tr>' +
-           '<td class="client-name">' + clientName + '</td>' +
-          `<td class="client-email">${c.email}</td>` +
-          '<td><span class="' + statusClass + '">' + (c.status === 'active' ? 'Active' : 'Inactive') + '</span></td>' +
-          '<td>';
-        
+            '<td class="client-name">' + clientName + '</td>' +
+           `<td class="client-email">${c.email}</td>` +
+           '<td><span class="' + statusClass + '">' + (c.status === 'active' ? 'Active' : 'Inactive') + '</span></td>' +
+           '<td>';
+         
         // Show projects count if any
         const userProjects = projects.filter(p => p.client_id == c.id);
         if (userProjects.length > 0) {
           html += '<div class="client-projects">' + 
-                    '<span style="color:var(--text-primary);font-size:12px;">+ ' + userProjects.length + ' project(s)</span></div>';
-        }
-        
+                     '<span style="color:var(--text-primary);font-size:12px;">+ ' + userProjects.length + ' project(s)</span></div>';
+         }
+         
         // View as client button (redirect to dashboard with impersonate param)
         html += `<a href="/dashboard.html?impersonate=${c.id}" class="view-btn">View as Client</a>`;
         html += `<a href="mailto:${c.email}" class="view-btn" style="background:rgba(139,92,246,0.1);color:var(--accent-purple);border-color:rgba(139,92,246,0.3)">✉️ Email</a>`;
         html += '</td></tr>';
-      }
-      
-      html += '</tbody></table>';
-     } else {
-       // Mobile: card stack layout
+       }
+       
+      html += '</tbody></table>' ;
+    } else {
+        // Mobile: card stack layout
       let html = '<div class="client-card-stack">';
       
       for (let c of clients) {
@@ -188,32 +188,32 @@ if (clients && clients.length > 0) {
         const clientName = c.name || 'Untitled Client';
         
         html += '<div class="client-card">' +
-          '<div class="client-header">' +
-             '<div class="client-name-lg">' + clientName + '</div>' +
-            `<div class="client-email-lg">${c.email}</div>` +
-            `<span class="${statusClass} status-badge-lg">${c.status === 'active' ? 'Active' : 'Inactive'}</span>` +
-          '</div>' +
-          '<div class="client-actions-grid">' +
-            `<a href="/dashboard.html?impersonate=${c.id}" class="client-btn">👁 View as ${clientName.split()[0]}</a>` +
-            `<a href="mailto:${c.email}" class="client-btn">✉️ Email Client</a>` +
-          '</div>';
-          
-          // Show projects mobile
+           '<div class="client-header">' +
+              '<div class="client-name-lg">' + clientName + '</div>' +
+             `<div class="client-email-lg">${c.email}</div>` +
+             `<span class="${statusClass} status-badge-lg">${c.status === 'active' ? 'Active' : 'Inactive'}</span>` +
+           '</div>' +
+           '<div class="client-actions-grid">' +
+             `<a href="/dashboard.html?impersonate=${c.id}" class="client-btn">👁 View as ${clientName.split()[0]}</a>` +
+             `<a href="mailto:${c.email}" class="client-btn">✉️ Email Client</a>` +
+           '</div>' ;
+           
+           // Show projects mobile
         const userProjects = projects.filter(p => p.client_id == c.id);
         if (userProjects.length > 0) {
           html += `<div class="client-projects-mobile">+ ${userProjects.length} project(s)</div>`;
          }
          
         html += '</div>';
-       }
-       
-      html += '</div>';
-     }
-   } else {
-    html = '<div class="empty-state"><p>No clients found.</p></div>';
-   }
-   
-  document.getElementById('clients-table-wrapper').innerHTML = html;
+      }
+      
+      html += '</div>' ;
+    }
+  } else {
+  html = '<div class="empty-state"><p>No clients found.</p></div>' ;
+  }
+  
+document.getElementById('clients-table-wrapper').innerHTML = html;
 }
 
 // Initialize on load
@@ -225,7 +225,7 @@ async function handleRefreshDashboard() {
   const wrapper = document.getElementById('clients-table-wrapper');
   if (wrapper) {
     wrapper.innerHTML = '<div class="loading">Refreshing...</div>';
-  }
+   }
   await renderAdminDashboard();
 }
 
@@ -249,22 +249,21 @@ if (nav && isAdmin) {
 <div id="impersonation-banner"><strong id="impersonated-name"></strong> | <a href="/admin.html" style="color:#000;">✕ Exit</a></div>
 
 <div class="container">
-  <h1>Admin Dashboard</h1>
-  <p style="color:var(--text-secondary);margin-bottom:24px;">Overview of all clients and platform metrics</p>
+   <h1>Admin Dashboard</h1>
+   <p style="color:var(--text-secondary);margin-bottom:24px;">Overview of all clients and platform metrics</p>
 
-  <section class="stats-bar">
-    <div class="stat-card"><div class="stat-label">Total Clients</div><div class="stat-value" id="total-clients">—</div></div>
-    <div class="stat-card"><div class="stat-label">Active Projects</div><div class="stat-value" id="active-projects">—</div></div>
-    <div class="stat-card"><div class="stat-label">Monthly Recurring Revenue</div><div class="stat-value" id="mrr">$0</div></div>
-  </section>
+   <section class="stats-bar">
+     <div class="stat-card"><div class="stat-label">Total Clients</div><div class="stat-value" id="total-clients">—</div></div>
+     <div class="stat-card"><div class="stat-label">Active Projects</div><div class="stat-value" id="active-projects">—</div></div>
+     <div class="stat-card"><div class="stat-label">Monthly Recurring Revenue</div><div class="stat-value" id="mrr">$0</div></div>
+   </section>
 
-  <section class="table-container">
-    <div class="table-header"><h3>All Clients</h3></div>
-    <div id="clients-table-wrapper"><div class="loading">Loading clients...</div></div>
-  </section>
+   <section class="table-container">
+     <div class="table-header"><h3>All Clients</h3></div>
+     <div id="clients-table-wrapper"><div class="loading">Loading clients...</div></div>
+   </section>
 
 </div>
-
 
 
 </body>
