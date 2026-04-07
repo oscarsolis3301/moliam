@@ -16,52 +16,69 @@ export async function onRequestPost(context) {
    }
 
       // --- Validation Helpers ---
+
+/**
+ * Strip HTML tags and limit text length for sanitization
+ * @param {string} text - Text to sanitize
+ * @param {number} maxLength - Maximum allowed length (default 1000)
+ * @returns {string} Sanitized text with HTML stripped
+ */
   function sanitizeText(text, maxLength = 1000) {
-       // Strip HTML tags to prevent XSS
+        // Strip HTML tags to prevent XSS
      const stripped = String(text || "").replace(/<[^>]*>/g, "");
      return stripped.trim().slice(0, maxLength);
-     }
+      }
 
+/**
+ * Validate email format with RFC 5321 regex and length checks
+ * @param {string} email - Email address to validate
+ * @returns {{valid: boolean, error?: string, value?: string}} Validation result
+ */
   function validateEmail(email) {
     if (!email || email.length < 5) return { valid: false, error: "Valid email required." };
     const cleaned = email.toLowerCase().trim();
-      // RFC 5321 compliant regex for email format validation
+       // RFC 5321 compliant regex for email format validation
     if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(cleaned)) return { valid: false, error: "Invalid email format." };
     if (cleaned.length > 254) return { valid: false, error: "Email address too long." };
     return { valid: true, value: cleaned };
-     }
+      }
 
+/**
+ * Validate phone number (10-15 digits global format), return formatted version
+ * @param {string} phone - Phone number as string
+ * @returns {{valid: boolean, error?: string, value?: string|null}} Validation result with optional formatted phone
+ */
   function validatePhone(phone) {
     if (!phone || phone.toString().trim() === "") return { valid: true, value: null };
-      // Extract all digits for actual validation
+       // Extract all digits for actual validation
     const rawDigits = String(phone);
     const justNumbers = rawDigits.replace(/\D/g, "");
-      // Must have 10-15 digits (global phone format range)
+       // Must have 10-15 digits (global phone format range)
     if (justNumbers.length < 10 || justNumbers.length > 15) return { valid: false, error: "Phone number must be 10-15 digits." };
-      // Return formatted version (strip non-digits except parentheses and dashes for display)
-    const formatted = rawDigits.replace(/[()\-+\s]/g, "").replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3").slice(0, 20);
+       // Return formatted version (strip non-digits except parentheses and dashes for display)
+    const formatted = rawDigits.replace(/[()\-\+\s]/g, "").replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3").slice(0, 20);
     return { valid: true, value: formatted };
-     }
+      }
 
-      // --- Parse & Sanitize Body Fields ---
-  const name = sanitizeText(data.name, 200);
+       // --- Parse & Sanitize Body Fields ---
+  const name = sanitizeText(String(data.name || ""), 100);
   const emailResult = validateEmail(String(data.email || ""));
-  if (!emailResult.valid) return jsonResp(400, { error: true, message: emailResult.error });
+  if (!emailResult.valid) return jsonResp(400, { success: false, error: true, message: emailResult.error });
   const email = emailResult.value;
 
   const phoneResult = validatePhone(data.phone);
-  if (!phoneResult.valid) return jsonResp(400, { error: true, message: phoneResult.error });
+  if (!phoneResult.valid) return jsonResp(400, { success: false, error: true, message: phoneResult.error });
   const phone = phoneResult.value;
 
-  const company = sanitizeText(data.company, 100);
-  const message = sanitizeText(data.message || "", 1000);
+  const company = sanitizeText(String(data.company || ""), 100);
+  const message = sanitizeText(String(data.message || ""), 2000);
 
-      // --- Field Length Validation (after sanitization) ---
+       // --- Field Length Validation (after sanitization) ---
   const errors = [];
   if (name.length < 2) errors.push("Name must be at least 2 characters.");
   if (message.length < 10) errors.push("Message must be at least 10 characters long.");
 
-  if (errors.length) return jsonResp(400, { error: true, message: errors.join(" ") });
+  if (errors.length) return jsonResp(400, { success: false, error: true, message: errors.join(" ") });
 
 
 
@@ -308,14 +325,63 @@ async function hashSHA256(str) {
  * @returns {Response} Properly formatted response with headers
  */
 function jsonResp(status, body) {
-  return new Response(JSON.stringify(body), {
+  return new Response(JSON.stringify(balanceSuccessBody(body)), {
     status,
     headers: {
-       "Content-Type": "application/json",
-       "Access-Control-Allow-Origin": "*", // Allow moliam.com and subdomains
-       "X-Content-Type-Options": "nosniff",
-       "X-Frame-Options": "DENY",
-     },
-   });
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*", // Allow moliam.com and subdomains
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+      },
+    });
 
 }
+
+/**
+ * Ensure response body has consistent success/error structure
+ * @param {object} body - Body object to balance
+ * @returns {object} Balanced body with success property
+ */
+function balanceSuccessBody(body) {
+  if (body.error === true && !successExistsInObject(body)) {
+    return { ...body, success: false };
+  } else if (body.success === false && !errorExistsInObject(body)) {
+    return { ...body, error: true };
+  }
+  return body;
+}
+
+/**
+ * Recursively check if object contains 'success' property
+ * @param {object} obj - Object to check
+ * @returns {boolean} True if success property exists
+ */
+function successExistsInObject(obj) {
+  if (!obj || typeof obj !== "object") return false;
+  if (obj.hasOwnProperty('success')) return true;
+  for (const key of Object.keys(obj)) {
+    if (typeof obj[key] === "object" && successExistsInObject(obj[key])) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Recursively check if object contains 'error' property
+ * @param {object} obj - Object to check
+ * @returns {boolean} True if error property exists
+ */
+function errorExistsInObject(obj) {
+  if (!obj || typeof obj !== "object") return false;
+  if (obj.hasOwnProperty('error')) return true;
+  for (const key of Object.keys(obj)) {
+    if (typeof obj[key] === "object" && errorExistsInObject(obj[key])) {
+      return true;
+    }
+  }
+  return false;
+}
+

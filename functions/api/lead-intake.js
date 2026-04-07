@@ -12,73 +12,73 @@ export async function onRequestPost(context) {
     return jsonResp(500, { error: true, message: "Database not available. Please try again later." });
   }
 
-    // --- Parse body ---
+        // --- Parse body ---
   let data;
   try {
     data = await request.json();
-   } catch {
-    return jsonResp(400, { error: true, message: "Invalid JSON body." });
-   }
+    } catch {
+    return jsonResp(400, { success: false, error: true, message: "Invalid JSON body." });
+    }
 
-    // --- Validation Helpers (same as contact.js for consistency) ---
+         // --- Validation Helpers (same as contact.js for consistency) ---
   function sanitizeText(text, maxLength = 1000) {
-       // Strip HTML tags to prevent XSS
+        // Strip HTML tags to prevent XSS
      const stripped = String(text || "").replace(/<[^>]*>/g, "");
      return stripped.trim().slice(0, maxLength);
-     }
+      }
 
   function validateEmail(email) {
     if (!email || email.length < 5) return { valid: false, error: "Valid email required." };
     const cleaned = email.toLowerCase().trim();
-       // RFC 5321 compliant regex for email format validation
+        // RFC 5321 compliant regex for email format validation
     if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(cleaned)) return { valid: false, error: "Invalid email format." };
     if (cleaned.length > 254) return { valid: false, error: "Email address too long." };
     return { valid: true, value: cleaned };
-     }
+      }
 
   function validatePhone(phone) {
     if (!phone || phone.toString().trim() === "") return { valid: true, value: null };
-       // Extract all digits for actual validation
+        // Extract all digits for actual validation
     const rawDigits = String(phone);
     const justNumbers = rawDigits.replace(/\D/g, "");
-       // Must have 10-15 digits (global phone format range)
+        // Must have 10-15 digits (global phone format range)
     if (justNumbers.length < 10 || justNumbers.length > 15) return { valid: false, error: "Phone number must be 10-15 digits." };
-       // Return formatted version (strip non-digits except parentheses and dashes for display)
-    const formatted = rawDigits.replace(/[()\-+\s]/g, "").replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3").slice(0, 20);
+        // Return formatted version (strip non-digits except parentheses and dashes for display)
+    const formatted = rawDigits.replace(/[()\-\+\s]/g, "").replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3").slice(0, 20);
     return { valid: true, value: formatted };
-     }
+      }
 
-    // --- Sanitize all text fields (strip HTML, apply length limits) ---
-  const name = sanitizeText(data.name, 200);
+        // --- Sanitize all text fields (strip HTML, apply length limits) ---
+  const name = sanitizeText(String(data.name || ""), 200);
   const emailResult = validateEmail(String(data.email || ""));
-  if (!emailResult.valid) return jsonResp(400, { error: true, message: emailResult.error });
+  if (!emailResult.valid) return jsonResp(400, { success: false, error: true, message: emailResult.error });
   const email = emailResult.value;
 
   const phoneResult = validatePhone(data.phone);
-  if (!phoneResult.valid) return jsonResp(400, { error: true, message: phoneResult.error });
+  if (!phoneResult.valid) return jsonResp(400, { success: false, error: true, message: phoneResult.error });
   const phone = phoneResult.value;
 
-  const company = sanitizeText(data.company, 100);
-  const message = sanitizeText(data.message || "", 1000);
+  const company = sanitizeText(String(data.company || ""), 100);
+  const message = sanitizeText(String(data.message || ""), 2000);
 
-    // Enhanced fields for scoring (sanitized)
+        // Enhanced fields for scoring (sanitized)
   const budget = sanitizeText(String(data.budget || "undisclosed"), 50);
-  const scope = sanitizeText(data.scope ? String(data.scope).trim() : (data.inquiry_type || "General inquiry"), 200);
-  const industry = sanitizeText(data.industry ? String(data.industry).trim() : "general", 100);
-  const urgency_level = data.urgency_level || 'medium';
+  const scope = sanitizeText(String(data.scope || data.inquiry_type || "General inquiry").trim(), 200);
+  const industry = sanitizeText(String(data.industry || "general").trim(), 100);
+  const urgency_level = String(data.urgency_level || 'medium').toLowerCase();
 
-    // Sanitized pain_points array (limit item length to 500 chars)
+        // Sanitized pain_points array (limit item length to 500 chars)
   const pain_points = Array.isArray(data.pain_points) 
-     ? data.pain_points.filter(p => p && typeof p.trim === 'function' && p.trim().length > 0).slice(0, 5).map((p, i) => sanitizeText(String(p), 500))
-     : [];
+      ? data.pain_points.filter(p => p && typeof p.trim === "function" && p.trim().length > 0).slice(0, 5).map((p, i) => sanitizeText(String(p), 500))
+      : [];
 
   const errors = [];
   if (name.length < 2) errors.push("Name must be at least 2 characters.");
   if (message.length < 10) errors.push("Message must be at least 10 characters.");
 
   if (errors.length) {
-    return jsonResp(400, { error: true, message: errors.join(" ") });
-   }
+    return jsonResp(400, { success: false, error: true, message: errors.join(" ") });
+    }
 
 
 
