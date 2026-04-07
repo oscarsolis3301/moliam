@@ -57,12 +57,12 @@ export async function onRequestPost(context) {
            "CREATE TABLE rate_limits(id INTEGER PRIMARY KEY AUTOINCREMENT, ip_address TEXT, request_count INTEGER DEFAULT 0, reset_at TEXT, UNIQUE(ip_address))"
          ).run();
 
-      // Create client_profiles with columns: (id auto, user_id ref, display_name, bio) - 3 insertable columns besides auto-increment id
+// Create client_profiles table (id auto, user_id ref, display_name TEXT, bio TEXT) - 4 total columns with auto id means 3 insertable columns
     await db.prepare(
-               "CREATE TABLE client_profiles(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, display_name TEXT, bio TEXT DEFAULT '')"
-             ).run();
+                 "CREATE TABLE IF NOT EXISTS client_profiles(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, display_name TEXT DEFAULT '', bio TEXT)")
+               .run();
 
-      // Create client_messages and client_activity from dashboard system
+       // Create client_messages and client_activity from dashboard system
       // Both use positional parameters for insert: (id ref, user_id, subject/message) or (user_id, action_type, details)
     await db.prepare(
             "CREATE TABLE client_messages(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, from_email TEXT, to_email TEXT, subject TEXT, message TEXT, sent_at TEXT DEFAULT CURRENT_TIMESTAMP)"
@@ -85,14 +85,13 @@ export async function onRequestPost(context) {
             "INSERT INTO users(email, password_hash, role, name, company, is_active) VALUES(?, ?, 'client', 'Oscar', 'OnePlus Electric', 1)"
           ).run(["oscar@onepluselectric.com", oscarHash]);
 
-     // Get user IDs after insert for profile creation - INSERT uses 3 values: (user_id, display_name, bio) to match client_profiles table's 3 non-auto columns
+// Get user IDs and insert profiles (id auto + 3 non-auto columns: user_id, display_name, bio) = 4 total columns, so INSERT uses 3 values after NULL for id
     const users = await db.prepare("SELECT id FROM users").all();
     for (const user of users.results) {
-      // Use NULL for auto-increment id column + 3 actual values = 4 total placeholders matching 4 columns
-      await db.prepare(
-                    "INSERT INTO client_profiles(id, user_id, display_name, bio) VALUES(NULL, ?, ?, ?)"
-                  ).run([user.id, "Profile", "Client account"]);
-      }
+      // Insert 3 values to match table's 3 non-auto columns: user_id, display_name, bio (id gets auto-increment via NULL trick)
+      await db.prepare("INSERT INTO client_profiles(id, user_id, display_name, bio) VALUES(NULL, ?, 'Client Account', ?)")
+                .run([user.id, "Welcome to VisualArk"]);
+        }
 
       // Test login verification for Oscar - verify password works correctly (for testing purposes only)
     const testPassword = "***";
