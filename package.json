@@ -1,0 +1,13 @@
+{
+  "name": "moliam",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MOLIAM - AI-powered marketing agency website",
+  "scripts": {
+    "dev": "wrangler pages dev ./public --d1 MOLIAM_DB=moliam-db",
+    "deploy": "wrangler pages deploy ./public"
+  },
+  "devDependencies": {
+    "wrangler": "^3.50.0"
+  }
+}
