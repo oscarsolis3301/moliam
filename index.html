@@ -58,9 +58,9 @@ body {
 .speed-btn.active { background:var(--accent-blue); color:#fff; border-color:var(--accent-blue); }
 .speed-btn:hover { border-color:var(--accent-blue); }
 .fs-btn {
-  width:28px; height:28px; border-radius:6px; border:1px solid var(--border-room);
+  width:44px; height:44px; border-radius:6px; border:1px solid var(--border-room);
   background:transparent; color:var(--text-secondary); cursor:pointer; font-size:14px;
-  display:flex; align-items:center; justify-content:center;
+  display:flex; align-items:center; justify-content:center; min-width:44px; min-height:44px;
 }
 .fs-btn:hover { border-color:var(--accent-blue); color:var(--text-primary); }
 #canvas { display:block; width:100%; height:calc(100vh - 48px); margin-top:48px; }
@@ -80,44 +80,94 @@ body {
 #popover .pop-log div { padding:2px 0; border-bottom:1px solid #374151; color:var(--text-secondary); font-family:'Inter',monospace; }
 #popover .pop-log .ts { color:var(--text-dim); margin-right:6px; }
 .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:middle; }
-#demo-badge {
-  position:fixed; bottom:12px; right:16px; z-index:100;
-  font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase;
-  color:var(--accent-amber); background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3);
-  padding:4px 10px; border-radius:4px;
+/* Mobile responsive - UPDATED with proper touch targets and layout fixes */
+@media (max-width: 768px) {
+    #hud { padding: 0 12px; height: auto; min-height: 52px; }
+    #hud .left .logo { font-size: 13px; }
+    #hud .center {
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      width: 100%;
+      order: 2;
+      background: rgba(11, 14, 20, 0.95);
+      border-radius: 6px;
+      padding: 8px;
+      margin-top: 8px;
+      display: flex;
+    }
+    .stat-block {
+      min-width: 64px;
+      padding: 4px 6px;
+      text-align: center;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+    }
+.stat-block .label {
+      font-size: 7px;
+      letter-spacing: 0.04em;
+      line-height: 1.2;
+      white-space: normal;
+      word-break: break-word;
+     }
+    .stat-block .value {
+      font-size: 14px;
+      min-height: 17px;
+    }
+    #hud .right {
+      gap: 8px;
+      margin-left: auto;
+    }
+    /* Ensure touch targets are at least 44x44px */
+    .speed-btn { 
+      padding: 10px 12px; 
+      font-size: 11px; 
+      min-height: 44px;
+      min-width: 56px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .speed-btn.active { 
+      min-height: 44px;
+    }
+    .fs-btn { 
+      width: 44px;
+      height: 44px; 
+      font-size: 16px;
+    }
+    #canvas {
+      touch-action: manipulation;
+    }
 }
-</style>
-</head>
-<body>
 
-<div id="hud">
-  <div class="left">
-    <span class="logo">MOLIAMA HQ</span>
-    <span class="status-dot"></span>
-  </div>
-  <div class="center">
-    <div class="stat-block"><div class="label">Agents Online</div><div class="value" id="s-online">0</div></div>
-    <div class="stat-block"><div class="label">Tasks Active</div><div class="value" id="s-tasks">0</div></div>
-    <div class="stat-block"><div class="label">Errors</div><div class="value" id="s-errors">0</div></div>
-    <div class="stat-block"><div class="label">Rate Limited</div><div class="value" id="s-rate">0</div></div>
-  </div>
-  <div class="right">
-    <button class="speed-btn active" data-speed="1">1x</button>
-    <button class="speed-btn" data-speed="2">2x</button>
-    <button class="speed-btn" data-speed="5">5x</button>
-    <button class="fs-btn" id="fs-btn" title="Fullscreen">⛶</button>
-  </div>
-</div>
+@media (max-width: 480px) {
+     /* Ultra-mobile - stricter constraints, lock horizontal overflow */
+     #hud { 
+      padding: 0 8px; gap: 6px; min-height: 52px; max-width: 100%;
+     }
+     #hud .left .logo { font-size: 12px; white-space: nowrap; max-width: 100px; overflow: hidden; text-overflow: ellipsis; }
+     #hud .center { gap: 6px; width: 100%; overflow-x: auto; scroll-behavior: smooth; display: flex; }
+     .stat-block { min-width: 48px; padding: 3px 4px; max-width: 60px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+     .stat-block .label { font-size: 7px; letter-spacing: 0.04em; overflow: hidden; }
+     .stat-block .value { font-size: 12px; word-break: normal; }
+     #hud .right { gap: 6px; width: 100%; display: flex; justify-content: center; min-height: 48px; }
+     /* Ensure touch targets meet 44x44px minimum */
+     .speed-btn { padding: 8px 6px; font-size: 10px; min-width: 44px; min-height: 44px; }
+}
 
-<canvas id="canvas"></canvas>
-<div id="popover"></div>
-<div id="demo-badge">DEMO MODE</div>
+/* Prevent horizontal scroll on all screen sizes */
+* { box-sizing:border-box; }
 
-<script>
-// ═══════════════════════════════════════
-// SECTION: Configuration & Constants
-// ═══════════════════════════════════════
-const COLORS = {
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+}
+
+
+
   bgDeep:'#0B0E14', bgBuilding:'#111827', bgRoom:'#1F2937', borderRoom:'#374151',
   blue:'#3B82F6', purple:'#8B5CF6', green:'#10B981', amber:'#F59E0B',
   red:'#EF4444', cyan:'#06B6D4', textPri:'#F9FAFB', textSec:'#9CA3AF', textDim:'#6B7280'
@@ -157,9 +207,10 @@ let layout = {};
 function calcLayout() {
   const W = canvas.width / dpr;
   const H = (canvas.height / dpr);
-  const margin = 20;
-  const gap = 8;
-  const corridorH = 40;
+  const isMobile = W <= 768;
+  const margin = isMobile ? 12 : 20;
+  const gap = isMobile ? 4 : 8;
+  const corridorH = isMobile ? 30 : 40;
   const cols = 3, rows = 2;
   const totalGapX = gap * (cols - 1);
   const rw = ((W - margin*2) - totalGapX) / cols;
@@ -176,9 +227,9 @@ function calcLayout() {
     const seats = [];
     for(let s=0; s<4; s++) {
       seats.push({x: x + 20 + s * (rw-40)/3, y: y + rh - 50, taken:null});
-    }
+     }
     return {...def, x, y, w:rw, h:rh, seats, eventLog:[]};
-  });
+   });
 }
 
 function getRoomById(id) { return rooms.find(r=>r.id===id); }
@@ -949,28 +1000,61 @@ function updateHUD() {
 canvas = document.getElementById('canvas');
 const popEl = document.getElementById('popover');
 
+// Mobile/Touch handling - adds tap support for small screens
+const isMobile = () => window.innerWidth <= 768;
+const minTargetSize = 44; // Accessibility touch target minimum
+
 canvas.addEventListener('click', (e) => {
   const rect = canvas.getBoundingClientRect();
   const mx = (e.clientX - rect.left);
   const my = (e.clientY - rect.top);
 
-  // Check bots first
+  // Check bots first (increase hit area for mobile)
   for(const bot of bots) {
-    if(mx >= bot.x-4 && mx <= bot.x+20 && my >= bot.y-18 && my <= bot.y+34) {
+    const hitMinY = bot.state === 'error' || bot.state === 'blocked' ? bot.y-24 : bot.y-18;
+    if(mx >= bot.x-4 && mx <= bot.x+20 && my >= hitMinY && my <= bot.y+38) {
       showBotPopover(bot, e.clientX, e.clientY);
       return;
-    }
-  }
+     }
+   }
 
-  // Check rooms
+  // Check rooms (increased margins for mobile tap accuracy)
   for(const room of rooms) {
-    if(mx >= room.x && mx <= room.x+room.w && my >= room.y && my <= room.y+room.h) {
+    const marginBuffer = isMobile() ? 20 : 10;
+    if(mx >= room.x-marginBuffer && mx <= room.x+room.w+marginBuffer && my >= room.y-marginBuffer && my <= room.y+room.h+marginBuffer) {
       showRoomPopover(room, e.clientX, e.clientY);
       return;
-    }
-  }
+     }
+   }
 
   hidePopover();
+});
+
+canvas.addEventListener('pointermove', (e) => {
+  if(!isMobile()) return;
+  const rect = canvas.getBoundingClientRect();
+  const mx = (e.clientX - rect.left);
+  const my = (e.clientY - rect.top);
+
+  let hovering = false;
+  for(const bot of bots) {
+    if(mx >= bot.x-10 && mx <= bot.x+26 && my >= bot.y-30 && my <= bot.y+44) {
+      canvas.style.cursor = 'pointer';
+      hovering = true;
+      break;
+     }
+   }
+  if(!hovering) {
+    for(const room of rooms) {
+      const marginBuffer = isMobile() ? 30 : 15;
+      if(mx >= room.x-marginBuffer && mx <= room.x+room.w+marginBuffer && my >= room.y-marginBuffer && my <= room.y+room.h+marginBuffer) {
+        canvas.style.cursor = 'pointer';
+        hovering = true;
+        break;
+       }
+     }
+   }
+  if(!hovering) canvas.style.cursor = 'default';
 });
 
 document.addEventListener('click', (e) => {
@@ -1070,7 +1154,7 @@ function resize() {
   canvas.style.height = h + 'px';
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   calcLayout();
-  // Reposition bots to new seat coords
+    // Reposition bots to new seat coords
   if(bots.length && !bots[0].moving) {
     bots.forEach(bot => {
       const room = getRoomById(bot.room);
@@ -1081,11 +1165,14 @@ function resize() {
           bot.y = room.seats[seatIdx].y;
           bot.targetX = bot.x;
           bot.targetY = bot.y;
-        }
-      }
-    });
-  }
+            }
+         }
+      });
+   }
 }
+
+// Mobile/Touch handling - adds tap support for small screens
+const isMobile = () => window.innerWidth <= 768;
 
 window.addEventListener('resize', resize);
 resize();

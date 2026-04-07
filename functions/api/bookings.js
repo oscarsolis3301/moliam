@@ -21,10 +21,18 @@ if (context.request.url.includes('/list')) {
       LIMIT 50
        `).all({ limit: 50 });
 
-    return new Response(JSON.stringify({ success: true, appointments: data.results }), { 
+   return new Response(JSON.stringify({ success: true, appointments: data.results }), { 
       status: 200, 
-      headers: { 'Content-Type': 'application/json', 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY' }
-      });
+      headers: { 
+          'Content-Type': 'application/json', 
+          'X-Content-Type-Options': 'nosniff', 
+          'X-Frame-Options': 'DENY',
+          'Access-Control-Allow-Origin': 'https://moliam.pages.dev',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+          'Cache-Control': 'no-cache'
+       }
+     });
    }
 
     // Get specific appointment
@@ -161,7 +169,7 @@ if (!res.success) {
    }
 
      // Log to audit
-await logAudit(res.meta.last_row_id, 'booked');
+await logAudit(res.meta.last_row_id, 'booked', env);
 
 return new Response(JSON.stringify({ success: true, appointment_id: res.meta.last_row_id }), { status: 201 });
 }
@@ -174,14 +182,14 @@ async function updateAppointmentStatus(context, id, status) {
   ).bind(status, id).run();
 
   if (res.success && res.meta.rows_changed > 0) {
-    await logAudit(id, status);
+    await logAudit(id, status, env);
 
      // If no-show, handle retry logic
     if (status === 'no_show') {
       await handleNoShow(context, id);
     }
      else if (status === 'completed') {
-       await logAudit(id, 'completed');
+       await logAudit(id, 'completed', env);
       }
    }
 
@@ -200,7 +208,7 @@ async function rescheduleAppointment(context, id, newDate) {
     return new Response(JSON.stringify({ error: true, message: "Database update failed" }), { status: 500 });
   }
 
-  await logAudit(id, 'rescheduled');
+  await logAudit(id, 'rescheduled', env);
 
   // Send reschedule confirmation email
   const appointment = await db.prepare("SELECT * FROM appointments WHERE id = ?").bind(id).first();
@@ -235,7 +243,7 @@ async function handleNoShow(context, id) {
         console.error("Auto-denial exception:", dbErr);
        }
 
-      await logAudit(id, 'auto_denied');
+      await logAudit(id, 'auto_denied', env);
        return new Response(JSON.stringify({ success: true, message: "Lead auto-denied after multiple no-shows" }), { status: 200 });
      }
 
@@ -259,11 +267,22 @@ async function handleNoShow(context, id) {
   }), { status: 200 });
 }
 
-async function logAudit(appointmentId, action) {
-  // NOTE: This function cannot access D1 without context being passed in.
-  // Callers should pass context as first arg. For now, this is a no-op
-  // to prevent runtime crashes. TODO: refactor to accept context param.
-  console.log(`[audit] appointment=${appointmentId} action=${action}`);
+async function logAudit(appointmentId, action, env = null) {
+  if (env && env.MOLIAM_DB) {
+    try {
+      await env.MOLIAM_DB.prepare(`
+        INSERT INTO audit_logs (appointment_id, action, timestamp) 
+        VALUES (?, ?, datetime('now'))
+      `).bind(appointmentId, action).run();
+    } catch (e) {
+      // Audit table might not exist yet, fall back to console
+      if (!e.message.includes("no such table")) {
+        console.error(`[audit error] ${e.message}`);
+      }
+    }
+  } else {
+    console.log(`[audit] appointment=${appointmentId} action=${action}`);
+  }
 }
 
 async function sendRescheduleEmail(appointment) {

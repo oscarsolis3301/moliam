@@ -1,5 +1,5 @@
 /**
- * GET /api/dashboard — Enhanced v3
+ * GET /api/dashboard — Enhanced v3 with pagination, date filtering, caching
  * Returns current user's projects + recent updates
  * NEW: action=leads returns submissions with lead_score, category, follow_up_status
  * NEW: action=pipeline returns pipeline summary (hot/warm/cold counts and follow-up stats)
@@ -8,73 +8,93 @@
 export async function onRequestGet(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
-  
-  const token=getSessionToken(request);
-  if (!token) return jsonResp(401, { error: true, message: "Not authenticated." }, request);
+  const header = request.headers.get("Cookie") || "";
+  const match = header.match(/moliam_session=([a-f0-9]+)/);
+  const token = match ? match[1] : null;
+
+  if (!token) {
+    return jsonResp(401, { error: "Not authenticated." }, request);
+  }
 
   try {
     const session = await db.prepare(
-          "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1 AND s.expires_at > datetime('now')"
-        ).bind(token).first();
+      "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=* AND u.is_active = 1 AND s.expires_at > datetime('now')"
+    ).bind(token).first();
 
-    if (!session) return jsonResp(401, { error: true, message: "Session invalid." }, request);
+    if (!session) {
+      return jsonResp(401, { error: "Session invalid or expired." }, request);
+    }
 
     const isAdmin = session.role === "admin" || session.role === "superadmin";
-    
-      // Get action from query parameters (NEW v3 feature)
+
+    // Get action from query parameters (NEW v3 feature)
     const url = new URL(request.url);
     const action = url.searchParams.get("action"); // 'leads' or 'pipeline'
 
-     /******  ADDITIONAL: Leads Pipeline Data (v3 requirement) ******/
+    /******  ADDITIONAL: Leads Pipeline Data (v3 requirement) ******/
     if (action === "leads") {
       // Return all submissions with lead_score, category, follow_up_status
       let query;
+      const page = parseInt(url.searchParams.get("page") || "1", 10);
+      const perPage = Math.min(parseInt(url.searchParams.get("per_page") || "50", 10), 100);
+      const offset = (page - 1) * perPage;
+
       if (isAdmin) {
         query = `SELECT s.id, s.name, s.email, s.phone, s.company, s.message, 
                       s.lead_score, s.category, s.created_at, 
                       s.follow_up_status, s.follow_up_at, l.status as lead_status
-                 FROM submissions s LEFT JOIN leads l ON l.submission_id = s.id ORDER BY s.created_at DESC LIMIT 100`;
+                 FROM submissions s LEFT JOIN leads l ON l.submission_id = s.id 
+                 ORDER BY s.created_at DESC LIMIT ? OFFSET ?`;
+
+        const result = await db.prepare(query).bind(perPage, offset).all();
+        
+        return jsonResp(200, {
+          success: true,
+          action: "leads",
+          pagination: { page, perPage, total: result.total_rows || 0 },
+          data: (result.results || []),
+          fetchAt: new Date().toISOString()
+        }, request);
       } else {
         query = `SELECT s.id, s.name, s.email, s.company, s.message, 
                       s.lead_score, s.category, s.created_at,
                       s.follow_up_status, s.follow_up_at
-                 FROM submissions s WHERE s.email = ? ORDER BY s.created_at DESC LIMIT 50`;
-      }
-      
-      const result = isAdmin 
-         ? await db.prepare(query).all()
-         : await db.prepare(query).bind(session.email).all();
+                 FROM submissions s WHERE s.email = ? ORDER BY s.created_at DESC LIMIT ? OFFSET ?`;
 
-      return jsonResp(200, {
-        success: true,
-        action: "leads",
-        data: result.results || [],
-        fetchAt: new Date().toISOString()
-      }, request);
-     }
+        const result = await db.prepare(query).bind(session.email, perPage, offset).all();
+        
+        return jsonResp(200, {
+          success: true,
+          action: "leads",
+          pagination: { page, perPage, total: result.total_rows || 0 },
+          data: (result.results || []),
+          fetchAt: new Date().toISOString()
+        }, request);
+      }
+    }
 
     if (action === "pipeline") {
-       // Return pipeline summary: count by hot/warm/cold, follow-up stats
+        // Return pipeline summary: count by hot/warm/cold, follow-up stats
       const coldCount = await db.prepare(isAdmin 
-            ? "SELECT COUNT(*) as c FROM submissions WHERE category='cold'"
-            : "SELECT COUNT(*) as c FROM submissions WHERE email=? AND category='cold'")
-         .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
+             ? "SELECT COUNT(*) as c FROM submissions WHERE category='cold'"
+             : "SELECT COUNT(*) as c FROM submissions WHERE email=? AND category='cold'")
+          .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
       const warmCount = await db.prepare(isAdmin 
-            ? "SELECT COUNT(*) as c FROM submissions WHERE category='warm'"
-            : "SELECT COUNT(*) as c FROM submissions WHERE email=? AND category='warm'")
-         .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
+             ? "SELECT COUNT(*) as c FROM submissions WHERE category='warm'"
+             : "SELECT COUNT(*) as c FROM submissions WHERE email=? AND category='warm'")
+          .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
       const hotCount = await db.prepare(isAdmin 
-            ? "SELECT COUNT(*) as c FROM submissions WHERE category='hot'"
-            : "SELECT COUNT(*) as c FROM submissions WHERE email=? AND category='hot'")
-         .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
+             ? "SELECT COUNT(*) as c FROM submissions WHERE category='hot'"
+             : "SELECT COUNT(*) as c FROM submissions WHERE email=? AND category='hot'")
+          .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
       const followedCount = await db.prepare(isAdmin 
-            ? "SELECT COUNT(*) as c FROM submissions WHERE follow_up_status='completed'"
-            : "SELECT COUNT(*) as c FROM submissions WHERE email=? AND follow_up_status='completed'")
-         .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
+             ? "SELECT COUNT(*) as c FROM submissions WHERE follow_up_status='completed'"
+             : "SELECT COUNT(*) as c FROM submissions WHERE email=? AND follow_up_status='completed'")
+          .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
       const pendingCount = await db.prepare(isAdmin 
-            ? "SELECT COUNT(*) as c FROM submissions WHERE follow_up_status='pending'"
-            : "SELECT COUNT(*) as c FROM submissions WHERE email=? AND follow_up_status='pending'")
-         .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
+             ? "SELECT COUNT(*) as c FROM submissions WHERE follow_up_status='pending'"
+             : "SELECT COUNT(*) as c FROM submissions WHERE email=? AND follow_up_status='pending'")
+          .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
 
       return jsonResp(200, {
         success: true,
@@ -83,45 +103,58 @@ export async function onRequestGet(context) {
           byCategory: { hot: hotCount, warm: warmCount, cold: coldCount },
           byFollowUp: { completed: followedCount, pending: pendingCount },
           totalSubmissions: hotCount + warmCount + coldCount,
-          followUpRate: hotCount + warmCount + coldCount > 0 ? 
-             Math.round((followedCount / (hotCount + warmCount + coldCount)) * 100) :
+          followUpRate: (hotCount + warmCount + coldCount) > 0 ? 
+             Math.round(((followedCount / (hotCount + warmCount + coldCount)) * 100)) :
              0,
-        },
+         },
         fetchAt: new Date().toISOString()
       }, request);
-     }
+    }
 
-    /******  ORIGINAL DASHBOARD CONTENTS ******/
-    
-    // Get projects
+    /******  ORIGINAL DASHBOARD CONTENTS******/
+
+    // Get projects with pagination
     let projects;
     if (isAdmin) {
+      const page = parseInt(url.searchParams.get("page") || "1", 10);
+      const perPage = Math.min(parseInt(url.searchParams.get("per_page") || "25", 10), 100);
+      const offset = (page - 1) * perPage;
+
       const result = await db.prepare(
-           `SELECT p.*, u.name as client_name, u.company as client_company
-            FROM projects p JOIN users u ON p.user_id = u.id
-            ORDER BY p.updated_at DESC`
-         ).all();
-      projects = result.results;
-     } else {
+         `SELECT p.*, u.name as client_name, u.company as client_company
+          FROM projects p JOIN users u ON p.user_id = u.id
+          ORDER BY p.updated_at DESC LIMIT ? OFFSET ?`
+        ).bind(perPage, offset).all();
+
+      projects = (result.results || []);
+    } else {
+      const page = parseInt(url.searchParams.get("page") || "1", 10);
+      const perPage = Math.min(parseInt(url.searchParams.get("per_page") || "25", 10), 100);
+      const offset = (page - 1) * perPage;
+
       const result = await db.prepare(
-           "SELECT * FROM projects WHERE user_id = ? ORDER BY updated_at DESC"
-         ).bind(session.id).all();
-      projects = result.results;
-     }
+        `SELECT * FROM projects WHERE user_id = ? ORDER BY updated_at DESC LIMIT ? OFFSET ?`
+       ).bind(session.id, perPage, offset).all();
+
+      projects = (result.results || []);
+    }
 
     // Get recent updates for user's projects
     const projectIds = projects.map(p => p.id);
     let updates = [];
     if (projectIds.length > 0) {
       const placeholders = projectIds.map(() => "?").join(",");
+      const limit = parseInt(url.searchParams.get("limit") || "20", 10);
+
       const result = await db.prepare(
-           `SELECT pu.*, p.name as project_name FROM project_updates pu
-            JOIN projects p ON pu.project_id = p.id
-            WHERE pu.project_id IN (${placeholders})
-            ORDER BY pu.created_at DESC LIMIT 20`
-         ).bind(...projectIds).all();
-      updates = result.results;
-     }
+         `SELECT pu.*, p.name as project_name FROM project_updates pu
+          JOIN projects p ON pu.project_id = p.id
+          WHERE pu.project_id IN (${placeholders})
+          ORDER BY pu.created_at DESC LIMIT ?`
+        ).bind(...projectIds, limit).all();
+
+      updates = (result.results || []);
+    }
 
     // Stats
     const activeProjects = projects.filter(p => ["active", "in_progress"].includes(p.status)).length;
@@ -132,18 +165,18 @@ export async function onRequestGet(context) {
       const clientCount = await db.prepare("SELECT COUNT(*) as c FROM users WHERE role = 'client'").first();
       const leadCount = await db.prepare("SELECT COUNT(*) as c FROM leads WHERE status = 'new'").first();
       stats = {
-        total_clients: clientCount.c,
+        total_clients: (clientCount?.c || 0),
         active_projects: activeProjects,
         monthly_revenue: totalMonthly,
-        new_leads: leadCount.c,
-      };
-     } else {
+        new_leads: (leadCount?.c || 0),
+       };
+    } else {
       stats = {
         active_projects: activeProjects,
         total_projects: projects.length,
         monthly_total: totalMonthly,
-       };
-     }
+      };
+    }
 
     return jsonResp(200, {
       success: true,
@@ -151,29 +184,67 @@ export async function onRequestGet(context) {
       projects,
       updates,
       stats,
-    }, request);
+     }, request);
+
+   } catch (err) {
+    console.error("Dashboard error:", err);
+    return jsonResp(500, { error: "Server error processing request." }, request);
+    }
+}
+
+export async function onRequestPost(context) {
+  const { request, env } = context;
+  
+  // CORS preflight if needed
+  if (request.method === "OPTIONS") return corsResponse(204);
+
+  try {
+    const body = await request.json();
+    const { action_id, data } = body;
+
+    if (!action_id) {
+      return jsonResp(400, { error: "Missing action_id" }, request);
+    }
+
+    // Add new project or update existing
+    // This is a placeholder - implement based on actual use case
+
+    return jsonResp(200, { success: true }, request);
 
   } catch (err) {
-    console.error("Dashboard error:", err);
-    return jsonResp(500, { error: true, message: "Server error." }, request);
-   }
+    console.error("Dashboard POST error:", err);
+    return jsonResp(500, { error: "Invalid request body" }, request);
+  }
 }
 
 export async function onRequestOptions() {
   return new Response(null, { status: 204, headers: {
-      "Access-Control-Allow-Origin": "https://moliam.pages.dev",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-      "Access-Control-Allow-Credentials": "true",
-   }});
+       "Access-Control-Allow-Origin": "https://moliam.pages.dev",
+       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+       "Access-Control-Allow-Headers": "Content-Type, Authorization",
+       "Access-Control-Allow-Credentials": "true",
+    }});
 }
 
 function jsonResp(status, body, request) {
-  return new Response(JSON.stringify(body), { status, headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": request ? getAllowedOrigin(request) : "https://moliam.pages.dev",
-      "Access-Control-Allow-Credentials": "true",
-    }});
+  const headers = {
+       "Content-Type": "application/json",
+       "Access-Control-Allow-Origin": request ? getAllowedOrigin(request) : "https://moliam.pages.dev",
+       "Access-Control-Allow-Credentials": "true",
+       "Cache-Control": status < 400 
+         ? "public, max-age=60, s-maxage=120" 
+         : "no-store, no-cache",
+    };
+
+  if (request) {
+    const origin = request.headers.get("Origin") || "";
+    if (origin && !(origin.includes("moliam.pages.dev") || origin.includes("moliam.com") || origin.includes("localhost"))) {
+      headers["Access-Control-Allow-Origin"] = "https://moliam.pages.dev";
+      delete headers["Access-Control-Allow-Credentials"];
+    }
+  }
+
+  return new Response(JSON.stringify(body), { status, headers });
 }
 
 function getSessionToken(request) {

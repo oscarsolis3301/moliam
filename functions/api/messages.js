@@ -111,15 +111,16 @@ export async function onRequestPost(context) {
 
 // --- CORS preflight ---
 export async function onRequestOptions() {
-  return new Response(null, {
+   return new Response(null, {
     status: 204,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-      "Access-Control-Allow-Credentials": "true",
-    },
-  });
+      headers: { 
+          "Access-Control-Allow-Origin": "https://moliam.pages.dev",
+         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+         "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Auth-Token",
+          "Access-Control-Allow-Credentials": "true",
+          "Cache-Control": "no-cache"
+      },
+     });
 }
 
 // --- Authenticate via session cookie ---

@@ -40,8 +40,11 @@
   ]
 }
 </script>
-<style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    <style>
+     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* SKIP TO CONTENT LINK - Accessibility */
+.skip-to-main{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:10000;padding:12px 24px;background:#3B82F6;color:#fff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:500}.skip-to-main:focus{left:24px;top:24px;outline:3px solid #8B5CF6;outline-offset:4px}
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -54,7 +57,10 @@
       justify-content: center;
       overflow: hidden;
       position: relative;
-    }
+     }
+
+/* FOCUS INDICATORS - All interactive elements */
+*:focus{outline:3px solid #3B82F6;outline-offset:4px}@media(pointer:fine){a:focus,button:focus,input:focus,.modal-close-btn:focus,no-a:hover,a.no-a:hover{text-decoration:none}}a:hover,button:hover,.close-help-btn:hover,.help-link-item:hover,.quick-link-item:hover{opacity:1}
 
     /* Particle canvas */
     #particles {
@@ -276,97 +282,55 @@
        box-shadow: 0 4px 24px rgba(59,130,246,.4), 0 8px 40px rgba(139,92,246,.2);
      }
 
-     .footer {
-       position: fixed;
-      bottom: 1.5rem;
-      font-size: .75rem;
-      color: #334155;
-      z-index: 1;
-     }
-
-     /* Mobile responsive adjustments */
-     @media (max-width: 480px) {
-       .brand-header {
-         flex-direction: column;
-         gap: .75rem;
-       }
-
-       .moliam-logo {
-         height: 36px;
-       }
-
-       .links a.primary-action,
-      .links a {
-         padding: .55rem 1rem;
-       font-size: .8rem;
-       }
-     }
-    .links a {
-      display: inline-flex;
-      align-items: center;
-      gap: .45rem;
-      padding: .65rem 1.25rem;
-      font-size: .875rem;
-      font-weight: 500;
-      color: #CBD5E1;
-      text-decoration: none;
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.07);
-      border-radius: 10px;
-      transition: all .25s;
-    }
-    .links a:hover {
-      background: rgba(255,255,255,.08);
-      border-color: rgba(59,130,246,.35);
-      color: #fff;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 20px rgba(0,0,0,.25);
-    }
-    .links a svg { width: 16px; height: 16px; opacity: .6; }
-
     /* Footer hint */
-    .footer {
+     .footer {
       position: fixed;
       bottom: 1.5rem;
       font-size: .75rem;
-      color: #334155;
+      color: #64748B;
       z-index: 1;
-    }
+     }
 
     @media (max-width: 480px) {
       .links { gap: .5rem; }
       .links a { padding: .55rem 1rem; font-size: .8rem; }
-    }
-  </style>
+     }
+   </style>
 </head>
 <body>
 
-  <canvas id="particles"></canvas>
+<!-- Skip to main content for keyboard users --><a href="#main-error" class="skip-to-main">Skip to 404 content</a>
+
+<script src="/api/v3/handlers/api.js?v=12"></script><canvas id="particles"></canvas>
   <div class="glow glow--blue"></div>
   <div class="glow glow--purple"></div>
   <div class="glow glow--green"></div>
 
-  <div class="container">
-     <div class="brand-header">
-        <img src="/logo.png" alt="Moliam" width="48" height="48" loading="lazy" class="moliam-logo">
-        <h1 class="error-code">404</h1>
-     </div>
+       <div id="main-error" class="container" role="main" aria-label="Page not found - 404 error page">
+          <h1 id="page-heading" style="display:none;">Page Not Found - 404 Error</h1>
+              <p style="font-size:18px;line-height:1.6;margin-top:1rem;color:#94a3b8;max-width:560px;">Looks like you've wandered off the grid. Let's get you back to moliam.</p>
+<div class="quick-popular-grid" style="display:grid;gap:12px;margin-bottom:16px;" aria-label="Quick links section">
+             <h4 style="color:#a78bfa;font-size:14px;
+           <a href="/" style="grid-column:1/3;">🏠 Homepage</a>
+           <a href="#services" style="grid-column:1/3;">⚡ Services</a>
+           <a href="#contact" style="grid-column:1/3;">💬 Contact</a>
+           <a href="/portal" style="grid-column:1/3;">👤 Client Portal</a>
+         </div>
+       </div>
 
-     <p class="subtitle">This page doesn't exist yet</p>
-     <p class="description">The page you're looking for may have been moved, deleted, or never existed. Try searching or use one of the links below.</p>
+       <!-- Search form below popular links -->
+       <div class="search-wrap">
+         <form class="search-form" id="searchForm" action="https://www.google.com/search" method="GET" target="_blank" rel="noopener">
+           <input type="text" class="search-input" id="searchInput" placeholder="Search the Moliam site…" autocomplete="off" />
+           <input type="hidden" name="q" id="searchQuery" />
+           <button type="submit" class="search-btn" aria-label="Search">
+             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5" stroke-linecap="round"/></svg>
+           </button>
+         </form>
+       </div>
 
-     <div class="search-wrap">
-       <form class="search-form" id="searchForm" action="https://www.google.com/search" method="GET" target="_blank" rel="noopener">
-         <input type="text" class="search-input" id="searchInput" placeholder="Search the Moliam site…" autocomplete="off" />
-         <input type="hidden" name="q" id="searchQuery" />
-         <button type="submit" class="search-btn" aria-label="Search">
-           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5" stroke-linecap="round"/></svg>
-         </button>
-       </form>
-     </div>
-
-     <nav class="links">
-       <a href="/" class="primary-action">
+       <nav class="links">
+         <a href="/" class="primary-action">
            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="m3 12 9-9 9 9M5 10v10a1 1 0 001 1h3m10-11v10a1 1 0 01-1 1h-3m-4 0v-5a1 1 0 011-1h2a1 1 0 011 1v5" stroke-linecap="round" stroke-linejoin="round"/></svg>
            <span>Go Home</span>
         </a>

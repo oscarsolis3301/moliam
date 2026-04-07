@@ -7,32 +7,114 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
-   // --- Parse body ---
+      // --- Parse body ---
   let data;
   try {
     data = await request.json();
-  } catch {
+   } catch {
     return jsonResp(400, { error: true, message: "Invalid JSON body." });
-  }
+   }
 
-    // --- Validate ---
-  const name = (data.name || "").trim();
-  const email = (data.email || "").toLowerCase().trim();
-  const phone = data.phone ? String(data.phone).replace(/[^\d()\-+\s]/g, "").trim() : null;
-  const company = data.company ? String(data.company).trim() : null;
-  const message = (data.message || "").trim();
+      // --- Validation Helpers ---
+  function sanitizeText(text, maxLength = 1000) {
+       // Strip HTML tags to prevent XSS
+     const stripped = String(text || "").replace(/<[^>]*>/g, "");
+     return stripped.trim().slice(0, maxLength);
+     }
 
+  function validateEmail(email) {
+    if (!email || email.length < 5) return { valid: false, error: "Valid email required." };
+    const cleaned = email.toLowerCase().trim();
+      // RFC 5321 compliant regex for email format validation
+    if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(cleaned)) return { valid: false, error: "Invalid email format." };
+    if (cleaned.length > 254) return { valid: false, error: "Email address too long." };
+    return { valid: true, value: cleaned };
+     }
+
+  function validatePhone(phone) {
+    if (!phone || phone.toString().trim() === "") return { valid: true, value: null };
+      // Extract all digits for actual validation
+    const rawDigits = String(phone);
+    const justNumbers = rawDigits.replace(/\D/g, "");
+      // Must have 10-15 digits (global phone format range)
+    if (justNumbers.length < 10 || justNumbers.length > 15) return { valid: false, error: "Phone number must be 10-15 digits." };
+      // Return formatted version (strip non-digits except parentheses and dashes for display)
+    const formatted = rawDigits.replace(/[()\-+\s]/g, "").replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3").slice(0, 20);
+    return { valid: true, value: formatted };
+     }
+
+      // --- Parse & Sanitize Body Fields ---
+  const name = sanitizeText(data.name, 200);
+  const emailResult = validateEmail(String(data.email || ""));
+  if (!emailResult.valid) return jsonResp(400, { error: true, message: emailResult.error });
+  const email = emailResult.value;
+
+  const phoneResult = validatePhone(data.phone);
+  if (!phoneResult.valid) return jsonResp(400, { error: true, message: phoneResult.error });
+  const phone = phoneResult.value;
+
+  const company = sanitizeText(data.company, 100);
+  const message = sanitizeText(data.message || "", 1000);
+
+      // --- Field Length Validation (after sanitization) ---
   const errors = [];
   if (name.length < 2) errors.push("Name must be at least 2 characters.");
-  if (name.length > 200) errors.push("Name cannot exceed 200 characters.");
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push("Valid email required.");
-  if (email.length > 254) errors.push("Email cannot exceed 254 characters.");
-  if (phone && phone.length > 20) errors.push("Phone number cannot exceed 20 characters.");
-  if (message.length < 10) errors.push("Message must be at least 10 characters.");
-  if (message.length > 5000) errors.push("Message cannot exceed 5000 characters.");
+  if (message.length < 10) errors.push("Message must be at least 10 characters long.");
+
   if (errors.length) return jsonResp(400, { error: true, message: errors.join(" ") });
 
-   // --- Check D1 availability ---
+
+
+/**
+ * Enhanced Lead Scoring based on service interest (core requirement v3)
+ * Service tiers: retainer=100pts (hot), lsa=80pts, gbp=60pts, website=40pts, other=20pts
+ * Auto-categorization: hot (80+), warm (40-79), cold (<40)
+ */
+function calculateLeadScore(service, budget, timeline) {
+  let score = 0;
+  const svc = (service || "").toLowerCase();
+
+// SERVICE-BASED SCORING — Core v3 requirement: priority by service type
+  if (svc.includes("retainer")) {
+    score += 100; // retainer = 100pts (hot)
+  } else if (svc.includes("lsa") || svc.includes("google_ads")) {
+    score += 80; // lsa = 80pts
+  } else if (svc.includes("gbp") || svc.includes("google_business")) {
+    score += 60; // gbp = 60pts  
+  } else if (svc.includes("website") || svc.includes("web build")) {
+    score += 40; // website = 40pts
+  } else {
+    score += 20; // other = 20pts
+  }
+
+// Budget bonus: adds 5-15 points
+  const bgt = (budget || "").toLowerCase();
+  if (bgt.includes("10k+") || bgt.includes("10000") || bgt.includes("enterprise")) score += 15;
+  else if (bgt.includes("5k") || bgt.includes("5000")) score += 10;
+  else if (bgt.includes("2.5k") || bgt.includes("2500")) score += 7;
+  else if (bgt.includes("1k") || bgt.includes("1000")) score += 5;
+
+// Timeline urgency bonus: adds 0-20 points
+  const tl = (timeline || "").toLowerCase();
+  if (tl.includes("immediate") || tl.includes("asap") || tl.includes("today")) score += 20;
+  else if (tl.includes("1-2") || tl.includes("this week") || tl.includes("week")) score += 15;
+  else if (tl.includes("month")) score += 10;
+  else if (tl.includes("explor") || tl.includes("soon")) score += 5;
+
+// Auto-categorization based on final score
+  let category = "cold";
+  if (score >= 80) {
+    category = "hot";
+  } else if (score >= 40 && score < 80) {
+    category = "warm";
+  } else {
+    category = "cold";
+  }
+
+  return { score: Math.max(0, Math.min(100, score)), category };
+}
+
+    // --- Check D1 availability ---
   if (!db) {
      // D1 not bound — still send webhook and return success
     await sendWebhook(env, { name, email, phone, company, message, service: data.service, score: 0, category: "cold", subId: 0 });
@@ -229,53 +311,5 @@ function jsonResp(status, body) {
       "X-Frame-Options": "DENY",
     },
   });
-}
 
-/**
- * Enhanced Lead Scoring based on service interest (core requirement v3)
- * Service tiers: retainer=100pts (hot), lsa=80pts, gbp=60pts, website=40pts, other=20pts
- * Auto-categorization: hot (80+), warm (40-79), cold (<40)
- */
-function calculateLeadScore(service, budget, timeline) {
-  let score = 0;
-  const svc = (service || "").toLowerCase();
-
-   // SERVICE-BASED SCORING — Core v3 requirement: priority by service type
-  if (svc.includes("retainer")) {
-    score += 100; // retainer = 100pts (hot)
-  } else if (svc.includes("lsa") || svc.includes("google_ads")) {
-    score += 80; // lsa = 80pts
-  } else if (svc.includes("gbp") || svc.includes("google_business")) {
-    score += 60; // gbp = 60pts  
-  } else if (svc.includes("website") || svc.includes("web build")) {
-    score += 40; // website = 40pts
-  } else {
-    score += 20; // other = 20pts
-  }
-
-   // Budget bonus: adds 5-15 points
-  const bgt = (budget || "").toLowerCase();
-  if (bgt.includes("10k+") || bgt.includes("10000") || bgt.includes("enterprise")) score += 15;
-  else if (bgt.includes("5k") || bgt.includes("5000")) score += 10;
-  else if (bgt.includes("2.5k") || bgt.includes("2500")) score += 7;
-  else if (bgt.includes("1k") || bgt.includes("1000")) score += 5;
-
-   // Timeline urgency bonus: adds 0-20 points
-  const tl = (timeline || "").toLowerCase();
-  if (tl.includes("immediate") || tl.includes("asap") || tl.includes("today")) score += 20;
-  else if (tl.includes("1-2") || tl.includes("this week") || tl.includes("week")) score += 15;
-  else if (tl.includes("month")) score += 10;
-  else if (tl.includes("explor") || tl.includes("soon")) score += 5;
-
-   // Auto-categorization based on final score
-  let category = "cold";
-  if (score >= 80) {
-    category = "hot";
-  } else if (score >= 40 && score < 80) {
-    category = "warm";
-  } else {
-    category = "cold";
-  }
-
-  return { score: Math.max(0, Math.min(100, score)), category };
 }

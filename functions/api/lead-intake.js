@@ -12,49 +12,86 @@ export async function onRequestPost(context) {
     return jsonResp(500, { error: true, message: "Database not available. Please try again later." });
   }
 
-   // --- Parse body ---
+    // --- Parse body ---
   let data;
   try {
     data = await request.json();
-  } catch {
+   } catch {
     return jsonResp(400, { error: true, message: "Invalid JSON body." });
-  }
+   }
 
-   // --- Validation ---
-  const name = (data.name || "").trim();
-  const email = (data.email || "").toLowerCase().trim();
-  const phone = data.phone ? String(data.phone).replace(/[^\d()\-+\s]/g, "").trim() : null;
-  const company = data.company ? String(data.company).trim() : (data.inquiry_type === "freelancer" ? "Freelance" : null);
-  const message = (data.message || "").trim();
+    // --- Validation Helpers (same as contact.js for consistency) ---
+  function sanitizeText(text, maxLength = 1000) {
+       // Strip HTML tags to prevent XSS
+     const stripped = String(text || "").replace(/<[^>]*>/g, "");
+     return stripped.trim().slice(0, maxLength);
+     }
 
-   // Enhanced fields for scoring
-  const budget = (data.budget ? String(data.budget).trim() : "undisclosed");
-  const scope = (data.scope ? String(data.scope).trim() : data.inquiry_type || "General inquiry");
-  const industry = (data.industry ? String(data.industry).trim() : "general");
+  function validateEmail(email) {
+    if (!email || email.length < 5) return { valid: false, error: "Valid email required." };
+    const cleaned = email.toLowerCase().trim();
+       // RFC 5321 compliant regex for email format validation
+    if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(cleaned)) return { valid: false, error: "Invalid email format." };
+    if (cleaned.length > 254) return { valid: false, error: "Email address too long." };
+    return { valid: true, value: cleaned };
+     }
+
+  function validatePhone(phone) {
+    if (!phone || phone.toString().trim() === "") return { valid: true, value: null };
+       // Extract all digits for actual validation
+    const rawDigits = String(phone);
+    const justNumbers = rawDigits.replace(/\D/g, "");
+       // Must have 10-15 digits (global phone format range)
+    if (justNumbers.length < 10 || justNumbers.length > 15) return { valid: false, error: "Phone number must be 10-15 digits." };
+       // Return formatted version (strip non-digits except parentheses and dashes for display)
+    const formatted = rawDigits.replace(/[()\-+\s]/g, "").replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3").slice(0, 20);
+    return { valid: true, value: formatted };
+     }
+
+    // --- Sanitize all text fields (strip HTML, apply length limits) ---
+  const name = sanitizeText(data.name, 200);
+  const emailResult = validateEmail(String(data.email || ""));
+  if (!emailResult.valid) return jsonResp(400, { error: true, message: emailResult.error });
+  const email = emailResult.value;
+
+  const phoneResult = validatePhone(data.phone);
+  if (!phoneResult.valid) return jsonResp(400, { error: true, message: phoneResult.error });
+  const phone = phoneResult.value;
+
+  const company = sanitizeText(data.company, 100);
+  const message = sanitizeText(data.message || "", 1000);
+
+    // Enhanced fields for scoring (sanitized)
+  const budget = sanitizeText(String(data.budget || "undisclosed"), 50);
+  const scope = sanitizeText(data.scope ? String(data.scope).trim() : (data.inquiry_type || "General inquiry"), 200);
+  const industry = sanitizeText(data.industry ? String(data.industry).trim() : "general", 100);
   const urgency_level = data.urgency_level || 'medium';
+
+    // Sanitized pain_points array (limit item length to 500 chars)
   const pain_points = Array.isArray(data.pain_points) 
-    ? data.pain_points.filter(p => p && typeof p.trim === 'function' && p.trim().length > 0)
-    : [];
+     ? data.pain_points.filter(p => p && typeof p.trim === 'function' && p.trim().length > 0).slice(0, 5).map((p, i) => sanitizeText(String(p), 500))
+     : [];
 
   const errors = [];
   if (name.length < 2) errors.push("Name must be at least 2 characters.");
-  if (!/^[^\s@]+@[^\s]+\.[^\s]+$/.test(email)) errors.push("Valid email required.");
   if (message.length < 10) errors.push("Message must be at least 10 characters.");
-  
+
   if (errors.length) {
     return jsonResp(400, { error: true, message: errors.join(" ") });
-  }
+   }
+
+
 
   const ip = request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for") || "unknown";
   const ua = request.headers.get("user-agent") || "";
   const screenRes = data.screenResolution ? String(data.screenResolution).trim() : "";
 
   try {
-     // --- Rate limiting check (5 per 6 min window per IP) ---
+      // --- Rate limiting check (5 per 6 min window per IP) ---
     const ipHash = await hashSHA256(ip);
     const rl = await db.prepare(
-       "SELECT request_count, window_start FROM rate_limits WHERE hash_ip = ?"
-     ).bind(ipHash).first();
+        "SELECT request_count, window_start FROM rate_limits WHERE ip_address_hash = ?"
+      ).bind(ipHash).first();
 
     if (rl) {
       const windowAge = Date.now() - new Date(rl.window_start).getTime();

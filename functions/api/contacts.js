@@ -36,9 +36,20 @@ export async function onRequestGet(context) {
   const statusFilter = params.get("status");
   const searchQuery = params.get("search");
 
-  if (!db) {
-    return jsonResp(200, { error: true, message: "Database not available", contacts: [] });
-  }
+   if (!db) {
+       // Return CORS headers for all responses including errors when DB unavailable
+       const noDbResponse = new Response(JSON.stringify({ error: true, message: "Database not available", contacts: [] }), { 
+            status: 200,
+           headers: { 
+              "Content-Type": "application/json",
+             "Access-Control-Allow-Origin": "https://moliam.pages.dev",
+             "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+             "Access-Control-Allow-Headers": "Content-Type, Authorization",
+             "Cache-Control": "no-store"
+            }
+          });
+       return noDbResponse;
+     }
 
   try {
     let baseQuery = `SELECT id, name, email, phone, company, source, lead_score, status, notes, created_at, updated_at FROM contacts`;
@@ -511,11 +522,26 @@ export async function onRequestGetById(context) {
 function jsonResp(status, body) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "X-Content-Type-Options": "nosniff",
-      "X-Frame-Options": "DENY"
-    },
-  });
+           headers: { 
+               "Content-Type": "application/json", 
+              "Access-Control-Allow-Origin": "https://moliam.pages.dev",
+              "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+              "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Auth-Token",
+             "X-Content-Type-Options": "nosniff",
+             "X-Frame-Options": "DENY",
+             "Cache-Control": "no-cache"
+           },
+         });
+}
+
+// CORS preflight handler for all endpoints
+export async function onRequestOptions() {
+  return new Response(null, { 
+      status: 204,
+      headers: {
+           "Access-Control-Allow-Origin": "https://moliam.pages.dev",
+          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+           "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Auth-Token"
+         }
+     });
 }

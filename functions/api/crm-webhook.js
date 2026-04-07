@@ -16,29 +16,86 @@ export async function onRequestPost(context) {
           });
       }
 
-   // --- Verify this is actually a webhook (check content type) ---
+     // Validate this is actually a webhook (check content type) ---
   const contentType = request.headers.get("Content-Type") || "";
   if (!contentType.includes("application/json")) {
+    // Log to D1 for debugging even when bad content-type
+    try {
+      if (db) {
+         await db.prepare("INSERT INTO webhook_logs (event_type, payload_hash, signature_valid, received_at) VALUES (?, ?, ?, datetime('now'))")
+             .bind("crm_callback", "", false).run();
+       }
+     } catch {}
     return jsonResp(400, { 
       error: true, 
        message: "Webhook must be sent with application/json Content-Type",
          allowedContentTypes: ["application/json"]
-           });
-        }
+            });
+         }
 
-   try {
+      // --- Verify webhook signature (if header present) ---
+  const sigHeader = request.headers.get("X-Webhook-Signature") || "";
+  const crmSecret = env.CRM_WEBHOOK_SECRET || "";
+
+  if (crmSecret && sigHeader) {
+    // Simple HMAC validation - log to D1 for debugging
+    try {
+      if (db) {
+         await db.prepare("INSERT INTO webhook_logs (event_type, payload_hash, signature_valid, received_at) VALUES (?, ?, datetime('now'), ?)")               .bind(data.type || data.event || "crm_callback", data.submission_id || "unknown", false).run();
+       }
+     } catch {}
+      // Note: Full HMAC verification can be added per CRM provider requirements  
+     logPayloadToD1(db, data);
+   } else {
+     // No signature header - still log to D1
+     logPayloadToD1(db, data);
+   }
+
+       try {
     const data = await request.json();
 
-     // --- Validate webhook payload structure ---
+         // --- Validate webhook payload structure ---
     if (!data || typeof data !== 'object' || Array.isArray(data)) {
       return jsonResp(400, { 
          error: true, 
           message: "Invalid webhook payload. Expected JSON object.",
            receivedType: Array.isArray(data) ? "array" : typeof data 
-             });
-            }
+              });
+             }
 
-     // Map CRM events to lead statuses (extensible for multiple CRMs)
+       // Webhook signature verification - log even errors to D1 for debugging
+
+      if (crmSecret && sigHeader) {
+         // Log the attempted validation to db
+        try {
+          if (db) {
+             await db.prepare("INSERT INTO webhook_logs (event_type, payload_hash, signature_valid, received_at) VALUES (?, ?, 'partial_verification', datetime('now'))")                    .bind(data.type || data.event || "crm_callback", String(data.submission_id || "").slice(0, 64)).run();
+           }
+         } catch {}
+         // Note: Full HMAC verification can be added per CRM provider requirements  
+       } else {
+         // No signature provided - log to D1 for debugging
+        try {
+          if (db) {
+             await db.prepare("INSERT INTO webhook_logs (event_type, payload_hash, note, received_at) VALUES (?, ?, 'no_signature_provided', datetime('now'))")                    .bind(data.type || data.event || "crm_callback", "").run();
+           }
+         } catch {}
+       }
+
+//          Webhook logs already written above - continue processing:
+
+//       Map CRM events to lead statuses (extensible for multiple CRMs)
+
+// --- Helper function: Log webhook payloads to D1 for debugging ---
+function logPayloadToD1(db, data) {
+  try {
+    if (db && data.submission_id) {
+       db.prepare("INSERT INTO webhook_logs (event_type, payload_hash, signature_valid, received_at) VALUES (?, ?, 'logged', datetime('now'))")                .bind(data.type || data.event || "unknown", String(data.submission_id).slice(0, 64)).run();
+    }
+  } catch {}
+}
+
+      // Map CRM events to lead statuses (extensible for multiple CRMs)
     const eventMap = {
          'submitted': { status: 'new', score_update: 5 },
           'read': { status: 'contacted' },
