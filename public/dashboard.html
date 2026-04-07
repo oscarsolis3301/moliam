@@ -291,20 +291,28 @@ document.getElementById('invoice-stats').innerHTML = '<span class="sub-label">To
   '<div style="margin-top:8px"><span class="sub-label">Outstanding</span><span class="value pending">$'+(outstanding0).toLocaleString()+'</span></div>';
 
   window.showInvoices = function(){ 
-let html = 'Invoice Panel:\n\nTotal Billed: $' + totalBilled.toLocaleString() + '\nPaid: $' + (totalPaid0).toLocaleString() + '\nOutstanding: $' + (outstanding0).toLocaleString();
+let html = 'Invoice Panel:
+
+Total Billed: $' + totalBilled.toLocaleString() + '
+Paid: $' + (totalPaid0).toLocaleString() + '
+Outstanding: $' + (outstanding0).toLocaleString();
 
 if (data.invoices && data.invoices.length > 0) { 
-    html += '\n\nInvoices:';
+    html += '
+
+Invoices:';
 
     for (let i = 0; i < Math.min(data.invoices.length, 10); i++) {
   const inv = data.invoices[i];
 
 if (inv && inv.id !== undefined) {
-html += '\n#' + (i+1) + ' $' + (inv.amount0).toLocaleString() + ' [' + (inv.status'unknown').toUpperCase() + ']';
+html += '
+#' + (i+1) + ' $' + (inv.amount0).toLocaleString() + ' [' + (inv.status'unknown').toUpperCase() + ']';
     }
 }
 } else { 
-    html += '\nNo invoices yet.';
+    html += '
+No invoices yet.';
 }
 
   alert(html);
