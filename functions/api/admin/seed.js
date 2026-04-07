@@ -49,8 +49,8 @@ export async function onRequestPost(context) {
      await db.prepare("INSERT INTO users (email, password_hash, role, name, company, created_at) VALUES (?, ?, ?, ?, ?, ?)").run("admin@moliam.com", hash_admin, "admin", "Administrator", "Moliam", now);
     await db.prepare("INSERT INTO users (email, password_hash, role, name, company, created_at) VALUES (?, ?, ?, ?, ?, ?)").run("oscar@onepluselectric.com", hash_oscar, "user", "Oscar Solis", "OnePlus Electric", now);
 
-    // Insert a sample session to test the schema
-    const sampleToken = "***" + Math.random().toString(36).substring(2);
+     // Insert a session - columns: id(AI),user_id,token,expires_at,ip_address,user_agent = 6 cols, but we're inserting 5 values (no id)
+    const sampleToken="***" + Math.random().toString(36).substring(2);
     const sampleExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
     await db.prepare("INSERT INTO sessions (user_id, token, expires_at, ip_address, user_agent) VALUES (?, ?, ?, ?, ?)").run(1, sampleToken, sampleExpiresAt, "192.168.1.1", "Mozilla/5.0");
 
