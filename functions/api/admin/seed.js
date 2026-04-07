@@ -31,10 +31,10 @@ export async function onRequestPost(context) {
     await db.prepare("DROP TABLE IF EXISTS client_messages").run();
     await db.prepare("DROP TABLE IF EXISTS client_activity").run();
 
-       // Create users table - matches login.js SELECT and INSERT schemas (9 columns: id auto, email, password_hash, role, name, company, is_active, last_login)
+// Create users table - matches login.js SELECT and INSERT schemas (8 columns: email, password_hash, role, name, company, is_active, last_login)
     await db.prepare(
-       "CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'user', name TEXT, company TEXT, is_active INTEGER DEFAULT 1, last_login TEXT)"
-     ).run();
+        "CREATE TABLE users(email TEXT PRIMARY KEY, password_hash TEXT NOT NULL, role TEXT DEFAULT 'user', name TEXT, company TEXT, is_active INTEGER DEFAULT 1, last_login TEXT)"
+      ).run();
 
     // Create sessions table with all 6 columns (id auto-increment)  
     // id + user_id + token + expires_at + ip_address + user_agent = 5 insertable columns
