@@ -41,11 +41,8 @@ export async function onRequestPost(context) {
      // Insert oscar user - same pattern (D1 positional args), id auto-incremented
     await db.prepare("INSERT INTO users(email, password_hash, name, role) VALUES(?, ?, ?, ?)").bind("oscar@onepluselectric.com", oscarHash, "Oscar", "client").run();
 
-     // Debug check: verify the data actually got inserted
-    const usersResult = await db.prepare("SELECT COUNT(*) as count FROM users").all();
-    
-      // Insert test sessions - all columns except id: token, user_id, expires_at, created_at, ip_address, user_agent
-    await db.prepare("INSERT INTO sessions(token, user_id, expires_at, created_at, ip_address, user_agent) VALUES(?, ?, datetime('now', '+30 days'), datetime('now'), ?, ?)").bind('test-session-1', 1, 'host.docker.internal', 'Mozilla/5.0 Test Browser').run();
+        // Insert test sessions - bind token and user_id explicitly, use datetime for expires_at/created_at, provide ip and user-agent
+await db.prepare("INSERT INTO sessions(token, user_id, expires_at, created_at, ip_address, user_agent) VALUES(?, ?, datetime('now', '+30 days'), datetime('now'), ?, ?)").bind('test-session-1', 1, 'host.docker.internal', 'Mozilla/5.0 Test Browser').run();
     await db.prepare("INSERT INTO sessions(token, user_id, expires_at, created_at, ip_address, user_agent) VALUES(?, ?, datetime('now', '+30 days'), datetime('now'), ?, ?)").bind('test-session-2', 2, 'host.docker.internal', 'Mozilla/5.0 Test Browser').run();
 
     return new Response(JSON.stringify({
