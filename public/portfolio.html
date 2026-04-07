@@ -765,6 +765,71 @@ function closeLightbox() {
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeLightbox();
 });
+
+/** Animated Counters on Scroll - Task 4 Requirement */
+const countersObserved = new Set();
+const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting && !countersObserved.has(entry.target)) {
+            countersObserved.add(entry.target);
+            animateCounter(entry.target);
+        }
+    });
+}, { threshold: 0.5, rootMargin: '0px' });
+
+function animateCounter(element) {
+    const start = 0;
+    const valueText = element.getAttribute('data-value') || element.textContent.trim();
+    let valueMatch = valueText.match(/([\d+.]+)%/);
+    if (!valueMatch) valueMatch = valueText.match(/([\d+.]+)/);
+    const target = valueMatch ? parseFloat(valueMatch[1]) : 0;
+    
+    let current = start;
+    const duration = 1500;
+    const stepTime = Math.abs(Math.floor(duration / (target * 60)));
+    
+    if (target === 0) return;
+    
+    function updateCounter() {
+        if ((target > 0 && current < target) || (target < 0 && current > target)) {
+            const increment = target > 0 ? Math.ceil(Math.abs(target * 0.1)) : Math.floor(Math.abs(target * 0.1));
+            current += increment * Math.sign(target);
+            
+            if (element.tagName === 'DIV' && element.classList.contains('metric-value')) {
+                const prefix = valueText.includes('+') ? '+' : (target < 0 ? '-' : '');
+                const absoluteVal = Math.abs(current);
+                element.textContent = (absoluteVal % 1 !== 0) ? `${prefix}${absoluteVal.toFixed(1)}%` : `${prefix}${Math.floor(absoluteVal)}%`;
+            } else {
+                element.textContent = target.toLocaleString();
+            }
+            
+            if ((target > 0 && current >= target) || (target < 0 && current <= target)) {
+                element.textContent = valueText;
+                return;
+            }
+        } else {
+            element.textContent = valueText.replace(/[\d.]+/g, (match) => Math.abs(target).toLocaleString());
+        }
+    }
+    
+    if (stepTime > 0 && stepTime < 15) {
+        setInterval(updateCounter, Math.max(20, stepTime));
+    } else {
+        requestAnimationFrame(function animate() {
+            updateCounter();
+            if ((target > 0 && current < target) || (target < 0 && current > target)) {
+                requestAnimationFrame(animate);
+            }
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const metricValues = document.querySelectorAll('.result-metric .metric-value');
+    metricValues.forEach(el => {
+        counterObserver.observe(el);
+    });
+});
 </script>
 
 </body>
