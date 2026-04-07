@@ -5,39 +5,40 @@ async function hashPassword(password) {
   const encoded = new TextEncoder().encode(password + SALT);
   const hash = await crypto.subtle.digest("SHA-256", encoded);
   return Array.from(new Uint8Array(hash))
-      .map(b => b.toString(16).padStart(2, "0"))
-      .join("");
+       .map(b => b.toString(16).padStart(2, "0"))
+       .join("");
 }
 
 export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
-  // Check seed key header authentication (required for security)
+   // Check seed key header authentication (required for security)
   const seedKey = request.headers.get("x-seed-key");
   if (seedKey !== "moliam2026") {
     return new Response(JSON.stringify({ error: "Invalid seed key" }), {
       status: 403,
       headers: { "Content-Type": "application/json" }
-    });
-  }
+     });
+   }
 
 try {
-         // Ensure clean slate with strong drop syntax
+          // Ensure clean slate with strong drop syntax
     try { await db.prepare("DROP TABLE IF EXISTS sessions").run(); } catch(e){}
     try { await db.prepare("DROP TABLE IF EXISTS users").run(); } catch(e){}
 
 // Create users table - 5 data columns: email + password_hash + role + name + company    
     await db.prepare(`CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'client', name TEXT, company TEXT)`).run();
 
-// Create sessions table - 4 columns: id (auto-increment), user_id, token, created_at
+// Create sessions table - 3 columns matching our usage: user_id, token, created_at
+// D1 automatically creates id INTEGER PRIMARY KEY column but we're using user_id as primary key
     await db.prepare(`CREATE TABLE sessions (user_id INTEGER PRIMARY KEY, token TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)`).run();
 
-// Session: Insert all required 3 columns matching CREATE TABLE
+// Session: Insert with 3 columns matching CREATE TABLE (no separate id)
 const now = new Date().toISOString();
     const randombytes = crypto.getRandomValues(new Uint8Array(8));
     const testToken = Array.from(randombytes)
-          .map(b => b.toString(16).padStart(2, "0")).join("") + "_moliam_test";
+           .map(b => b.toString(16).padStart(2, "0")).join("") + "_moliam_test";
 
     await db.prepare(`INSERT INTO sessions (user_id, token, created_at) VALUES (?, ?, ?)`).run(1, testToken, now);
 
@@ -49,22 +50,9 @@ const now = new Date().toISOString();
 
 // Validate by counting users - should be exactly 2 rows
     const result = await db.prepare("SELECT COUNT(*) as total FROM users").all();
-    return new Response(JSON.stringify({      success: true,
-      message: "Users and sessions tables seeded successfully",
-      user_count: result.data[0].total,
-      users: [
-            { email: "admin@moliam.com", role: "admin" },
-            { email: "oscar@onepluselectric.com", role: "client" }
-          ]
-        }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" }
-        });
+    return new Response(JSON.stringify({ success: true, message: "Users and sessions tables seeded successfully", user_count: result.data[0].total, users: [{ email: "admin@moliam.com", role: "admin" }, { email: "oscar@onepluselectric.com", role: "client" }]}), { status: 200, headers: { "Content-Type": "application/json" }});
 
-      } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" }
-        });
-      }
+       } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: { "Content-Type": "application/json" }});
+       }
 }
