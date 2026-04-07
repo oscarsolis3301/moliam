@@ -133,10 +133,14 @@ async function renderDashboard() {
 
   showImpersonationBanner(client);
 
-  // Show skeleton loading for first render
-  if (!projects.length && !updates.length && !invoices.length) {
-    document.getElementById('project-section').innerHTML = '<div class="skeleton-card" style="height:180px;"></div>';
+  // Show skeleton loading for first render with better UX feedback
+const projectSection = document.getElementById('project-section');
+if (!projects.length && !updates.length && !invoices.length) {
+    projectSection.innerHTML = '<div class="skeleton-card" style="height:180px;animation-skeletonShimmer 1.5s ease-in-out infinite;background:rgba(59,130,246,0.05);border-radius:16px;"></div>';
+    projectSection.dataset.loading='true';
   } else {
+    projectSection.dataset.loading='false';
+    projectSection.classList.add('fade-in');
     // Project cards
     let html = '';
     if (!projects.length) {
@@ -184,12 +188,17 @@ async function renderDashboard() {
     const accentGreen = '#10B981';
     const outstandingColor = outstanding > 0 ? '#F59E0B' : (outstanding < 0 ? '#EF4444' : 'var(--accent-blue)');
 
-    const statusBar = document.getElementById('stats-bar');
+const statusBar = document.getElementById('stats-bar');
+    
+    // Get latest invoice actioned_at for display
+    const lastPaidInvoice = invoices.find(inv => (parseFloat(inv.paid_amount)||0) > 0);
+    const lastActionDate = lastPaidInvoice?.actioned_at ? new Date(lastPaidInvoice.actioned_at).toLocaleDateString() : null;
+    
     statusBar.innerHTML = `
-      <div class="invoice-card fade-in" style="animation-delay:100ms"><div class="invoice-label">Total Billed</div><div>$${totalBilled.toLocaleString()}</div></div>
-      <div class="invoice-card fade-in" style="animation-delay:200ms"><div class="invoice-label">Amount Paid</div><div style="color:${accentGreen}">$${totalPaid.toLocaleString()}</div></div>
-      <div class="invoice-card fade-in" style="animation-delay:300ms"><div class="invoice-label">Outstanding</div><div style="color:${outstandingColor}">$${Math.abs(outstanding).toLocaleString()}</div></div>
-   `;
+       <div class="invoice-card fade-in" style="animation-delay:100ms"><div class="invoice-label">Total Billed</div><div>$${totalBilled.toLocaleString()}</div></div>
+       <div class="invoice-card fade-in" style="animation-delay:200ms"><div class="invoice-label">Amount Paid</div><div style="color:${accentGreen}">$${totalPaid.toLocaleString()}${lastActionDate ? '<br><span style="font-size:11px;color:var(--text-primary)">Last actioned: ' + lastActionDate + '</span>' : ''}</div></div>
+       <div class="invoice-card fade-in" style="animation-delay:300ms"><div class="invoice-label">Outstanding</div><div style="color:${outstandingColor}">$${Math.abs(outstanding).toLocaleString()}</div></div>
+    `;
     document.getElementById('invoices-section').style.display='block';
 
   return result;
