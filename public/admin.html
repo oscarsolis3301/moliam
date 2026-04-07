@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOLIAMA — Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+--bg-deep: #0B0E14;
+--bg-building: #111827;
+--bg-room: #1F2937;
+--border-room: #374151;
+--accent-blue: #3B82F6;
+--accent-purple: #8B5CF6;
+--accent-green: #10B981;
+--text-primary: #F9FAFB;
+--text-secondary: #9CA3AF;
+--text-dim: #6B7280;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg-deep);
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+a { color: var(--accent-blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+
+header {
+  margin-bottom: 48px;
+  text-align: center;
+}
+header h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+header p { color: var(--text-secondary); font-size: 15px; }
+
+/* Stats Bar */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: var(--bg-room);
+  border: 1px solid var(--border-room);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+}
+
+.stat-number { font-size: 36px; font-weight: 700; color: var(--accent-blue); }
+.stat-label { font-size: 13px; color: var(--text-secondary); margin-top: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* Admin Table */
+.table-container {
+  background: var(--bg-room);
+  border: 1px solid var(--border-room);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.client-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.client-table th {
+  background: rgba(31, 41, 55, 0.8);
+  padding: 16px;
+  text-align: left;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+}
+
+.client-table td {
+  padding: 16px;
+  border-top: 1px solid var(--border-room);
+  font-size: 14px;
+}
+
+.client-name { font-weight: 600; color: var(--text-primary); }
+.client-email { color: var(--text-secondary); font-size: 13px; }
+.status-badge {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-room);
+}
+
+.action-btn {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  color: #fff !important;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  display: inline-block;
+  transition: opacity 0.2s;
+}
+
+.action-btn:hover { opacity: 0.9; }
+
+/* Client Detail Panel */
+.client-panel {
+  margin-bottom: 32px;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.panel-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+.panel-actions { display: flex; gap: 12px; }
+
+/* Timeline */
+.timeline-header { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+.milestone-item {
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.5);
+  border-left: 3px solid var(--accent-blue);
+  border-radius: 8px 0 0 8px;
+  margin-bottom: 12px;
+}
+
+.milestone-date { font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
+.milestone-text { font-size: 14px; }
+
+/* Loading & Empty */
+.loading { text-align: center; padding: 64px; color: var(--text-secondary); }
+.empty-state { text-align: center; padding: 48px 24px; color: var(--text-secondary); }
+
+@media (max-width: 768px) {
+  .stats-bar { grid-template-columns: 1fr; }
+  .client-table { font-size: 13px; }
+}
+</style>
+</head>
+<body>
+<noscript>Please enable JavaScript to view your admin dashboard.</noscript>
+
+<div class="container" id="app">
+  <header>
+    <h1 id="page-title">Admin Dashboard</h1>
+    <p id="page-subtitle">Manage clients and projects</p>
+  </header>
+
+  <div id="content">
+    <div class="loading">Loading admin data...</div>
+  </div>
+</div>
+
+<script>
+const API_BASE = '/api';
+
+function formatCurrency(amount) {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+}
+
+function formatDate(isoDate) {
+  if (!isoDate) return 'N/A';
+  return new Date(isoDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+async function checkAuth() {
+  try {
+    const resp = await fetch(`${API_BASE}/auth/status`, { credentials: 'include' });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    return data.user || null;
+  } catch (err) {
+    console.error('Auth check failed:', err);
+    return null;
+  }
+}
+
+async function renderAdminDashboard(user, clientData, projects) {
+  const contentEl = document.getElementById('content');
+  const clients = Array.isArray(clientData) ? clientData : [];
+  
+  // Stats calculation
+  const totalClients = clients.length;
+  const totalMRR = clients.reduce((sum, c) => sum + (Number(c.monthly_value) || 0), 0);
+  const activeProjects = projects.length;
+
+  let html = `
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-number">${totalClients}</div>
+        <div class="stat-label">Total Clients</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">${formatCurrency(totalMRR)}</div>
+        <div class="stat-label">Monthly Recurring Revenue</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">${activeProjects}</div>
+        <div class="stat-label">Active Projects</div>
+      </div>
+    </div>
+  `;
+
+  // Client table header
+  html += '<div class="table-container"><table class="client-table"><thead><tr>';
+  html += '<th>Client Name</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+  
+  clients.forEach(client => {
+    const fullName = client.first_name && client.last_name 
+      ? `${client.first_name} ${client.last_name}`
+      : (client.name || client.email);
+
+    html += `
+      <tr data-client-id="${client.id}">
+        <td>
+          <div class="client-name">${fullName}</div>
+          <div class="client-email">${client.email}</div>
+        </td>
+        <td><span class="status-badge ${client.status === 'active' ? '' : ''}">${client.status || 'unknown'}</span></td>
+        <td>
+          <a href="/dashboard?impersonate=${client.id}" class="action-btn" onclick="return confirm('View dashboard as this client? Do not log out!')">View as Client</a>
+        </td>
+      </tr>`;
+  });
+
+  html += '</tbody></table></div>';
+  
+  // Project updates from all clients
+  if (projects && projects.length > 0) {
+    html += '<div class="card" style="margin-top:32px;"><div class="timeline-header">Recent Project Updates</div>' +
+      projects.slice(0, 10).map(p => `
+        <div class="milestone-item"><div class="milestone-date">${formatDate(p.project_update_date)}</div><div class="milestone-text">${p.text_content || 'Project update'}</div></div>
+      `).join('') + '</div>';
+  }
+
+  contentEl.innerHTML = html;
+}
+
+async function loadAdminDashboard() {
+  const user = await checkAuth();
+  
+  if (!user) {
+    window.location.href = '/login';
+    return;
+  }
+
+  // Check if admin
+  if (user.role !== 'admin') {
+    document.getElementById('content').innerHTML = '<div class="empty-state">Access denied. Admin role required.</div>';
+    return;
+  }
+
+  try {
+    const [clientsRes, projectsRes] = await Promise.all([
+      fetch(`${API_BASE}/admin/clients`, { credentials: 'include' }),
+      fetch(`${API_BASE}/projects`, { credentials: 'include' })
+    ]);
+
+    const clients = await clientsRes.json();
+    const projects = await projectsRes.json();
+
+    renderAdminDashboard(user, clients.data || clients, Array.isArray(projects) ? projects : (projects?.data ? projects.data : []));
+
+  } catch (err) {
+    console.error('Failed to load admin dashboard:', err);
+    document.getElementById('content').innerHTML = '<div class="empty-state">Error loading admin dashboard</div>';
+  }
+}
+
+window.addEventListener('DOMContentLoaded', loadAdminDashboard);
+</script>
+</body>
+</html>
