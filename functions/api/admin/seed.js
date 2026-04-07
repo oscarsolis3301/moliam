@@ -45,7 +45,7 @@ try {
   const oscarHash = await hashPassword("OnePlus2026!");
 
          // Insert with exact matching: table has (id auto, name, email, role, password_hash) = 4 manual inserts   
-    await db.prepare("INSERT INTO users (name, email, role, password_hash) VALUES (?, ?, ?, ?)").run("Admin User", "admin@moliam.com", "admin", adminHash);
+        await db.prepare("INSERT INTO users (name, email, role, password_hash) VALUES (?, ?, ?, ?)").run("Admin User", "admin@moliam.com", "admin", adminHash);
     await db.prepare("INSERT INTO users (name, email, role, password_hash) VALUES (?, ?, ?, ?)").run("Oscar Johnson", "oscar@onepluselectric.com", "user", oscarHash);
 
     return new Response(JSON.stringify({
