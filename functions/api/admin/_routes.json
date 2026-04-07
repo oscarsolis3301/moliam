@@ -1,0 +1,1 @@
+{"version":1,"matchers":[{"pattern":"api/admin/*","methods":["POST"]},{"pattern":"api/admin/seed","methods":["OPTIONS"]}],"params":{}}
