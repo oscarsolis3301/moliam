@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Dashboard | MOLIAMA</title>
 <style>
-:root{--bg-deep:#0B0E14;--bg-room:#1F2937;--border-room:#374151;--accent-blue:#3B82F6;--accent-purple:rgb(139,92,246);--accent-green:#10B981;--text-primary:#F9FAFB;--text-secondary:#9CA3AF}
-*{margin:0;padding:0;box-sizing:border-box}body{background:var(--bg-deep);font-family:'Inter',system-ui,sans-serif;color:var(--text-primary)}
+:root{--bg-deep:#0B0E14;--bg-room:#1F2937;--border-room:#374151;--accent-blue:#3B82F6;--accent-purple:rgb(139,92,246);--accent-green:#10B981;--text-primary:#F9FAFB;--text-secondary:#9CA3AF}*{margin:0;padding:0;box-sizing:border-box}body{background:var(--bg-deep);font-family:'Inter',system-ui,sans-serif;color:var(--text-primary)}
 nav{height:48px;border-bottom:1px solid var(--border-room);display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(15,23,42,0.9);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100}nav .logo{font-size:14px;font-weight:700;letter-spacing:0.1em;color:#fff}nav a{text-decoration:none;color:var(--text-secondary);font-size:13px;margin-left:20px}a.back{text-color:var(--accent-blue)}.container{max-width:1200px;margin:40px auto;padding:0 24px;display:grid;gap:32px}h1{font-size:28px;font-weight:600}h2{font-size:18px;font-weight:500;margin-bottom:16px;color:var(--text-secondary)}
 .section{padding:24px;background:linear-gradient(135deg,rgba(59,130,246,0.06),rgba(139,92,246,0.06));border:1px solid var(--border-room);border-radius:16px}.section h2{margin-bottom:20px;color:var(--text-primary)}
 .stats-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}.stat-card{text-align:center;padding:16px;background:linear-gradient(135deg,rgba(59,130,246,0.06),rgba(139,92,246,0.06));border:1px solid var(--border-room);border-radius:12px}
@@ -24,54 +23,85 @@ nav{height:48px;border-bottom:1px solid var(--border-room);display:flex;align-it
 
 <div class="container"><h1>Admin Dashboard</h1>
 
-<div class="stats-bar" id="stats-bar">Loading...</div>
+<div class="stats-bar" id="stats-bar">Checking session...</div>
 
 <div class="section"><h2>Clients Overview</h2>
 <div class="table-wrapper"><table class="client-table"><thead><tr><th>Client</th><th>Email</th><th>Projects</th><th>MRR</th><th>Actions</th></tr></thead><tbody id="clients-tbody">Loading...</tbody></table></div></div>
 
 <script>
 const API_BASE = '/';
-const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
 
-function fetchDashboard() {
-    return fetch(API_BASE + '/api/admin/clients', { credentials: 'include', headers: { 'moliam-session': token } }).then(r => r.json()).catch(e => null);
+// First verify authentication with credentials: include (cookie-based)
+function checkAuth() {
+    return fetch('/api/auth/me', { credentials: 'include' })
+        .then(r => r.json())
+        .catch(e => null);
 }
 
-if (token) {
-    fetchDashboard().then(d => {
-const clients=d.clients||[];
-document.getElementById('stats-bar').innerHTML='';
-const totalClients=clients.length;
-const totalMRR=d.stats?.total_mrr||0;
-const activeProjects=d.stats?.active_projects||0;
+function fetchClients() {
+    return fetch('/api/admin/clients', { credentials: 'include' })
+        .then(r => r.json())
+        .catch(e => null);
+}
 
-let statsHtml='';
-statsHtml+=`<div class="stat-card"><div class="label">Total Clients</div><div class="value">${totalClients}</div></div>`;
-statsHtml+=`<div class="stat-card"><div class="label">Monthly Revenue (MRR)</div><div class="value">$${(totalMRR||0).toLocaleString()}mo</div></div>`;
-statsHtml+=`<div class="stat-card"><div class="label">Active Projects</div><div class="value">${activeProjects}</div></div>`;
+// Verify auth first, then fetch admin data
+checkAuth().then(auth => {
+    if (!auth || !auth.success) { 
+        document.body.innerHTML = '<div class="loading"><p>Admin access required. <a href="/login.html">Login here</a></p></div>';
+        return; 
+    }
 
-document.getElementById('stats-bar').innerHTML=statsHtml;
+    // Fetch admin data with credentials: include
+    return fetchClients().then(d => {
+        if (!d || !d.clients) { 
+            document.getElementById('stats-bar').innerHTML = '<p>No access. <a href="/login.html">Login here</a></p>';
+            return; 
+        }
+        
+        const clients = d.clients || [];
+        const totalClients = clients.length;
+        const totalMRR = d.stats?.total_mrr || 0;
+        const activeProjects = d.stats?.active_projects || 0;
 
-const tbody=document.getElementById('clients-tbody');
-let rows='';
-(clients||[]).forEach(c=>{
-  const initials=c.name?c.name.split(' ').map(n=>n[0]).join('').toUpperCase():'U';
-  const userProjects=d.projectsByClient?.find(p=>p.user_id===c.id)||[];
-  const clientMRR=userProjects.reduce((s,p)=>s+(p.monthly_rate||0),0);
-  
-  rows+=`<tr>`;
-  rows+=`<td><div class="client-info"><div class="client-avatar">${initials}</div><div class="client-details"><h3>${c.name||'No name'}</h3><span class="client-email">${c.email}</span></div></div></td>`;
-  rows+=`<td>${c.email}</td>`;
-  rows+=`<td>${userProjects.length}</td>`;
-  rows+=`<td>$${clientMRR.toLocaleString()}mo</td>`;
-  rows+=`<td><a href="/dashboard.html?impersonate=${c.id}" class="btn btn-secondary">View As Client</a></td>`;
-  rows+=`</tr>`;
-});
+        // Stats bar
+        let statsHtml = '';
+        statsHtml += `<div class="stat-card"><div class="label">Total Clients</div><div class="value">${totalClients}</div></div>`;
+        statsHtml += `<div class="stat-card"><div class="label">Monthly Revenue (MRR)</div><div class="value">$${(totalMRR||0).toLocaleString()}mo</div></div>`;
+        statsHtml += `<div class="stat-card"><div class="label">Active Projects</div><div class="value">${activeProjects}</div></div>`;
 
-tbody.innerHTML=rows||'<tr><td colspan="5">No clients found</td></tr>';
+        document.getElementById('stats-bar').innerHTML = statsHtml;
 
-}).catch(e=>{console.error('Error:',e);document.getElementById('stats-bar').innerHTML='<p>Session expired. <a href="/login.html">Login here</a></p>';})
-}else{document.body.innerHTML='<div class="loading"><p>Not logged in. <a href="/login.html">Login here</a></p></div>';}
+        // Client table
+        const tbody = document.getElementById('clients-tbody');
+        let rows = '';
+        
+        (clients || []).forEach(c => {
+            const initials = c.name ? c.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U';
+            const userProjects = d.projectsByClient?.find(p => p.user_id === c.id) || [];
+            const clientMRR = userProjects.reduce((s, p) => s + (p.monthly_rate || 0), 0);
+
+            rows += `<tr>`;
+            rows += `<td><div class="client-info"><div class="client-avatar">${initials}</div><div class="client-details"><h3>${c.name || 'No name'}</h3><span class="client-email">${c.email}</span></div></div></td>`;
+            rows += `<td>${c.email}</td>`;
+            rows += `<td>${userProjects.length}</td>`;
+            rows += `<td>$${clientMRR.toLocaleString()}mo</td>`;
+            rows += `<td><a href="/dashboard.html?impersonate=${c.id}" class="btn btn-secondary">View As Client</a></td>`;
+            rows += `</tr>`;
+        });
+
+        tbody.innerHTML = rows || '<tr><td colspan="5">No clients found</td></tr>';
+
+     }).catch(e => {
+        console.error('Error:', e);
+        document.getElementById('stats-bar').innerHTML = '<p>Session expired. <a href="/login.html">Login here</a></p>';
+     });
+}).catch(err => { 
+    showAuthError(); });
+
+     function showAuthError() {
+     document.body.innerHTML = '<div class="loading"><p>Admin access required. <a href="/login.html">Login here</a></p></div>';
+     }
+
 </script>
 </body>
 </html>
