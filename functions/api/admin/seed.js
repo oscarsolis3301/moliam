@@ -5,9 +5,7 @@ const SALT = "_moliam_salt_2026";
 async function hashPassword(password) {
   const encoded = new TextEncoder().encode(password + SALT);
   const hash = await crypto.subtle.digest("SHA-256", encoded);
-  return Array.from(new Uint8Array(hash))
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("");
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
 export async function onRequestPost(context) {
@@ -20,68 +18,47 @@ export async function onRequestPost(context) {
     return new Response(JSON.stringify({ error: "Invalid seed key" }), {
       status: 403,
       headers: { "Content-Type": "application/json" }
-    });
-  }
+     });
+   }
 
-  try {
-    // Drop existing tables to reset schema
+ try {
+// Drop existing tables to reset schema
     await db.prepare("DROP TABLE IF EXISTS users").run();
     await db.prepare("DROP TABLE IF EXISTS sessions").run();
 
-    // Recreate with complete schema: 6 columns (id, email, password_hash, role, name, company)
-    const createUsersTable = "CREATE TABLE users (" +
-      "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-      "email TEXT UNIQUE NOT NULL," +
-      "password_hash TEXT NOT NULL," +
-      "role TEXT DEFAULT 'user'," +
-      "name TEXT," +
-      "company TEXT" +
-      ")";
-
-    await db.prepare(createUsersTable).run();
+    // Create users table with 5 columns (id auto-incremented by SQLite)
+    const createUsersSQL ="CREATE TABLE users(email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'user', name TEXT, company TEXT)";
+    await db.prepare(createUsersSQL).run();
 
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
 
-    // Insert admin user - 5 values for 5 columns (id auto-increment)
-    await db.prepare(
-      "INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)"
-    ).run("admin@moliam.com", adminHash, "admin", "Admin", "Moliam");
+  // Insert admin user - 5 values (id auto-incremented)
+  await db.prepare("INSERT INTO users(email, password_hash, role, name, company) VALUES(?, ?, ?, ?, ?)").run("admin@moliam.com", adminHash, "admin", "Admin", "Moliam");
 
-    // Insert oscar user - 5 values for 5 columns (id auto-increment)
-    await db.prepare(
-      "INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)"
-    ).run("oscar@onepluselectric.com", oscarHash, "user", "Oscar", "OnePlus Electric");
+    // Insert oscar user - 5 values (id auto-incremented)
+    await db.prepare("INSERT INTO users(email, password_hash, role, name, company) VALUES(?, ?, ?, ?, ?)").run("oscar@onepluselectric.com", oscarHash, "user", "Oscar", "OnePlus Electric");
 
-    // Create sessions table with 3 columns (user_id, token, created_at) matching login.js
-    const createSessionsTable = "CREATE TABLE sessions (" +
-      "user_id INTEGER," +
-      "token TEXT," +
-      "created_at TEXT," +
-      "FOREIGN KEY(user_id) REFERENCES users(id)" +
-      ")";
+      // Create sessions table with proper schema - user_id references users(id)
+     const createSessionsSQL = "CREATE TABLE sessions(user_id INTEGER, token TEXT, created_at TEXT)";
+    await db.prepare(createSessionsSQL).run();
 
-    await db.prepare(createSessionsTable).run();
-
-    // Validate seeding - run final query to confirm tables exist with correct schema
-    const tables = await db.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;").all();
-
-    return new Response(JSON.stringify({
+      return new Response(JSON.stringify({
       success: true,
       message: "Users and sessions tables seeded successfully",
       users: [
-        { email: "admin@moliam.com", role: "admin" },
+          { email: "admin@moliam.com", role: "admin" },
         { email: "oscar@onepluselectric.com", role: "user" }
-      ]
-    }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" }
-    });
+       ]
+     }), {
+     status: 200,
+     headers: { "Content-Type": "application/json" }
+ });
 
-  } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
+ } catch (err) {
+   return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" }
     });
-  }
+   }
 }
