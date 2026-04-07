@@ -36,8 +36,8 @@ try {
 
 // Insert session - now we PROVIDE 3 values: user_id + token + created_at (D1 auto-generates session_id)
     const now = new Date().toISOString();
-    const randomToken="***" + Math.random().toString(36);
-    await db.prepare(`INSERT INTO sessions (session_id, user_id, token, created_at) VALUES (NULL, 1, ?, ?)` .run(randomToken, now);
+    const randomToken = "***" + Math.random().toString(36).substring(2);
+    await db.prepare(`INSERT INTO sessions (user_id, token, created_at) VALUES (?, ?, ?)`).run(1, randomToken, now);
 
 // Verify - should be 1 session row with all 4 columns populated
     const verify = await db.prepare("SELECT COUNT(*) as cnt FROM sessions").all();
