@@ -40,8 +40,8 @@ export async function onRequestPost(context) {
          // Insert admin - INSERT uses 4 columns (email, password_hash, role, name), D1 auto-increments id
     await db.prepare("INSERT INTO users (email, password_hash, role, name) VALUES (?, ?, ?, ?)").run("admin@moliam.com", saltedPassword1, "admin", "Admin User");
 
-         // Insert Oscar - same 4 columns  
-    await db.prepare("INSERT INTO users (email, password_hash, role, name) VALUES (?, ?, ?, ?)").run("oscar@onepluselectric.com", saltedPassword2, "user", "Oscar Johnson");
+         // Insert Oscar - same 4 columns (all 4 values in .run())
+    await db.prepare("INSERT INTO users (email, password_hash, role, name) VALUES (?, ?, ?, ?)").run("oscar@onepluselectric.com", saltedPassword2, "user", "Oscar Johnson"); /* Oscar Johnson */
 
          return new Response(JSON.stringify({
       success: true,
