@@ -44,9 +44,9 @@ export async function onRequestPost(context) {
     // Create rate_limits table - 4 data columns + id = 5 total
     await db.prepare("CREATE TABLE rate_limits(id INTEGER PRIMARY KEY AUTOINCREMENT, ip_address TEXT, request_count INTEGER DEFAULT 0, reset_at TEXT, ip_address_hash TEXT)").run();
 
-// client_profiles: needs 4 INTEGER columns - id (1), display_name, user_id, and bio = 2,3,4
+// client_profiles: 4 columns - id (auto-increment), display_name, user_id, bio
     await db.prepare("DROP TABLE IF EXISTS client_profiles").run();
-    await db.prepare("CREATE TABLE client_profiles(id INTEGER NOT NULL, display_name TEXT NOT NULL, user_id INTEGER NOT NULL, bio TEXT DEFAULT '', PRIMARY KEY(id))").run();
+    await db.prepare("CREATE TABLE client_profiles(id INTEGER PRIMARY KEY AUTOINCREMENT, display_name TEXT NOT NULL, user_id INTEGER NOT NULL, bio TEXT DEFAULT '')").run();
 
 // Create client_messages table - 7 data columns + id = 8 total
     await db.prepare("DROP TABLE IF EXISTS client_messages").run();
@@ -78,10 +78,10 @@ if (usersResult.results.length === 0) {
 return jsonResp(500, { error: "Failed to create admin user" });
 }
 
-// Insert into client_profiles with all 4 INTEGER columns: id=1, display_name, user_id, bio
+// Insert into client_profiles with 3 columns (id is auto-incremented): display_name, user_id, bio
     const firstUserId = usersResult.results[0].id;
-    await db.prepare("INSERT INTO client_profiles(id, display_name, user_id, bio) VALUES(?, ?, ?, ?)") 
-      .run([1, "VisualArk", firstUserId, "AI-powered digital marketing agency"]);
+    await db.prepare("INSERT INTO client_profiles(display_name, user_id, bio) VALUES(?, ?, ?)") 
+      .run(["VisualArk", firstUserId, "AI-powered digital marketing agency"]);
 
     return jsonResp(200, { success: true, message: "Database seeded successfully", users: [{ email: "admin@moliam.com", role: "admin"}]});
 
