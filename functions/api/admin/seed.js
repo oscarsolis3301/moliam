@@ -88,10 +88,10 @@ export async function onRequestPost(context) {
 // Get user IDs and insert profiles (id auto + 3 non-auto columns: user_id, display_name, bio) = 4 total columns, so INSERT uses 3 values after NULL for id
     const users = await db.prepare("SELECT id FROM users").all();
     for (const user of users.results) {
-      // Insert 3 values to match table's 3 non-auto columns: user_id, display_name, bio (id gets auto-increment via NULL trick)
-      await db.prepare("INSERT INTO client_profiles(id, user_id, display_name, bio) VALUES(NULL, ?, 'Client Account', ?)")
-                .run([user.id, "Welcome to VisualArk"]);
-        }
+      // Insert 3 non-auto column values: user_id, display_name, bio (id is auto-increment, omit from INSERT)
+      await db.prepare("INSERT INTO client_profiles(user_id, display_name, bio) VALUES(?, 'Client Account', ?)")
+                 .run([user.id, "Welcome to VisualArk"]);
+         }
 
       // Test login verification for Oscar - verify password works correctly (for testing purposes only)
     const testPassword = "***";
