@@ -41,8 +41,9 @@ export async function onRequestPost(context) {
        
     await db.prepare("CREATE TABLE IF NOT EXISTS rate_limits(id INTEGER PRIMARY KEY AUTOINCREMENT, ip_address TEXT, request_count INTEGER DEFAULT 0, reset_at TEXT, UNIQUE(ip_address))").run();
 
-        // client_profiles: 3 columns - user_id, display_name, bio (3 values)
-    await db.prepare("CREATE TABLE IF NOT EXISTS client_profiles(user_id INTEGER PRIMARY KEY, display_name TEXT, bio TEXT)").run();
+        // First ensure client_profiles exists with correct schema (4 columns: id, user_id, display_name, bio)
+    await db.prepare("DROP TABLE IF EXISTS client_profiles").run();
+    await db.prepare("CREATE TABLE client_profiles(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, display_name TEXT, bio TEXT)").run();
 
     await db.prepare("CREATE TABLE IF NOT EXISTS client_messages(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, from_email TEXT, to_email TEXT, subject TEXT, message TEXT, sent_at TEXT DEFAULT CURRENT_TIMESTAMP, is_read INTEGER DEFAULT 0)")
       .run();
@@ -55,13 +56,13 @@ export async function onRequestPost(context) {
         ).run(["admin@moliam.com", adminHash, "admin", "Admin Moliam.", "Moliam", 1]);
 
     const users = await db.prepare("SELECT id FROM users").all();
-        for (const u of users.results) {
-      if (u && u.id) {
-        // client_profiles has only 3 columns - user_id, display_name, bio
-        await db.prepare("INSERT INTO client_profiles(user_id, display_name, bio) VALUES(?, ?, ?)")
-           .run([u.id, "VisualArk", "AI-powered digital marketing agency"]);
-      }
-     }
+  for (const u of users.results) {
+    if (u && u.id) {
+      // Insert into client_profiles with all 4 columns: id, user_id, display_name, bio
+      await db.prepare("INSERT INTO client_profiles(id, user_id, display_name, bio) VALUES(?, ?, ?, ?)")
+        .run([1, u.id, "VisualArk", "AI-powered digital marketing agency"]);
+    }
+  }
 
      return jsonResp(200, { success: true, message: "Database seeded successfully", users: [{ email: "admin@moliam.com", role: "admin" }]});
 
