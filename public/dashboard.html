@@ -244,18 +244,8 @@ const authToken = decodeURIComponent(tokenMatch[1]);
                 let statusDisplay = (project.status==='active') ? 'Active' : (project.status ? project.status.charAt(0).toUpperCase() + project.status.slice(1) : 'Completed');
 
                 projHtml += '<div class="project-card" style="animation-delay:'+(delayCounter+=0.05)+'s"><span class="type-badge '+typeClass+'">'+typeDisplay+'</span> <span class="status-badge '+statusClass+'">'+statusDisplay+'</span><h3>'+project.name+'</h3><div class="meta"><div>Type: '+typeDisplay+'</div><div>Status: '+statusDisplay+'</div><div>Monthly Rate: $'+(project.monthly_rate||0).toLocaleString()+'</div><div>Started: '+new Date(project.created_at||Date.now()).toLocaleDateString()+'</div></div></div>';
-            }
-        }
-                     '<span class="type-badge '+typeClass+'">'+typeDisplay+'</span> ' +
-                     '<span class="status-badge '+statusClass+'">'+statusDisplay+'</span> ' +
-                     '<h3>'+project.name+'</h3>' +
-                     '<div class="meta">' +
-                     '<div>Type: '+typeDisplay+'</div>' +
-                     '<div>Status: '+statusDisplay+'</div>' +
-                     '<div>Monthly Rate: $'+(project.monthly_rate||0).toLocaleString()+'</div>' +
-                     '<div>Started: '+new Date(project.created_at||Date.now()).toLocaleDateString()+'</div></div></div>';
-            }
-        }
+             }
+         }
         projectGrid.innerHTML = projHtml;
 
         // Render milestone updates/timeline
