@@ -90,7 +90,7 @@ export async function onRequestPost(context) {
       // --- Rate limiting check (5 per 6 min window per IP) ---
     const ipHash = await hashSHA256(ip);
     const rl = await db.prepare(
-        \"SELECT request_count, window_start FROM rate_limits WHERE ip_address_hash = ?\"
+        "SELECT request_count, window_start FROM rate_limits WHERE ip_address_hash = ?"
       ).bind(ipHash).first();
 
     if (rl) {

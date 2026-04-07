@@ -257,3 +257,4 @@ function getAllowedOrigin(request) {
   const origin = request.headers.get("Origin") || "";
   if (origin.includes("moliam.pages.dev") || origin.includes("moliam.com") || origin.includes("localhost")) return origin;
   return "https://moliam.pages.dev";
+}
