@@ -28,7 +28,7 @@ try {
     try { await db.prepare("DROP TABLE IF EXISTS users").run(); } catch(e){}
 
 // Create users table - 5 data columns: email + password_hash + role + name + company   
-    await db.prepare(`CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'user', name TEXT, company TEXT)`).run();
+    await db.prepare(`CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'client', name TEXT, company TEXT)`).run();
 
 // Create sessions table - provide all 4 values explicitly: session_id + user_id + token + created_at
     try { await db.prepare("DROP TABLE sessions").run(); } catch(e){}
@@ -49,7 +49,7 @@ try {
     await db.prepare(`INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`).run("admin@moliam.com", adminHash, "admin", "Admin", "Moliam");
 
         // Insert oscar user - same 5 VALUES, same order   
-    await db.prepare(`INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`).run("oscar@onepluselectric.com", oscarHash, "user", "Oscar", "OnePlus Electric");
+    await db.prepare(`INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`).run("oscar@onepluselectric.com", oscarHash, "client", "Oscar", "OnePlus Electric");
 
         
 
@@ -62,7 +62,7 @@ try {
       user_count: result.data[0].total,
       users: [
            { email: "admin@moliam.com", role: "admin" },
-           { email: "oscar@onepluselectric.com", role: "user" }
+           { email: "oscar@onepluselectric.com", role: "client" }
          ]
        }), {
       status: 200,
