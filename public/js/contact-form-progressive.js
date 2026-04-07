@@ -266,6 +266,7 @@
       .then(function (data) {
         if (data.success) {
           showSuccess(data.message || 'Message sent! We\'ll be in touch soon.');
+          ariaAnnounce('Form submitted successfully. A confirmation has been sent to your email.');
         } else {
           showError(data.message || 'Something went wrong. Please try again.');
           btn.disabled = false;
@@ -320,7 +321,23 @@
   function showError(msg) {
     statusEl.className = 'pf-form-status pf-form-status--error';
     statusEl.textContent = '❌ ' + msg;
-  }
+    ariaAnnounce('Error: ' + msg);
+   }
+
+   // ── Accessibility: ARIA Live Announcements ──
+  function ariaAnnounce(msg) {
+    var liveRegion = document.createEvent('HTMLEvents');
+    liveRegion.initEvent('aria-announce', true, false);
+    liveRegion.message = msg;
+    window.dispatchEvent(liveRegion);
+
+    // Also try using aria-live region if exists
+    var ariaLive = document.getElementById('pf-status-a11y') || 
+                   document.querySelector('[aria-live]');
+    if (ariaLive) {
+      ariaLive.textContent = msg;
+    }
+   }
 
   function escapeHtml(str) {
     var div = document.createElement('div');
@@ -363,27 +380,29 @@
     focusCurrentInput();
   }
 
-  // ── Event Bindings ──
+    // ── Event Bindings ──
   function bindEvents() {
     btnNext.addEventListener('click', goNext);
     btnBack.addEventListener('click', goBack);
     form.addEventListener('submit', handleSubmit);
 
-    // Enter key advances (except in textarea)
-    form.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') {
-        var tag = e.target.tagName.toLowerCase();
-        if (tag === 'textarea') return; // Allow enter in textarea
-        e.preventDefault();
+     // Enter key advances (except in textarea)
+    form.addEventListener('keydown', handleFormKeydown);
 
-        if (currentStep < totalSteps) {
-          goNext();
-        } else {
-          // On review step, trigger submit
-          handleSubmit(e);
-        }
-      }
-    });
+    // Tab key: ensure focus management for navigation buttons
+    document.addEventListener('keydown', function tabKeyHandler(e) {
+      if (e.key === 'Tab') {
+        var activeEl = document.activeElement;
+        if (activeEl && activeEl.classList.contains('pf-nav-btn')) {
+          e.preventDefault();
+          if (e.shiftKey) {
+            btnBack.focus();
+           } else {
+            btnNext.focus();
+           }
+         }
+       }
+     });
 
     // Phone formatting
     var phoneInput = document.getElementById('pf-phone');
@@ -393,19 +412,19 @@
         var oldLen = phoneInput.value.length;
         phoneInput.value = formatPhone(phoneInput.value);
         var newLen = phoneInput.value.length;
-        // Adjust cursor position
+         // Adjust cursor position
         var newCursor = cursorPos + (newLen - oldLen);
         phoneInput.setSelectionRange(newCursor, newCursor);
-      });
-    }
+       });
+     }
 
     // Clear error on input
     var allInputs = form.querySelectorAll('.pf-input');
     for (var i = 0; i < allInputs.length; i++) {
       allInputs[i].addEventListener('input', function () {
         this.classList.remove('pf-input--error');
-      });
-    }
+       });
+     }
 
     // Service pill click auto-advance (small delay for visual feedback)
     var pills = form.querySelectorAll('.pf-pill-radio');
@@ -414,8 +433,8 @@
         setTimeout(function () {
           goNext();
         }, 300);
-      });
-    }
+       });
+     }
 
     // Resize observer for dynamic height
     if (typeof ResizeObserver !== 'undefined') {
@@ -424,12 +443,45 @@
         if (active && active.classList.contains('pf-step--active')) {
           stepsContainer.style.height = active.offsetHeight + 'px';
         }
-      });
+       });
       for (var k = 0; k < steps.length; k++) {
         ro.observe(steps[k]);
+       }
+     }
+
+    // Keyboard support for service pills using Enter/Space on radio inputs
+    for (var s = 0; s < pills.length; s++) {
+      pills[s].addEventListener('keydown', function keydownHandler(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.checked = true;
+          this.dispatchEvent(new Event('change', { bubbles: true }));
+         }
+        });
       }
-    }
-  }
+
+    // Handle focus management for error states
+    form.addEventListener('focusin', function focusInHandler(e) {
+      if (e.target && e.target.classList.contains('pf-input--error')) {
+        clearError(e.target);
+       }
+     });
+   }
+
+  function handleFormKeydown(e) {
+      if (e.key === 'Enter') {
+        var tag = e.target.tagName.toLowerCase();
+        if (tag === 'textarea') return; // Allow enter in textarea
+        e.preventDefault();
+
+        if (currentStep < totalSteps) {
+          goNext();
+         } else {
+           // On review step, trigger submit
+           handleSubmit(e);
+         }
+       }
+   }
 
   // ── Start ──
   if (document.readyState === 'loading') {
