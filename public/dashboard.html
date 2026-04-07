@@ -55,7 +55,8 @@ const API_BASE = '/';
 </script>
 
 <script>
-const impersonateId=url.searchParams.get('impersonate');
+const url = new URL(window.location);
+const impersonateId = url.searchParams.get('impersonate');
 
 async function fetchDashboard() {
   try {

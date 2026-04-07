@@ -71,7 +71,7 @@ a.view-btn:hover{background:rgba(59,130,246,0.2);transform:translateY(-1px);}
 </style>
 
 <script>
-const token = localStorage.getItem('token');
+const token = localStorage.getItem('auth_token');
 
 // Redirect if not authenticated
 if (!token) {
@@ -79,7 +79,7 @@ if (!token) {
 }
 
 async function initAdminAuthCheck() {
-    // If we're impersonating, verify admin permissions first
+     // If we're impersonating, verify admin permissions first
     const impersonateId = new URL(window.location).searchParams.get('impersonate');
     if (impersonateId) {
         const role = localStorage.getItem('user_role');
