@@ -28,9 +28,9 @@ export async function onRequestPost(context) {
 
   try {
     // Drop and recreate users table to ensure consistent schema
-      await db.prepare(`DROP TABLE IF EXISTS users`).run();
-      
-      // Create users table with consistent lowercase column names (D1 is case-sensitive)
+    await db.prepare(`DROP TABLE IF EXISTS users`).run();
+    
+    // Create users table with consistent lowercase column names (D1 is case-sensitive)
     await db.prepare(`
       CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,24 +39,23 @@ export async function onRequestPost(context) {
         password_hash TEXT NOT NULL,
         role TEXT DEFAULT 'user',
         enabled INTEGER DEFAULT 0
-          )
-       `).run();
+      )
+    `).run();
 
     const saltedPassword1 = await hashPassword("Moliam2026!");
     const saltedPassword2 = await hashPassword("OnePlus2026!");
 
-      // Insert admin user (ignore if exists)
+    // Insert admin user (ignore if exists)
     await db.prepare(`
       INSERT INTO users (name, email, password_hash, role, enabled)
       VALUES (?, ?, ?, ?, ?) ON CONFLICT(email) DO UPDATE SET name = excluded.name
-         `).run("Administrator", "admin@moliam.com", saltedPassword1, "admin", 1);
+    `).run("Administrator", "admin@moliam.com", saltedPassword1, "admin", 1);
 
-          // Insert Oscar One Plus Electric user (ignore if exists)
+    // Insert Oscar One Plus Electric user (ignore if exists)
     await db.prepare(`
       INSERT INTO users (name, email, password_hash, role, enabled)
       VALUES (?, ?, ?, ?, ?) ON CONFLICT(email) DO UPDATE SET name = excluded.name
-         `).run("Oscar Johnson", "oscar@onepluselectric.com", saltedPassword2, "user", 0);
-
+    `).run("Oscar Johnson", "oscar@onepluselectric.com", saltedPassword2, "user", 0);
 
     return new Response(JSON.stringify({ 
       success: true, 
@@ -72,7 +71,7 @@ export async function onRequestPost(context) {
 
   } catch (err) {
     console.error("Seed error:", err);
-    return new Response(JSON.stringify({ error: "Internal server error" + err.message }), {
+    return new Response(JSON.stringify({ error: "Internal server error: " + err.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" }
     });
@@ -85,5 +84,4 @@ export async function onRequestOptions() {
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "x-seed-key",
   }});
-
 }
