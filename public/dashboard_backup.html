@@ -17,14 +17,10 @@
 <section id="invoices-section" style="display:none"><h2>Invoice Summary</h2><div class="invoice-summary" id="stats-bar"></div></section>
 <script>
 const API_BASE = '/';
-var url = new URL(window.location);
-const token = localStorage.getItem('auth_token');
-if (!token) { window.location.href = '/login.html'; }
-const isAdmin = localStorage.getItem('user_role') === 'admin';
-const impersonateId = url.searchParams.get('impersonate');
 </script>
 
 <script>
+const impersonateId=url.searchParams.get('impersonate');
 
 async function fetchDashboard() {
   try {
