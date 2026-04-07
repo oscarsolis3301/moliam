@@ -325,19 +325,40 @@
    }
 
    // ── Accessibility: ARIA Live Announcements ──
-  function ariaAnnounce(msg) {
-    var liveRegion = document.createEvent('HTMLEvents');
-    liveRegion.initEvent('aria-announce', true, false);
-    liveRegion.message = msg;
-    window.dispatchEvent(liveRegion);
+  function ariaAnnounce(msg, assertive) {
+     var liveRegion = document.getElementById('pf-status-a11y');
 
-    // Also try using aria-live region if exists
-    var ariaLive = document.getElementById('pf-status-a11y') || 
-                   document.querySelector('[aria-live]');
-    if (ariaLive) {
-      ariaLive.textContent = msg;
-    }
-   }
+     if (liveRegion) {
+        if (assertive) {
+          liveRegion.setAttribute('aria-live', 'assertive');
+        } else {
+          liveRegion.setAttribute('aria-live', 'polite');
+        }
+        liveRegion.textContent = msg;
+
+        // Clear after 3 seconds to allow re-announcements
+        setTimeout(function() {
+          if (liveRegion && liveRegion.textContent === msg) {
+            liveRegion.textContent = '';
+          }
+        }, 3000);
+      } else {
+         // Fallback to console for debug purposes only in development
+         if (typeof console !== 'undefined') {
+           console.log('[A11y] ' + msg);
+         }
+      }
+     }
+
+    function focusCurrentInput() {
+       var activeStep = steps[currentStep - 1];
+      if (!activeStep) return;
+     
+       var input = activeStep.querySelector('.pf-input, .pf-pill-radio');
+      if (input && typeof input.focus === 'function') {
+         setTimeout(function() { input.focus(); }, 100);
+       }
+     }
 
   function escapeHtml(str) {
     var div = document.createElement('div');
