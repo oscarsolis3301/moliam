@@ -48,15 +48,16 @@ export async function onRequestPost(context) {
 
      // Insert admin user (ignore if exists)
     await db.prepare(`
-      INSERT INTO users (email, password_hash, name, role, user_status)
-      VALUES (?, ?, ?, ?, ?) ON CONFLICT(email) DO NOTHING
-       `).run("admin@moliam.com", saltedPassword1, "Administrator", "admin", true);
+      INSERT INTO users (email, password_hash, name, role, user_status, created_at)
+      VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP) ON CONFLICT(email) DO UPDATE SET name = excluded.name
+        `).run("admin@moliam.com", saltedPassword1, "Administrator", "admin", true);
 
-      // Insert Oscar One Plus Electric user (ignore if exists)
+         // Insert Oscar One Plus Electric user (ignore if exists)
     await db.prepare(`
-      INSERT INTO users (email, password_hash, name, role, user_status)
-      VALUES (?, ?, ?, ?, ?) ON CONFLICT(email) DO NOTHING
-       `).run("oscar@onepluselectric.com", saltedPassword2, "Oscar Johnson", "user", false);
+      INSERT INTO users (email, password_hash, name, role, user_status, created_at)
+      VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP) ON CONFLICT(email) DO UPDATE SET name = excluded.name
+        `).run("oscar@onepluselectric.com", saltedPassword2, "Oscar Johnson", "user", false);
+
 
     return new Response(JSON.stringify({ 
       success: true, 
