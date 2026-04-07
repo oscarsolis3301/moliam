@@ -6,25 +6,26 @@ export async function onRequestGet(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
-  const token=getSessionToken(request);
+  const cookies = request.headers.get("Cookie") || "";
+  const match = cookies.match(/moliam_session=([a-f0-9]+)/);
+  const token = match ? match[1] : null;
   if (!token) {
     return jsonResp(401, { error: true, message: "Not authenticated." }, request);
    }
 
   try {
     const session = await db.prepare(
-       "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role, u.company, u.phone, u.avatar_url FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1"
-     ).bind(token).first();
+         "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role, u.company, u.phone, u.avatar_url FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1"
+       ).bind(token).first();
 
     if (!session) {
       return jsonResp(401, { error: true, message: "Session invalid." }, request);
-     }
+       }
 
-    // Check expiry
+     // Check expiry
     if (new Date(session.expires_at) < new Date()) {
-      await db.prepare("DELETE FROM sessions WHERE token=?").bind(token).first();
-      return jsonResp(401, { error: true, message: "Session expired." }, request);
-    }
+      await db.prepare("DELETE FROM sessions WHERE token=?").bind(token).run();
+     }
 
     // Normalize superadmin → admin for frontend
     const displayRole = session.role === 'superadmin' ? 'admin' : session.role;
