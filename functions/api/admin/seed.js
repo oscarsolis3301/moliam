@@ -49,7 +49,7 @@ export async function onRequestPost(context) {
     ).run();
 
     // Create submissions, leads, rate_limits tables if needed by other endpoints
-    await db.prepare("CREATE TABLE IF NOT EXISTS submissions(id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT, name TEXT, company TEXT, phone TEXT, message TEXT, submitted_at TEXT DEFAULT CURRENT_TIMESTAMP)").run();
+    await db.prepare("CREATE TABLE IF NOT EXISTS submissions(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT, phone TEXT, company TEXT, message TEXT, user_agent TEXT, screen_resolution TEXT, lead_score INTEGER DEFAULT 0, category TEXT DEFAULT 'cold', submitted_at TEXT DEFAULT CURRENT_TIMESTAMP)").run();
     await db.prepare("CREATE TABLE IF NOT EXISTS leads(id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT, first_name TEXT, last_name TEXT, phone TEXT, company TEXT, source TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP, is_active INTEGER DEFAULT 1)").run();
     await db.prepare("CREATE TABLE IF NOT EXISTS rate_limits(id INTEGER PRIMARY KEY AUTOINCREMENT, ip_address TEXT, request_count INTEGER DEFAULT 0, reset_at TEXT, UNIQUE(ip_address))").run();
 
@@ -61,15 +61,15 @@ export async function onRequestPost(context) {
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
 
-    // Insert admin user - uses positional parameters
-    await db.prepare("INSERT INTO users(email, password_hash, role, name, company, is_active) VALUES(?, ?, 'admin', 'Admin', 'Moliam', 1)").run(["admin@moliam.com", adminHash]);
+     // Insert admin user - all 8 columns including last_login TIMESTAMP
+    await db.prepare("INSERT INTO users(email, password_hash, role, name, company, is_active, last_login) VALUES(?, ?, 'admin', 'Admin moliam.com', 'Moliam', 1, CURRENT_TIMESTAMP)").run(["admin@moliam.com", adminHash]);
 
-    // Insert oscar user - same schema using positional parameters   
-    await db.prepare("INSERT INTO users(email, password_hash, role, name, company, is_active) VALUES(?, ?, 'client', 'Oscar', 'OnePlus Electric', 1)").run(["oscar@onepluselectric.com", oscarHash]);
+      // Insert oscar user - all 8 columns including last_login TIMESTAMP
+    await db.prepare("INSERT INTO users(email, password_hash, role, name, company, is_active, last_login) VALUES(?, ?, 'client', 'Oscar Lin', 'OnePlus Electric', 1, CURRENT_TIMESTAMP)").run(["oscar@onepluselectric.com", oscarHash]);
 
-    // Create default client profiles for both users
-    await db.prepare("INSERT OR REPLACE INTO client_profiles (user_id, display_name, bio) SELECT id, email || ' Profile', 'Client account' FROM users WHERE email = 'admin@moliam.com'").run();
-    await db.prepare("INSERT OR REPLACE INTO client_profiles (user_id, display_name, bio) SELECT id, email || ' Profile', 'Client account' FROM users WHERE email = 'oscar@onepluselectric.com'").run();
+      // Create default client profiles for both users (5 columns: user_id + display_name + bio + avatar_url NULL + created_at)
+    await db.prepare("INSERT OR REPLACE INTO client_profiles (user_id, display_name, bio, avatar_url, created_at) SELECT id, email || ' Profile', 'Client account', NULL, CURRENT_TIMESTAMP FROM users WHERE email = 'admin@moliam.com'").run();
+    await db.prepare("INSERT OR REPLACE INTO client_profiles (user_id, display_name, bio, avatar_url, created_at) SELECT id, email || ' Profile', 'Client account', NULL, CURRENT_TIMESTAMP FROM users WHERE email = 'oscar@onepluselectric.com'").run();
 
     return new Response(JSON.stringify({
       success: true,
