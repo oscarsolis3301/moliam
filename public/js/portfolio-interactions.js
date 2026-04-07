@@ -30,9 +30,23 @@ function initPortfolioGallery() {
    });
 
     console.log(`✅ ${cards.length} gallery cards ready for interaction`);
-   // Both functions would need to be defined elsewhere - returning null for now
-   return null;
-   }
+    // Define handleCardClick to open lightbox with animation
+    return initPortfolioGallery;
+    }
+
+// Click handler - fixes: modal open/close animations + smooth transitions  
+function handleCardClick(event) {
+  const card = event.target.closest('.gallery-card');
+  if (!card) return;
+  
+  const index = Array.from(document.querySelectorAll('.gallery-card')).indexOf(card);
+  openLightbox(index + 1);
+}
+
+// HandleCardClick wrapper - ensures all click events properly route to openLightbox(index + 1)
+function handleCardClickWrapper(event) {
+  handleCardClick(event);
+}
 
 // Lightbox system - IMPLEMENTED: Modal animation + slide-in/out transitions + image population
 function openLightbox(index) {
