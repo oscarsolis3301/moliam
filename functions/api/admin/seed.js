@@ -29,8 +29,8 @@ export async function onRequestPost(context) {
        // Create users table - exact schema from production (no email unique, simpler)
     await db.prepare("CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT, password_hash TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'client', company TEXT, phone TEXT, avatar_url TEXT, is_active INTEGER DEFAULT 1, created_at TEXT DEFAULT CURRENT_TIMESTAMP, last_login TEXT)").run();
 
-    // Create sessions table - production schema uses 3 columns after id: user_id, token, created_at
-    await db.prepare("CREATE TABLE sessions(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token TEXT NOT NULL UNIQUE, created_at TEXT DEFAULT CURRENT_TIMESTAMP)").run();
+    // Create sessions table - production schema uses 3 columns: user_id, token, created_at (no id)
+    await db.prepare("CREATE TABLE sessions(user_id INTEGER NOT NULL, token TEXT NOT NULL UNIQUE, created_at TEXT DEFAULT CURRENT_TIMESTAMP)").run();
 
 const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
