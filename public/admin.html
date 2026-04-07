@@ -139,13 +139,41 @@ header p { color: var(--text-secondary); font-size: 15px; }
 .milestone-date { font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
 .milestone-text { font-size: 14px; }
 
-/* Loading & Empty */
+/* Loading & Skeleton States */
 .loading { text-align: center; padding: 64px; color: var(--text-secondary); }
-.empty-state { text-align: center; padding: 48px 24px; color: var(--text-secondary); }
+
+.skeleton {
+  background: linear-gradient(90deg, rgba(31,41,55,0.7) 25%, rgba(55,65,81,0.7) 50%, rgba(31,41,55,0.7) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-text { height: 16px; margin-bottom: 8px; width: 60%; }
+.skeleton-stat { height: 36px; margin-bottom: 8px; }
+
+.fade-in { animation: fadeIn 0.4s ease-out; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 @media (max-width: 768px) {
-  .stats-bar { grid-template-columns: 1fr; }
-  .client-table { font-size: 13px; }
+   .stats-bar { grid-template-columns: 1fr; gap: 12px; }
+   .client-table { font-size: 13px; display: block; overflow-x: auto; white-space: nowrap; }
+   .client-table td, .client-table th { padding: 12px 10px; }
+   .action-btn { padding: 8px 12px; font-size: 12px; }
+}
+
+@media (min-width: 1024px) {
+   .stat-card:hover { transform: translateY(-3px); transition: transform 0.2s, box-shadow 0.2s; }
+   .stat-card:hover { box-shadow: 0 8px 24px rgba(59,130,246,0.25); }
 }
 </style>
 </head>
@@ -187,97 +215,117 @@ async function checkAuth() {
   }
 }
 
-async function renderAdminDashboard(user, clientData, projects) {
+async function renderAdminDashboard(user, clientData, projects, options = {}) {
   const contentEl = document.getElementById('content');
   const clients = Array.isArray(clientData) ? clientData : [];
   
-  // Stats calculation
+   // Stats calculation
   const totalClients = clients.length;
   const totalMRR = clients.reduce((sum, c) => sum + (Number(c.monthly_value) || 0), 0);
   const activeProjects = projects.length;
-
-  let html = `
-    <div class="stats-bar">
-      <div class="stat-card">
-        <div class="stat-number">${totalClients}</div>
-        <div class="stat-label">Total Clients</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number">${formatCurrency(totalMRR)}</div>
-        <div class="stat-label">Monthly Recurring Revenue</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number">${activeProjects}</div>
-        <div class="stat-label">Active Projects</div>
-      </div>
-    </div>
-  `;
-
-  // Client table header
-  html += '<div class="table-container"><table class="client-table"><thead><tr>';
-  html += '<th>Client Name</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+  
+   let html = `
+     <div class="stats-bar fade-in">
+       <div class="stat-card">
+         <div class="stat-number">${totalClients}</div>
+         <div class="stat-label">Total Clients</div>
+       </div>
+       <div class="stat-card">
+         <div class="stat-number">${formatCurrency(totalMRR)}</div>
+         <div class="stat-label">Monthly Recurring Revenue</div>
+       </div>
+       <div class="stat-card">
+         <div class="stat-number">${activeProjects}</div>
+         <div class="stat-label">Active Projects</div>
+       </div>
+     </div>
+   `;
+  
+   if (options.showSkeleton) {
+    return html; // Skeleton already shown in init, just load data
+  }
+  
+  let tableHtml = '<div class="table-container"><table class="client-table"><thead><tr>';
+  tableHtml += '<th>Client Name</th><th>Email</th><th>Status</th><th>Actions</th></tr>';
+  tableHtml += '</thead><tbody>';
   
   clients.forEach(client => {
     const fullName = client.first_name && client.last_name 
-      ? `${client.first_name} ${client.last_name}`
-      : (client.name || client.email);
+       ? `${client.first_name} ${client.last_name}`
+       : (client.name || client.email);
 
     html += `
-      <tr data-client-id="${client.id}">
-        <td>
-          <div class="client-name">${fullName}</div>
-          <div class="client-email">${client.email}</div>
-        </td>
-        <td><span class="status-badge ${client.status === 'active' ? '' : ''}">${client.status || 'unknown'}</span></td>
-        <td>
-          <a href="/dashboard?impersonate=${client.id}" class="action-btn" onclick="return confirm('View dashboard as this client? Do not log out!')">View as Client</a>
-        </td>
-      </tr>`;
+       <tr data-client-id="${client.id}">
+         <td>
+           <div class="client-name">${fullName}</div>
+           <div class="client-email">${client.email}</div>
+         </td>
+         <td><span class="status-badge ${client.status === 'active' ? '' : ''}">${client.status || 'unknown'}</span></td>
+         <td>
+           <a href="/dashboard?impersonate=${client.id}" class="action-btn" onclick="return confirm('View dashboard as this client? Do not log out!')">View as Client</a>
+         </td>
+       </tr>`;
   });
-
-  html += '</tbody></table></div>';
   
-  // Project updates from all clients
+  tableHtml += '</tbody></table></div>';
+  html += tableHtml;
+
+   // Project updates from all clients
   if (projects && projects.length > 0) {
-    html += '<div class="card" style="margin-top:32px;"><div class="timeline-header">Recent Project Updates</div>' +
+    html += '<div class="card fade-in" style="margin-top:32px;"><div class="timeline-header">Recent Project Updates</div>' +
       projects.slice(0, 10).map(p => `
-        <div class="milestone-item"><div class="milestone-date">${formatDate(p.project_update_date)}</div><div class="milestone-text">${p.text_content || 'Project update'}</div></div>
-      `).join('') + '</div>';
+         <div class="milestone-item"><div class="milestone-date">${formatDate(p.project_update_date)}</div><div class="milestone-text">${p.text_content || 'Project update'}</div></div>
+       `).join('') + '</div>';
   }
 
   contentEl.innerHTML = html;
 }
 
+// Skeleton loader for better UX
+function showAdminSkeleton() {
+  const contentEl = document.getElementById('content');
+  contentEl.classList.add('fade-in');
+  contentEl.innerHTML = `
+     <div class="stats-bar">
+       <div class="stat-card"><div class="skeleton-stat"></div></div>
+       <div class="stat-card"><div class="skeleton-stat"></div></div>
+       <div class="stat-card"><div class="skeleton-stat"></div></div>
+     </div>`;
+}
+
 async function loadAdminDashboard() {
+    // Show skeleton loading state first for better perceived performance
+  showAdminSkeleton();
+  
   const user = await checkAuth();
   
   if (!user) {
     window.location.href = '/login';
     return;
-  }
+   }
 
-  // Check if admin
+     // Check if admin
   if (user.role !== 'admin') {
     document.getElementById('content').innerHTML = '<div class="empty-state">Access denied. Admin role required.</div>';
     return;
-  }
+   }
 
   try {
     const [clientsRes, projectsRes] = await Promise.all([
       fetch(`${API_BASE}/admin/clients`, { credentials: 'include' }),
       fetch(`${API_BASE}/projects`, { credentials: 'include' })
-    ]);
+     ]);
 
     const clients = await clientsRes.json();
     const projects = await projectsRes.json();
 
     renderAdminDashboard(user, clients.data || clients, Array.isArray(projects) ? projects : (projects?.data ? projects.data : []));
 
-  } catch (err) {
+   } catch (err) {
     console.error('Failed to load admin dashboard:', err);
     document.getElementById('content').innerHTML = '<div class="empty-state">Error loading admin dashboard</div>';
-  }
-}
+     }
+ }
 
 window.addEventListener('DOMContentLoaded', loadAdminDashboard);
 </script>

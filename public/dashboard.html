@@ -140,15 +140,54 @@ actions-list { display: flex; gap: 12px; list-style: none; margin-top: 24px; fle
 .milestone-date { font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
 .milestone-text { font-size: 14px; }
 
-/* Loading */
+/* Loading & Skeleton States */
 .loading { text-align: center; padding: 64px; color: var(--text-secondary); }
+
+.skeleton {
+  background: linear-gradient(90deg, rgba(31,41,55,0.7) 25%, rgba(55,65,81,0.7) 50%, rgba(31,41,55,0.7) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-text { height: 16px; margin-bottom: 8px; width: 60%; }
+.skeleton-stat { height: 36px; margin-bottom: 8px; }
+.skeleton-card { height: 120px; margin-bottom: 16px; }
+
+.transition-fade {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 /* Mobile */
 @media (max-width: 768px) {
-  .container { padding: 20px 16px; }
-  .detail-grid { grid-template-columns: 1fr; }
-  .invoice-grid { grid-template-columns: 1fr; }
+   .container { padding: 20px 16px; }
+   .detail-grid { grid-template-columns: 1fr; gap: 8px; }
+   .invoice-grid { grid-template-columns: 1fr; }
   actions-list { flex-direction: column; }
+  .card { padding: 18px; }
+  .stat-card { padding: 16px 20px; }
+}
+
+/* Tablet improvements */
+@media (min-width: 768px) and (max-width: 1024px) {
+   .container { max-width: 90%; padding: 24px 16px; }
+   .stats-bar { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Desktop enhancements */
+@media (min-width: 1024px) {
+   .card { transition: transform 0.2s, box-shadow 0.2s; }
+   .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
 }
 </style>
 </head>
@@ -201,10 +240,10 @@ async function checkAuth() {
   }
 }
 
-// ═══════════════════════════════════════
+// ═══════════════════════════════════
 // SECTION: Dashboard Renderer
-// ═══════════════════════════════════════
-function renderDashboard(user, data) {
+// ═══════════════════════════════════
+function renderDashboard(user, data, isTransitioning = false) {
   const contentEl = document.getElementById('content');
   const titleEl = document.getElementById('page-title');
   
@@ -215,12 +254,15 @@ function renderDashboard(user, data) {
 
   const isImpersonated = !!new URLSearchParams(window.location.search).get('impersonate');
   if (isImpersonated) {
-    const banner = createBanner(data.impersonation_user_name);
     contentEl.innerHTML = '';
+    titleEl.textContent = data.user_name + ' - Impersonating';
+    const banner = createBanner(data.impersonation_user_name);
     document.getElementById('app').appendChild(banner);
+    return;
   }
 
-  titleEl.textContent = data.user_name + (isImpersonated ? ' - Impersonating' : '');
+  titleEl.textContent = data.user_name;
+  contentEl.classList.add('transition-fade');
   
   // Handle no projects or data error
   if (!data || !data.recent_projects || data.projects_count === 0) {
@@ -229,32 +271,42 @@ function renderDashboard(user, data) {
   }
 
   const projectCards = data.recent_projects.map(p => `
-      <div class="project-card">
-        <div style="display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
-          <span class="badge type">${p.type || 'service'}</span>
-          <span class="badge ${p.status === 'completed' ? 'status-completed' : 'status-active'}">${p.status || 'active'}</span>
-        </div>
-        <h3 style="margin-bottom:8px;">${p.project_name}</h3>
-        <div class="detail-grid">
-          ${p.monthly_value ? `<div class="detail-item"><label>Monthly Rate</label><div class="value">${formatCurrency(p.monthly_value)}</div></div>` : ''}
-          <div class="detail-item"><label>Start Date</label><div class="value">${formatDate(p.start_date)}</div></div>
-        </div>
-      </div>`).join('');
+       <div class="project-card">
+         <div style="display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+           <span class="badge type">${p.type || 'service'}</span>
+           <span class="badge ${p.status === 'completed' ? 'status-completed' : 'status-active'}">${p.status || 'active'}</span>
+         </div>
+         <h3 style="margin-bottom:8px;">${p.project_name}</h3>
+         <div class="detail-grid">
+           ${p.monthly_value ? `<div class="detail-item"><label>Monthly Rate</label><div class="value">${formatCurrency(p.monthly_value)}</div></div>` : ''}
+           <div class="detail-item"><label>Start Date</label><div class="value">${formatDate(p.start_date)}</div></div>
+         </div>
+       </div>`).join('');
   
   const html = `<div class="card">` +
     `<div class="card-header"><span class="card-title">Active Projects</span>${projectCards}</div></div>`;
 
 // Build action buttons HTML inline (don't need createActions function)
 const actionsHTML = `
-     <actions-list>
-       ${!isImpersonated ? `<li><a href="/" class="action-btn">Book a Call</a></li>` : ''}
-       <li><a href="/" class="action-btn">Message Us</a></li>
-       <li><a href="/invoices" class="action-btn">View Invoices</a></li>
-     </actions-list>
-   `;
+      <actions-list>
+        ${!isImpersonated ? `<li><a href="/" class="action-btn">Book a Call</a></li>` : ''}
+        <li><a href="/" class="action-btn">Message Us</a></li>
+        <li><a href="/invoices" class="action-btn">View Invoices</a></li>
+      </actions-list>
+    `;
 
   contentEl.innerHTML = html + createMilestones(data.project_updates || []) + '<div style="height:24px"></div>' + createInvoiceSummary(data.invoice_summary);
 
+}
+
+// Skeleton loader before data arrives
+function showSkeleton() {
+  const contentEl = document.getElementById('content');
+  contentEl.innerHTML = `
+    <div class="transition-fade">
+      <div class="skeleton-card" style="margin-bottom:24px;"></div>
+      <div class="skeleton-card"></div>
+    </div>`;
 }
 
 function createBanner(impersonationName) {
@@ -319,6 +371,9 @@ function createInvoiceSummary(inv) {
 // SECTION: Dashboard Loader
 // ═══════════════════════════════════════
 async function loadDashboard() {
+  // Show skeleton first for better perceived performance
+  showSkeleton();
+  
   const user = await checkAuth();
   
   if (!user) {
@@ -331,7 +386,7 @@ async function loadDashboard() {
     const resp = await fetch(`${API_BASE}/dashboard`, { credentials: 'include' });
     
     if (!resp.ok) {
-      contentEl.innerHTML = '<div class="empty-state"><p>Invalid session. Please log in again.</p></div>';
+      document.getElementById('content').innerHTML = '<div class="empty-state"><p>Invalid session. Please log in again.</p></div>';
       return;
     }
 
@@ -340,8 +395,8 @@ async function loadDashboard() {
   } catch (err) {
     console.error('Failed to load dashboard:', err);
     document.getElementById('content').innerHTML = '<div class="empty-state"><p>Error loading dashboard</p></div>';
-  }
-}
+   }
+ }
 
 // Start loader on page load
 window.addEventListener('DOMContentLoaded', loadDashboard);
