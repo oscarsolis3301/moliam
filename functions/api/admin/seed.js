@@ -1,86 +1,78 @@
-import { hashPassword, jsonResp, corsResponse } from "../../lib/auth.js";
+// Seed endpoint for Cloudflare Pages - Web Crypto API + CF D1 binding
+const SALT = "_moliam_salt_2026";
+
+async function hashPassword(password) {
+  const encoded = new TextEncoder().encode(password + SALT);
+  const hash = await crypto.subtle.digest("SHA-256", encoded);
+  return Array.from(new Uint8Array(hash))
+     .map(b => b.toString(16).padStart(2, "0"))
+      .join("");
+}
 
 export async function onRequestPost(context) {
   const { request, env } = context;
-
-  if (request.method === "OPTIONS") return corsResponse(204);
-
-  const seedKey = request.headers.get("x-seed-key");
-  if (seedKey !== "moliam2026") {
-    return jsonResp(403, { error: "Invalid seed key" });
-  }
-
   const db = env.MOLIAM_DB;
 
-  try {
-    // Debug: Print ALL columns in users table from staging first
-
-    let schemaCols = [];
-    try {
-      const result = await db.prepare("PRAGMA table_info(users)").all();
-      schemaCols = result.slice().map(r => ({ name: r.name, type: r.type }));
-      console.log("Staging users columns:", JSON.stringify(schemaCols));
-
-    } catch (e) {
-      console.log("Could not read schema:", e.message);
-      schemaCols = [];
-    }
-
-    // If staging has 3 or 4 columns total, use those exact names for INSERT
-    
-    const emailColumn = schemaCols.length >=2 ? "email" : "user_email";
-    const nameColumn = schemaCols.some(c=>c.name==="name")?"name":"full_name";
-    
-     // Based on login showing columns id,email,name,role,company,pas sword_hash,is_active - staging has 7 writable cols
-     // But error says "3 values for 4 columns" so maybe staging was migrated to a simpler schema
-    
-    // Try common patterns: first attempt (email,name,data), second:(id is auto so email,name works)
-   
-    try {
-      await db.prepare("DELETE FROM users WHERE email=?", "admin@moliam.com").run().catch(()=>{});
-
-      await db.prepare("INSERT INTO users (email, name, data) VALUES (?, 'Admin User', 'staging-data')", "admin@ moliam.com").run();
-      
-      console.log("✓ Admin inserted successfully");
-     } catch (e) {
-       // If error says exact columns, use those to figure out correct schema
-      if (e.message.includes("4 columns")) {
-        // Try without data column: email,name only = 2 cols + id auto-increment =3 total writable
-         try {
-           await db.prepare("DELETE FROM users WHERE email=?", "admin@moliam.com").run().catch(()=>{});
-           await db.prepare("INSERT INTO users (email, name) VALUES (?, ?)", "admin@moliam.com", "Admin User").run();
-          console.log("✓ Admin via 2-col schema(email,name)");
-         } catch (e2) {
-           try {
-             await db.prepare("DELETE FROM users WHERE email=?", "admin@moliam.com").run().catch(()=>{});
-             // Last resort: just email when staging has id,email minimal schema
-             await db.prepare("INSERT INTO users (email) VALUES (?)", "admin@moliam.com").run();
-            console.log("✓ Admin via email-only");
-           } catch(e3){
-            throw new Error(`All INSERT attempts failed. Staging DB may be corrupted or missing users table.`);
-           }
-          }
-       } else {
-         // Different error, just rethrow it
-        throw e;
-       }
+     // Check seed key header authentication (required for security)  
+  const seedKey = request.headers.get("x-seed-key");
+  if (seedKey !== "moliam2026") {
+    return new Response(JSON.stringify({ error: "Invalid seed key" }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" }
+       });
      }
 
-    return jsonResp(200, { 
-      success: true,\n      message: "Admin user seeded successfully (using staging-recognized schema)",
-       users: [
-        { email: "admin@moliam.com", name: "Admin User" },
-          { email: "oscar@onepluselectric.com", name: "Oscar Johnson" }
-       ]
-     });
+try {
+        // Ensure clean slate with strong drop syntax
+    try { await db.prepare("DROP TABLE IF EXISTS sessions").run(); } catch(e){}
+    try { await db.prepare("DROP TABLE IF EXISTS users").run(); } catch(e){}
 
-   } catch (err) {
-    console.error("Seed fatal:", err.message);
-    return jsonResp(500, { error: err.message || err.toString() });
-  }
-}
+// Create users table - 5 data columns: email + password_hash + role + name + company   
+    await db.prepare(`CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'client', name TEXT, company TEXT)`).run();
 
-export async function onRequestOptions() {
-  return corsResponse(204);
+// Create sessions table - provide all 4 values explicitly: session_id + user_id + token + created_at
+    try { await db.prepare("DROP TABLE sessions").run(); } catch(e){}
+    await db.prepare(`CREATE TABLE sessions (session_id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)`).run();
 
+// Insert session - now we PROVIDE all 4 VALUES matching CREATE: session_id + user_id + token + created_at
+    const now = new Date().toISOString();
+    const randomToken="***" + Math.random().toString(36);
+    await db.prepare(`INSERT INTO sessions (session_id, user_id, token, created_at) VALUES (?, ?, ?, ?)`).run(Math.floor(Math.random() * 1000000), 1, randomToken, now);
+
+// Verify - should be 1 session row with all 4 columns populated
+    const verify = await db.prepare("SELECT COUNT(*) as cnt FROM sessions").all();
+
+    const adminHash = await hashPassword("Moliam2026!");
+    const oscarHash = await hashPassword("OnePlus2026!");
+
+        // Insert admin user - 5 VALUES matching CREATE: email + password_hash + role + name + company (NO id)   
+    await db.prepare(`INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`).run("admin@moliam.com", adminHash, "admin", "Admin", "Moliam");
+
+        // Insert oscar user - same 5 VALUES, same order   
+    await db.prepare(`INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`).run("oscar@onepluselectric.com", oscarHash, "client", "Oscar", "OnePlus Electric");
+
+        
+
+       // Validate by counting users - should be exactly 2 rows
+    const result = await db.prepare("SELECT COUNT(*) as total FROM users").all();
+
+    return new Response(JSON.stringify({
+      success: true,
+      message: "Users and sessions tables seeded successfully",
+      user_count: result.data[0].total,
+      users: [
+           { email: "admin@moliam.com", role: "admin" },
+           { email: "oscar@onepluselectric.com", role: "client" }
+         ]
+       }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+       });
+
+     } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+       });
+     }
 }
