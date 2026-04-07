@@ -44,9 +44,9 @@ export async function onRequestPost(context) {
      // Debug check: verify the data actually got inserted
     const usersResult = await db.prepare("SELECT COUNT(*) as count FROM users").all();
     
-     // Insert test sessions - 2 sessions with correct column count (6 values for 7 columns, id is auto-increment so no value)
-    await db.prepare("INSERT INTO sessions(user_id, token, expires_at, created_at, ip_address, user_agent) VALUES(?, ?, datetime('now', '+30 days'), datetime('now'), ?, ?)").bind(1, 'test-session-1', 'host.docker.internal', 'Mozilla/5.0 Test Browser').run();
-    await db.prepare("INSERT INTO sessions(user_id, token, expires_at, created_at, ip_address, user_agent) VALUES(?, ?, datetime('now', '+30 days'), datetime('now'), ?, ?)").bind(2, 'test-session-2', 'host.docker.internal', 'Mozilla/5.0 Test Browser').run();
+    // Insert test sessions - 6 VALUES for 6 columns (id is auto-increment PK)
+    await db.prepare("INSERT INTO sessions(token, expires_at, created_at, ip_address, user_agent, user_id) VALUES(?, datetime('now', '+30 days'), datetime('now'), ?, ?, ?)").bind('test-session-1', 'host.docker.internal', 'Mozilla/5.0 Test Browser', 1).run();
+    await db.prepare("INSERT INTO sessions(token, expires_at, created_at, ip_address, user_agent, user_id) VALUES(?, datetime('now', '+30 days'), datetime('now'), ?, ?, ?)").bind('test-session-2', 'host.docker.internal', 'Mozilla/5.0 Test Browser', 2).run();
 
     return new Response(JSON.stringify({
       success: true,
