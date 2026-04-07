@@ -38,24 +38,25 @@ export async function onRequestPost(context) {
         password_hash TEXT NOT NULL,
         role TEXT DEFAULT 'user',
         name TEXT,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-       )
-     `).run();
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        user_status TEXT DEFAULT TRUE
+        )
+      `).run();
 
     const saltedPassword1 = await hashPassword("Moliam2026!");
     const saltedPassword2 = await hashPassword("OnePlus2026!");
 
-    // Insert admin user (ignore if exists)
+     // Insert admin user (ignore if exists)
     await db.prepare(`
-      INSERT INTO users (email, password_hash, name, role)
-      VALUES (?, ?, ?, ?) ON CONFLICT(email) DO NOTHING
-      `).run("admin@moliam.com", saltedPassword1, "Administrator", "admin");
+      INSERT INTO users (email, password_hash, name, role, user_status)
+      VALUES (?, ?, ?, ?, ?) ON CONFLICT(email) DO NOTHING
+       `).run("admin@moliam.com", saltedPassword1, "Administrator", "admin", true);
 
-     // Insert Oscar One Plus Electric user (ignore if exists)
+      // Insert Oscar One Plus Electric user (ignore if exists)
     await db.prepare(`
-      INSERT INTO users (email, password_hash, name, role)
-      VALUES (?, ?, ?, ?) ON CONFLICT(email) DO NOTHING
-      `).run("oscar@onepluselectric.com", saltedPassword2, "Oscar Johnson", "user");
+      INSERT INTO users (email, password_hash, name, role, user_status)
+      VALUES (?, ?, ?, ?, ?) ON CONFLICT(email) DO NOTHING
+       `).run("oscar@onepluselectric.com", saltedPassword2, "Oscar Johnson", "user", false);
 
     return new Response(JSON.stringify({ 
       success: true, 
