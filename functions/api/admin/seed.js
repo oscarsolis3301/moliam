@@ -40,10 +40,10 @@ export async function onRequestPost(context) {
     
     await db.prepare("CREATE TABLE IF NOT EXISTS rate_limits(id INTEGER PRIMARY KEY AUTOINCREMENT, ip_address TEXT, request_count INTEGER DEFAULT 0, reset_at TEXT, UNIQUE(ip_address))").run();
 
-     // client_profiles: 3 columns - id auto-incremented PK + display_name + user_id + bio (4 total but id is PK so 3 values in INSERT)
-    await db.prepare("CREATE TABLE IF NOT EXISTS client_profiles(id INTEGER PRIMARY KEY AUTOINCREMENT, display_name TEXT, user_id INTEGER NOT NULL, bio TEXT)").run();
+     // client_profiles: 2 non-AUTO columns - display_name + user_id + bio = 3 inserts needed
+    await db.prepare("CREATE TABLE IF NOT EXISTS client_profiles(display_name TEXT, user_id INTEGER NOT NULL, bio TEXT)").run();
 
-    await db.prepare("CREATE TABLE IF NOT EXISTS client_messages(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, from_email TEXT, to_email TEXT, subject TEXT, message TEXT, sent_at TEXT DEFAULT CURRENT_TIMESTAMP, is_read INTEGER DEFAULT 0)").run();
+   await db.prepare("CREATE TABLE IF NOT EXISTS client_messages(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, from_email TEXT, to_email TEXT, subject TEXT, message TEXT, sent_at TEXT DEFAULT CURRENT_TIMESTAMP, is_read INTEGER DEFAULT 0)").run();
 
     await db.prepare("CREATE TABLE IF NOT EXISTS client_activity(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, action_type TEXT, details TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP)").run();
 
