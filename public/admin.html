@@ -22,9 +22,7 @@ section{padding:0;}
 .stat-card{text-align:center;padding:24px;background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.05));border:1px solid var(--border-room);border-radius:12px;}
 .stat-label{font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);margin-bottom:8px;}
 .stat-value{font-size:28px;font-weight:700;color:var(--accent-blue);}
-.stat-change{font-size:12px;margin-top:4px;}
 .positive{color:var(--accent-green);}
-.negative{color:#EF4444;}
 
 /* CLIENT TABLE */
 .table-container{background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.05));border:1px solid var(--border-room);border-radius:16px;overflow:hidden;}
@@ -39,13 +37,20 @@ tr:hover td{background:rgba(59,130,246,0.05);}
 .client-email{font-size:13px;color:var(--text-secondary);}
 
 /* BADGES */
-.status-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;}
+.status-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;transition:all 0.2s;}
 .status-active{background:rgba(16,185,129,0.1);color:var(--accent-green);border:1px solid rgba(16,185,129,0.3);}
 .status-inactive{background:rgba(239,68,68,0.1);color:#EF4444;border:1px solid rgba(239,68,68,0.3);}
 
 /* BUTTONS */
-a.view-btn{display:inline-block;padding:6px 14px;border-radius:6px;text-decoration:none;background:rgba(59,130,246,0.1);color:var(--accent-blue);border:1px solid rgba(59,130,246,0.3);font-size:12px;margin-right:8px;transition:all 0.2s;}a.view-btn:hover{background:rgba(59,130,246,0.2);transform:translateY(-1px);}
+a.view-btn{display:inline-block;padding:6px 14px;border-radius:6px;text-decoration:none;background:rgba(59,130,246,0.1);color:var(--accent-blue);border:1px solid rgba(59,130,246,0.3);font-size:12px;margin-right:8px;transition:all 0.2s;}
+a.view-btn:hover{background:rgba(59,130,246,0.2);transform:translateY(-1px);}
 .search-input{background:var(--bg-room);border:1px solid var(--border-room);border-radius:8px;padding:8px 16px;color:var(--text-primary);font-size:13px;width:240px;}
+.btn{padding:8px 16px;border-radius:6px;background:var(--accent-blue);color:#fff;border:none;cursor:pointer;font-size:13px;margin-right:8px;}
+.btn:hover{background:#2563EB;}
+
+/* HEADER BAR */
+.header-bar{margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;}
+.load-more-btn{padding:10px 20px;background:var(--accent-green);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;margin-left:16px;}
 
 .loading{padding:48px;text-align:center;color:var(--text-secondary);}
 .empty-state{padding:48px;text-align:center;color:var(--text-secondary);background:var(--bg-room);border-radius:12px;border:1px dashed var(--border-room);}
@@ -53,10 +58,137 @@ a.view-btn{display:inline-block;padding:6px 14px;border-radius:6px;text-decorati
 /* ADMIN BANNER */
 #impersonation-banner{background:#FFED00;color:#000000;padding:12px;position:sticky;top:56px;z-index:99;text-align:center;font-weight:600;display:none;border-bottom:1px solid #000;}
 
+.section-title{font-size:13px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);margin-bottom:12px;font-weight:600;}
+
 /* MOBILE */
-@media(max-width:768px){container{margin:48px auto;padding:0 16px;}h1{font-size:24px;}.stats-bar{grid-template-columns:1fr;gap:12px;}nav{padding:0 16px;}table{display:block;overflow-x:auto;}th,td{padding:12px;font-size:13px;}a.view-btn{margin-bottom:8px;display:inline-block;margin-right:0;}}
+@media(max-width:768px){container{margin:48px auto;padding:0 16px;}h1{font-size:24px;}.stats-bar{grid-template-columns:1fr;gap:12px;}nav{padding:0 16px;}table{display:block;overflow-x:auto;}th,td{padding:12px;font-size:13px;}a.view-btn{margin-bottom:8px;display:inline-block;margin-right:0;}load-more-wrapper{width:100%;}}
 </style>
-<script async src="dist/admin.js"></script>
+
+<script>
+const API_BASE = '/';
+let token = localStorage.getItem('auth_token');
+
+// Redirect if not authenticated
+if (!token) {
+  window.location.href = '/login.html';
+}
+
+const url = new URL(window.location);
+const impersonateId = url.searchParams.get('impersonate');
+const isAdmin = localStorage.getItem('user_role') === 'admin';
+
+// Show impersonation banner if admin is impersonating
+async function showImpersonationBanner(client) {
+  if (impersonateId && isAdmin) {
+    const banner = document.getElementById('impersonation-banner');
+    const viewingSpan = document.getElementById('impersonated-name');
+    banner.style.display = 'block';
+    viewingspan.textContent = client?.name || 'Client';
+    
+    const viewingSpan = document.getElementById('impersonated-name');
+    viewingSpan.textContent = client?.name || 'Client';
+    
+    const exitLink = document.querySelector('#impersonation-banner a');
+    if (exitLink) exitLink.href = window.location.pathname;
+   }
+}
+
+async function fetchAdminData() {
+  try {
+    const params = {};
+    if (impersonateId) params.impersonate = impersonateId;
+    
+    const res = await fetch(API_BASE + 'api/admin/clients?' + new URLSearchParams(params), {
+      headers: { 'Accept': 'application/json' },
+      credentials: 'include'
+    });
+    
+    if (!res.ok) throw new Error('Fetch failed');
+    return await res.json();
+  } catch (e) {
+    console.error('Fetch error:', e);
+    return { success: false };
+  }
+}
+
+async function renderAdminDashboard() {
+  const result = await fetchAdminData();
+  
+  if (!result.success) return;
+  
+  const client = result.client;
+  const clients = result.clients || [];
+  const projects = result.projects || [];
+  
+  // Show impersonation banner if needed
+  await showImpersonationBanner(client);
+  
+  // Update stats bar
+  document.getElementById('total-clients').textContent = clients.length.toLocaleString();
+  const activeCount = projects.filter(p => p.status === 'active').length;
+  document.getElementById('active-projects').textContent = activeCount.toLocaleString();
+  const mrr = projects.reduce((sum, p) => sum + (parseFloat(p.monthly_rate) || 0), 0);
+  document.getElementById('mrr').textContent = '$' + mrr.toLocaleString();
+  
+  // Render clients table
+  if (clients && clients.length > 0) {
+    let html = '<table><thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+    
+    for (let c of clients) {
+      const statusClass = c.status === 'active' ? 'status-active' : 'status-inactive';
+      const clientName = c.name || 'Untitled Client';
+      
+      html += '<tr>' +
+        '<td class="client-name">' + clientName + '</td>' +
+        `<td class="client-email">${c.email}</td>` +
+        '<td><span class="' + statusClass + '">' + (c.status === 'active' ? 'Active' : 'Inactive') + '</span></td>' +
+        '<td>';
+      
+      // Show projects as dropdown/expandable section if any
+      const userProjects = projects.filter(p => p.client_id == c.id);
+      if (userProjects.length > 0) {
+        html += '<div class="client-projects">' + 
+                 '<span style="color:var(--text-primary);font-size:12px;">+ ' + userProjects.length + ' project(s)</span></div>';
+      }
+      
+      // View as client button (redirect to dashboard with impersonate param)
+      html += `<a href="/dashboard.html?impersonate=${c.id}" class="view-btn">View as Client</a>`;
+      html += '<a href="mailto:' + c.email + '" class="view-btn" style="background:rgba(139,92,246,0.1);color:var(--accent-purple);border-color:rgba(139,92,246,0.3)">✉️ Email</a>';
+      html += '</td></tr>';
+    }
+    
+    html += '</tbody></table>';
+  } else {
+    html = '<div class="empty-state"><p>No clients found.</p></div>';
+  }
+  
+  document.getElementById('clients-table-wrapper').innerHTML = html;
+}
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', () => {
+  renderAdminDashboard().catch(e => console.error('Init error:', e));
+});
+
+async function handleRefreshDashboard() {
+  const wrapper = document.getElementById('clients-table-wrapper');
+  if (wrapper) {
+    wrapper.innerHTML = '<div class="loading">Refreshing...</div>';
+  }
+  await renderAdminDashboard();
+}
+
+// Add refresh button to navbar if exists
+const nav = document.querySelector('nav');
+if (nav && isAdmin) {
+  const refreshBtn = document.createElement('button');
+  refreshBtn.textContent = '🔄 Refresh';
+  refreshBtn.style.cssText = 'margin-left:12px;background:transparent;color:var(--accent-blue);border:1px solid var(--border-room);padding:6px 16px;border-radius:4px;font-size:13px;cursor:pointer;';
+  refreshBtn.addEventListener('click', handleRefreshDashboard);
+  nav.appendChild(refreshBtn);
+}
+</script>
+
 <link rel="icon" href="/favicon.ico">
 </head>
 <body>
@@ -66,20 +198,23 @@ a.view-btn{display:inline-block;padding:6px 14px;border-radius:6px;text-decorati
 <div id="impersonation-banner"><strong id="impersonated-name"></strong> | <a href="/admin.html" style="color:#000;">✕ Exit</a></div>
 
 <div class="container">
-<h1>Admin Dashboard</h1>
-<p style="color:var(--text-secondary);margin-bottom:24px;">Overview of all clients and platform metrics</p>
+  <h1>Admin Dashboard</h1>
+  <p style="color:var(--text-secondary);margin-bottom:24px;">Overview of all clients and platform metrics</p>
 
-    <section class="stats-bar">
-      <div class="stat-card"><div class="stat-label">Total Clients</div><div class="stat-value" id="total-clients">—</div></div>
-      <div class="stat-card"><div class="stat-label">Active Projects</div><div class="stat-value" id="active-projects">—</div></div>
-      <div class="stat-card"><div class="stat-label">Monthly Recurring Revenue</div><div class="stat-value" id="mrr">$0</div></div>
-    </section>
+  <section class="stats-bar">
+    <div class="stat-card"><div class="stat-label">Total Clients</div><div class="stat-value" id="total-clients">—</div></div>
+    <div class="stat-card"><div class="stat-label">Active Projects</div><div class="stat-value" id="active-projects">—</div></div>
+    <div class="stat-card"><div class="stat-label">Monthly Recurring Revenue</div><div class="stat-value" id="mrr">$0</div></div>
+  </section>
 
-<section class="table-container">
-<div class="table-header"><h3>All Clients</h3><input type="text" class="search-input" placeholder="🔍 Search by name or email"></div>
-<div id="clients-table-wrapper"><div class="loading">Loading clients...</div></div>
-</section>
+  <section class="table-container">
+    <div class="table-header"><h3>All Clients</h3></div>
+    <div id="clients-table-wrapper"><div class="loading">Loading clients...</div></div>
+  </section>
 
 </div>
+
+<script src="public/admin-functions.js"></script>
+
 </body>
 </html>
