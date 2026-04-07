@@ -35,7 +35,7 @@ export async function onRequestPost(context) {
 
 // Insert session - SQLite handles auto-increment id, only provide 3 VALUES: user_id + token + created_at
     const now = new Date().toISOString();
-    const randomToken="session_" + Math.random().toString(36);
+    const randomToken="***" + Math.random().toString(36);
     await db.prepare(`INSERT INTO sessions (user_id, token, created_at) VALUES (?, ?, ?)`).run(1, randomToken, now);
 
     const adminHash = await hashPassword("Moliam2026!");
