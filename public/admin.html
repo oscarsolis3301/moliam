@@ -80,7 +80,7 @@ a.view-btn{display:inline-block;padding:8px 18px;border-radius:8px;text-decorati
 
 <script>
 const API_BASE = '/';
-const token = localStorage.getItem('auth_token');
+const token = localStorage.getItem('auth_token') || '';
 </script>
 
 // Redirect if not authenticated
