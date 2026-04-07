@@ -25,9 +25,9 @@ h1{font-size:28px;font-weight:600}
 
 /* PROJECT CARDS */
 .project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
-.project-card{background:linear-gradient(135deg,rgba(59,130,246,0.06),rgba(139,92,246,0.06));border:1px solid var(--border-room);border-radius:12px;padding:20px;transition:all 0.2s ease;}
+.project-card{background:linear-gradient(135deg,rgba(59,130,246,0.06),rgba(139,92,246,0.06));border:1px solid var(--border-room);border-radius:12px;padding:20px;transition:all 0.2s ease}
 .project-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(59,130,246,0.15)}
-.type-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px}
+.type-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px}
 .type-website{background:rgba(59,130,246,0.2);color:#60A5FA;border:1px solid rgba(59,130,246,0.3)}
 .type-gbp{background:rgba(16,185,129,0.2);color:#34D399;border:1px solid rgba(16,185,129,0.3)}
 .type-lsa{background:rgba(139,92,246,0.2);color:#A78BFA;border:1px solid rgba(139,92,246,0.3)}
@@ -39,9 +39,11 @@ h1{font-size:28px;font-weight:600}
 .project-card .meta{font-size:14px;color:var(--text-secondary);margin-bottom:16px;line-height:1.5}
 
 /* INVOICE STATS */
-.invoice-stats{text-align:center;padding:20px;background:var(--bg-room);border:1px solid var(--border-room);border-radius:10px;margin-bottom:16px}
-.invoice-stats .stat{font-size:32px;font-weight:700;color:var(--accent-green)}
-.invoice-stats .label{font-size:14px;color:var(--text-secondary);margin-bottom:8px;display:block}
+.invoice-stats{text-align:center;padding:24px;background:var(--bg-room);border:1px solid var(--border-room);border-radius:10px;margin-bottom:16px}
+.invoice-stats .value{font-size:32px;font-weight:700;color:var(--accent-green)}
+.invoice-stats .value.paid{color:#34D399}
+.invoice-stats .value.pending{color:#F59E0B}
+.invoice-stats .sub-label{display:block;margin-bottom:8px;font-size:13px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em}
 .invoice-actions{display:flex;flex-wrap:wrap;gap:12px}
 
 /* TIMELINE */
@@ -62,9 +64,29 @@ h1{font-size:28px;font-weight:600}
 
 /* IMPERSONATION BANNER */
 #impersonation-banner{background:#FFED00;color:#000;padding:12px;position:sticky;top:48px;z-index:99;text-align:center;font-weight:600;display:none}
-#impersonation-banner a{color:#000;font-weight:700;margin-left:8px;text-decoration:underline}
+/* MOBILE OPTIMIZATION */
+@media(max-width:768px){
+  .container{padding:16px;margin:32px auto}
+  nav{padding:0 16px}
+  h1{font-size:24px}
+  .project-grid{grid-template-columns:1fr}
+  .project-card{margin-bottom:16px}
+  .invoice-actions{flex-direction:column;gap:8px}
+  .btn{width:100%;text-align:center;padding:10px 16px}
+  .stats-grid, .stats-bar{grid-template-columns:1fr!important;gap:12px}
+  nav a.back{font-size:12px}
+}
 
-@media(max-width:768px){.project-grid{grid-template-columns:1fr}.invoice-actions{flex-direction:column}.btn{width:100%;text-align:center}}
+@media(max-width:480px){
+  .container{margin:28px auto;padding:0 12px}
+  h1{font-size:20px}
+  .section{padding:16px}
+  .stats-grid, .stats-bar{grid-template-columns:1fr!important}
+}
+
+/* MICRO-INTERACTIONS */
+.project-card{animation:fadeInUp 0.4s ease-out}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
@@ -235,10 +257,10 @@ const authToken = decodeURIComponent(tokenMatch[1]);
             if (inv.status==='paid') totalPaid+=amt; else outstanding+=amt;
         }
 
-        document.getElementById('invoice-stats').innerHTML = '<span class="label">Total Billed</span>' +
-             '<span class="stat">$'+totalBilled.toLocaleString()+'</span>' +
-             '<div style="margin-top:12px"><span class="label">Paid</span><span class="stat" style="color:#34D399">$'+(totalPaid||0).toLocaleString()+'</span></div>' +
-             '<div style="margin-top:8px"><span class="label">Outstanding</span><span class="stat" style="color:#F59E0B">$'+(outstanding||0).toLocaleString()+'</span></div>';
+document.getElementById('invoice-stats').innerHTML = '<span class="sub-label">Total Billed</span>' +
+          '<span class="value">$'+totalBilled.toLocaleString()+'</span>' +
+          '<div style="margin-top:12px"><span class="sub-label">Paid</span><span class="value paid">$'+(totalPaid||0).toLocaleString()+'</span></div>' +
+          '<div style="margin-top:8px"><span class="sub-label">Outstanding</span><span class="value pending">$'+(outstanding||0).toLocaleString()+'</span></div>';
 
         window.showInvoices = function(){ 
             let html = 'Invoice Panel:\n\nTotal Billed: $' + totalBilled.toLocaleString() + '\nPaid: $' + (totalPaid||0).toLocaleString() + '\nOutstanding: $' + (outstanding||0).toLocaleString();
