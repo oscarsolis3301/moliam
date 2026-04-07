@@ -11,9 +11,10 @@ export async function onRequestPost(context) {
   let data;
   try {
     data = await request.json();
-   } catch {
-    return jsonResp(400, { error: true, message: "Invalid JSON body." });
-   }
+
+    } catch {
+    return jsonResp(400, { success: false, error: true, message: "Invalid JSON body." });
+    }
 
       // --- Validation Helpers ---
 

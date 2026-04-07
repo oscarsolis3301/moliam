@@ -8,9 +8,11 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
+
   if (!db) {
-    return jsonResp(500, { error: true, message: "Database not available. Please try again later." });
-  }
+      // Return consistent JSON error with CORS headers when DB unavailable
+    return jsonResp(503, { success: false, error: true, message: "Database not available. Please try again later." });
+     }
 
         // --- Parse body ---
   let data;
