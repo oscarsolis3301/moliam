@@ -82,9 +82,9 @@ export async function onRequestPost(context) {
          } catch {}
        }
 
-         Webhook logs already written above - continue processing:
+//          Webhook logs already written above - continue processing:
 
-      Map CRM events to lead statuses (extensible for multiple CRMs)
+//       Map CRM events to lead statuses (extensible for multiple CRMs)
 
 // --- Helper function: Log webhook payloads to D1 for debugging ---
 function logPayloadToD1(db, data) {
