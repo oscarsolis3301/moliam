@@ -28,23 +28,23 @@ export async function onRequestPost(context) {
       // Table might not exist, that's OK
     }
 
-     // Admin insert: 8 columns matching schema.sql: email, password_hash, name, role, company, phone, created_at, last_login
+      // Admin insert: 4 columns matching staging DB schema (as per admin/index.js CREATE TABLE)
     try {
       await db.prepare(
-          "INSERT INTO users (email, password_hash, name, role, company, phone, created_at, last_login) VALUES (?, ?, ?, ?, ?, NULL, datetime('now'), NULL)"
-        ).bind("admin@moliam.com", adminHash, "Admin User", "superadmin", null).run();
-      } catch (e) {
-        // users table might not exist, skip
-      }
+           "INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, 'Admin User', 'superadmin')"
+         ).bind("admin@moliam.com", adminHash).run();
+       } catch (e) {
+         // users table might not exist or already seeded, skip
+       }
 
-    // Oscar insert: same 8-column schema
+     // Oscar insert: same 4-column schema
     try {
       await db.prepare(
-          "INSERT INTO users (email, password_hash, name, role, company, phone, created_at, last_login) VALUES (?, ?, ?, ?, ?, NULL, datetime('now'), NULL)"
-        ).bind("oscar@onepluselectric.com", oscarHash, "Oscar Johnson", "user", "One Plus Electric").run();
-      } catch (e) {
-        // users table might not exist, skip
-      }
+           "INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, 'Oscar Johnson', 'user')"
+         ).bind("oscar@onepluselectric.com", oscarHash).run();
+       } catch (e) {
+         // users table might not exist or already seeded, skip
+       }
 
     return jsonResp(200, { 
       success: true, 
