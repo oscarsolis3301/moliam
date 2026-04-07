@@ -18,13 +18,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+    	<style>
+    	        .sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0 }
+    	        :focus-visible { outline: 3px solid #3B82F6; outline-offset: 4px; }
+    	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    	<style>
+          /* Screen reader only - for skip-to-content accessibility */
+          .sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0 }
+          :focus-visible { outline: 3px solid #3B82F6; outline-offset: 4px; }
+          .sr-only:focus { position:static;width:auto;height:auto;margin:0;overflow:visible;padding:12px 24px;background:#3B82F6;color:#fff;border-radius:8px;z-index:9999;font-weight:600 }
+
+          * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #581c87 100%);
+            background: #0f172a;
             color: #e2e8f0;
             min-height: 100vh;
-        }
+          }
 
+          /* Navigation */
         /* Navigation */
         .portfolio-nav {
             position: fixed; top: 0; left: 0; right: 0;

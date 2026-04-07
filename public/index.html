@@ -1833,18 +1833,29 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 </style>
 </head>
-<body>
+<body class="no-js">
+
+<!-- Skip to Main Content Link - Accessibility -->
+<a href="#main" class="skip-to-content" aria-label="Skip to main content">Skip to content</a>
+
+<style>.skip-to-content{position:absolute;left:50%;top:-100px;z-index:9999;transform:translateX(-50%);background:var(--accent-blue);color:#fff;padding:8px 24px;border-radius:6px;text-decoration:none;font-weight:600;white-space:nowrap;font-size:13px;opacity:0.95;transition:top 0.3s cubic-bezier(0.4,0,0.2,1)}.skip-to-content:focus{top:12px;box-shadow:0 0 0 3px rgba(59,130,246,0.4);font-weight:700}.no-js .skip-to-content{display:none}</style>
+
+<script>// Enable skip link if JS loaded
+document.body.className = document.body.className.replace('no-js', '');</script>
 
 <!-- Particle Background -->
 <canvas id="particle-bg"></canvas>
 
 <!-- ═══════════════════════ HUD NAV ═══════════════════════ -->
 <header id="hud">
-   <div class="left">
-     <a href="/" class="logo" aria-label="Moliam home"><img src="/logo.png" alt="Moliam" class="logo-icon" width="200" height="197" loading="lazy">Moliam</a>
-     <!-- status pill removed for cleaner production look -->
-   </div>
-   <div class="center">
+    <div class="left">
+      <a href="/ " class="logo" aria-label="Moliam home"><img src="/logo.png" alt="Moliam" class="logo-icon" width="200" height="197" loading="lazy">Moliam</a>
+      <!-- status pill removed for cleaner production look -->
+    </div>
+</header>
+
+<!-- Skip to main target after header -->
+<main id="main" tabindex="-1"></main>
      <div class="stat-block">
        <div class="label">Active Agents</div>
        <div class="value" id="stat-agents">5</div>
