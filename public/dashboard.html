@@ -18,7 +18,7 @@
 <script>
 const API_BASE = '/';
 var url = new URL(window.location);
-const token = localStorage.getItem('auth_token');
+const token = localStorage.getItem('token');
 if (!token) { window.location.href = '/login.html'; }
 const isAdmin = localStorage.getItem('user_role') === 'admin';
 const impersonateId = url.searchParams.get('impersonate');
