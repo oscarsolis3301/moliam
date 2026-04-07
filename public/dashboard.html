@@ -186,6 +186,10 @@ async function init() {
 
 init().catch(e => console.error('Error:', e));
 </script>
-<style>@media print{nav button{display:none}}</style>
+<style>
+@media print{nav button{display:none}}
+/* Mobile Responsive Improvements */
+@media (max-width: 768px) { .container{padding:0 16px} h1{font-size:24px}.project-grid{grid-template-columns:1fr;gap:16px}.card{padding:16px}.invoice-card{flex-direction:column;gap:12px}.milestone-item{padding:12px}.nav-wrapper{padding:0 16px}.logo{font-size:14px} #impersonation-banner .banner-content{font-size:13px;padding:10px 16px}}
+</style>
 </body>
 </html>
