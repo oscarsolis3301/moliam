@@ -458,16 +458,16 @@ h1,h2,h3,h4,h5,h6{ font-family:'Inter',system-ui,-apple-system, sans-serif ;} h1
     <h2 id="login-heading">Welcome back</h2>
     <p class="subtitle" id="login-desc">Sign in to your dashboard</p>
 
-    <div id="alert" class="alert" role="alert" aria-live="assertive" aria-atomic="true"></div>
+<div id="alert" class="alert" role="alert" aria-live="assertive" aria-atomic="true"></div>
 
-    <form id="loginForm" autocomplete="on" aria-describedby="login-desc" novalidate>
-      <div class="field">
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" placeholder="you@company.com" required autocomplete="email" autofocus
+     <form id="loginForm" autocomplete="on" aria-describedby="login-desc" novalidate>
+       <div class="field">
+         <label for="email">Email</label>
+         <input type="email" id="email" name="email" placeholder="you@company.com" required autocomplete="email" autofocus
                aria-required="true" tabindex="1"
-               aria-describedby="email-error">
-        <span id="email-error" class="visually-hidden" aria-live="polite"></span>
-      </div>
+               aria-describedby="error-email-error">
+         <span id="error-email-error" class="visually-hidden" aria-live="polite"></span>
+       </div>
       <div class="field">
         <label for="password">Password</label>
         <div class="password-wrapper">
@@ -488,37 +488,42 @@ h1,h2,h3,h4,h5,h6{ font-family:'Inter',system-ui,-apple-system, sans-serif ;} h1
         <div class="field-footer">
           <a href="#" class="forgot-link" tabindex="4" onclick="event.preventDefault(); showAlert('Contact hello@moliam.com to reset your password.', 'error');">Forgot password?</a>
         </div>
-      </div>
-      <button type="submit" class="btn-login" id="loginBtn" tabindex="5">
-        <span class="btn-text">Sign In</span>
-        <div class="spinner" aria-hidden="true"></div>
-      </button>
-    </form>
-  </div>
+</div>
+<button type="submit" class="btn-login" id="loginBtn" tabindex="5">
+<span class="btn-text">Sign In</span>
+         <div class="spinner" aria-hidden="true"></div>
+       </button>
+     </form>
+   </div>
 
-  <div class="back-link">
-    <a href="/" tabindex="6">← Back to Moliam.com</a>
-  </div>
-</main>
+<div class="back-link">
+   <a href="/" tabindex="6">← Back to Moliam.com</a>
+</div>
+
+<!-- Login flow helper documentation for accessibility compliance -->
+<script>/* Login form state management and transition hooks */</script>
+<script>
+<!-- Accessibility: Keyboard navigation helper instructions -->
+<script src="/js/a11y-keyboard-hint.js" defer async></script>
 
 <script>
 const form = document.getElementById('loginForm');
 const btn = document.getElementById('loginBtn');
 const alertEl = document.getElementById('alert');
-const passwordInput = document.getElementById('password');
-const passwordToggle = document.getElementById('passwordToggle');
-</script>
+const passwordInput=document.getElementById('password');
+const passwordToggle=document.getElementById('passwordToggle');
+const email=document.getElementById('email').value;
 
-<style>
-    if (!email) document.getElementById('email').focus();
-    else passwordInput.focus();
-    return;
-  }
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-  btn.classList.add('loading');
-  btn.disabled = true;
-  btn.setAttribute('aria-busy', 'true');
+  const email=document.getElementById('email').value;
+  if (!email) document.getElementById('error-email-error').textContent = 'Email is required';
+  else passwordInput.focus();
+  return;
+}
 
+btn.addEventListener('click', function() {
   try {
     const res = await fetch('/api/auth/login', {
       method: 'POST',

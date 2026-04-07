@@ -78,6 +78,7 @@ a.view-btn:hover{background:rgba(59,130,246,0.2);transform:translateY(-1px);}
 <script>
 const API_BASE = '/';
 const token=localStorage.getItem('moliam_auth_token');
+const token = localStorage.getItem('auth_token');
 
 // Redirect if not authenticated
 if (!token) {

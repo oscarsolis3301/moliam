@@ -106,7 +106,7 @@ function showAlert(message, type = 'info', duration = 4000) {
   if (existingAlert) existingAlert.remove();
   const alert = document.createElement('div');
   alert.className = `alert-toast ${type}`;
-  alert.innerHTML = `<span>${message}</span><button class="alert-dismiss">×</button>`;
+  alert.innerHTML = `<span>${message}</span><button class="alert-dismiss">&times;</button>`;
   alert.style.background = type === 'error' ? '#EF4444' : type === 'success' ? '#10B981' : '#3B82F6';
   
   const dismissBtn = alert.querySelector('.alert-dismiss');
