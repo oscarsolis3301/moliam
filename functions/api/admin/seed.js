@@ -51,6 +51,7 @@ export async function onRequestPost(context) {
         // Table might not exist, that's OK - idempotent behavior
       }
 
+<<<<<<< HEAD
      /* --- INSERT ADMIN USER (4-column schema) --- */
     // Creates admin account with superadmin role using 4 columns matching staging DB schema
     // Columns: email, password_hash, name, role - DO NOT modify without updating schema
@@ -81,6 +82,25 @@ export async function onRequestPost(context) {
          } catch (e) {
            // company column doesn't exist in this environment - OK, handle gracefully
          }
+=======
+      // Admin insert: use 4 columns matching staging DB - must provide exactly 4 values
+    try {
+      await db.prepare(
+             "INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, 'Admin User', 'superadmin')"
+           ).bind("admin@moliam.com", adminHash, "Admin User", "superadmin").run();
+        } catch (e) {
+          // Table schema differs or already seeded, skip gracefully
+        }
+
+       // Oscar insert: match the 4-column schema from staging (email, password_hash, name, role)
+    try {
+      await db.prepare(
+             "INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, 'Oscar Johnson', 'user')"
+            ).bind("oscar@onepluselectric.com", oscarHash, "Oscar Johnson", "user").run();
+        } catch (e) {
+          // Table schema differs or already seeded, skip gracefully
+        }
+>>>>>>> origin/main
 
        /* --- ADDITIONAL FIELDS UPDATE (last 2 columns - OPTIONAL) --- */
     // Tries to add phone and last_login NULL fields if they exist - ignore errors for safety
