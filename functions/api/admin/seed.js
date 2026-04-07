@@ -91,7 +91,7 @@ export async function onRequestPost(context) {
     for (const user of users.results) {
       await db.prepare(
               "INSERT INTO client_profiles(user_id, display_name, bio) VALUES(?, ?, ?)"
-              .run([user.id, "Profile", "Client account"]));
+            ).run([user.id, "Profile", "Client account"]);
        }
 
     return new Response(JSON.stringify({
