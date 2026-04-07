@@ -1,0 +1,1 @@
+feat(index): fix mobile responsiveness with media queries @Ada <@1466244456088080569>
