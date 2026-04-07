@@ -50,11 +50,11 @@ export async function onRequestPost(context) {
   const screenRes = data.screenResolution ? String(data.screenResolution).trim() : "";
 
   try {
-     // --- Rate limiting check (5 per 6 min window per IP) ---
+      // --- Rate limiting check (5 per 6 min window per IP) ---
     const ipHash = await hashSHA256(ip);
     const rl = await db.prepare(
-       "SELECT request_count, window_start FROM rate_limits WHERE hash_ip = ?"
-     ).bind(ipHash).first();
+        \"SELECT request_count, window_start FROM rate_limits WHERE ip_address_hash = ?\"
+      ).bind(ipHash).first();
 
     if (rl) {
       const windowAge = Date.now() - new Date(rl.window_start).getTime();
