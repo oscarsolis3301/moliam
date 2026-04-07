@@ -310,15 +310,12 @@ function showSkeleton() {
 }
 
 function createBanner(impersonationName) {
+  // Create sticky yellow impersonation banner at top of page
   const banner = document.createElement('div');
-  banner.className = 'card';
-  banner.style.marginBottom = '24px';
-  banner.innerHTML = `
-    <div style="display:flex; align-items:center; justify-content:space-between;">
-      <span class="banner-text">👁 Viewing as ${impersonationName} — exit impersonation</span>
-      <form method="post" action="${API_BASE}/auth/exit-impersonation"><button class="btn-exit">Exit</button></form>
-    </div>
-  `;
+  banner.id = 'impersonation-banner';
+  banner.classList.add('visible');
+  banner.innerHTML = `<span class="banner-text">👁 Viewing as ${impersonationName} — exit impersonation</span>
+      <form method="post" action="${API_BASE}/auth/exit-impersonation"><button class="btn-exit">Exit</button></form>`;
   return banner;
 }
 
