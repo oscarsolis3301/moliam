@@ -18,47 +18,58 @@ export async function onRequestPost(context) {
     return new Response(JSON.stringify({ error: "Invalid seed key" }), {
       status: 403,
       headers: { "Content-Type": "application/json" }
-     });
-   }
+    });
+  }
 
- try {
-// Drop existing tables to reset schema
+  try {
+    // Drop existing tables to reset schema
     await db.prepare("DROP TABLE IF EXISTS users").run();
     await db.prepare("DROP TABLE IF EXISTS sessions").run();
 
-    // Create users table with 5 columns (id auto-incremented by SQLite)
-    const createUsersSQL ="CREATE TABLE users(email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'user', name TEXT, company TEXT)";
-    await db.prepare(createUsersSQL).run();
+    // Create users table with id auto-incremented by SQLite
+    await db.prepare("CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'user', name TEXT, company TEXT)").run();
 
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
 
-  // Insert admin user - 5 values (id auto-incremented)
-  await db.prepare("INSERT INTO users(email, password_hash, role, name, company) VALUES(?, ?, ?, ?, ?)").run("admin@moliam.com", adminHash, "admin", "Admin", "Moliam");
+    // Insert admin user - 5 values (id is auto-incremented)
+    await db.prepare("INSERT INTO users(email, password_hash, role, name, company) VALUES(?, ?, ?, ?, ?)").run("admin@moliam.com", adminHash, "admin", "Admin", "Moliam");
 
-    // Insert oscar user - 5 values (id auto-incremented)
+    // Insert oscar user - 5 values (id is auto-incremented)
     await db.prepare("INSERT INTO users(email, password_hash, role, name, company) VALUES(?, ?, ?, ?, ?)").run("oscar@onepluselectric.com", oscarHash, "user", "Oscar", "OnePlus Electric");
 
-      // Create sessions table with proper schema - user_id references users(id)
-     const createSessionsSQL = "CREATE TABLE sessions(user_id INTEGER, token TEXT, created_at TEXT)";
-    await db.prepare(createSessionsSQL).run();
+    // Create sessions table - user_id references users(id)
+    await db.prepare("CREATE TABLE sessions(user_id INTEGER, token TEXT, created_at TEXT, FOREIGN KEY(user_id) REFERENCES users(id))").run();
 
-      return new Response(JSON.stringify({
+    return new Response(JSON.stringify({
       success: true,
       message: "Users and sessions tables seeded successfully",
       users: [
-          { email: "admin@moliam.com", role: "admin" },
+        { email: "admin@moliam.com", role: "admin" },
         { email: "oscar@onepluselectric.com", role: "user" }
-       ]
-     }), {
-     status: 200,
-     headers: { "Content-Type": "application/json" }
- });
+      ]
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
 
- } catch (err) {
-   return new Response(JSON.stringify({ error: err.message }), {
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" }
     });
-   }
+  }
+}
+      ]
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
 }
