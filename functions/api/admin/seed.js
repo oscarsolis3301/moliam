@@ -90,6 +90,18 @@ export async function onRequestPost(context) {
     return new Response(JSON.stringify({ error: 'Seed failed', details: err.message }), { 
       status: 500, 
       headers: { 'Content-Type': 'application/json' } 
-    });
-  }
+     });
+   }
+}
+
+export function onRequestOptions() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+"Access-Control-Allow-Origin": "*",
+"Access-Control-Allow-Methods": "POST, OPTIONS",
+"Access-Control-Allow-Headers": "x-seed-key",
+"Content-Type": "application/json"
+     }
+   });
 }
