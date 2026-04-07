@@ -34,10 +34,10 @@ try {
     await db.prepare(`CREATE TABLE sessions (user_id INTEGER PRIMARY KEY, token TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)`).run();
 
 // Session: Insert all required 3 columns matching CREATE TABLE
-    const now = new Date().toISOString();
+const now = new Date().toISOString();
     const randomBytes = crypto.getRandomValues(new Uint8Array(8));
     const testToken = Array.from(randomBytes)
-        .map(b => b.toString(16).padStart(2, "0")).join("") + "_moliam_test";
+         .map(b => b.toString(16).padStart(2, "0")).join("") + "_moliam_test";
 
     await db.prepare(`INSERT INTO sessions (user_id, token, created_at) VALUES (?, ?, ?)`).run(1, testToken, now);
 
