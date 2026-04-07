@@ -181,15 +181,16 @@ async function renderDashboard() {
     const totalBilled = invoices.reduce((sum, inv) => sum + (parseFloat(inv.amount)||0), 0);
     const totalPaid = invoices.reduce((sum, inv) => sum + (parseFloat(inv.paid_amount)||0), 0);
     const outstanding = totalBilled - totalPaid;
+    const accentGreen = '#10B981';
     const outstandingColor = outstanding > 0 ? '#F59E0B' : (outstanding < 0 ? '#EF4444' : 'var(--accent-blue)');
 
     const statusBar = document.getElementById('stats-bar');
     statusBar.innerHTML = `
-     <div class="invoice-card fade-in" style="animation-delay:100ms"><div class="invoice-label">Total Billed</div><div>$${totalBilled.toLocaleString()}</div></div>
-     <div class="invoice-card fade-in" style="animation-delay:200ms"><div class="invoice-label">Amount Paid</div><div style="color:var(--accent-green)
-    <div class="invoice-card"><div class="invoice-label">Outstanding</div><div style="color:${outstandingColor}">$${Math.abs(outstanding).toLocaleString()}</div></div>
-  `;
-  document.getElementById('invoices-section').style.display='block';
+      <div class="invoice-card fade-in" style="animation-delay:100ms"><div class="invoice-label">Total Billed</div><div>$${totalBilled.toLocaleString()}</div></div>
+      <div class="invoice-card fade-in" style="animation-delay:200ms"><div class="invoice-label">Amount Paid</div><div style="color:${accentGreen}">$${totalPaid.toLocaleString()}</div></div>
+      <div class="invoice-card fade-in" style="animation-delay:300ms"><div class="invoice-label">Outstanding</div><div style="color:${outstandingColor}">$${Math.abs(outstanding).toLocaleString()}</div></div>
+   `;
+    document.getElementById('invoices-section').style.display='block';
 
   return result;
 }
