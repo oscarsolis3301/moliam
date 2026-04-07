@@ -1,1 +1,200 @@
-File unchanged since last read. The content from the earlier read_file result in this conversation is still current — refer to that instead of re-reading.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard | MOLIAMA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>:root{--bg-deep:#0B0E14;--bg-room:#1F2937;--border-room:#374151;--accent-blue:#3B82F6;--accent-purple:rgb(139,92,246);--accent-green:#10B981;--text-primary:#F9FAFB;--text-secondary:#9CA3AF}body{margin:0;padding:0;background:var(--bg-deep);font-family:'Inter',system-ui,sans-serif;color:var(--text-primary)}nav{height:56px;border-bottom:1px solid var(--border-room);display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(11,14,20,0.8);backdrop-filter:blur(12px);position:fixed;top:0;width:100%;z-index:100}nav.logo{font-size:15px;font-weight:700;letter-spacing:0.1em;color:#fff}nav a{text-decoration:none;color:var(--text-secondary);font-size:13px;margin-left:20px}.back-btn{color:var(--accent-blue)}.container{max-width:1200px;margin:80px auto;padding:0 24px;display:grid;gap:36px}h1{font-size:32px;font-weight:600;margin-bottom:8px}h2{font-size:18px;font-weight:500,color:var(--text-secondary);margin-bottom:16px}h3{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text-primary)}section{padding:0}/* CARD STYLES */.card{background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.05));border:1px solid var(--border-room);border-radius:16px;padding:24px}/* PROJECT CARDS */.project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:24px;margin-bottom:20px}.project-card{padding:24px;background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.08));border:1px solid var(--border-room);border-radius:16px}.project-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}.project-name{font-size:20px;font-weight:600;color:var(--text-primary)}.project-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.type-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em}.status-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em}.type-website{background:rgba(59,130,246,0.2);color:#60A5FA;border:1px solid rgba(59,130,246,0.3)}.type-gbp{background:rgba(16,185,129,0.2);color:#34D399;border:1px solid rgba(16,185,129,0.3)}.type-lsa{background:rgba(139,92,246,0.2);color:#A78BFA;border:1px solid rgba(139,92,246,0.3)}.status-active{background:rgba(16,185,129,0.2);color:#34D399;border:1px solid rgba(16,185,129,0.3)}.type-retainer{background:rgba(245,158,11,0.2);color:#FBBF24;border:1px solid rgba(245,158,11,0.3)}.project-details{margin-top:16px;padding-top:16px;border-top:1px solid var(--border-room)}.detail-row{display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px}.detail-label{color:var(--text-secondary)}.detail-value{color:var(--text-primary)}.project-actions{margin-top:20px;display:flex;gap:12px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;padding:10px 16px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;transition:all 0.2s}.btn-primary{background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));color:#fff;border:none}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(59,130,246,0.3)}.btn-secondary{background:transparent;color:var(--text-secondary);border:1px solid var(--border-room)}.btn-secondary:hover{background:rgba(59,130,246,0.1)}.empty-state{text-align:center;padding:60px 24px;color:var(--text-secondary)}/* MILESTONES TIMELINE */.milestones-section{margin-bottom:20px}.milestone-item{display:flex;gap:16px;padding:16px;border-radius:12px;background:linear-gradient(135deg,rgba(139,92,246,0.03),rgba(59,130,246,0.03));border:1px solid var(--border-room);margin-bottom:12px}.milestone-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px}.milestone-content{flex:1}.milestone-title{font-size:15px;margin-bottom:4px;font-weight:600}.milestone-date{font-size:13px;color:var(--text-secondary)}.invoice-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:20px}.invoice-card{text-align:center;padding:20px;background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.05));border:1px solid var(--border-room);border-radius:12px}.invoice-label{font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);margin-bottom:8px}.invoice-value{font-size:24px;font-weight:700;color:var(--accent-blue)}.empty-cards{display:none}/* IMPERSONATION BANNER */#impersonation-banner{display:none;background:#FFED00;color:#1F2937;padding:12px 24px;border-bottom:2px solid #FF8B00;text-align:center;font-weight:600}.banner-content{display:flex;align-items:center;justify-content:center;gap:16px}#exit-btn{background:#1F2937;color:#fff;padding:6px 12px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;border:none}.login-redirect{text-align:center;padding:80px 24px;color:var(--text-secondary)}.loading{text-align:center;padding:60px 24px;color:var(--text-secondary)}@media(max-width:768px){container{margin:60px auto;padding:0 16px}.project-grid{grid-template-columns:1fr;gap:16px}.card{padding:18px}.btn{padding:10px 14px;font-size:13px}nav{padding:0 16px}}</style>
+</head>
+<body>
+
+<nav><div class="logo">MOLIAMA</div><a href="/" class="back-btn">← Back to Website</a></nav>
+<div id="impersonation-banner"><div class="banner-content">👁 Viewing as <span id="viewing-as"></span> - <a id="exit-btn" href="/dashboard.html">Exit</a></div></div>
+
+<div class="container">
+  <h1>Your Dashboard</h1>
+  
+  <section id="project-section"><div class="loading">Loading projects...</div></section>
+  
+  <section id="milestones-section" style="display:none">
+    <h2>Milestones Timeline</h2>
+    <div id="milestones-list"></div>
+  </section>
+  
+  <section id="invoices-section" style="display:none">
+    <h2>Invoice Summary</h2>
+    <div class="invoice-summary" id="stats-bar"></div>
+  </section>
+
+</div>
+
+<script>
+const API_BASE = '/';
+let token = localStorage.getItem('auth_token');
+const url = new URL(window.location);
+
+// Redirect to login if not authenticated
+if (url.href.includes('login.html') || !token) {
+  window.location.href = '/login.html';
+  return;
+}
+
+const isAdmin = localStorage.getItem('user_role') === 'admin';
+const impersonateId = url.searchParams.get('impersonate');
+
+async function fetchDashboard() {
+  try {
+    const params = {};
+    if (impersonateId) params.impersonate = impersonateId;
+    
+    const res = await fetch(API_BASE + 'api/dashboard?' + new URLSearchParams(params), {
+      headers: { 'Accept': 'application/json' },
+      credentials: 'include'
+    });
+    
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 403) {
+        window.location.href = '/login.html';
+        return;
+      }
+      throw new Error('Fetch failed');
+    }
+    
+    const data = await res.json();
+    return { success: data.success, data: data };
+  } catch (e) {
+    console.error('Fetch error:', e);
+    throw e;
+  }
+}
+
+function showImpersonationBanner(client) {
+  if (impersonateId && isAdmin) {
+    const banner = document.getElementById('impersonation-banner');
+    const viewingSpan = document.getElementById('viewing-as');
+    banner.style.display = 'block';
+    viewingSpan.textContent = client?.name || 'Client';
+    document.getElementById('exit-btn').href = window.location.pathname;
+  }
+}
+
+async function renderDashboard() {
+  try {
+    const result = await fetchDashboard();
+    if (!result.success) return;
+    
+    const client = result.data.client;
+    const projectSection = document.getElementById('project-section');
+    const milestonesList = document.getElementById('milestones-list');
+    const invoicesSection = document.getElementById('invoices-section');
+    const statusBar = document.getElementById('stats-bar');
+    const projects = result.data.projects || [];
+    const invoices = result.data.invoices || [];
+
+    // Show impersonation banner if admin impersonating
+    showImpersonationBanner(client);
+
+    // Generate project cards
+    let html = '';
+    if (!projects.length) {
+      html = '<div class="empty-state"><p>No active projects yet.</p><p style="margin-top:12px;font-size:13px">Ready to get started? Our team is here to help.</p></div>';
+    } else {
+      for (let p of projects) {
+        const typeClass = p.type ? p.type.toLowerCase().replace(' ', '-') : 'website';
+        
+        html += `<div class="project-card">`;
+        html += `<div class="project-header">`;
+        html += `<div><h3>${p.name || 'Project ' + p.id}</h3></div>`;
+        html += `<div style="display:flex;gap:8px">`;
+        html += `<span class="type-badge type-${typeClass}">${p.type || 'Website'}</span>`;
+        html += `<span class="status-badge status-${p.status === 'active' ? 'active' : 'pending'}">${p.status === 'active' ? 'Active' : 'Pending'}</span>`;
+        html += `</div></div>`;
+        
+        html += `<div class="project-details">`;
+        html += `<div class="detail-row"><span class="detail-label">Monthly Rate:</span><span class="detail-value">$${(parseFloat(p.monthly_rate) || 0).toLocaleString()}</span></div>`;
+        html += `<div class="detail-row"><span class="detail-label">Start Date:</span><span class="detail-value">${p.start_date ? new Date(p.start_date).toLocaleDateString('en-US', {month:'short',year:'numeric'}) : 'N/A'}</span></div>`;
+        
+        html += `<div class="project-actions">`;
+        const invoiceUrl = p.invoice_url || '#';
+        if (invoiceUrl !== '#') {
+          html += `<a href="${invoiceUrl}" target="_blank" class="btn btn-secondary">📄 View Invoice</a>`;
+        }
+        html += `<a href="mailto:${encodeURIComponent(p.client_email)}?subject=Message about ${encodeURIComponent(p.name || 'your project')}" class="btn btn-secondary">💬 Message Us</a>`;
+        html += `</div></div>`;
+      }
+    }
+    projectSection.innerHTML = html;
+
+    // Generate milestones timeline
+    const updates = result.data.project_updates || [];
+    const milestones = updates.slice(0, 5);
+    
+    if (milestones.length) {
+      let milestonesHtml = '';
+      for (let m of milestones) {
+        milestonesHtml += `<div class="milestone-item">`;
+        milestonesHtml += `<div class="milestone-icon">🚩</div>`;
+        milestonesHtml += `<div class="milestone-content">`;
+        milestonesHtml += `<div class="milestone-title">${m.description || 'Project update'}</div>`;
+        milestonesHtml += `<div class="milestone-date">${new Date(m.created_at).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'})}</div>`;
+        milestonesHtml += `</div></div>`;
+      }
+      milestonesList.innerHTML = milestonesHtml;
+    } else {
+      milestonesList.innerHTML = '<div style="font-size:13px;color:var(--text-secondary)">No recent milestones.</div>';
+    }
+
+    // Generate invoice summary
+    const totalBilled = (invoices || []).reduce((sum, inv) => sum + (parseFloat(inv.amount) || 0), 0);
+    const totalPaid = (invoices || []).reduce((sum, inv) => sum + (parseFloat(inv.paid_amount) || 0), 0);
+    const outstanding = totalBilled - totalPaid;
+
+    let invoiceHtml = '';
+    invoiceHtml += `<div class="invoice-card"><div class="invoice-label">Total Billed</div><div class="invoice-value">$${totalBilled.toLocaleString()}</div></div>`;
+    invoiceHtml += `<div class="invoice-card"><div class="invoice-label">Amount Paid</div><div class="invoice-value" style="color:var(--accent-green)">$${totalPaid.toLocaleString()}</div></div>`;
+    
+    const outstandingColor = outstanding > 0 ? '#F59E0B' : (outstanding < 0 ? '#EF4444' : 'var(--accent-blue)');
+    invoiceHtml += `<div class="invoice-card"><div class="invoice-label">Outstanding</div><div class="invoice-value" style="color:${outstandingColor}">$${Math.abs(outstanding).toLocaleString()}</div></div>`;
+    
+    statusBar.innerHTML = invoiceHtml;
+  } catch (e) {
+    console.error('Render error:', e);
+  }
+}
+
+// Initialize on load
+async function init() {
+  try {
+    const result = await fetchDashboard();
+    if (!result.data) return;
+
+    renderProjectCards(result.data.projects);
+    generateMilestones(result.data.project_updates);
+    generateInvoiceSummary(result.data.invoices);
+
+    // Show sections if they have content
+    if (document.getElementById('milestones-list').innerHTML.trim()) {
+      document.getElementById('milestones-section').style.display = 'block';
+    }
+    
+    document.getElementById('invoices-section').style.display = 'block';
+  } catch (e) {
+    console.error('Init error:', e);
+  }
+}
+
+// Add event listener for exit impersonation
+document.getElementById('exit-btn')?.addEventListener('click', function(e) {
+  if (e.target.id === 'exit-btn' && window.location.search.includes('impersonate')) {
+    const currentUrl = new URL(window.location);
+    currentUrl.searchParams.delete('impersonate');
+    window.location.href = '/' + currentUrl.pathname + currentUrl.search;
+  }
+});
+
+init().catch(e => console.error('Init error:', e));
+</script>
+
+</body>
+</html>
