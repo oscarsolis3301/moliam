@@ -47,12 +47,12 @@ export async function onRequestPost(context) {
 
     const adminHash = await hashPassword("Moliam2026!");
     await db.prepare(
-       "INSERT INTO users(email, password_hash, role, name, company, is_active) VALUES(?, ?, ?, ?, ?, ?)"
-     ).run(["admin@moliam.com", adminHash, "admin", "Admin Moliam.", "Moliam", 1]);
+        "INSERT INTO users(email, password_hash, role, name, company, is_active) VALUES(?, ?, ?, ?, ?, ?)"
+      ).run(["admin@moliam.com", adminHash, "admin", "Admin Moliam.", "Moliam", 1]);
 
     const users = await db.prepare("SELECT id FROM users").all();
     for (const u of users.results) {
-      await db.prepare("INSERT INTO client_profiles(user_id, display_name) VALUES(?, 'VisualArk')").run([u.id]);
+      await db.prepare("INSERT INTO client_profiles(user_id, display_name, bio, avatar_url) VALUES(?, ?, ?, ?)").run([u.id, 'VisualArk', 'AI-powered digital marketing agency', '']);
     }
 
     return new Response(JSON.stringify({
