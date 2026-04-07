@@ -30,17 +30,18 @@ try {
 // Create users table - 5 data columns: email + password_hash + role + name + company   
     await db.prepare(`CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'client', name TEXT, company TEXT)`).run();
 
-     // Create sessions table - D1 requires all columns provided (session_id is INTEGER PRIMARY KEY which acts like auto-inc)
-    try { await db.prepare("DROP TABLE sessions").run(); } catch(e){}
-    await db.prepare(`CREATE TABLE sessions (session_id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)`).run();
+// Create sessions table - 4 columns: id (auto-increment), user_id, token, created_at
+    await db.prepare(`CREATE TABLE sessions (user_id INTEGER PRIMARY KEY, token TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)`).run();
 
-// Session: D1 requires all 4 columns provided (session_id is NOT auto-incremented like regular tables)
+// Session: Insert all required 3 columns matching CREATE TABLE
     const now = new Date().toISOString();
-    const tokenStr="***" + Math.random().toString(36).substring(2);
-  // Insert all 4 columns explicitly since D1 doesn't auto-generate INTEGER PRIMARY KEY for sessions
-    await db.prepare(`INSERT INTO sessions (session_id, user_id, token, created_at) VALUES (?, ?, ?, ?)`).run(1, 1, tokenStr, now);
+    const randomBytes = crypto.getRandomValues(new Uint8Array(8));
+    const testToken = Array.from(randomBytes)
+        .map(b => b.toString(16).padStart(2, "0")).join("") + "_moliam_test";
 
-// Admin & Oscar seeding - both use same 5-column INSERT: email, password_hash, role, name, company (no id, D1 auto-generates it)
+    await db.prepare(`INSERT INTO sessions (user_id, token, created_at) VALUES (?, ?, ?)`).run(1, testToken, now);
+
+// Admin & Oscar seed
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
     await db.prepare(`INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`).run("admin@moliam.com", adminHash, "admin", "Admin", "Moliam");
