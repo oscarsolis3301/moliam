@@ -83,14 +83,11 @@ async function showImpersonationBanner(client) {
     const banner = document.getElementById('impersonation-banner');
     const viewingSpan = document.getElementById('impersonated-name');
     banner.style.display = 'block';
-    viewingspan.textContent = client?.name || 'Client';
-    
-    const viewingSpan = document.getElementById('impersonated-name');
     viewingSpan.textContent = client?.name || 'Client';
     
     const exitLink = document.querySelector('#impersonation-banner a');
     if (exitLink) exitLink.href = window.location.pathname;
-   }
+  }
 }
 
 async function fetchAdminData() {
