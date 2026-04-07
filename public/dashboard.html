@@ -272,32 +272,81 @@ async function init() {
     if (!data.success) {
       window.location.href = '/login';
       return;
-    }
+     }
 
     currentUser = data.user;
     
+    // Check for impersonation mode
+    const urlParams = new URLSearchParams(window.location.search);
+    const impersonateId = urlParams.get('impersonate');
+    if (currentUser.role === 'admin' && impersonateId && !data.impersonate) {
+      enableImpersonationMode(impersonateId, data);
+      return;
+     }
+
     // Fetch invoices for summary
     let invoiceData = null;
     try {
       const invRes = await fetch('/api/invoices', { credentials: 'include' });
       if (invRes.ok) {
         invoiceData = await invRes.json();
-      }
-    } catch(e) {
+       }
+     } catch(e) {
       console.warn('Invoice fetch failed');
-    }
-    
+     }
+     
     renderDashboard(data, invoiceData);
 
     // Welcome toast
     setTimeout(() => {
       showToast(`Welcome back, ${data.user.name.split(' ')[0]}!`, '👋', 4500);
-    }, 600);
+     }, 600);
 
-   } catch (err) {
+    } catch (err) {
     window.location.href = '/login';
-   }
+    }
 }
+
+// ═══ IMPERSONATION MODE ═══
+async function enableImpersonationMode(impersonateId, data) {
+  try {
+    const res = await fetch(`/api/admin/clients/${impersonateId}`, { credentials: 'include' });
+    if (!res.ok) {
+      console.error('Failed to fetch impersonated user');
+      window.location.href = '/dashboard';
+      return;
+     }
+    
+    const clientData = await res.json();
+    currentUser = clientData.client || clientData.data?.client || clientData;
+    
+    // Inject yellow banner
+    const nav = document.querySelector('.topnav');
+    if (nav) {
+      const banner = document.createElement('div');
+      banner.className = 'impersonation-banner';
+      banner.innerHTML = `
+        <span style="display:inline-block;width:12px;height:12px;background:#F59E0B;border-radius:50%;margin-right:8px;"></span>
+        <strong>👁 Viewing as ${currentUser.name}${currentUser.company ? ' — ' + esc(currentUser.company) : ''}</strong>
+        <button id="exitImpersonation">Exit</button>
+      `;
+      banner.style.cssText = 'background:linear-gradient(90deg,#F59E0B,#FBBF24);color:#1F2937;padding:8px 16px;display:flex;align-items:center;gap:12px;font-weight:600;font-size:0.85rem;border-radius:12px;margin-left:16px;box-shadow:0 4px 12px rgba(245,158,11,0.3);';
+      
+      const exitBtn = banner.querySelector('#exitImpersonation');
+      exitBtn.onclick = () => {
+        window.location.href = '/dashboard';
+      };
+      
+      nav.appendChild(banner);
+    }
+    
+  } catch (err) {
+    console.error('Error enabling impersonation:', err);
+  }
+}
+
+// ═══ MESSAGING PANEL FUNCTIONS ═══
+let isConnected = false;
 
 function renderDashboard(data) {
   const { user, projects, updates, stats } = data;
