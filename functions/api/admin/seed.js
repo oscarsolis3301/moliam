@@ -37,13 +37,16 @@ export async function onRequestPost(context) {
 // Insert admin user - email + 10 OTHERS (id auto-incremented)
     await db.prepare("INSERT INTO users(email, password_hash, name, role) VALUES(?, ?, ?, ?)").run("admin@moliam.com", adminHash, "Admin", "superadmin");
 
-         // Insert oscar user - same pattern (email + 10 OTHERS), id auto-incremented
+      // Insert oscar user - same pattern (email + 10 OTHERS), id auto-incremented
     await db.prepare("INSERT INTO users(email, password_hash, name, role) VALUES(?, ?, ?, ?)").run("oscar@onepluselectric.com", oscarHash, "Oscar", "client");
 
-       // Debug check: verify the data actually got inserted
+        // Debug check: verify the data actually got inserted
     const usersResult = await db.prepare("SELECT COUNT(*) as count FROM users").all();
-
-    return new Response(JSON.stringify({
+    
+    // Insert test sessions - 2 sessions with correct column count (7 columns: id,user_id,token,expires_at,created_at,ip_address,user_agent)
+    await db.prepare("INSERT INTO sessions(user_id, token, expires_at, created_at, ip_address, user_agent) VALUES(1, 'test-session-1', datetime('now', '+30 days'), datetime('now'), 'host.docker.internal', 'Mozilla/5.0 Test Browser')").run();
+    await db.prepare("INSERT INTO sessions(user_id, token, expires_at, created_at, ip_address, user_agent) VALUES(2, 'test-session-2', datetime('now', '+30 days'), datetime('now'), 'host.docker.internal', 'Mozilla/5.0 Test Browser')").run();
+return new Response(JSON.stringify({
       success: true,
       message: "Users and sessions tables seeded successfully",
       users: [
