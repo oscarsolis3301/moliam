@@ -148,8 +148,8 @@ async function fetchDashboard(token) {
 }
 
 (async function main() {
-       // Get stored auth token from localStorage instead of cookie extraction
-    const token=localStorage.getItem('authToken');
+    // Get stored auth token from localStorage instead of cookie extraction
+const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
 
     if (!token) {
         window.location.href = '/login.html'; 
