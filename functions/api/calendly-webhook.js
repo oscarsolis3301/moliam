@@ -19,16 +19,31 @@ export async function onRequestPost(context) {
     return jsonResp(400, { error: true, message: "Invalid JSON body" });
   }
 
-  // --- Verify Calendly HMAC signature ---
+       // --- Verify Calendly HMAC signature (if header present) ---
   const sigHeader = request.headers.get("Calendly-Webhook-Signature") || "";
-  const webhookSecret = env.CALENDLY_WEBHOOK_SECRET || "";
+  const webhookSecret = env.CALD_SECRET || "";
 
-  if (webhookSecret) {
+  if (webhookSecret && sigHeader) {
     const valid = await verifySignature(rawBody, sigHeader, webhookSecret);
     if (!valid) {
+      // Still log to D1 for debugging even when invalid signature
+      try {
+        if (db) {
+           await db.prepare("INSERT INTO webhook_logs (event_type, payload_hash, signature_valid, received_at) VALUES (?, ?, ?, datetime('now'))")
+              .bind("calendly_booking", btoa(rawBody).slice(0, 64), false).run();
+        }
+      } catch {}
       return jsonResp(401, { error: true, message: "Invalid webhook signature" });
     }
+    // Log successful verification to D1 for debugging
+    try {
+      if (db) {
+         await db.prepare("INSERT INTO webhook_logs (event_type, payload_hash, signature_valid, received_at) VALUES (?, ?, ?, datetime('now'))")
+             .bind("calendly_booking", btoa(rawBody).slice(0, 64), true).run();
+      }
+    } catch {}
   }
+
 
   // --- Extract event type and payload ---
   const event = data.event; // "invitee.created" or "invitee.canceled"
