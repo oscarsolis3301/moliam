@@ -1,426 +1,200 @@
-     1|<!DOCTYPE html>
-     2|<html lang="en">
-     3|<head>
-     4|<meta charset="UTF-8">
-     5|<meta name="viewport" content="width=device-width, initial-scale=1.0">
-     6|<title>Client Portal | MOLIAMA</title>
-     7|<style>
-     8|:root{--bg-deep:#0B0E14;--bg-room:#1F2937;--border-room:#374151;--accent-blue:#3B82F6;--accent-purple:rgb(139,92,246);--accent-green:#10B981;--text-primary:#F9FAFB;--text-secondary:#9CA3AF}
-     9|*{margin:0;padding:0;box-sizing:border-box}
-    10|body{background:var(--bg-deep);font-family:'Inter',system-ui,sans-serif;color:var(--text-primary);padding-top:64px;}
-    11|nav{height:48px;border-bottom:1px solid var(--border-room);display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(15,23,42,0.9);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100}
-    12|nav .logo{font-size:14px;font-weight:700;letter-spacing:0.1em;color:#fff}
-    13|nav a{text-decoration:none;color:var(--text-secondary);font-size:13px;margin-left:20px}
-    14|a.back{color:var(--accent-blue)}
-    15|.container{max-width:1200px;margin:40px auto;padding:0 24px;display:grid;gap:32px}
-    16|h1{font-size:28px;font-weight:600}
-    17|.section{padding:24px;background:linear-gradient(135deg,rgba(59,130,246,0.06),rgba(139,92,246,0.06));border:1px solid var(--border-room);border-radius:12px;margin-bottom:24px}
-    18|.section-title{font-size:15px;font-weight:600;color:var(--accent-blue);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:16px}
-    19|
-    20|/* STAT CARDS */
-    21|.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
-    22|.stat-card{text-align:center;padding:20px;background:var(--bg-room);border:1px solid var(--border-room);border-radius:12px}
-    23|.stat-card .label{font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);margin-bottom:8px}
-    24|.stat-card .value{font-size:24px;font-weight:700;color:var(--accent-green)}
-    25|
-    26|/* PROJECT CARDS */
-    27|.project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
-    28|.project-card{background:linear-gradient(135deg,rgba(59,130,246,0.06),rgba(139,92,246,0.06));border:1px solid var(--border-room);border-radius:12px;padding:20px;transition:all 0.2s ease}
-    29|.project-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(59,130,246,0.15)}
-    30|.type-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px}
-    31|.type-website{background:rgba(59,130,246,0.2);color:#60A5FA;border:1px solid rgba(59,130,246,0.3)}
-    32|.type-gbp{background:rgba(16,185,129,0.2);color:#34D399;border:1px solid rgba(16,185,129,0.3)}
-    33|.type-lsa{background:rgba(139,92,246,0.2);color:#A78BFA;border:1px solid rgba(139,92,246,0.3)}
-    34|.type-retainer{background:rgba(245,158,11,0.2);color:#FBBF24;border:1px solid rgba(245,158,11,0.3)}
-    35|.status-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:12px;margin-bottom:8px}
-    36|.status-active{background:rgba(16,185,129,0.15);color:var(--accent-green);border:1px solid var(--accent-green)}
-    37|.status-in_progress{background:rgba(59,130,246,0.15);color:var(--accent-blue);border:1px solid rgba(59,130,246,0.4)}
-    38|.project-card h3{font-size:18px;margin-bottom:8px;color:var(--text-primary)}
-    39|.project-card .meta{font-size:14px;color:var(--text-secondary);margin-bottom:16px;line-height:1.5}
-    40|
-    41|/* INVOICE STATS */
-    42|.invoice-stats{text-align:center;padding:24px;background:var(--bg-room);border:1px solid var(--border-room);border-radius:10px;margin-bottom:16px}
-    43|.invoice-stats .value{font-size:32px;font-weight:700;color:var(--accent-green)}
-    44|.invoice-stats .value.paid{color:#34D399}
-    45|.invoice-stats .value.pending{color:#F59E0B}
-    46|.invoice-stats .sub-label{display:block;margin-bottom:8px;font-size:13px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em}
-    47|.invoice-actions{display:flex;flex-wrap:wrap;gap:12px}
-    48|
-    49|/* TIMELINE */
-    50|.timeline{position:relative;padding-left:24px;border-left:2px solid var(--border-room);margin-top:20px}
-    51|.timeline-item{position:relative;padding:16px 0;margin-left:32px;border-left:2px solid #5B6CFF;background:var(--bg-room);border-radius:8px;border:1px solid var(--border-room)}
-    52|.timeline-dot{position:absolute;left:-7px;top:20px;width:12px;height:12px;background:#5B6CFF;border-radius:50%;box-shadow:0 0 0 4px rgba(91,108,255,0.3)}
-    53|.timeline-item h4{font-size:16px;color:var(--text-primary);margin-bottom:4px}
-    54|.timeline-item .date{font-size:13px;color:var(--text-secondary)}
-    55|
-    56|/* BUTTONS */
-    57|.btn{display:inline-block;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;transition:all 0.2s;background:linear-gradient(135deg,#3B82F6,var(--accent-purple));color:#fff;border:none;cursor:pointer}
-    58|.btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(59,130,246,0.3)}
-    59|.btn.secondary{background:transparent;border:1px solid var(--border-room);color:var(--text-secondary)}
-    60|.btn.secondary:hover{border-color:#3B82F6;color:var(--text-primary)}
-    61|
-    62|/* LOADING/EMPTY */
-    63|.empty-state{padding:48px;text-align:center;color:var(--text-secondary);background:var(--bg-room);border-radius:12px;border:1px dashed var(--border-room)}
-    64|
-    65|/* IMPERSONATION BANNER */
-    66|#impersonation-banner{background:#FFED00;color:#000;padding:12px;position:sticky;top:48px;z-index:99;text-align:center;font-weight:600;display:none}
-    67|/* MOBILE OPTIMIZATION */
-    68|@media(max-width:768px){
-    69|  .container{padding:16px;margin:32px auto}
-    70|  nav{padding:0 16px}
-    71|  h1{font-size:24px}
-    72|  .project-grid{grid-template-columns:1fr}
-    73|  .project-card{margin-bottom:16px}
-    74|  .invoice-actions{flex-direction:column;gap:8px}
-    75|  .btn{width:100%;text-align:center;padding:10px 16px}
-    76|  .stats-grid, .stats-bar{grid-template-columns:1fr!important;gap:12px}
-    77|  nav a.back{font-size:12px}
-    78|}
-    79|
-    80|@media(max-width:480px){
-    81|  .container{margin:28px auto;padding:0 12px}
-    82|  h1{font-size:20px}
-    83|  .section{padding:16px}
-    84|  .stats-grid, .stats-bar{grid-template-columns:1fr!important}
-    85|}
-    86|
-    87|/* Responsive timeline */
-    88|@media(max-width:768px){.timeline{padding-left:16px}.timeline-item{margin-left:16px;padding:12px}.invoice-actions{flex-direction:column;font-size:13px}}
-    89|
-    90|/* MICRO-INTERACTIONS */
-    91|.project-card{animation:fadeInUp 0.4s ease-out}
-    92|@keyframes fadeInUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-    93|.container>*{animation:fadeInUp 0.4s ease-out}
-    94|
-    95|/* Skeleton loading */
-    96|@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
-    97|.loading-skeleton{background:linear-gradient(90deg,rgba(91,108,242,0.05),rgba(91,108,242,0.15),rgba(91,108,242,0.05));background-size:200% 100%;animation:pulse 1.5s infinite}
-    98|
-/* MICRO-INTERACTIONS */
-.project-card{box-shadow:0 4px 16px rgba(59,130,246,0.08),0 1px 2px rgba(0,0,0,0.1);overflow:hidden}
-.stat-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,var(--accent-blue),transparent)}
-.stat-card:hover::before{left:4px}
-.timeline-item{opacity:0;transform:translateX(-15px);animation:slideIn 0.5s cubic-bezier(0.4,0,0.2,1) forwards}
-@keyframes slideIn{from{opacity:0;transform:translateX(-15px)}to{opacity:1;transform:translateX(0)}}</style>
-    99|</head>
-   100|<body>
-   101|
-   102|<div id="impersonation-banner"><strong id="impersonated-name"></strong><a href="/dashboard" onclick="document.getElementById('impersonation-banner').style.display='none';location.reload()">Exit</a></div>
-   103|
-   104|<nav><div class="logo">MOLIAMA | CLIENT PORTAL</div><div><a class="back" href="/">← Back to Website</a></div></nav>
-   105|
-   106|<div class="container">
-   107|     <h1>Dashboard</h1>
-   108|
-   109|      <!-- Stats Cards -->
-   110|      <div class="stats-grid" id="stats-grid"></div>
-   111|
-   112|      <!-- Projects -->
-   113|      <div class="section">
-   114|          <div class="section-title">Active Projects</div>
-   115|          <div class="project-grid" id="projects-grid"></div>
-   116|      </div>
-   117|
-   118|      <!-- Timeline/Milestones -->
-   119|      <div class="section">
-   120|          <div class="section-title">Project Updates &amp; Milestones</div>
-   121|          <div class="timeline" id="timeline"></div>
-   122|      </div>
-   123|
-   124|      <!-- Invoice Summary -->
-   125|      <div class="invoice-summary">
-   126|          <div class="section-title">Billing Overview</div>
-   127|          <div class="invoice-stats" id="invoice-stats">Loading invoices...</div>
-   128|          <div class="invoice-actions">
-   129|              <a class="btn" href="/api/invoices?export=pdf">Download PDFs</a>
-   130|              <a class="btn secondary" onclick="window.showInvoices()">View Details</a>
-   131|          </div>
-   132|      </div>
-   133|
-   134|      <!-- Action Buttons -->
-   135|      <div class="section" style="margin-top:8px;">
-   136|          <h2>Next Actions</h2>
-   137|          <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:16px;">
-   138|              <a class="btn" href="/">Book a Call</a>
-   139|              <a class="btn secondary" onclick="window.showInvoices()">View Invoice</a>
-   140|              <a class="btn secondary" href="#contact">Message Us</a>
-   141|          </div>
-   142|      </div>
-   143|
-   144|      <!-- Loading Skeleton (hidden when data loaded) -->
-   145|      <div class="stats-grid" id="skeleton-stats" style="display:none;">
-   146|          <div class="stat-card loading-skeleton" style="--h:80px;height:var(--h);border:none;background:transparent"></div>
-   147|          <div class="stat-card loading-skeleton" style="--h:80px;height:var(--h);border:none;background:transparent"></div>
-   148|      </div>
-   149|
-   150|      <div class="section">
-   151|          <div class="section-title">Active Projects</div>
-   152|          <div class="project-grid" id="skeleton-projects" style="display:none;"></div>
-   153|      </div>
-   154|</div>
-   155|
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard | MOLIAMA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>:root{--bg-deep:#0B0E14;--bg-room:#1F2937;--border-room:#374151;--accent-blue:#3B82F6;--accent-purple:rgb(139,92,246);--accent-green:#10B981;--text-primary:#F9FAFB;--text-secondary:#9CA3AF}body{margin:0;padding:0;background:var(--bg-deep);font-family:'Inter',system-ui,sans-serif;color:var(--text-primary)}nav{height:56px;border-bottom:1px solid var(--border-room);display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(11,14,20,0.8);backdrop-filter:blur(12px);position:fixed;top:0;width:100%;z-index:100}nav.logo{font-size:15px;font-weight:700;letter-spacing:0.1em;color:#fff}nav a{text-decoration:none;color:var(--text-secondary);font-size:13px;margin-left:20px}.back-btn{color:var(--accent-blue)}.container{max-width:1200px;margin:80px auto;padding:0 24px;display:grid;gap:36px}h1{font-size:32px;font-weight:600;margin-bottom:8px}h2{font-size:18px;font-weight:500,color:var(--text-secondary);margin-bottom:16px}h3{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text-primary)}section{padding:0}/* CARD STYLES */.card{background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.05));border:1px solid var(--border-room);border-radius:16px;padding:24px}/* PROJECT CARDS */.project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:24px;margin-bottom:20px}.project-card{padding:24px;background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.08));border:1px solid var(--border-room);border-radius:16px}.project-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}.project-name{font-size:20px;font-weight:600;color:var(--text-primary)}.project-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.type-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em}.status-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em}.type-website{background:rgba(59,130,246,0.2);color:#60A5FA;border:1px solid rgba(59,130,246,0.3)}.type-gbp{background:rgba(16,185,129,0.2);color:#34D399;border:1px solid rgba(16,185,129,0.3)}.type-lsa{background:rgba(139,92,246,0.2);color:#A78BFA;border:1px solid rgba(139,92,246,0.3)}.status-active{background:rgba(16,185,129,0.2);color:#34D399;border:1px solid rgba(16,185,129,0.3)}.type-retainer{background:rgba(245,158,11,0.2);color:#FBBF24;border:1px solid rgba(245,158,11,0.3)}.project-details{margin-top:16px;padding-top:16px;border-top:1px solid var(--border-room)}.detail-row{display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px}.detail-label{color:var(--text-secondary)}.detail-value{color:var(--text-primary)}.project-actions{margin-top:20px;display:flex;gap:12px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;padding:10px 16px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;transition:all 0.2s}.btn-primary{background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));color:#fff;border:none}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(59,130,246,0.3)}.btn-secondary{background:transparent;color:var(--text-secondary);border:1px solid var(--border-room)}.btn-secondary:hover{background:rgba(59,130,246,0.1)}.empty-state{text-align:center;padding:60px 24px;color:var(--text-secondary)}/* MILESTONES TIMELINE */.milestones-section{margin-bottom:20px}.milestone-item{display:flex;gap:16px;padding:16px;border-radius:12px;background:linear-gradient(135deg,rgba(139,92,246,0.03),rgba(59,130,246,0.03));border:1px solid var(--border-room);margin-bottom:12px}.milestone-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px}.milestone-content{flex:1}.milestone-title{font-size:15px;margin-bottom:4px;font-weight:600}.milestone-date{font-size:13px;color:var(--text-secondary)}.invoice-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:20px}.invoice-card{text-align:center;padding:20px;background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.05));border:1px solid var(--border-room);border-radius:12px}.invoice-label{font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);margin-bottom:8px}.invoice-value{font-size:24px;font-weight:700;color:var(--accent-blue)}.empty-cards{display:none}/* IMPERSONATION BANNER */#impersonation-banner{display:none;background:#FFED00;color:#1F2937;padding:12px 24px;border-bottom:2px solid #FF8B00;text-align:center;font-weight:600}.banner-content{display:flex;align-items:center;justify-content:center;gap:16px}#exit-btn{background:#1F2937;color:#fff;padding:6px 12px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;border:none}.login-redirect{text-align:center;padding:80px 24px;color:var(--text-secondary)}.loading{text-align:center;padding:60px 24px;color:var(--text-secondary)}@media(max-width:768px){container{margin:60px auto;padding:0 16px}.project-grid{grid-template-columns:1fr;gap:16px}.card{padding:18px}.btn{padding:10px 14px;font-size:13px}nav{padding:0 16px}}</style>
+</head>
+<body>
+
+<nav><div class="logo">MOLIAMA</div><a href="/" class="back-btn">← Back to Website</a></nav>
+<div id="impersonation-banner"><div class="banner-content">👁 Viewing as <span id="viewing-as"></span> - <a id="exit-btn" href="/dashboard.html">Exit</a></div></div>
+
+<div class="container">
+  <h1>Your Dashboard</h1>
+  
+  <section id="project-section"><div class="loading">Loading projects...</div></section>
+  
+  <section id="milestones-section" style="display:none">
+    <h2>Milestones Timeline</h2>
+    <div id="milestones-list"></div>
+  </section>
+  
+  <section id="invoices-section" style="display:none">
+    <h2>Invoice Summary</h2>
+    <div class="invoice-summary" id="stats-bar"></div>
+  </section>
+
+</div>
+
 <script>
-(function(){
-    const urlParams = new URLSearchParams(window.location.search);
-    let impersonatedUserId = urlParams.get('impersonate');
+const API_BASE = '/';
+let token = localStorage.getItem('auth_token');
+const url = new URL(window.location);
 
-     // Check if user is authenticated by hitting auth/me endpoint with credentials: include (cookie-based)
-    function checkAuth() {
-        return fetch('/api/auth/me', { credentials: 'include' })
-             .then(r => r.json())
-             .catch(e => null);
-    }
+// Redirect to login if not authenticated
+if (url.href.includes('login.html') || !token) {
+  window.location.href = '/login.html';
+  return;
+}
 
-    function fetchDashboard() {
-        return fetch('/api/dashboard', { credentials: 'include' })
-             .then(r => r.json())
-             .catch(e => null);
-    }
+const isAdmin = localStorage.getItem('user_role') === 'admin';
+const impersonateId = url.searchParams.get('impersonate');
 
-    function showAuthError() {
-        document.body.innerHTML = '<div style="text-align:center;padding:48px"><h2>Login Required</h2><a href="/login.html" class="btn">Go to Login →</a></div>';
-    }
-
-// First verify authentication, then fetch dashboard
-checkAuth().then(auth => {
-    if (!auth || !auth.success) { window.location.href = '/login.html'; return; }
+async function fetchDashboard() {
+  try {
+    const params = {};
+    if (impersonateId) params.impersonate = impersonateId;
     
-    return fetchDashboard().then(data => {
-        if (!data || data.success !== true) { window.location.href = '/login.html'; return; }
-        
-        let currentUserId = data.user?.id;
-        let currentUserRole = data.user?.role;
-        
-        const isAdmin = (currentUserRole === 'admin' || currentUserRole === 'superadmin');
+    const res = await fetch(API_BASE + 'api/dashboard?' + new URLSearchParams(params), {
+      headers: { 'Accept': 'application/json' },
+      credentials: 'include'
+    });
+    
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 403) {
+        window.location.href = '/login.html';
+        return;
+      }
+      throw new Error('Fetch failed');
+    }
+    
+    const data = await res.json();
+    return { success: data.success, data: data };
+  } catch (e) {
+    console.error('Fetch error:', e);
+    throw e;
+  }
+}
 
-// Show impersonation banner for admin viewing another client
-        if (impersonatedUserId && isAdmin) {
-            // Fetch the impersonated user's data separately
-            return fetch('/api/admin/client/' + impersonatedUserId, { credentials: 'include' })
-                .then(r => r.json())
-                .then(clientData => {
-                    if (!clientData || !clientData.success) {
-                        console.error('Failed to fetch impersonated user');
-                        document.getElementById('impersonation-banner').style.display = 'none';
-                        return data;
-                    }
-                    
-                    document.getElementById('impersonation-banner').style.display = 'block';
-                    let name = clientData.client?.name || 'Unknown User';
-                    document.getElementById('impersonated-name').textContent = '👁 Viewing as ' + name;
-                    
-                    // Return filtered dashboard data for impersonated user
-                    const filteredClone = JSON.parse(JSON.stringify(data));
-                    if (filteredClone.projects) {
-                        filteredClone.projects = filteredClone.projects.filter(p => p.user_id == impersonatedUserId);
-                    }
-                    if (filteredClone.updates) {
-                        filteredClone.updates = filteredClone.updates.filter(u => u.user_id == impersonatedUserId);
-                    }
-                    return filteredClone;
-                })
-                .then(filteredData => {
-                    // Now render the impersonated user's data
-                    renderDashboard(filteredData, data.invoices || []);
-                });
-        } else {
-            renderDashboard(data, data.invoices || []);
-        }
+function showImpersonationBanner(client) {
+  if (impersonateId && isAdmin) {
+    const banner = document.getElementById('impersonation-banner');
+    const viewingSpan = document.getElementById('viewing-as');
+    banner.style.display = 'block';
+    viewingSpan.textContent = client?.name || 'Client';
+    document.getElementById('exit-btn').href = window.location.pathname;
+  }
+}
 
-        // Initially show skeleton, then fade out when data ready
-        document.getElementById('skeleton-stats').style.display = 'grid';
-        setTimeout(() => document.getElementById('skeleton-stats').style.display = 'none', 600);
+async function renderDashboard() {
+  try {
+    const result = await fetchDashboard();
+    if (!result.success) return;
+    
+    const client = result.data.client;
+    const projectSection = document.getElementById('project-section');
+    const milestonesList = document.getElementById('milestones-list');
+    const invoicesSection = document.getElementById('invoices-section');
+    const statusBar = document.getElementById('stats-bar');
+    const projects = result.data.projects || [];
+    const invoices = result.data.invoices || [];
 
-         // Render stats cards with staggered animation delay
-        const statsGrid = document.getElementById('stats-grid');
-        let html = '';
-        
-        if (isAdmin) {
-            html += '<div class="stat-card" style="animation-delay:0.1s"><div class="label">Clients</div><div class="value" id="total-clients">0</div></div>';
-            html += '<div class="stat-card" style="animation-delay:0.15s"><div class="label">Active Projects</div><div class="value">'+data.stats.active_projects+'</div></div>';
-        } else {
-            html += '<div class="stat-card" style="animation-delay:0.1s"><div class="label">Active Projects</div><div class="value">'+(data.stats?.active_projects||0)+'</div></div>';
-            html += '<div class="stat-card" style="animation-delay:0.15s"><div class="label">Monthly Revenue</div><div class="value">$'+(data.stats.monthly_total||0).toLocaleString()+'</div></div>';
-        }
+    // Show impersonation banner if admin impersonating
+    showImpersonationBanner(client);
 
-        statsGrid.innerHTML = html;
-
-         // Get total client count for admin dashboard mode
-        if (isAdmin) {
-            fetch('/api/admin/clients', { credentials: 'include' })
-                  .then(r => r.json())
-                  .then(c => {
-                    if (c.clients && c.clients.length > 0) { document.getElementById('total-clients').textContent = c.clients.length; }
-              });
-        }
-
-          // Render project cards - enhance with hover effects and animations
-        const projectGrid = document.getElementById('projects-grid');
-        let projHtml = '';
-        
-        if (!data.projects || data.projects.length === 0) {
-            projHtml = '<div class="empty-state" style="animation-delay:0.2s"><p>No active projects yet.<a href="/">Book a project now!</a></p></div>';
-        } else {
-            let delayCounter = 0.1;
-            for (const project of data.projects) {
-                const typeClass = 'type-'+(project.type||'website').toLowerCase();
-                const statusClass = 'status-'+(project.status||'active').toLowerCase().replace(' ','_');
-                let typeDisplay = project.type ? project.type.charAt(0).toUpperCase() + project.type.slice(1) : 'Website';
-                let statusDisplay = (project.status==='active') ? 'Active' : (project.status ? project.status.charAt(0).toUpperCase() + project.status.slice(1) : 'Completed');
-
-                projHtml += '<div class="project-card" style="animation-delay:'+(delayCounter+=0.05)+'s"><span class="type-badge '+typeClass+'">'+typeDisplay+'</span> <span class="status-badge '+statusClass+'">'+statusDisplay+'</span><h3>'+project.name+'</h3><div class="meta"><div>Type: '+typeDisplay+'</div><div>Status: '+statusDisplay+'</div><div>Monthly Rate: $'+(project.monthly_rate||0).toLocaleString()+'</div><div>Started: '+new Date(project.created_at||Date.now()).toLocaleDateString()+'</div></div></div>';
-            }
-        }
-
-        projectGrid.innerHTML = projHtml;
-
-         // Render milestone updates/timeline
-        const timeline = document.getElementById('timeline');
-        let timelineItems = '';
-
-        if (data.updates && data.updates.length > 0) {
-            for (const update of data.updates.slice(0,15)) {
-                if (!update.title && !update.description) continue;
-                timelineItems += '<div class="timeline-item"><div class="timeline-dot"></div>' +
-                       '<h4>'+(update.title||'Project Update')+'</h4> ' +
-                      '<p style="color:var(--text-secondary);margin-bottom:8px;">'+(update.description||'No description provided.')+'</p>' +
-                      '<span class="date">'+new Date(update.created_at||Date.now()).toLocaleString()+'</span></div>';
-            }
-        } else {
-            timelineItems = '<div class="empty-state" style="font-size:14px;margin-top:24px">No updates yet. Your project team will post milestones here.</div>';
-        }
-
-        timeline.innerHTML = timelineItems;
-
-// Invoice summary calculation from invoices API    
-        let totalBilled=0, totalPaid=0, outstanding=0;
-        for (const inv of data.invoices||[]) {
-            const amt = inv.amount||0;
-            totalBilled += amt;
-            if (inv.status==='paid') totalPaid+=amt; else outstanding+=amt;
-        }
-
-      document.getElementById('invoice-stats').innerHTML = '<span class="sub-label">Total Billed</span>' +
-          '<span class="value">$'+totalBilled.toLocaleString()+'</span>' +
-         '<div style="margin-top:12px"><span class="sub-label">Paid</span><span class="value paid">$'+(totalPaid||0).toLocaleString()+'</span></div>' +
-        '<div style="margin-top:8px"><span class="sub-label">Outstanding</span><span class="value pending">$'+(outstanding||0).toLocaleString()+'</span></div>';
-
-        window.showInvoices = function(){ 
-            let html = 'Invoice Panel:\n\nTotal Billed: $' + totalBilled.toLocaleString() + '\nPaid: $' + (totalPaid||0).toLocaleString() + '\nOutstanding: $' + (outstanding||0).toLocaleString();
-            
-            if (data.invoices && data.invoices.length > 0) { 
-                html += '\n\nInvoices:';
-
-                for (let i = 0; i < Math.min(data.invoices.length, 10); i++) {
-                    const inv = data.invoices[i];
-
-if (inv && inv.id !== undefined) {
-                        html += '\n#' + (i+1) + ' $' + (inv.amount||0).toLocaleString() + ' [' + (inv.status||'unknown').toUpperCase() + ']';
-                      }
-                   }      
-             } else { 
-                html += '\nNo invoices yet.';
-            }
-
-        alert(html);
-       };
-
-     renderDashboard(data, data.invoices || []);
-    }).catch(err => { showAuthError(); });
-}).catch(err => { showAuthError(); });
-
-function renderDashboard(data, invoices) {
-    // Get total client count for admin dashboard mode
-    const statsGrid = document.getElementById('stats-grid');
+    // Generate project cards
     let html = '';
-    
-    if (isAdmin) {
-        html += '<div class="stat-card" style="animation-delay:0.1s"><div class="label">Clients</div><div class="value" id="total-clients">0</div></div>';
-        html += '<div class="stat-card" style="animation-delay:0.15s"><div class="label">Active Projects</div><div class="value">'+data.stats.active_projects+'</div></div>';
+    if (!projects.length) {
+      html = '<div class="empty-state"><p>No active projects yet.</p><p style="margin-top:12px;font-size:13px">Ready to get started? Our team is here to help.</p></div>';
     } else {
-        html += '<div class="stat-card" style="animation-delay:0.1s"><div class="label">Active Projects</div><div class="value">'+(data.stats?.active_projects||0)+'</div></div>';
-        html += '<div class="stat-card" style="animation-delay:0.15s"><div class="label">Monthly Revenue</div><div class="value">$'+(data.stats.monthly_total||0).toLocaleString()+'</div></div>';
-    }
-
-    statsGrid.innerHTML = html;
-
-    // Get total client count for admin dashboard mode  
-    if (isAdmin) {
-        fetch('/api/admin/clients', { credentials: 'include' })
-               .then(r => r.json())
-               .then(c => {
-                 if (c.clients && c.clients.length > 0) { document.getElementById('total-clients').textContent = c.clients.length; }
-              });
-    }
-
-    // Render project cards - enhance with hover effects and animations
-    const projectGrid = document.getElementById('projects-grid');
-    let projHtml = '';
-    
-    if (!data.projects || data.projects.length === 0) {
-        projHtml = '<div class="empty-state" style="animation-delay:0.2s"><p>No active projects yet.<a href="/">Book a project now!</a></p></div>';
-    } else {
-        let delayCounter = 0.1;
-        for (const project of data.projects) {
-            const typeClass = 'type-'+(project.type||'website').toLowerCase();
-            const statusClass = 'status-'+(project.status||'active').toLowerCase().replace(' ','_');
-            let typeDisplay = project.type ? project.type.charAt(0).toUpperCase() + project.type.slice(1) : 'Website';
-            let statusDisplay = (project.status==='active') ? 'Active' : (project.status ? project.status.charAt(0).toUpperCase() + project.status.slice(1) : 'Completed');
-
-            projHtml += '<div class="project-card" style="animation-delay:'+(delayCounter+=0.05)+'s"><span class="type-badge '+typeClass+'">'+typeDisplay+'</span> <span class="status-badge '+statusClass+'">'+statusDisplay+'</span><h3>'+project.name+'</h3><div class="meta"><div>Type: '+typeDisplay+'</div><div>Status: '+statusDisplay+'</div><div>Monthly Rate: $'+(project.monthly_rate||0).toLocaleString()+'</div><div>Started: '+new Date(project.created_at||Date.now()).toLocaleDateString()+'</div></div></div>';
-         }
-    }
-
-    projectGrid.innerHTML = projHtml;
-
-    // Render milestone updates/timeline
-    const timeline = document.getElementById('timeline');
-    let timelineItems = '';
-
-    if (data.updates && data.updates.length > 0) {
-        for (const update of data.updates.slice(0,15)) {
-            if (!update.title && !update.description) continue;
-            timelineItems += '<div class="timeline-item"><div class="timeline-dot"></div>' +
-                    '<h4>'+(update.title||'Project Update')+'</h4> ' +
-                   '<p style="color:var(--text-secondary);margin-bottom:8px;">'+(update.description||'No description provided.')+'</p>' +
-                  '<span class="date">'+new Date(update.created_at||Date.now()).toLocaleString()+'</span></div>';
-         }
-    } else {
-        timelineItems = '<div class="empty-state" style="font-size:14px;margin-top:24px">No updates yet. Your project team will post milestones here.</div>';
-    }
-
-    timeline.innerHTML = timelineItems;
-
-    // Update invoice stats for impersonation view
-    let totalBilled=0, totalPaid=0, outstanding=0;
-    for (const inv of invoices||[]) {
-        const amt = inv.amount||0;
-        totalBilled += amt;
-        if (inv.status==='paid') totalPaid+=amt; else outstanding+=amt;
-    }
-
-  document.getElementById('invoice-stats').innerHTML = '<span class="sub-label">Total Billed</span>' +
-      '<span class="value">$'+totalBilled.toLocaleString()+'</span>' +
-     '<div style="margin-top:12px"><span class="sub-label">Paid</span><span class="value paid">$'+(totalPaid||0).toLocaleString()+'</span></div>' +
-    '<div style="margin-top:8px"><span class="sub-label">Outstanding</span><span class="value pending">$'+(outstanding||0).toLocaleString()+'</span></div>';
-
-    window.showInvoices = function(){ 
-        let html = 'Invoice Panel:\n\nTotal Billed: $' + totalBilled.toLocaleString() + '\nPaid: $' + (totalPaid||0).toLocaleString() + '\nOutstanding: $' + (outstanding||0).toLocaleString();
+      for (let p of projects) {
+        const typeClass = p.type ? p.type.toLowerCase().replace(' ', '-') : 'website';
         
-        if (invoices && invoices.length > 0) { 
-            html += '\n\nInvoices:';
-
-            for (let i = 0; i < Math.min(invoices.length, 10); i++) {
-                const inv = invoices[i];
-
-if (inv && inv.id !== undefined) {
-                    html += '\n#' + (i+1) + ' $' + (inv.amount||0).toLocaleString() + ' [' + (inv.status||'unknown').toUpperCase() + ']';
-                   }
-               }      
-        } else { 
-            html += '\nNo invoices yet.';
+        html += `<div class="project-card">`;
+        html += `<div class="project-header">`;
+        html += `<div><h3>${p.name || 'Project ' + p.id}</h3></div>`;
+        html += `<div style="display:flex;gap:8px">`;
+        html += `<span class="type-badge type-${typeClass}">${p.type || 'Website'}</span>`;
+        html += `<span class="status-badge status-${p.status === 'active' ? 'active' : 'pending'}">${p.status === 'active' ? 'Active' : 'Pending'}</span>`;
+        html += `</div></div>`;
+        
+        html += `<div class="project-details">`;
+        html += `<div class="detail-row"><span class="detail-label">Monthly Rate:</span><span class="detail-value">$${(parseFloat(p.monthly_rate) || 0).toLocaleString()}</span></div>`;
+        html += `<div class="detail-row"><span class="detail-label">Start Date:</span><span class="detail-value">${p.start_date ? new Date(p.start_date).toLocaleDateString('en-US', {month:'short',year:'numeric'}) : 'N/A'}</span></div>`;
+        
+        html += `<div class="project-actions">`;
+        const invoiceUrl = p.invoice_url || '#';
+        if (invoiceUrl !== '#') {
+          html += `<a href="${invoiceUrl}" target="_blank" class="btn btn-secondary">📄 View Invoice</a>`;
         }
+        html += `<a href="mailto:${encodeURIComponent(p.client_email)}?subject=Message about ${encodeURIComponent(p.name || 'your project')}" class="btn btn-secondary">💬 Message Us</a>`;
+        html += `</div></div>`;
+      }
+    }
+    projectSection.innerHTML = html;
 
-    alert(html);
-   };
-}</script>
+    // Generate milestones timeline
+    const updates = result.data.project_updates || [];
+    const milestones = updates.slice(0, 5);
+    
+    if (milestones.length) {
+      let milestonesHtml = '';
+      for (let m of milestones) {
+        milestonesHtml += `<div class="milestone-item">`;
+        milestonesHtml += `<div class="milestone-icon">🚩</div>`;
+        milestonesHtml += `<div class="milestone-content">`;
+        milestonesHtml += `<div class="milestone-title">${m.description || 'Project update'}</div>`;
+        milestonesHtml += `<div class="milestone-date">${new Date(m.created_at).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'})}</div>`;
+        milestonesHtml += `</div></div>`;
+      }
+      milestonesList.innerHTML = milestonesHtml;
+    } else {
+      milestonesList.innerHTML = '<div style="font-size:13px;color:var(--text-secondary)">No recent milestones.</div>';
+    }
+
+    // Generate invoice summary
+    const totalBilled = (invoices || []).reduce((sum, inv) => sum + (parseFloat(inv.amount) || 0), 0);
+    const totalPaid = (invoices || []).reduce((sum, inv) => sum + (parseFloat(inv.paid_amount) || 0), 0);
+    const outstanding = totalBilled - totalPaid;
+
+    let invoiceHtml = '';
+    invoiceHtml += `<div class="invoice-card"><div class="invoice-label">Total Billed</div><div class="invoice-value">$${totalBilled.toLocaleString()}</div></div>`;
+    invoiceHtml += `<div class="invoice-card"><div class="invoice-label">Amount Paid</div><div class="invoice-value" style="color:var(--accent-green)">$${totalPaid.toLocaleString()}</div></div>`;
+    
+    const outstandingColor = outstanding > 0 ? '#F59E0B' : (outstanding < 0 ? '#EF4444' : 'var(--accent-blue)');
+    invoiceHtml += `<div class="invoice-card"><div class="invoice-label">Outstanding</div><div class="invoice-value" style="color:${outstandingColor}">$${Math.abs(outstanding).toLocaleString()}</div></div>`;
+    
+    statusBar.innerHTML = invoiceHtml;
+  } catch (e) {
+    console.error('Render error:', e);
+  }
+}
+
+// Initialize on load
+async function init() {
+  try {
+    const result = await fetchDashboard();
+    if (!result.data) return;
+
+    renderProjectCards(result.data.projects);
+    generateMilestones(result.data.project_updates);
+    generateInvoiceSummary(result.data.invoices);
+
+    // Show sections if they have content
+    if (document.getElementById('milestones-list').innerHTML.trim()) {
+      document.getElementById('milestones-section').style.display = 'block';
+    }
+    
+    document.getElementById('invoices-section').style.display = 'block';
+  } catch (e) {
+    console.error('Init error:', e);
+  }
+}
+
+// Add event listener for exit impersonation
+document.getElementById('exit-btn')?.addEventListener('click', function(e) {
+  if (e.target.id === 'exit-btn' && window.location.search.includes('impersonate')) {
+    const currentUrl = new URL(window.location);
+    currentUrl.searchParams.delete('impersonate');
+    window.location.href = '/' + currentUrl.pathname + currentUrl.search;
+  }
+});
+
+init().catch(e => console.error('Init error:', e));
+</script>
+
+</body>
+</html>
