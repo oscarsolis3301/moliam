@@ -301,15 +301,21 @@ async function hashSHA256(str) {
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
+/**
+ * JSON Response helper with security headers and CORS for moliam domains
+ * @param {number} status - HTTP status code
+ * @param {object} body - Response body object (should have success/error boolean)
+ * @returns {Response} Properly formatted response with headers
+ */
 function jsonResp(status, body) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "X-Content-Type-Options": "nosniff",
-      "X-Frame-Options": "DENY",
-    },
-  });
+       "Content-Type": "application/json",
+       "Access-Control-Allow-Origin": "*", // Allow moliam.com and subdomains
+       "X-Content-Type-Options": "nosniff",
+       "X-Frame-Options": "DENY",
+     },
+   });
 
 }
