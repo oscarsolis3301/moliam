@@ -30,8 +30,9 @@ function initPortfolioGallery() {
    });
 
     console.log(`✅ ${cards.length} gallery cards ready for interaction`);
-    return {enableAllCards(), closeAllLightboxes()};
-}
+   // Both functions would need to be defined elsewhere - returning null for now
+   return null;
+   }
 
 // Lightbox system - Yagami's part: Add modal animation + slide-in/out transitions  
 function openLightbox(index) {
