@@ -57,20 +57,19 @@ export async function onRequestPost(context) {
            "CREATE TABLE rate_limits(id INTEGER PRIMARY KEY AUTOINCREMENT, ip_address TEXT, request_count INTEGER DEFAULT 0, reset_at TEXT, UNIQUE(ip_address))"
          ).run();
 
-// Create client_profiles table (id auto, user_id ref, display_name TEXT, bio TEXT) - 4 total columns with auto id means 3 insertable columns
+// Create client_profiles table (id auto, user_id ref, display_name TEXT, bio TEXT) - 4 columns total, id is AUTOINCREMENT so INSERT uses 3 values for remaining columns
     await db.prepare(
-                 "CREATE TABLE IF NOT EXISTS client_profiles(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, display_name TEXT DEFAULT '', bio TEXT)")
-               .run();
+        "CREATE TABLE IF NOT EXISTS client_profiles(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, display_name TEXT DEFAULT '', bio TEXT)"
+    ).run();
 
-       // Create client_messages and client_activity from dashboard system
-      // Both use positional parameters for insert: (id ref, user_id, subject/message) or (user_id, action_type, details)
+// Create client_messages and client_activity from dashboard system
     await db.prepare(
-            "CREATE TABLE client_messages(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, from_email TEXT, to_email TEXT, subject TEXT, message TEXT, sent_at TEXT DEFAULT CURRENT_TIMESTAMP)"
-          ).run();
+        "CREATE TABLE client_messages(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, from_email TEXT, to_email TEXT, subject TEXT, message TEXT, sent_at TEXT DEFAULT CURRENT_TIMESTAMP)"
+    ).run();
 
     await db.prepare(
-            "CREATE TABLE client_activity(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, action_type TEXT, details TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP)"
-           .run();
+        "CREATE TABLE client_activity(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, action_type TEXT, details TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP)"
+    ).run();
 
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
