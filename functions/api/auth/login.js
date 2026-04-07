@@ -86,7 +86,7 @@ export async function onRequestPost(context) {
 
   } catch (err) {
     console.error("Login error:", err);
-    return jsonResp(500, { error: true, message: "ERR: " + (err.message || String(err)) });
+    return jsonResp(500, { error: true, message: "Server error. Try again." });
   }
 }
 
