@@ -1638,21 +1638,32 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 @media (max-width: 768px) {
     .portfolio-grid { grid-template-columns: 1fr; gap: 24px; }
-    .case-card-inner { padding: 24px 20px; }
-    
-    /* Ensure mobile portfolio is also single column for consistency */
-    #portfolio { padding: 80px 5%; }
+    .case-card-inner { padding: 24px 20px; font-size: 0.95rem; }
+     /* Tablet is now within this range, so mobile-friendly */
+     #portfolio { padding: 80px 5%; }
+     .case-stats { grid-template-columns: repeat(3, auto); gap: 12px; }
+     .case-stat { font-size: 0.9rem; padding: 4px 8px; }
 }
 
 @media (max-width: 480px) {
     .portfolio-grid { gap: 16px; }
     .case-card-inner { padding: 20px 16px; font-size: 0.9rem; }
+     #portfolio { padding: 70px 5%; }
+     .case-stat { padding: 3px 6px; font-size: 0.85rem; }
 }
 
 /* Tablet enhancement: ensure 2-column grid for iPad Mini to iPad Pro */
-@media (max-width: 1024px) and (min-width: 769px) {
+@media (min-width: 769px) and (max-width: 1024px) {
     .portfolio-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
-    .case-card-inner { padding: 26px 22px; }
+     #portfolio { padding: 80px 5%; }
+     .case-card-inner { padding: 26px 22px; }
+     /* Keep consistent spacing */
+}
+
+/* Extra small mobile: below 390px iPhone SE size */
+@media (max-width: 390px) {
+    .portfolio-grid { gap: 12px; }
+     .case-card-inner { padding: 18px 14px; font-size: 0.85rem; }
 }
 
 /* ═══════════════════════════════════════════
