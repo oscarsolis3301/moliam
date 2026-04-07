@@ -24,15 +24,15 @@ export async function onRequestPost(context) {
        }
 
 try {
-    
-      // Check existing table schemas (for debugging)
+  
+       // Check existing table schemas (for debugging)
     const schemaCheck = await db.prepare("SELECT name, sql FROM sqlite_master WHERE type='table' AND name IN ('users', 'sessions')").all();
     
-      // Force complete schema reset by dropping ALL sessions/users/auth_sessions
+       // Force complete schema reset by dropping ALL tables thoroughly - no auth_sessions, no company column remnants
     await db.prepare("DROP TABLE IF EXISTS users; DROP TABLE IF EXISTS sessions; DROP TABLE IF EXISTS auth_sessions;").run();
 
-          // Now recreate from scratch - CRITICAL: CREATE statement must be executed atomically   
-    await db.prepare(`CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT UNIQUE NOT NULL, role TEXT DEFAULT 'user', password_hash TEXT NOT NULL)`).run();
+          // Now recreate from scratch with CORRECT schema: 5 columns (id:auto, name, email, role, password_hash) = 4 manual values
+    await db.prepare(`CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, role TEXT DEFAULT 'user', password_hash TEXT NOT NULL)`).run();
     
          // debug: show actual schema after CREATE
     const finalSchema = await db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='users'").all();
