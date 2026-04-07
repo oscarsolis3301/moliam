@@ -244,23 +244,17 @@ function renderDashboard(user, data) {
   const html = `<div class="card">` +
     `<div class="card-header"><span class="card-title">Active Projects</span>${projectCards}</div></div>`;
 
-  if (data.project_updates && data.project_updates.length > 0) {
-    html += createMilestones(data.project_updates);
-  }
+// Build action buttons HTML inline (don't need createActions function)
+const actionsHTML = `
+     <actions-list>
+       ${!isImpersonated ? `<li><a href="/" class="action-btn">Book a Call</a></li>` : ''}
+       <li><a href="/" class="action-btn">Message Us</a></li>
+       <li><a href="/invoices" class="action-btn">View Invoices</a></li>
+     </actions-list>
+   `;
 
-  if (data.invoice_summary) {
-    html += createInvoiceSummary(data.invoice_summary);
-  }
+  contentEl.innerHTML = html + createMilestones(data.project_updates || []) + '<div style="height:24px"></div>' + createInvoiceSummary(data.invoice_summary);
 
-  const actionsContainer = `
-    <actions-list>
-      ${!isImpersonated ? `<li><a href="/" class="action-btn">Book a Call</a></li>` : ''}
-      <li><a href="/" class="action-btn">Message Us</a></li>
-      <li><a href="/invoices" class="action-btn">View Invoices</a></li>
-    </actions-list>
-  `;
-
-  contentEl.innerHTML = html + actionsContainer;
 }
 
 function createBanner(impersonationName) {
