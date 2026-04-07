@@ -1609,9 +1609,35 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .portfolio-grid .case-card:nth-child(1) { transition-delay: 0s; }
 .portfolio-grid .case-card:nth-child(2) { transition-delay: 0.15s; }
 .portfolio-grid .case-card:nth-child(3) { transition-delay: 0.3s; }
+@media (max-width: 1024px) and (min-width: 600px) {
+   /* Tablet breakpoint: optimize for iPad Mini to iPad Pro */
+   .portfolio-grid { 
+     grid-template-columns: repeat(2, 1fr); 
+     gap: 28px; 
+   }
+   .case-card-inner { padding: 28px 24px; }
+   #portfolio { padding: 90px 40px; }
+   
+   /* Services grid tablet */
+   .services-grid { 
+     grid-template-columns: repeat(2, 1fr); 
+     gap: 20px; 
+   }
+   .service-card { padding: 32px 28px; }
+   [id^="section"] h2 { font-size: 30px; margin-bottom: 12px; }
+   
+   /* Testimonials tablet */
+   #testimonials { padding: 90px 40px; }
+   .testimonial-card { padding: 28px 24px; }
+   
+   /* How it works tablet */
+   #how-it-works { padding: 90px 40px; }
+   .step-card { padding: 32px 26px; }
+}
+
 @media (max-width: 768px) {
-  .portfolio-grid { grid-template-columns: 1fr; gap: 24px; }
-  .case-card-inner { padding: 24px 20px; }
+   .portfolio-grid { grid-template-columns: 1fr; gap: 24px; }
+   .case-card-inner { padding: 24px 20px; }
 }
 
 /* ═══════════════════════════════════════════
