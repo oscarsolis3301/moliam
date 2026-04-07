@@ -64,7 +64,7 @@ h1{font-size:28px;font-weight:600}
 #impersonation-banner{background:#FFED00;color:#000;padding:12px;position:sticky;top:48px;z-index:99;text-align:center;font-weight:600;display:none}
 #impersonation-banner a{color:#000;font-weight:700;margin-left:8px;text-decoration:underline}
 
-@media(max-width:768px){.project-grid{grid-template-columns:1fr}.invoice-actions{flex-direction:column}.btn{width:100%;text-align:center}}
+@media(max-width:768px){.stats-grid{grid-template-columns:1fr;gap:12px}.project-grid{grid-template-columns:1fr}.section{padding:16px}.invoice-actions{flex-direction:column;font-size:13px}.btn{width:100%;text-align:center;padding:10px 16px}.timeline{padding-left:16px;}.timeline-item{margin-left:16px;padding:12px}}@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}.container>*{animation:fadeUp 0.4s ease-out}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}.loading-skeleton{background:linear-gradient(90deg,rgba(91,108,242,0.05),rgba(91,108,242.05,0.3),rgba(91,108,242.05));background-size:200% 100%;animation:pulse 1.5s infinite}
 </style>
 </head>
 <body>
@@ -76,40 +76,51 @@ h1{font-size:28px;font-weight:600}
 <div class="container">
      <h1>Dashboard</h1>
 
-     <!-- Stats Cards -->
-     <div class="stats-grid" id="stats-grid"></div>
+      <!-- Stats Cards -->
+      <div class="stats-grid" id="stats-grid"></div>
 
-     <!-- Projects -->
-     <div class="section">
-         <div class="section-title">Active Projects</div>
-         <div class="project-grid" id="projects-grid"></div>
-     </div>
+      <!-- Projects -->
+      <div class="section">
+          <div class="section-title">Active Projects</div>
+          <div class="project-grid" id="projects-grid"></div>
+      </div>
 
-     <!-- Timeline/Milestones -->
-     <div class="section">
-         <div class="section-title">Project Updates &amp; Milestones</div>
-         <div class="timeline" id="timeline"></div>
-     </div>
+      <!-- Timeline/Milestones -->
+      <div class="section">
+          <div class="section-title">Project Updates &amp; Milestones</div>
+          <div class="timeline" id="timeline"></div>
+      </div>
 
-     <!-- Invoice Summary -->
-     <div class="invoice-summary">
-         <div class="section-title">Billing Overview</div>
-         <div class="invoice-stats" id="invoice-stats">Loading invoices...</div>
-         <div class="invoice-actions">
-             <a class="btn" href="/api/invoices?export=pdf">Download PDFs</a>
-             <a class="btn secondary" onclick="window.showInvoices()">View Details</a>
-         </div>
-     </div>
+      <!-- Invoice Summary -->
+      <div class="invoice-summary">
+          <div class="section-title">Billing Overview</div>
+          <div class="invoice-stats" id="invoice-stats">Loading invoices...</div>
+          <div class="invoice-actions">
+              <a class="btn" href="/api/invoices?export=pdf">Download PDFs</a>
+              <a class="btn secondary" onclick="window.showInvoices()">View Details</a>
+          </div>
+      </div>
 
-     <!-- Action Buttons -->
-     <div class="section">
-         <h2>Next Actions</h2>
-         <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:16px;">
-             <a class="btn" href="/">Book a Call</a>
-             <a class="btn secondary" onclick="window.showInvoices()">View Invoice</a>
-             <a class="btn secondary" href="#contact">Message Us</a>
-         </div>
-     </div>
+      <!-- Action Buttons -->
+      <div class="section" style="margin-top:8px;">
+          <h2>Next Actions</h2>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:16px;">
+              <a class="btn" href="/">Book a Call</a>
+              <a class="btn secondary" onclick="window.showInvoices()">View Invoice</a>
+              <a class="btn secondary" href="#contact">Message Us</a>
+          </div>
+      </div>
+
+      <!-- Loading Skeleton (hidden when data loaded) -->
+      <div class="stats-grid" id="skeleton-stats" style="display:none;">
+          <div class="stat-card loading-skeleton" style="--h:80px;height:var(--h);border:none;background:transparent"></div>
+          <div class="stat-card loading-skeleton" style="--h:80px;height:var(--h);border:none;background:transparent"></div>
+      </div>
+
+      <div class="section">
+          <div class="section-title">Active Projects</div>
+          <div class="project-grid" id="skeleton-projects" style="display:none;"></div>
+      </div>
 </div>
 
 <script>
@@ -162,42 +173,49 @@ const authToken = decodeURIComponent(tokenMatch[1]);
             }
         }
 
-        // Render stats cards
+        // Initially show skeleton, then fade out when data ready
+        document.getElementById('skeleton-stats').style.display = 'grid';
+        setTimeout(() => document.getElementById('skeleton-stats').style.display = 'none', 600);
+
+        // Render stats cards with staggered animation delay
         const statsGrid = document.getElementById('stats-grid');
         let html = '';
         
         if (isAdmin) {
-            html += '<div class="stat-card"><div class="label">Clients</div><div class="value" id="total-clients">0</div></div>';
-            html += '<div class="stat-card"><div class="label">Active Projects</div><div class="value">'+data.stats.active_projects+'</div></div>';
+            html += '<div class="stat-card" style="animation-delay:0.1s"><div class="label">Clients</div><div class="value" id="total-clients">0</div></div>';
+            html += '<div class="stat-card" style="animation-delay:0.15s"><div class="label">Active Projects</div><div class="value">'+data.stats.active_projects+'</div></div>';
         } else {
-            html += '<div class="stat-card"><div class="label">Active Projects</div><div class="value">'+(data.stats?.active_projects||0)+'</div></div>';
-            html += '<div class="stat-card"><div class="label">Monthly Revenue</div><div class="value">$'+(data.stats.monthly_total||0).toLocaleString()+'</div></div>';
+            html += '<div class="stat-card" style="animation-delay:0.1s"><div class="label">Active Projects</div><div class="value">'+(data.stats?.active_projects||0)+'</div></div>';
+            html += '<div class="stat-card" style="animation-delay:0.15s"><div class="label">Monthly Revenue</div><div class="value">$'+(data.stats.monthly_total||0).toLocaleString()+'</div></div>';
         }
         statsGrid.innerHTML = html;
 
         // Get total client count for admin dashboard mode
         if (isAdmin) {
             fetch('/api/admin/clients', { credentials: 'include' })
-                .then(r => r.json())
-                .then(c => {
+                 .then(r => r.json())
+                 .then(c => {
                     if (c.clients && c.clients.length > 0) { document.getElementById('total-clients').textContent = c.clients.length; }
-                });
+                 });
         }
 
-        // Render project cards
+        // Render project cards - enhance with hover effects and animations
         const projectGrid = document.getElementById('projects-grid');
         let projHtml = '';
         
         if (!data.projects || data.projects.length === 0) {
-            projHtml = '<div class="empty-state"><p>No active projects yet.<a href="/">Book a project now!</a></p></div>';
+            projHtml = '<div class="empty-state" style="animation-delay:0.2s"><p>No active projects yet.<a href="/">Book a project now!</a></p></div>';
         } else {
+            let delayCounter = 0.1;
             for (const project of data.projects) {
                 const typeClass = 'type-'+(project.type||'website').toLowerCase();
                 const statusClass = 'status-'+(project.status||'active').toLowerCase().replace(' ','_');
                 let typeDisplay = project.type ? project.type.charAt(0).toUpperCase() + project.type.slice(1) : 'Website';
                 let statusDisplay = (project.status==='active') ? 'Active' : (project.status ? project.status.charAt(0).toUpperCase() + project.status.slice(1) : 'Completed');
 
-                projHtml += '<div class="project-card">' +
+                projHtml += '<div class="project-card" style="animation-delay:'+(delayCounter+=0.05)+'s"><span class="type-badge '+typeClass+'">'+typeDisplay+'</span> <span class="status-badge '+statusClass+'">'+statusDisplay+'</span><h3>'+project.name+'</h3><div class="meta"><div>Type: '+typeDisplay+'</div><div>Status: '+statusDisplay+'</div><div>Monthly Rate: $'+(project.monthly_rate||0).toLocaleString()+'</div><div>Started: '+new Date(project.created_at||Date.now()).toLocaleDateString()+'</div></div></div>';
+            }
+        }
                      '<span class="type-badge '+typeClass+'">'+typeDisplay+'</span> ' +
                      '<span class="status-badge '+statusClass+'">'+statusDisplay+'</span> ' +
                      '<h3>'+project.name+'</h3>' +
