@@ -24,12 +24,12 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   async function render() {
-    // Step 1: Check authentication
+     // Step 1: Check authentication
     const auth = await checkAuth();
     if (!auth || !auth.success) {
       window.location.href = '/login.html';
       return;
-    }
+     }
 
     // Step 2: Fetch dashboard data
     let data = await fetchDashboardData();
