@@ -60,8 +60,7 @@ export async function onRequestPost(context) {
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
 
-<<<<<<< HEAD
-// Insert admin user - uses positional parameters
+    // Insert admin user - uses positional parameters
     await db.prepare("INSERT INTO users(email, password_hash, role, name, company, is_active) VALUES(?, ?, 'admin', 'Admin', 'Moliam', 1)").run("admin@moliam.com", adminHash);
 
        // Insert oscar user - same schema using positional parameters  
