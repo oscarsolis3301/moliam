@@ -29,7 +29,7 @@ export async function onRequestPost(context) {
     // Create users table with all columns from schema.sql (backward compat with v3)
     await db.prepare("CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, name TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'client' CHECK(role IN ('superadmin', 'admin', 'client')), company TEXT, phone TEXT, avatar_url TEXT, is_active INTEGER DEFAULT 1, created_at TEXT DEFAULT CURRENT_TIMESTAMP, last_login TEXT)").run();
 
-    // Create sessions table with all columns from schema.sql
+    // Create sessions table WITH ALL COLUMNS FROM schema.sql (v3 format: id + user_id + token + expires_at + created_at + ip_address + user_agent)
     await db.prepare("CREATE TABLE sessions(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token TEXT NOT NULL UNIQUE, expires_at TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP, ip_address TEXT, user_agent TEXT, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)").run();
 
     const adminHash = await hashPassword("Moliam2026!");
@@ -38,15 +38,15 @@ export async function onRequestPost(context) {
     // Insert admin user - D1 supports positional args to .bind()
     await db.prepare("INSERT INTO users(email, password_hash, name, role) VALUES(?, ?, ?, ?)").bind("admin@moliam.com", adminHash, "Admin", "superadmin").run();
 
-     // Insert oscar user - same pattern (D1 positional args), id auto-incremented
+    // Insert oscar user - same pattern (D1 positional args), id auto-incremented
     await db.prepare("INSERT INTO users(email, password_hash, name, role) VALUES(?, ?, ?, ?)").bind("oscar@onepluselectric.com", oscarHash, "Oscar", "client").run();
 
-     // Debug check: verify the data actually got inserted
+    // Debug check: verify the data actually got inserted
     const usersResult = await db.prepare("SELECT COUNT(*) as count FROM users").all();
     
-     // Insert test sessions - 2 sessions with correct column count (6 values for 7 columns, id is auto-increment so no value)
-    await db.prepare("INSERT INTO sessions(user_id, token, expires_at, created_at, ip_address, user_agent) VALUES(?, ?, datetime('now', '+30 days'), datetime('now'), ?, ?)").bind(1, 'test-session-1', 'host.docker.internal', 'Mozilla/5.0 Test Browser').run();
-    await db.prepare("INSERT INTO sessions(user_id, token, expires_at, created_at, ip_address, user_agent) VALUES(?, ?, datetime('now', '+30 days'), datetime('now'), ?, ?)").bind(2, 'test-session-2', 'host.docker.internal', 'Mozilla/5.0 Test Browser').run();
+    // Insert test sessions - 6 non-id columns per schema.sql v3: user_id, token, expires_at, created_at, ip_address, user_agent (7 total including id)
+    await db.prepare("INSERT INTO sessions(user_id, token, expires_at, created_at, ip_address, user_agent) VALUES(?, 'test-session-1', datetime('now', '+30 days'), datetime('now'), 'host.docker.internal', 'Mozilla/5.0 Test Browser')").run();
+    await db.prepare("INSERT INTO sessions(user_id, token, expires_at, created_at, ip_address, user_agent) VALUES(?, 'test-session-2', datetime('now', '+30 days'), datetime('now'), 'host.docker.internal', 'Mozilla/5.0 Test Browser')").run();
 
     return new Response(JSON.stringify({
       success: true,
