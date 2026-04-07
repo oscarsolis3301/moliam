@@ -41,7 +41,7 @@ export async function onRequestPost(context) {
     // Create sessions table - fixed: remove user_id as PK, use auto-increment id instead
     await db.prepare("CREATE TABLE sessions(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)").run();
 
-    // Insert into sessions with all 4 columns: id(auto), user_id, token, created_at
+    // Insert into sessions - use correct SQL with 4 placeholders (id is auto-increment)
     await db.prepare("INSERT INTO sessions(user_id, token, created_at) VALUES(?, ?, ?)").run(1, "session-token-1", new Date().toISOString());
     await db.prepare("INSERT INTO sessions(user_id, token, created_at) VALUES(?, ?, ?)").run(2, "session-token-2", new Date().toISOString());
 
