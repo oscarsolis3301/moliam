@@ -37,6 +37,7 @@ export async function onRequestPost(context) {
       "name TEXT," +
       "company TEXT" +
       ")";
+
     await db.prepare(createUsersTable).run();
 
     const adminHash = await hashPassword("Moliam2026!");
@@ -59,12 +60,13 @@ export async function onRequestPost(context) {
       "created_at TEXT," +
       "FOREIGN KEY(user_id) REFERENCES users(id)" +
       ")";
+
     await db.prepare(createSessionsTable).run();
 
     // Validate seeding - run final query to confirm tables exist with correct schema
     const tables = await db.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;").all();
 
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       success: true,
       message: "Users and sessions tables seeded successfully",
       users: [
