@@ -39,8 +39,8 @@ export async function onRequestPost(context) {
         role TEXT DEFAULT 'user',
         name TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-        user_status TEXT DEFAULT TRUE
-        )
+        user_status INTEGER DEFAULT 1
+         )
       `).run();
 
     const saltedPassword1 = await hashPassword("Moliam2026!");
