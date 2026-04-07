@@ -1,531 +1,512 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Moliam</title>
-    <style>
-        :root {
-            --bg-deep: #0B0E14;
-            --bg-room: #1F2937;
-            --border-room: #374151;
-            --accent-blue: #3B82F6;
-            --accent-purple: #8B5CF6;
-            --accent-green: #10B981;
-            --text-primary: #F9FAFB;
-            --text-secondary: #9CA3AF;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOLIAMA — Client Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #0B0E14;
+  --bg-building: #111827;
+  --bg-room: #1F2937;
+  --border-room: #374151;
+  --accent-blue: #3B82F6;
+  --accent-purple: #8B5CF6;
+  --accent-green: #10B981;
+  --text-primary: #F9FAFB;
+  --text-secondary: #9CA3AF;
+  --text-dim: #6B7280;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg-deep);
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+a { color: var(--accent-blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+/* Global Navigation */
+.global-nav {
+  background: linear-gradient(135deg, rgba(31,41,55,0.8), rgba(15,23,42,0.8));
+  border-bottom: 1px solid var(--border-room);
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(8px);
+}
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.back-btn {
+  color: var(--accent-blue);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+}
+.back-btn:hover {
+  text-decoration: underline;
+  color: var(--accent-purple);
+}
+.brand {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.05em;
+}
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.user-menu {
+  text-align: right;
+}
+.user-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.user-role {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.logout-btn {
+  background: none;
+  border: 1px solid var(--border-room);
+  color: var(--text-secondary);
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.logout-btn:hover {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+header {
+  margin-bottom: 40px;
+  text-align: center;
+}
+header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+header p { color: var(--text-secondary); font-size: 15px; }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background-color: var(--bg-deep);
-            color: var(--text-primary);
-            line-height: 1.6;
-            padding: 20px;
-        }
+/* Impersonation Banner */
+#impersonation-banner {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(245, 158, 11, 0.15);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.4);
+  padding: 12px 32px;
+  color: var(--accent-amber);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+#impersonation-banner.visible { display: flex; }
+.banner-text { color: var(--text-primary); }
+.btn-exit {
+  background: none;
+  border: 1px solid var(--border-room);
+  padding: 4px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+.btn-exit:hover { border-color: var(--accent-amber); color: var(--accent-amber); }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+/* Cards */
+.card {
+  background: var(--bg-room);
+  border: 1px solid var(--border-room);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.card-title { font-size: 18px; font-weight: 600; }
+/* Type badge */
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border-room);
+}
+.badge.type { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); border-color: rgba(59, 130, 246, 0.3); }
+.badge.status-completed { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); border-color: rgba(16, 185, 129, 0.3); }
+.badge.status-active { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); border-color: rgba(139, 92, 246, 0.3); }
 
-        /* Impersonation Banner */
-        .impersonation-banner {
-            display: none;
-            background: yellow;
-            color: black;
-            padding: 1rem;
-            text-align: center;
-            font-weight: bold;
-            margin-bottom: 2rem;
-            border-radius: 8px;
-        }
+/* Project Detail */
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.detail-item label { color: var(--text-dim); font-size: 12px; text-transform: uppercase; display: block; margin-bottom: 4px; }
+.detail-item .value { font-size: 15px; font-weight: 500; }
 
-        .impersonation-banner.active {
-            display: block;
-        }
+/* Invoice Summary */
+.invoice-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 20px; }
+.metric-box { background: rgba(31, 41, 55, 0.7); border: 1px solid var(--border-room); border-radius: 8px; padding: 16px; text-align: center; }
+.metric-label { font-size: 12px; color: var(--text-dim); margin-bottom: 8px; }
+.metric-value { font-size: 24px; font-weight: 700; }
 
-        /* Glass Cards */
-        .glass-card {
-            background: linear-gradient(135deg, rgba(31, 41, 55, 0.7), rgba(11, 14, 20, 0.7));
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--border-room);
-            border-radius: 14px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        }
+/* Action Buttons */
+actions-list { display: flex; gap: 12px; list-style: none; margin-top: 24px; flex-wrap: wrap; }
+.action-btn {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  color: #fff !important;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.2s;
+}
+.action-btn:hover { opacity: 0.9; transform: translateY(-1px); }
 
-        .header h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-secondary);
+}
 
-        .header p {
-            color: var(--text-secondary);
-        }
+/* Timeline */
+.timeline-header { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+.milestone-item {
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.5);
+  border-left: 3px solid var(--accent-blue);
+  border-radius: 8px 0 0 8px;
+  margin-bottom: 12px;
+}
+.milestone-date { font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
+.milestone-text { font-size: 14px; }
 
-        /* Project Cards */
-        .projects-section h2, .milestones-section h2, .invoices-section h2 {
-            margin-bottom: 1rem;
-            color: var(--accent-blue);
-            font-size: 1.25rem;
-        }
+/* Loading & Skeleton States */
+.loading { text-align: center; padding: 64px; color: var(--text-secondary); }
 
-        .project-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
+.skeleton {
+  background: linear-gradient(90deg, rgba(31,41,55,0.7) 25%, rgba(55,65,81,0.7) 50%, rgba(31,41,55,0.7) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
 
-         .project-card {
-            background: linear-gradient(135deg, rgba(31, 41, 55, 0.7), rgba(11, 14, 20, 0.7));
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--border-room);
-            border-radius: 14px;
-            padding: 1.5rem;
-            transition: transform 0.2s, box-shadow 0.2s;
-         }
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
 
-        .project-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-        }
+.skeleton-text { height: 16px; margin-bottom: 8px; width: 60%; }
+.skeleton-stat { height: 36px; margin-bottom: 8px; }
+.skeleton-card { height: 120px; margin-bottom: 16px; }
 
-        .project-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1rem;
-        }
+.transition-fade {
+  animation: fadeIn 0.4s ease-out;
+}
 
-        .project-name {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-        .badges {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
+/* Mobile */
+@media (max-width: 768px) {
+    .container { padding: 16px; }
+    .global-nav { padding: 12px 16px; position: relative; }
+    .nav-left a.brand { font-size: 18px; }
+    .nav-left .back-btn { display: none; }
+    .user-name { font-size: 13px; }
+    .user-role { font-size: 11px; }
+    .logout-btn { padding: 4px 10px; font-size: 12px; }
+    
+    .detail-grid { grid-template-columns: 1fr; gap: 8px; }
+    .invoice-grid { grid-template-columns: 1fr; }
+    actions-list { flex-direction: column; }
+      .card { padding: 16px; margin-bottom: 20px; }
+      .stat-card { padding: 16px 20px; }
+    
+    .card-header h3 { font-size: 18px; }
+    .badge { font-size: 10px; padding: 3px 6px; }
+}
 
-        .badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            text-transform: uppercase;
-        }
+/* Tablet improvements */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .container { max-width: 90%; padding: 24px 16px; }
+    .global-nav { padding: 14px 24px; }
+    .nav-left a.brand { font-size: 19px; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+}
 
-        .badge-type {
-            background: var(--accent-blue);
-            color: white;
-        }
-
-        .badge-status {
-            background: var(--accent-green);
-            color: white;
-        }
-
-        .project-info p {
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-        }
-
-        .project-label {
-            color: var(--text-secondary);
-        }
-
-        .project-value {
-            color: var(--text-primary);
-            font-weight: 500;
-        }
-
-        /* Action Buttons */
-        .action-buttons {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 500;
-            text-decoration: none;
-            transition: all 0.2s;
-            cursor: pointer;
-            border: none;
-            font-size: 0.9rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-            color: white;
-        }
-
-        .btn-secondary {
-            background: rgba(55, 65, 81, 0.5);
-            color: var(--text-primary);
-            border: 1px solid var(--border-room);
-        }
-
-        .btn:hover {
-            transform: translateY(-1px);
-        }
-
-        /* Milestones Timeline */
-        .timeline {
-            position: relative;
-            padding-left: 2rem;
-            margin-top: 1rem;
-        }
-
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 0.75rem;
-            top: 0;
-            bottom: 0;
-            width: 3px;
-            background: var(--border-room);
-        }
-
-        .milestone-item {
-            position: relative;
-            padding-left: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .milestone-item::before {
-            content: '';
-            position: absolute;
-            left: -0.25rem;
-            top: 0.375rem;
-            width: 0.5rem;
-            height: 0.5rem;
-            background: var(--accent-green);
-            border-radius: 50%;
-        }
-
-        .milestone-date {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .milestone-title {
-            color: var(--text-primary);
-            font-weight: 500;
-            font-size: 1rem;
-        }
-
-        /* Invoice Summary */
-           .invoice-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
-          }
-
-.invoice-card {
-            background: linear-gradient(135deg, rgba(31, 41, 55, 0.7), rgba(11, 14, 20, 0.7));
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--border-room);
-            border-radius: 14px;
-            padding: 1.25rem;
-            text-align: center;
-           }
-
-          .invoice-label {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .invoice-value {
-            color: var(--accent-green);
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        /* Loading and Error States */
-        .loading, .error {
-            text-align: center;
-            padding: 2rem;
-            color: var(--text-secondary);
-        }
-
-        .error {
-            color: #EF4444;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: var(--text-secondary);
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-
-            .container {
-                padding: 0;
-            }
-
-            .header h1 {
-                font-size: 1.5rem;
-            }
-
-            .project-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .invoice-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+/* Desktop enhancements */
+@media (min-width: 1024px) {
+    .card { transition: transform 0.2s, box-shadow 0.2s; }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    .global-nav { padding: 16px 32px; }
+}
+</style>
 </head>
 <body>
-    <div class="container">
-        <!-- Impersonation Banner -->
-        <div id="impersonationBanner" class="impersonation-banner">
-            👁 Viewing as <span id="viewingAsName"></span> — 
-            <a href="/dashboard" style="color: #000; font-weight: bold;">Exit</a>
-        </div>
 
-        <header class="header">
-            <h1>Your Dashboard</h1>
-            <p>Manage your projects and track progress</p>
-        </header>
+<noscript>Please enable JavaScript to view your dashboard.</noscript>
 
-        <!-- Projects Section -->
-        <section id="projectsSection" class="glass-card projects-section">
-            <h2>Your Projects</h2>
-            <div id="projectContainer">
-                <div class="loading">Loading projects...</div>
-            </div>
-            <div class="action-buttons">
-                <a href="/" class="btn btn-primary">Book a Call</a>
-                <button class="btn btn-secondary" onclick="window.location.href='/invoices'">View Invoice</button>
-                <button class="btn btn-secondary" onclick="window.location.href='https://discord.com'">Message Us</button>
-            </div>
-        </section>
-
-        <!-- Milestones Section -->
-        <section id="milestonesSection" class="glass-card milestones-section">
-            <h2>Milestones Timeline</h2>
-            <div id="timelineContainer">
-                <div class="loading">Loading milestones...</div>
-            </div>
-        </section>
-
-        <!-- Invoices Section -->
-        <section id="invoicesSection" class="glass-card invoices-section">
-            <h2>Invoice Summary</h2>
-            <div id="invoiceContainer">
-                <div class="loading">Loading invoice data...</div>
-            </div>
-        </section>
+<div class="container" id="app">
+  <!-- Global Navigation -->
+  <nav class="global-nav">
+    <div class="nav-left">
+      <a href="/" class="brand">MOLIAMA</a>
+      <a href="/" class="back-btn">← Back to Home</a>
     </div>
+    <div class="nav-right">
+      <div class="user-menu" id="user-nav">
+        <div class="user-name">Loading...</div>
+        <div class="user-role">Client Dashboard</div>
+      </div>
+      <form method="post" action="/api/auth/logout">
+        <button class="logout-btn">Log out</button>
+      </form>
+    </div>
+  </nav>
 
-    <script>
-        // Check for impersonate parameter
-        const urlParams = new URLSearchParams(window.location.search);
-        const impersonateId = urlParams.get('impersonate');
+  <header>
+     <h1 id="page-title">Loading...</h1>
+     <p id="page-subtitle">Your MOLIAMA Project Status</p>
+   </header>
 
-        if (impersonateId) {
-            document.getElementById('impersonationBanner').classList.add('active');
-            document.getElementById('viewingAsName').textContent = 'Loading...';
-            
-            // Fetch user name to display in banner
-            fetch('/api/user', { credentials: 'include' })
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById('viewingAsName').textContent = data.user?.name || `User ${impersonateId}`;
-                });
-        }
+  <div id="content">
+    <div class="loading">Loading your dashboard...</div>
+  </div>
 
-        // Check authentication and redirect if not logged in
-        async function checkAuth() {
-            try {
-                const res = await fetch('/api/user', { credentials: 'include' });
-                if (!res.ok) {
-                    window.location.href = '/login';
-                }
-            } catch (err) {
-                window.location.href = '/login';
-            }
-        }
+</div>
 
-        // Fetch dashboard data
-        async function fetchDashboardData() {
-            try {
-                const res = await fetch('/api/dashboard', { 
-                    credentials: 'include',
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
+<script>
+// ═══════════════════════════════════════
+// SECTION: Configuration
+// ═══════════════════════════════════
+const API_BASE = '/api';
 
-                if (!res.ok) {
-                    throw new Error('Failed to load dashboard data');
-                }
+// ═══════════════════════════════════════
+// SECTION: Utility Helpers
+// ═══════════════════════════════════════
+function formatCurrency(amount) {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+}
 
-                const data = await res.json();
-                
-                // Handle impersonation - use user_id from params if present
-                const targetUserId = impersonateId;
-                
-                renderProjects(data.projects, targetUserId);
-                renderMilestones(data.milestones);
-                renderInvoices(data.invoices);
+function formatDate(isoDate) {
+  if (!isoDate) return 'N/A';
+  return new Date(isoDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
 
-            } catch (err) {
-                console.error('Dashboard error:', err);
-                document.getElementById('projectContainer').innerHTML = 
-                    '<div class="error">Failed to load dashboard data. Please refresh.</div>';
-            }
-        }
+// ═══════════════════════════════════════
+// SECTION: Routing & Auth Check
+// ═══════════════════════════════════════
+async function checkAuth() {
+  try {
+    const resp = await fetch(`${API_BASE}/auth/status`, { credentials: 'include' });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    return data.user || null;
+  } catch (err) {
+    console.error('Auth check failed:', err);
+    return null;
+  }
+}
 
-        // Render projects
-        function renderProjects(projects, targetUserId) {
-            const container = document.getElementById('projectContainer');
+// ═══════════════════════════════════
+// SECTION: Dashboard Renderer
+// ═══════════════════════════════════
+function renderDashboard(user, data, isTransitioning = false) {
+  const contentEl = document.getElementById('content');
+  const titleEl = document.getElementById('page-title');
+  
+  if (!user) {
+    window.location.href = '/login';
+    return;
+  }
 
-            if (!projects || projects.length === 0) {
-                container.innerHTML = '<div class="empty-state">No active projects yet. <br><a href="/" class="btn btn-primary" style="margin-top: 1rem;">Book a Call</a></div>';
-                return;
-            }
+  const isImpersonated = !!new URLSearchParams(window.location.search).get('impersonate');
+  if (isImpersonated) {
+    contentEl.innerHTML = '';
+    titleEl.textContent = data.user_name + ' - Impersonating';
+    const banner = createBanner(data.impersonation_user_name);
+    document.getElementById('app').appendChild(banner);
+    return;
+  }
 
-            const projectCardHTML = projects.map(project => `
-                <div class="project-card">
-                    <div class="project-header">
-                        <div>
-                            <p class="project-name">${escapeHtml(project.name || 'Unnamed Project')}</p>
-                            <div class="badges">
-                                <span class="badge badge-type">${escapeHtml(project.type || 'website').toLowerCase()}</span>
-                                <span class="badge badge-status">${escapeHtml(project.status || 'active').toLowerCase()}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="project-info">
-                        <p><span class="project-label">Monthly Rate:</span> <span class="project-value">$${(project.monthly_rate || 0).toLocaleString()}</span></p>
-                        <p><span class="project-label">Start Date:</span> <span class="project-value">${formatDate(project.start_date || project.created_at)}</span></p>
-                    </div>
-                </div>
-            `).join('');
+  titleEl.textContent = data.user_name;
+  contentEl.classList.add('transition-fade');
+  
+  // Handle no projects or data error
+  if (!data || !data.recent_projects || data.projects_count === 0) {
+    contentEl.innerHTML = '<div class="empty-state"><p>No active projects yet.</p><ul actions-list><li><a href="/" class="action-btn">Book a Free Consultation</a></li></ul></div>';
+    return;
+  }
 
-            container.innerHTML = `<div class="project-grid">${projectCardHTML}</div>`;
-        }
+  const projectCards = data.recent_projects.map(p => `
+       <div class="project-card">
+         <div style="display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+           <span class="badge type">${p.type || 'service'}</span>
+           <span class="badge ${p.status === 'completed' ? 'status-completed' : 'status-active'}">${p.status || 'active'}</span>
+         </div>
+         <h3 style="margin-bottom:8px;">${p.project_name}</h3>
+         <div class="detail-grid">
+           ${p.monthly_value ? `<div class="detail-item"><label>Monthly Rate</label><div class="value">${formatCurrency(p.monthly_value)}</div></div>` : ''}
+           <div class="detail-item"><label>Start Date</label><div class="value">${formatDate(p.start_date)}</div></div>
+         </div>
+       </div>`).join('');
+  
+  const html = `<div class="card">` +
+    `<div class="card-header"><span class="card-title">Active Projects</span>${projectCards}</div></div>`;
 
-        // Render milestones timeline
-        function renderMilestones(milestones) {
-            const container = document.getElementById('timelineContainer');
+// Build action buttons HTML inline (don't need createActions function)
+const actionsHTML = `
+      <actions-list>
+        ${!isImpersonated ? `<li><a href="/" class="action-btn">Book a Call</a></li>` : ''}
+        <li><a href="/" class="action-btn">Message Us</a></li>
+        <li><a href="/invoices" class="action-btn">View Invoices</a></li>
+      </actions-list>
+    `;
 
-            if (!milestones || milestones.length === 0) {
-                container.innerHTML = '<div class="empty-state">No milestones have been added yet.</div>';
-                return;
-            }
+  contentEl.innerHTML = html + createMilestones(data.project_updates || []) + '<div style="height:24px"></div>' + createInvoiceSummary(data.invoice_summary);
 
-            const timelineHTML = milestones.map(milestone => `
-                <div class="milestone-item">
-                    <p class="milestone-date">${formatDate(milestone.created_at)}</p>
-                    <p class="milestone-title">${escapeHtml(milestone.title || 'Untitled Milestone')}</p>
-                    ${milestone.description ? `<p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.25rem;">${escapeHtml(milestone.description)}</p>` : ''}
-                </div>
-            `).join('');
+}
 
-            container.innerHTML = `<div class="timeline">${timelineHTML}</div>`;
-        }
+// Skeleton loader before data arrives
+function showSkeleton() {
+  const contentEl = document.getElementById('content');
+  contentEl.innerHTML = `
+    <div class="transition-fade">
+      <div class="skeleton-card" style="margin-bottom:24px;"></div>
+      <div class="skeleton-card"></div>
+    </div>`;
+}
 
-        // Render invoice summary
-        function renderInvoices(invoices) {
-            const container = document.getElementById('invoiceContainer');
+function createBanner(impersonationName) {
+  // Create sticky yellow impersonation banner at top of page
+  const banner = document.createElement('div');
+  banner.id = 'impersonation-banner';
+  banner.classList.add('visible');
+  banner.innerHTML = `<span class="banner-text">👁 Viewing as ${impersonationName} — exit impersonation</span>
+      <form method="post" action="${API_BASE}/auth/exit-impersonation"><button class="btn-exit">Exit</button></form>`;
+  return banner;
+}
 
-            if (!invoices || invoices.length === 0) {
-                container.innerHTML = '<div class="empty-state">No invoices generated yet.</div>';
-                return;
-            }
+function createMilestones(updates) {
+  let html = '<div class="card">\n<div class="timeline-header">Project Updates & Milestones</div>\n';
+  
+  for (const upd of updates) {
+    const cardTitle = upd.card_title || '';
+    const textContent = upd.text_content || `(Update on ${formatDate(upd.project_update_date)})`;
+    html += `
+      <div class="milestone-item">
+        ${cardTitle ? `<div style="font-weight:600;margin-bottom:4px;">${cardTitle}</div>` : ''}
+        <div class="milestone-date">${formatDate(upd.project_update_date)}</div>
+        <div class="milestone-text">${textContent}</div>
+      </div>
+    `;
+  }
+  
+  html += '</div>';
+  return html;
+}
 
-            // Calculate totals from invoice data
-            let totalBilled = 0;
-            let totalPaid = 0;
-            let totalOutstanding = 0;
+function createInvoiceSummary(inv) {
+  const billed = Number(inv.total_billed) || 0;
+  const paid = Number(inv.total_paid) || 0;
+  const outstanding = Math.max(0, billed - paid);
+  
+  return `
+    <div class="card">
+      <div class="card-header"><span class="card-title">Invoice Summary</span></div>
+      <div class="invoice-grid">
+        <div class="metric-box">
+          <div class="metric-label">Total Billed</div>
+          <div class="metric-value">${formatCurrency(billed)}</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Amount Paid</div>
+          <div class="metric-value" style="color:var(--accent-green)">${formatCurrency(paid)}</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Outstanding Balance</div>
+          <div class="metric-value" style="color:var(--accent-blue)">${formatCurrency(outstanding)}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
 
-            const invoiceCardsHTML = invoices.map(invoice => {
-                const billed = invoice.billed_amount || 0;
-                const paid = invoice.paid_amount || 0;
-                const outstanding = billed - paid;
+// ═══════════════════════════════════════
+// SECTION: Dashboard Loader
+// ═══════════════════════════════════════
+// Update user nav UI
+function updateUserNav(user) {
+  const userNavEl = document.getElementById('user-nav');
+  if (userNavEl && user) {
+    userNavEl.innerHTML = `
+      <div class="user-name">${user.first_name || user.name || 'Client'}</div>
+      ${user.is_admin ? '<div class="user-role">Admin Access</div>' : '<div class="user-role">Client Dashboard</div>'}
+    `;
+  }
+}
 
-                totalBilled += billed;
-                totalPaid += paid;
-                totalOutstanding += outstanding;
+async function loadDashboard() {
+   // Show skeleton first for better perceived performance
+  showSkeleton();
+  
+  const user = await checkAuth();
+  
+  if (!user) {
+    window.location.href = '/login';
+    return;
+  }
 
-                return `
-                    <div class="invoice-card">
-                        <p class="invoice-label">${escapeHtml(invoice.name)}</p>
-                        <p class="project-value">$${billed.toLocaleString()}</p>
-                    </div>
-                `;
-            }).join('');
+  try {
+    // Fetch dashboard data with credentials
+    const resp = await fetch(`${API_BASE}/dashboard`, { credentials: 'include' });
+    
+    if (!resp.ok) {
+      document.getElementById('content').innerHTML = '<div class="empty-state"><p>Invalid session. Please log in again.</p></div>';
+      return;
+    }
 
-            container.innerHTML = `
-                ${invoiceCardsHTML}
-                <div class="invoice-grid">
-                    <div class="invoice-card">
-                        <p class="invoice-label">Total Billed</p>
-                        <p class="invoice-value">$${totalBilled.toLocaleString()}</p>
-                    </div>
-                    <div class="invoice-card">
-                        <p class="invoice-label">Amount Paid</p>
-                        <p class="invoice-value" style="color: var(--accent-green);">$${totalPaid.toLocaleString()}</p>
-                    </div>
-                    <div class="invoice-card">
-                        <p class="invoice-label">Outstanding</p>
-                        <p class="invoice-value" style="color: #EF4444;">$${totalOutstanding.toLocaleString()}</p>
-                    </div>
-                </div>
-            `;
-        }
+    const data = await resp.json();
+    updateUserNav(user);
+    renderDashboard(user, data);
+  } catch (err) {
+    console.error('Failed to load dashboard:', err);
+    document.getElementById('content').innerHTML = '<div class="empty-state"><p>Error loading dashboard</p></div>';
+    }
+ }
 
-        // Utility functions
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function formatDate(dateStr) {
-            if (!dateStr) return 'N/A';
-            return new Date(dateStr).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
-        }
-
-        // Initialize
-        checkAuth().then(() => {
-            fetchDashboardData();
-        });
-    </script>
+// Start loader on page load
+window.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
 </body>
 </html>
