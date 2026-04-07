@@ -29,15 +29,15 @@ export async function onRequestPost(context) {
     await db.prepare("DROP TABLE IF EXISTS sessions").run();
 
     // Recreate with complete schema: 6 columns (id, email, password_hash, role, name, company)
-    const createUserTable = "CREATE TABLE users (" +
-      "\nid INTEGER PRIMARY KEY AUTOINCREMENT," +
-      "\nemail TEXT UNIQUE NOT NULL," +
-      "\npassword_hash TEXT NOT NULL," +
-      "\nrole TEXT DEFAULT 'user'," +
-      "\nname TEXT," +
-      "\ncompany TEXT" +
+    const createUsersTable = "CREATE TABLE users (" +
+      "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+      "email TEXT UNIQUE NOT NULL," +
+      "password_hash TEXT NOT NULL," +
+      "role TEXT DEFAULT 'user'," +
+      "name TEXT," +
+      "company TEXT" +
       ")";
-    await db.prepare(createUserTable).run();
+    await db.prepare(createUsersTable).run();
 
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
@@ -54,10 +54,10 @@ export async function onRequestPost(context) {
 
     // Create sessions table with 3 columns (user_id, token, created_at) matching login.js
     const createSessionsTable = "CREATE TABLE sessions (" +
-      "\nuser_id INTEGER," +
-      "\ntoken TEXT," +
-      "\ncreated_at TEXT," +
-      "\nFOREIGN KEY(user_id) REFERENCES users(id)" +
+      "user_id INTEGER," +
+      "token TEXT," +
+      "created_at TEXT," +
+      "FOREIGN KEY(user_id) REFERENCES users(id)" +
       ")";
     await db.prepare(createSessionsTable).run();
 
