@@ -144,10 +144,10 @@ async function renderDashboard() {
     } else {
       for (let p of projects) {
         const typeClass = p.type ? p.type.toLowerCase().replace(' ', '-') : 'website';
-        html += `<div class="project-card fade-in">`;
+        html += `<div class="project-card fade-in" role="article" aria-label="Project card: ${p.name || 'Untitled'}">`;
         html += `<div class="project-header"><h3 class="project-name">${p.name || 'Project'}</h3>`;
-        html += `<div><span class="type-badge type-${typeClass}">${p.type || 'Website'}</span>`;
-        html += `<span class="status-badge status-${p.status==='active'?'active':'pending'}">${p.status==='active'?'Active':'Pending'}</span></div></div>`;
+        html += `<div><span class="type-badge type-${typeClass}" role="img" aria-label="${p.type || 'Website'} type badge">${p.type || 'Website'}</span>`;
+        html += `<span class="status-badge status-${p.status==='active'?'active':'pending'}" role="img" aria-label="${p.status==='active'?'Active':'Pending'} status">${p.status==='active'?'Active':'Pending'}</span></div></div>`;
         html += `<div class="project-details">`;
         html += `<div class="detail-row"><span>Monthly Rate:</span><span>$${(parseFloat(p.monthly_rate)||0).toLocaleString()}</span></div>`;
         html += `<div class="detail-row"><span>Start Date:</span><span>${p.start_date?new Date(p.start_date).toLocaleDateString():'N/A'}</span></div>`;
@@ -249,7 +249,7 @@ async function init() {
       
       let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
       html += '<h3 style="font-size:14px;margin:0;">Client Management</h3>';
-      html += '<input type="text" placeholder="Search clients..." id="admin-search-input" class="admin-filter" style="width:200px;padding:6px 12px;margin-left:8px;"></input>';
+      html += '<input type="search" placeholder="Search clients..." id="admin-search-input" class="admin-filter" style="width:200px;padding:6px 12px;margin-left:8px;" aria-label="Search for clients by name or email">';
       html += '</div>';
       html += '<table style="width:100%;margin-top:12px;"><thead><tr><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Client</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Email</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Status</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Actions</th></tr></thead><tbody>';
       
@@ -262,8 +262,8 @@ async function init() {
               '<td style="padding:8px;border-bottom:1px solid var(--border-room);font-size:13px;">' + (c.name || 'Untitled') + '</td>' +
               '<td style="padding:8px;border-bottom:1px solid var(--border-room);color:var(--text-secondary);font-size:12px;">' + c.email + '</td>' +
               '<td style="padding:8px;border-bottom:1px solid var(--border-room);"><span class="' + statusClass + '" style="padding:3px 8px;border-radius:4px;font-size:10px;">' + (c.status === 'active' ? 'Active' : 'Inactive') + '</span></td>' +
-              '<td style="padding:8px;border-bottom:1px solid var(--border-room);"><a href="/dashboard.html?impersonate=' + c.originalId + '" class="view-btn" style="font-size:11px;padding:3px 8px;background:rgba(59,130,246,0.1);color:var(--accent-blue);border-radius:4px;text-decoration:none;">View as</a></td>' +
-              '</tr>';
+               '<td style="padding:8px;border-bottom:1px solid var(--border-room);"><a href="/dashboard.html?impersonate=' + c.originalId + '" class="view-btn" style="font-size:11px;padding:3px 8px;background:rgba(59,130,246,0.1);color:var(--accent-blue);border-radius:4px;text-decoration:none;" aria-label="View dashboard as ' + (c.name || 'client') + '">View as</a></td>' +
+               '</tr>';
         }
       }
       
