@@ -210,14 +210,42 @@ init().catch(e => console.error('Init failure:', e));
 .alert-toast { display: none; animation: slideIn 0.3s ease-out forwards; }
 .alert-toast.show { display: block; }
 @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* IMPERSONATION BANNER - Yellow #FFED00 */
+.impersonation-banner {
+  position: fixed;
+  top: 76px; /* Below nav (56px) + buffer */
+  left: 24px;
+  right: 24px;
+  background: #FFED00;
+  color: #1F2937;
+  padding: 12px 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  z-index: 90;
+  box-shadow: 0 4px 12px rgba(255, 237, 0, 0.3);
+  border: 2px solid #F59E0B;
+}
+
+.banner-content { font-size: 14px; display: flex; align-items: center; gap: 12px; }
+#exit-btn { color: #1F2937; text-decoration: underline; cursor: pointer; font-weight: 600; padding-left: 12px; margin-left: 12px; border-left: 1px solid rgba(31, 41, 55, 0.3); display: inline-block; }
+#exit-btn:hover { text-decoration: none; }
+
 nav button, nav a.logout-btn { margin-left: 12px; background: transparent; color: var(--accent-blue); border: 1px solid var(--border-room); padding: 6px 16px; border-radius: 4px; font-size: 13px; cursor: pointer; transition: all 0.2s; }
 nav button:hover, nav a.logout-btn:hover { background: rgba(59,130,246,0.1); transform: translateY(-1px); }
 @media (max-width: 768px) { nav button, nav a.logout-btn { padding: 4px 10px; font-size: 11px; margin-left: 4px; }}
 /* Print styles */
 @media print {
 nav { display: none !important; }
-#impersonation-banner { display: none !important; }
+.impersonation-banner { display: none !important; }
 .project-card { break-inside: avoid; border: 1px solid #374151; page-break-inside: avoid; }
-}</style>
+</style>
+
+/* Add top padding to main content since banner is fixed */
+@media (min-width: 769px) { .container { margin-top: 124px; /* nav(56) + banner(56+buffer) */ } }
+@media (max-width: 768px) { .container { padding-top: 132px; /* nav(56) + responsive buffer */ } }
 </body>
 </html>
