@@ -45,7 +45,7 @@ export async function onRequestPost(context) {
     }
 
     // Create session token
-    const token = generateToken();
+    const token = await generateToken();
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days
     const ip = request.headers.get("cf-connecting-ip") || "unknown";
     const ua = request.headers.get("user-agent") || "";
