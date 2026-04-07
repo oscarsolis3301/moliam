@@ -33,11 +33,79 @@ a:hover { text-decoration: underline; }
   margin: 0 auto;
   padding: 32px 16px;
 }
+/* Global Navigation */
+.global-nav {
+  background: linear-gradient(135deg, rgba(31,41,55,0.8), rgba(15,23,42,0.8));
+  border-bottom: 1px solid var(--border-room);
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(8px);
+}
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.back-btn {
+  color: var(--accent-blue);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+}
+.back-btn:hover {
+  text-decoration: underline;
+  color: var(--accent-purple);
+}
+.brand {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.05em;
+}
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.user-menu {
+  text-align: right;
+}
+.user-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.user-role {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.logout-btn {
+  background: none;
+  border: 1px solid var(--border-room);
+  color: var(--text-secondary);
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.logout-btn:hover {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
 header {
-  margin-bottom: 48px;
+  margin-bottom: 40px;
   text-align: center;
 }
-header h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
 header p { color: var(--text-secondary); font-size: 15px; }
 
 /* Impersonation Banner */
@@ -170,24 +238,37 @@ actions-list { display: flex; gap: 12px; list-style: none; margin-top: 24px; fle
 
 /* Mobile */
 @media (max-width: 768px) {
-   .container { padding: 20px 16px; }
-   .detail-grid { grid-template-columns: 1fr; gap: 8px; }
-   .invoice-grid { grid-template-columns: 1fr; }
-  actions-list { flex-direction: column; }
-  .card { padding: 18px; }
-  .stat-card { padding: 16px 20px; }
+    .container { padding: 16px; }
+    .global-nav { padding: 12px 16px; position: relative; }
+    .nav-left a.brand { font-size: 18px; }
+    .nav-left .back-btn { display: none; }
+    .user-name { font-size: 13px; }
+    .user-role { font-size: 11px; }
+    .logout-btn { padding: 4px 10px; font-size: 12px; }
+    
+    .detail-grid { grid-template-columns: 1fr; gap: 8px; }
+    .invoice-grid { grid-template-columns: 1fr; }
+    actions-list { flex-direction: column; }
+      .card { padding: 16px; margin-bottom: 20px; }
+      .stat-card { padding: 16px 20px; }
+    
+    .card-header h3 { font-size: 18px; }
+    .badge { font-size: 10px; padding: 3px 6px; }
 }
 
 /* Tablet improvements */
 @media (min-width: 768px) and (max-width: 1024px) {
-   .container { max-width: 90%; padding: 24px 16px; }
-   .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .container { max-width: 90%; padding: 24px 16px; }
+    .global-nav { padding: 14px 24px; }
+    .nav-left a.brand { font-size: 19px; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* Desktop enhancements */
 @media (min-width: 1024px) {
-   .card { transition: transform 0.2s, box-shadow 0.2s; }
-   .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    .card { transition: transform 0.2s, box-shadow 0.2s; }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    .global-nav { padding: 16px 32px; }
 }
 </style>
 </head>
@@ -196,10 +277,27 @@ actions-list { display: flex; gap: 12px; list-style: none; margin-top: 24px; fle
 <noscript>Please enable JavaScript to view your dashboard.</noscript>
 
 <div class="container" id="app">
+  <!-- Global Navigation -->
+  <nav class="global-nav">
+    <div class="nav-left">
+      <a href="/" class="brand">MOLIAMA</a>
+      <a href="/" class="back-btn">← Back to Home</a>
+    </div>
+    <div class="nav-right">
+      <div class="user-menu" id="user-nav">
+        <div class="user-name">Loading...</div>
+        <div class="user-role">Client Dashboard</div>
+      </div>
+      <form method="post" action="/api/auth/logout">
+        <button class="logout-btn">Log out</button>
+      </form>
+    </div>
+  </nav>
+
   <header>
-    <h1 id="page-title">Loading...</h1>
-    <p id="page-subtitle">Your MOLIAMA Project Status</p>
-  </header>
+     <h1 id="page-title">Loading...</h1>
+     <p id="page-subtitle">Your MOLIAMA Project Status</p>
+   </header>
 
   <div id="content">
     <div class="loading">Loading your dashboard...</div>
@@ -367,8 +465,19 @@ function createInvoiceSummary(inv) {
 // ═══════════════════════════════════════
 // SECTION: Dashboard Loader
 // ═══════════════════════════════════════
+// Update user nav UI
+function updateUserNav(user) {
+  const userNavEl = document.getElementById('user-nav');
+  if (userNavEl && user) {
+    userNavEl.innerHTML = `
+      <div class="user-name">${user.first_name || user.name || 'Client'}</div>
+      ${user.is_admin ? '<div class="user-role">Admin Access</div>' : '<div class="user-role">Client Dashboard</div>'}
+    `;
+  }
+}
+
 async function loadDashboard() {
-  // Show skeleton first for better perceived performance
+   // Show skeleton first for better perceived performance
   showSkeleton();
   
   const user = await checkAuth();
@@ -388,11 +497,12 @@ async function loadDashboard() {
     }
 
     const data = await resp.json();
+    updateUserNav(user);
     renderDashboard(user, data);
   } catch (err) {
     console.error('Failed to load dashboard:', err);
     document.getElementById('content').innerHTML = '<div class="empty-state"><p>Error loading dashboard</p></div>';
-   }
+    }
  }
 
 // Start loader on page load
