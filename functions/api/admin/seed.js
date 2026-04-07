@@ -6,8 +6,8 @@ async function hashPassword(password) {
   const encoded = new TextEncoder().encode(password + SALT);
   const hash = await crypto.subtle.digest("SHA-256", encoded);
   return Array.from(new Uint8Array(hash))
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("");
+     .map(b => b.toString(16).padStart(2, "0"))
+     .join("");
 }
 
 export async function onRequestPost(context) {
@@ -20,69 +20,72 @@ export async function onRequestPost(context) {
     return new Response(JSON.stringify({ error: "Invalid seed key" }), {
       status: 401,
       headers: { "Content-Type": "application/json" }
-    });
-  }
+     });
+   }
 
   try {
-    // Drop existing table and recreate with correct schema
+     // Force drop and recreate - ensure no old schema exists
     await db.prepare(`DROP TABLE IF EXISTS users`).run();
+    await db.prepare(`DROP TABLE IF EXISTS sessions`).run();
     
-    // Create fresh users table
+     // Create fresh user session, and users table matching login.js expected schema exactly
+     // login.js SELECTs: id, name, email, role, password_hash (exactly 5 columns for users)
+     // login.js INSERT into sessions: user_id, token, created_at (exactly 3 columns)
     await db.prepare(
-      `CREATE TABLE users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE NOT NULL,
-        password_hash TEXT NOT NULL,
-        role TEXT DEFAULT 'user',
-        name TEXT,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-      )`
-    ).run();
+       `CREATE TABLE users (
+         id INTEGER PRIMARY KEY AUTOINCREMENT,
+         email TEXT UNIQUE NOT NULL,
+         password_hash TEXT NOT NULL,
+         role TEXT DEFAULT 'user',
+         name TEXT
+        )` + ' ' + 
+       `CREATE TABLE sessions (
+         user_id INTEGER,
+         token TEXT,
+         created_at TEXT,
+         FOREIGN KEY(user_id) REFERENCES users(id)
+        )`
+     ).run();
 
     const saltedPassword1 = await hashPassword("Moliam2026!");
     const saltedPassword2 = await hashPassword("OnePlus2026!");
 
-    // Insert admin user (ignore if exists)
-    await db.prepare(
-      `INSERT INTO users (email, password_hash, role, name)
-       VALUES (?, ?, 'admin', ?)`
-    ).run("admin@moliam.com", saltedPassword1, "Admin User");
+         // Insert admin user - D1 auto-increments id column
+    let usersStmt = db.prepare(`INSERT INTO users (email, password_hash, role, name) VALUES (?, ?, ?, ?)`);
+    await usersStmt.run("admin@moliam.com", saltedPassword1, "admin", "Admin User");
 
-    // Insert Oscar One Plus Electric user (ignore if exists)
-    await db.prepare(
-      `INSERT INTO users (email, password_hash, role, name)
-       VALUES (?, ?, 'user', ?)`
-    ).run("oscar@onepluselectric.com", saltedPassword2, "Oscar Johnson");
+        // Insert Oscar One Plus Electric user - D1 auto-increments id column  
+    let usersStmt2 = db.prepare(`INSERT INTO users (email, password_hash, role, name) VALUES (?, ?, ?, ?)`);
+    await usersStmt2.run("oscar@onepluselectric.com", saltedPassword2, "user", "Oscar Johnson");
 
     return new Response(JSON.stringify({
       success: true,
-      message: "Users seeded successfully",
+      message: "Users and sessions tables seeded successfully",
       users: [
-        { email: "admin@moliam.com", role: "admin" },
-        { email: "oscar@onepluselectric.com", role: "user" }
-      ]
-    }), {
+         { email: "admin@moliam.com", role: "admin" },
+         { email: "oscar@onepluselectric.com", role: "user" }
+       ]
+     }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
-    });
+     });
 
-  } catch (err) {
+   } catch (err) {
     console.error("Seed error:", err);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
+    return new Response(JSON.stringify({ error: "Internal server error: " + err.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" }
-    });
-  }
+     });
+   }
 }
 
 export async function onRequestOptions() {
   return new Response(null, {
     status: 204,
     headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "x-seed-key"
-    }
-  });
+       "Access-Control-Allow-Origin": "*",
+       "Access-Control-Allow-Methods": "POST, OPTIONS",
+       "Access-Control-Allow-Headers": "x-seed-key"
+     }
+   });
 }
-
