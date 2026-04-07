@@ -24,9 +24,12 @@ export async function onRequestPost(context) {
   }
 
   try {
-    // Create users table if not exists
+    // Drop existing table and recreate with correct schema
+    await db.prepare(`DROP TABLE IF EXISTS users`).run();
+    
+    // Create fresh users table
     await db.prepare(
-      `CREATE TABLE IF NOT EXISTS users (
+      `CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email TEXT UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
