@@ -1636,8 +1636,22 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 
 @media (max-width: 768px) {
-   .portfolio-grid { grid-template-columns: 1fr; gap: 24px; }
-   .case-card-inner { padding: 24px 20px; }
+    .portfolio-grid { grid-template-columns: 1fr; gap: 24px; }
+    .case-card-inner { padding: 24px 20px; }
+    
+    /* Ensure mobile portfolio is also single column for consistency */
+    #portfolio { padding: 80px 5%; }
+}
+
+@media (max-width: 480px) {
+    .portfolio-grid { gap: 16px; }
+    .case-card-inner { padding: 20px 16px; font-size: 0.9rem; }
+}
+
+/* Tablet enhancement: ensure 2-column grid for iPad Mini to iPad Pro */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .portfolio-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+    .case-card-inner { padding: 26px 22px; }
 }
 
 /* ═══════════════════════════════════════════
