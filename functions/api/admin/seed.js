@@ -1,78 +1,146 @@
-// Seed endpoint for Cloudflare Pages - Web Crypto API + CF D1 binding
+/**
+ * Seed endpoint — creates tables + inserts demo users
+ * POST /api/admin/seed with X-Seed-Key: moliam2026
+ */
 const SALT = "_moliam_salt_2026";
 
 async function hashPassword(password) {
-  const encoded = new TextEncoder().encode(password + SALT);
-  const hash = await crypto.subtle.digest("SHA-256", encoded);
-  return Array.from(new Uint8Array(hash))
-     .map(b => b.toString(16).padStart(2, "0"))
-      .join("");
+  const buf = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(password + SALT)
+  );
+  return Array.from(new Uint8Array(buf))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
-     // Check seed key header authentication (required for security)  
   const seedKey = request.headers.get("x-seed-key");
   if (seedKey !== "moliam2026") {
-    return new Response(JSON.stringify({ error: "Invalid seed key" }), {
-      status: 403,
-      headers: { "Content-Type": "application/json" }
-       });
-     }
+    return json(403, { error: "Invalid seed key" });
+  }
 
-try {
-        // Ensure clean slate with strong drop syntax
-    try { await db.prepare("DROP TABLE IF EXISTS sessions").run(); } catch(e){}
-    try { await db.prepare("DROP TABLE IF EXISTS users").run(); } catch(e){}
+  try {
+    // Drop and recreate core tables
+    await db.prepare("DROP TABLE IF EXISTS sessions").run();
+    await db.prepare("DROP TABLE IF EXISTS users").run();
 
-// Create users table - 5 data columns: email + password_hash + role + name + company   
-    await db.prepare(`CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'client', name TEXT, company TEXT)`).run();
+    // Users table — matches what login.js expects
+    await db.prepare(`
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        name TEXT,
+        role TEXT DEFAULT 'client',
+        company TEXT,
+        phone TEXT,
+        avatar_url TEXT,
+        is_active INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT (datetime('now')),
+        last_login TEXT
+      )
+    `).run();
 
-// Create sessions table - provide all 4 values explicitly: session_id + user_id + token + created_at
-    try { await db.prepare("DROP TABLE sessions").run(); } catch(e){}
-    await db.prepare(`CREATE TABLE sessions (session_id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)`).run();
+    // Sessions table — matches what login.js INSERT expects
+    await db.prepare(`
+      CREATE TABLE sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        token TEXT UNIQUE NOT NULL,
+        expires_at TEXT NOT NULL,
+        ip_address TEXT,
+        user_agent TEXT,
+        created_at TEXT DEFAULT (datetime('now'))
+      )
+    `).run();
 
-// Insert session - now we PROVIDE all 4 VALUES matching CREATE: session_id + user_id + token + created_at
-    const now = new Date().toISOString();
-    const randomToken="***" + Math.random().toString(36);
-    await db.prepare(`INSERT INTO sessions (session_id, user_id, token, created_at) VALUES (?, ?, ?, ?)`).run(Math.floor(Math.random() * 1000000), 1, randomToken, now);
+    // Create other tables if they don't exist (preserve existing data)
+    const otherTables = [
+      `CREATE TABLE IF NOT EXISTS leads (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT, email TEXT, phone TEXT, company TEXT,
+        service TEXT, message TEXT, source TEXT,
+        created_at TEXT DEFAULT (datetime('now'))
+      )`,
+      `CREATE TABLE IF NOT EXISTS client_profiles (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER, display_name TEXT, bio TEXT
+      )`,
+      `CREATE TABLE IF NOT EXISTS client_messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER, subject TEXT, message TEXT,
+        created_at TEXT DEFAULT (datetime('now'))
+      )`,
+      `CREATE TABLE IF NOT EXISTS client_activity (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER, action_type TEXT, details TEXT,
+        created_at TEXT DEFAULT (datetime('now'))
+      )`,
+      `CREATE TABLE IF NOT EXISTS projects (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        client_id INTEGER, name TEXT, type TEXT,
+        status TEXT DEFAULT 'active', monthly_rate REAL,
+        start_date TEXT, created_at TEXT DEFAULT (datetime('now'))
+      )`,
+      `CREATE TABLE IF NOT EXISTS project_updates (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        project_id INTEGER, title TEXT, description TEXT,
+        created_at TEXT DEFAULT (datetime('now'))
+      )`
+    ];
 
-// Verify - should be 1 session row with all 4 columns populated
-    const verify = await db.prepare("SELECT COUNT(*) as cnt FROM sessions").all();
+    for (const sql of otherTables) {
+      try { await db.prepare(sql).run(); } catch (e) { /* table may exist */ }
+    }
 
+    // Seed users
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
 
-        // Insert admin user - 5 VALUES matching CREATE: email + password_hash + role + name + company (NO id)   
-    await db.prepare(`INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`).run("admin@moliam.com", adminHash, "admin", "Admin", "Moliam");
+    await db.prepare(
+      "INSERT INTO users (email, password_hash, name, role, company, is_active) VALUES (?, ?, ?, ?, ?, 1)"
+    ).bind("admin@moliam.com", adminHash, "Administrator", "admin", "Moliam").run();
 
-        // Insert oscar user - same 5 VALUES, same order   
-    await db.prepare(`INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`).run("oscar@onepluselectric.com", oscarHash, "client", "Oscar", "OnePlus Electric");
+    await db.prepare(
+      "INSERT INTO users (email, password_hash, name, role, company, is_active) VALUES (?, ?, ?, ?, ?, 1)"
+    ).bind("oscar@onepluselectric.com", oscarHash, "Oscar Solis", "client", "OnePlus Electric").run();
 
-        
+    // Verify
+    const count = await db.prepare("SELECT COUNT(*) as total FROM users").first();
 
-       // Validate by counting users - should be exactly 2 rows
-    const result = await db.prepare("SELECT COUNT(*) as total FROM users").all();
-
-    return new Response(JSON.stringify({
+    return json(200, {
       success: true,
-      message: "Users and sessions tables seeded successfully",
-      user_count: result.data[0].total,
+      message: "Database seeded",
+      users_created: count.total,
       users: [
-           { email: "admin@moliam.com", role: "admin" },
-           { email: "oscar@onepluselectric.com", role: "client" }
-         ]
-       }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" }
-       });
+        { email: "admin@moliam.com", role: "admin" },
+        { email: "oscar@onepluselectric.com", role: "client" }
+      ]
+    });
 
-     } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" }
-       });
-     }
+  } catch (err) {
+    return json(500, { error: err.message });
+  }
+}
+
+export async function onRequestOptions() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, X-Seed-Key",
+    }
+  });
+}
+
+function json(status, body) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" }
+  });
 }
