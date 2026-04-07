@@ -137,25 +137,34 @@ async function checkAuth(token) {
 }
 
 async function fetchDashboard(token) {
-    const data = await fetch(`/api/dashboard?token=${btoa(token)}`, {
+    const data = await fetch('/api/dashboard', {
         method: 'GET',
         headers: { 'X-Auth-Token': token },
         credentials: 'include'
     }).then(r => r.json());
+
      
     return Promise.resolve(data);
 }
 
 (async function main() {
-      // Get stored auth token from localStorage instead of cookie extraction
+    // Get stored auth token from localStorage instead of cookie extraction
     const token = localStorage.getItem('authToken');
+
     if (!token) {
         window.location.href = '/login.html'; 
         return;
       }
 
-      // Check if user is still authenticated
-    const isAuthenticated = await checkAuth(token);
+     // Check if user is still authenticated
+     async function checkAuth(token) {
+         try {
+             const res = await fetch('/api/auth/status', { method: 'HEAD' });
+             return res.ok;
+         } catch (e) { return false; }
+     } 
+     const isAuthenticated = await checkAuth(token);
+
     if (!isAuthenticated) {
         localStorage.removeItem('authToken');
         window.location.href = '/login.html'; 

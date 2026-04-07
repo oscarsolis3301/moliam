@@ -30,10 +30,10 @@ nav{height:48px;border-bottom:1px solid var(--border-room);display:flex;align-it
 <div class="table-wrapper"><table class="client-table"><thead><tr><th>Client</th><th>Email</th><th>Projects</th><th>MRR</th><th>Actions</th></tr></thead><tbody id="clients-tbody">Loading...</tbody></table></div></div>
 
 <script>
-const API_BASE='/';
-const token = localStorage.getItem('moliam-session');
+const API_BASE = '/';
+const token = localStorage.getItem('authToken');
 
-if(token){fetch(API_BASE+'/api/admin/clients',{credentials:'include',headers:{'moliam-session':token}}).then(r=>r.json()).then(d=>{if(!d.success){window.location.href='/login.html';return;}
+if(token){fetch(API_BASE+'/api/admin/clients',{credentials:'include',headers:{'moliam-session':token}}).then(r=>r.json()).then(d=>{
 const clients=d.clients||[];
 document.getElementById('stats-bar').innerHTML='';
 const totalClients=clients.length;
