@@ -1379,44 +1379,45 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     margin: 8px 20px 0;
   }
 
-  /* Content sections — consistent spacing */
-  #services { padding: 64px 20px; }
-  .services-grid { grid-template-columns: 1fr; gap: 16px; }
-  .service-card { padding: 28px 24px; }
-  .section-title { font-size: clamp(24px, 6vw, 34px); margin-bottom: 12px; }
-  .section-subtitle { font-size: 15px; padding: 0 4px; line-height: 1.6; }
-  .section-label { font-size: 11px; }
-
-  #how-it-works { padding: 64px 12px; overflow: hidden; }
-  .steps-grid { grid-template-columns: 1fr; gap: 0; position: relative; }
-  .steps-grid::before { display: none; }
-  .step-card:not(:last-child)::after {
-    content: ''; display: block; position: absolute;
-    left: 50%; bottom: -28px; transform: translateX(-50%);
-    width: 2px; height: 28px;
-    background: linear-gradient(to bottom, var(--accent-blue), var(--accent-purple));
-    opacity: 0.4;
-  }
-  .step-card {
-    overflow: hidden; padding: 28px 20px 24px; width: 100%; min-width: 0;
-    position: relative; margin-bottom: 28px;
-  }
-  .step-card:last-child { margin-bottom: 0; }
-  .step-card h3 { font-size: 1.15rem; white-space: normal; }
-  .step-card p { font-size: 0.9rem; line-height: 1.7; }
-
-  #why-ai { padding: 64px 20px; }
-  #why-ai .steps-grid { grid-template-columns: 1fr !important; gap: 16px; }
-  #why-ai .step-card h3 { font-size: 18px; white-space: normal; overflow: visible; }
-  #testimonials { padding: 64px 20px; }
-  .testimonials-grid { grid-template-columns: 1fr; gap: 16px; }
-
-  #contact { padding: 64px 20px; max-width: 100%; }
-
-  /* Footer */
-  .footer-inner { flex-direction: column; text-align: center; gap: 16px; padding: 0 20px; }
-  .footer-links { flex-wrap: wrap; justify-content: center; gap: 16px; }
-  .case-stats { flex-wrap: wrap; gap: 12px; }
+@media (max-width: 768px) {
+     #services { padding: 64px 5%; }
+     .services-grid { grid-template-columns: 1fr; gap: 16px; }
+     .service-card { padding: 28px 20px; }
+     .section-title { font-size: clamp(24px, 5vw, 30px); margin-bottom: 12px; }
+     .section-subtitle { font-size: 14px; padding: 0 4px; line-height: 1.6; }
+     .section-label { font-size: 11px; }
+    
+     #how-it-works { padding: 64px 5%; overflow: hidden; }
+     .steps-grid { grid-template-columns: 1fr; gap: 0; position: relative; }
+     .steps-grid::before { display: none; }
+     .step-card:not(:last-child)::after {
+      content: ''; display: block; position: absolute;
+      left: 50%; bottom: -28px; transform: translateX(-50%);
+      width: 2px; height: 28px;
+      background: linear-gradient(to bottom, var(--accent-blue), var(--accent-purple));
+      opacity: 0.4;
+     }
+     .step-card {
+      overflow: hidden; padding: 28px 18px 24px; width: 100%; min-width: 0;
+      position: relative; margin-bottom: 28px;
+     }
+     .step-card:last-child { margin-bottom: 0; }
+     .step-card h3 { font-size: 1.1rem; white-space: normal; }
+     .step-card p { font-size: 0.9rem; line-height: 1.6; }
+    
+     #why-ai { padding: 64px 5%; }
+     #why-ai .steps-grid { grid-template-columns: 1fr !important; gap: 16px; }
+     #why-ai .step-card h3 { font-size: 17px; white-space: normal; overflow: visible; }
+     #testimonials { padding: 64px 5%; }
+     .testimonials-grid { grid-template-columns: 1fr; gap: 16px; }
+     .testimonial-card { padding: 24px 18px; }
+    
+     #contact { padding: 64px 5%; max-width: 100%; }
+    
+     /* Footer */
+     .footer-inner { flex-direction: column; text-align: center; gap: 16px; padding: 0 20px; }
+     .footer-links { flex-wrap: wrap; justify-content: center; gap: 16px; }
+     .case-stats { flex-wrap: wrap; gap: 12px; }
 }
 
 @media (max-width: 480px) {
