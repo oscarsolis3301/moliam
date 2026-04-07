@@ -48,8 +48,8 @@ export async function onRequestPost(context) {
     const hash_admin = await hashPassword("Moliam2026!");
     const hash_oscar = await hashPassword("OnePlus2026!");
 
-    await db.prepare("INSERT INTO users (id, email, password_hash, role, name, company, is_active, last_login, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)").run(null, "admin@moliam.com", hash_admin, "admin", "Administrator", "Moliam", 1, now, now);
-    await db.prepare("INSERT INTO users (id, email, password_hash, role, name, company, is_active, last_login, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)").run(null, "oscar@onepluselectric.com", hash_oscar, "user", "Oscar Solis", "OnePlus Electric", 1, now, now);
+    await db.prepare("INSERT INTO users (email, password_hash, role, name, company, is_active, last_login, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)").run("admin@moliam.com", hash_admin, "admin", "Administrator", "Moliam", 1, now, now);
+    await db.prepare("INSERT INTO users (email, password_hash, role, name, company, is_active, last_login, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)").run("oscar@onepluselectric.com", hash_oscar, "user", "Oscar Solis", "OnePlus Electric", 1, now, now);
 
      // Verify seeding worked - return count from SELECT
     const result = await db.prepare("SELECT id, email, name, role, company FROM users").all();
