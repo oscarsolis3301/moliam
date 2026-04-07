@@ -41,12 +41,12 @@ export async function onRequestPost(context) {
     // Insert oscar user - same pattern (D1 positional args), id auto-incremented
     await db.prepare("INSERT INTO users(email, password_hash, name, role) VALUES(?, ?, ?, ?)").bind("oscar@onepluselectric.com", oscarHash, "Oscar", "client").run();
 
-    // Debug check: verify the data actually got inserted
-    const usersResult = await db.prepare("SELECT COUNT(*) as count FROM users").all();
+    // Debug check: verify the data actually got inserted - D1 COUNT returns {count: NUMBER}, not array of rows with id
+    const usersResult = await db.prepare("SELECT * FROM users").all();
     
-    // Insert test sessions - 6 non-id columns per schema.sql v3: user_id, token, expires_at, created_at, ip_address, user_agent (7 total including id)
-    await db.prepare("INSERT INTO sessions(user_id, token, expires_at, created_at, ip_address, user_agent) VALUES(?, 'test-session-1', datetime('now', '+30 days'), datetime('now'), 'host.docker.internal', 'Mozilla/5.0 Test Browser')").run();
-    await db.prepare("INSERT INTO sessions(user_id, token, expires_at, created_at, ip_address, user_agent) VALUES(?, 'test-session-2', datetime('now', '+30 days'), datetime('now'), 'host.docker.internal', 'Mozilla/5.0 Test Browser')").run();
+         // Insert test sessions - 6 non-id columns: user_id, token, expires_at, created_at, ip_address, user_agent (7 total including id)
+    await db.prepare("INSERT INTO sessions(user_id, token, expires_at, created_at, ip_address, user_agent) VALUES(?, ?, datetime('now', '+30 days'), datetime('now'), ?, ?)").bind(usersResult.all[0].id, 'test-session-1', 'host.docker.internal', 'Mozilla/5.0 Test Browser').run();
+    await db.prepare("INSERT INTO sessions(user_id, token, expires_at, created_at, ip_address, user_agent) VALUES(?, ?, datetime('now', '+30 days'), datetime('now'), ?, ?)").bind(usersResult.all[1].id, 'test-session-2', 'host.docker.internal', 'Mozilla/5.0 Test Browser').run();
 
     return new Response(JSON.stringify({
       success: true,
