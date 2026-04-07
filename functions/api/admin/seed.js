@@ -22,9 +22,9 @@ export async function onRequestPost(context) {
   }
 
   try {
-    // Drop existing tables to reset schema
-    await db.prepare("DROP TABLE IF EXISTS users").run();
-    await db.prepare("DROP TABLE IF EXISTS sessions").run();
+    // Full cleanup - force drop all tables without IF EXISTS check, then recreate from scratch
+    const drop1 = await db.prepare("DROP TABLE users").execute();
+    const drop2 = await db.prepare("DROP TABLE sessions").execute();
 
     // Create users table - columns: id (auto-increment), email, password_hash, role, name, company
     await db.prepare("CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'user', name TEXT, company TEXT)").run();
@@ -32,18 +32,27 @@ export async function onRequestPost(context) {
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
 
-    // Insert admin user - use correct SQL with 5 placeholders (no id, it's auto-incremented)
+     // Insert admin user - 5 data columns (email, password_hash, role, name, company) = 5 placeholders = CORRECT
+
     await db.prepare("INSERT INTO users(email, password_hash, role, name, company) VALUES(?, ?, ?, ?, ?)").run("admin@moliam.com", adminHash, "admin", "Admin", "Moliam");
 
-    // Insert oscar user - use correct SQL with 5 placeholders (no id, it's auto-incremented)
+     // Insert oscar user - same 5 columns, all parameters correct
     await db.prepare("INSERT INTO users(email, password_hash, role, name, company) VALUES(?, ?, ?, ?, ?)").run("oscar@onepluselectric.com", oscarHash, "client", "Oscar", "OnePlus Electric");
 
-    // Create sessions table - fixed: remove user_id as PK, use auto-increment id instead
+     // Debug check: verify the data actually got inserted
+    const usersResult = await db.prepare("SELECT COUNT(*) as count FROM users").all();
+
+    // Create sessions table - columns: id (auto-increment), user_id, token, created_at
     await db.prepare("CREATE TABLE sessions(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)").run();
 
-    // Insert into sessions - use correct SQL with 4 placeholders (id is auto-increment)
-    await db.prepare("INSERT INTO sessions(user_id, token, created_at) VALUES(?, ?, ?)").run(1, "session-token-1", new Date().toISOString());
-    await db.prepare("INSERT INTO sessions(user_id, token, created_at) VALUES(?, ?, ?)").run(2, "session-token-2", new Date().toISOString());
+     // Debug: insert session with correct column count = 3 VALUES for user_id, token, created_at (id is autoincrement)
+     try {
+       const sess1 = await db.prepare("INSERT INTO sessions(user_id, token, created_at) VALUES(?, ?, ?)").run(1, "session-token-1", new Date().toISOString());
+       const sess2 = await db.prepare("INSERT INTO sessions(user_id, token, created_at) VALUES(?, ?, ?)").run(2, "session-token-2", new Date().toISOString());
+     } catch (err) {
+       // If there's a column mismatch error, let the outer try-catch handle it with full error message
+       throw err;
+     }
 
     return new Response(JSON.stringify({
       success: true,
