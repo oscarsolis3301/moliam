@@ -1,4 +1,4 @@
-<script>
+
 /* ══════════════════════════════════════════════════════════
    Progressive Form — Moliam Contact Section
    Self-contained IIFE. No dependencies.
@@ -438,3 +438,4 @@
     init();
   }
 })();
+
