@@ -28,23 +28,11 @@ export async function onRequestPost(context) {
     await db.prepare(`DROP TABLE IF EXISTS users`).run();
     await db.prepare(`DROP TABLE IF EXISTS sessions`).run();
     
-     // Create fresh user session, and users table matching login.js expected schema exactly
-     // login.js SELECTs: id, name, email, role, password_hash (exactly 5 columns for users)
-     // login.js INSERT into sessions: user_id, token, created_at (exactly 3 columns)
-    await db.prepare(
-       `CREATE TABLE users (
-         id INTEGER PRIMARY KEY AUTOINCREMENT,
-         email TEXT UNIQUE NOT NULL,
-         password_hash TEXT NOT NULL,
-         role TEXT DEFAULT 'user',
-         name TEXT
-        )` + ' ' + 
-       `CREATE TABLE sessions (
-         user_id INTEGER,
-         token TEXT,
-         created_at TEXT,
-         FOREIGN KEY(user_id) REFERENCES users(id)
-        )`
+    // Create fresh user session, and users table matching login.js expected schema exactly
+      // login.js SELECTs: id, name, email, role, password_hash (exactly 5 columns for users)
+      // login.js INSERT into sessions: user_id, token, created_at (exactly 3 columns)
+    await db.prepare('CREATE TABLE users (\n' + '     id INTEGER PRIMARY KEY AUTOINCREMENT,\n' + '     email TEXT UNIQUE NOT NULL,\n' + '     password_hash TEXT NOT NULL,\n' + '     role TEXT DEFAULT '"'"'user'"'"',\n' + '     name TEXT\n' + ')').run();
+    await db.prepare('CREATE TABLE sessions (\n' + '     user_id INTEGER,\n' + '     token TEXT,\n' + '     created_at TEXT,\n' + '     FOREIGN KEY(user_id) REFERENCES users(id)\n' + ')').run();
      ).run();
 
     const saltedPassword1 = await hashPassword("Moliam2026!");
