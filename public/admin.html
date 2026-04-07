@@ -87,13 +87,178 @@ a.view-btn{display:inline-block;padding:8px 18px;border-radius:8px;text-decorati
 
 <script>
 const API_BASE = '/';
-const token = localStorage.getItem('auth_token') || '';
-</script>
+const token = localStorage.getItem('moliam_token') || '';
+const url = new URL(window.location);
+const impersonateId = url.searchParams.get('impersonate');
+const isAdmin = localStorage.getItem('user_role') === 'admin';
 
 // Redirect if not authenticated
 if (!token) {
   window.location.href = '/login.html';
 }
+
+// If we're impersonating, verify admin permissions first
+if (impersonateId && isAdmin) {
+  const banner = document.getElementById('impersonation-banner');
+  const viewingSpan = document.getElementById('impersonated-name');
+  if (banner) banner.style.display = 'flex';
+}
+
+function showImpersonationBanner(client) {
+  if (impersonateId && isAdmin) {
+    const banner = document.getElementById('impersonation-banner');
+    const viewingSpan = document.getElementById('impersonated-name');
+    banner.style.display = 'block';
+    viewingSpan.textContent = client?.name || 'Client';
+    const exitLink = document.querySelector('#impersonation-banner a[href]');
+    if (exitLink && !exitLink.textContent.trim().includes('Exit')) {
+      exitLink.href = window.location.pathname;
+    }
+  }
+}
+
+async function fetchAdminData() {
+  try {
+    const params = {};
+    if (impersonateId) params.impersonate = impersonateId;
+    
+    const res = await fetch(API_BASE + 'api/admin/clients?' + new URLSearchParams(params), {
+      headers: { 'Accept': 'application/json' },
+      credentials: 'include'
+    });
+    
+    if (!res.ok) throw new Error('Fetch failed');
+    return await res.json();
+  } catch (e) {
+    console.error('Fetch error:', e);
+    return { success: false };
+  }
+}
+
+async function renderAdminDashboard() {
+  const result = await fetchAdminData();
+  
+  if (!result.success || !result.data || !result.data.clients) return;
+  
+  const client = result.data.client;
+  const clients = result.data.clients;
+  const projects = result.data.projects || [];
+  
+  // Show impersonation banner if needed
+  await showImpersonationBanner(client);
+  
+  // Update stats bar
+  document.getElementById('total-clients').textContent = clients.length.toLocaleString();
+  const activeCount = projects.filter(p => p.status === 'active').length;
+  document.getElementById('active-projects').textContent = activeCount.toLocaleString();
+  const mrr = projects.reduce((sum, p) => sum + (parseFloat(p.monthly_rate) || 0), 0);
+  document.getElementById('mrr').textContent = '$' + mrr.toLocaleString();
+
+  // Render clients table vs mobile card stack
+  let html = '';
+  
+  if (clients && clients.length > 0) {
+    const isMobile = window.innerWidth <= 768;
+    
+    if (!isMobile) {
+      // Desktop: table layout
+      html += '<table><thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+      
+      for (let c of clients) {
+        const statusClass = c.status === 'active' ? 'status-active' : 'status-inactive';
+        const clientName = c.name || 'Untitled Client';
+        
+        html += '<tr>' +
+             '<td class="client-name">' + clientName + '</td>' +
+            `<td class="client-email">${c.email}</td>` +
+            '<td><span class="' + statusClass + '">' + (c.status === 'active' ? 'Active' : 'Inactive') + '</span></td>' +
+            '<td>';
+        
+        // Show projects count if any
+        const userProjects = projects.filter(p => p.client_id == c.id);
+        if (userProjects.length > 0) {
+          html += '<div style="margin-bottom:6px;">' + 
+                    '<span style="color:var(--text-primary);font-size:12px;">+' + userProjects.length + ' project(s)</span>' +
+                  '</div>';
+        }
+        
+        // View as client button (redirect to dashboard with impersonate param)
+        html += `<a href="/dashboard.html?impersonate=${c.id}" class="view-btn">View as Client</a>`;
+        html += '<a href="mailto:' + c.email + '" style="background:rgba(139,92,246,0.1);color:var(--accent-purple);border-color:rgba(139,92,246,0.3);" class="view-btn">✉️ Email</a>';
+        html += '</td></tr>';
+      }
+      
+      html += '</tbody></table>';
+    } else {
+      // Mobile: card stack layout
+      html = '<div class="client-card-stack">';
+      
+      for (let c of clients) {
+        const statusClass = c.status === 'active' ? 'status-active' : 'status-inactive';
+        const clientName = c.name || 'Untitled Client';
+        
+        html += '<div class="client-card">' +
+            '<div class="client-header">' +
+               '<div class="client-name-lg">' + clientName + '</div>' +
+              `<div class="client-email-lg">${c.email}</div>` +
+              `<span class="${statusClass} status-badge-lg">${c.status === 'active' ? 'Active' : 'Inactive'}</span>` +
+            '</div>' +
+            '<div class="client-actions-grid">' +
+              `<a href="/dashboard.html?impersonate=${c.id}" class="client-btn">👁 View as ${clientName.split()[0]}</a>` +
+              `<a href="mailto:${c.email}" class="client-btn">✉️ Email Client</a>` +
+            '</div>';
+            
+        // Show projects mobile
+        const userProjects = projects.filter(p => p.client_id == c.id);
+        if (userProjects.length > 0) {
+          html += '<div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--border-room);font-size:12px;color:var(--text-secondary);">+' + userProjects.length + ' project(s)</div>';
+        }
+        
+        html += '</div>';
+      }
+      
+      html += '</div>';
+    }
+  } else {
+    html = '<div style="padding:48px;text-align:center;color:var(--text-secondary);background:var(--bg-room);border-radius:12px;">No clients found.</div>';
+  }
+  
+  document.getElementById('clients-table-wrapper').innerHTML = html;
+}
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', () => {
+  renderAdminDashboard().catch(e => console.error('Init error:', e));
+});
+
+async function handleRefreshDashboard() {
+  const wrapper = document.getElementById('clients-table-wrapper');
+  if (wrapper) {
+    wrapper.innerHTML = '<div class="loading">Refreshing...</div>';
+  }
+  await renderAdminDashboard();
+}
+
+// Add refresh button to navbar if exists
+const nav = document.querySelector('nav');
+if (nav && isAdmin) {
+  const refreshBtn = document.createElement('button');
+  refreshBtn.textContent = '🔄 Refresh';
+  refreshBtn.style.cssText = 'margin-left:12px;background:transparent;color:var(--accent-blue);border:1px solid var(--border-room);padding:6px 16px;border-radius:4px;font-size:13px;cursor:pointer;';
+  refreshBtn.addEventListener('click', handleRefreshDashboard);
+  nav.appendChild(refreshBtn);
+}
+
+// Add logout button if exists
+if (isAdmin) {
+  const logoutBtn = document.createElement('a');
+  logoutBtn.href = '/dashboard.html';
+  logoutBtn.textContent = '🚪 Logout';
+  logoutBtn.style.cssText = 'margin-left:12px;color:var(--accent-blue);';
+  nav.appendChild(logoutBtn);
+}
+
+</script>
 
 async function initAdminAuthCheck() {
       // If we're impersonating, verify admin permissions first
@@ -253,7 +418,7 @@ if (nav && isAdmin) {
   refreshBtn.addEventListener('click', handleRefreshDashboard);
   nav.appendChild(refreshBtn);
 }
-</script>\n\n<script src=\"mobile-enhancement.js\"></script>\n</head>\n<body>
+</script>
 
 <nav><div class="logo">MOLIAMA <span style="font-size:11px;color:var(--accent-blue);margin-left:8px;opacity:.6">(ADMIN)</span></div><a href="/" class="back-btn">← Back to Website</a></nav>
 
