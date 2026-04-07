@@ -33,6 +33,11 @@ export async function onRequestPost(context) {
     // Create sessions table with NO auto-increment - 4 COLUMNS: id + user_id + token + created_at
     await db.prepare(`CREATE TABLE sessions (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)`).run();
 
+// Insert session WITHOUT id (let SQLite auto-increment handle it) - provides 3 VALUES: user_id + token + created_at
+    const now = new Date().toISOString();
+    const randomToken = "session_" + Math.random().toString(36);
+    await db.prepare(`INSERT INTO sessions (user_id, token, created_at) VALUES (?, ?, ?)`).run(1, randomToken, now);
+
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
 
@@ -42,10 +47,7 @@ export async function onRequestPost(context) {
         // Insert oscar user - same 5 VALUES, same order   
     await db.prepare(`INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`).run("oscar@onepluselectric.com", oscarHash, "user", "Oscar", "OnePlus Electric");
 
-        // Insert session record - provide ALL 4 COLUMNS: id + user_id + token + created_at
-    const now = new Date().toISOString();
-    const randomToken="***" + Math.random().toString(36);
-    await db.prepare(`INSERT INTO sessions (id, user_id, token, created_at) VALUES (?, ?, ?, ?)`).run(1, 1, randomToken, now);
+        
 
        // Validate by counting users - should be exactly 2 rows
     const result = await db.prepare("SELECT COUNT(*) as total FROM users").all();
