@@ -151,6 +151,22 @@ header p { color: var(--text-secondary); font-size: 15px; }
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
   border-color: rgba(59, 130, 246, 0.3);
 }
+/* Project card for task list */
+.project-card {
+  background: linear-gradient(135deg, rgba(31,41,55,0.8), rgba(15,23,42,0.7));
+  border: 1px solid var(--border-room);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 16px;
+  backdrop-filter: blur(10px) saturate(180%);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+.project-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+.project-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
 .card-header {
   display: flex;
   justify-content: space-between;
