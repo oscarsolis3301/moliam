@@ -133,56 +133,60 @@ async function renderDashboard() {
 
   showImpersonationBanner(client);
 
-  // Project cards
-  let html = '';
-  if (!projects.length) {
-    html = '<div class="empty-state"><h3>No active projects yet</h3><p>Ready to get started?</p></div>';
+  // Show skeleton loading for first render
+  if (!projects.length && !updates.length && !invoices.length) {
+    document.getElementById('project-section').innerHTML = '<div class="skeleton-card" style="height:180px;"></div>';
   } else {
-    for (let p of projects) {
-      const typeClass = p.type ? p.type.toLowerCase().replace(' ', '-') : 'website';
-      html += `<div class="project-card">`;
-      html += `<div class="project-header"><h3 class="project-name">${p.name || 'Project'}</h3>`;
-      html += `<div><span class="type-badge type-${typeClass}">${p.type || 'Website'}</span>`;
-      html += `<span class="status-badge status-${p.status==='active'?'active':'pending'}">${p.status==='active'?'Active':'Pending'}</span></div></div>`;
-      html += `<div class="project-details">`;
-      html += `<div class="detail-row"><span>Monthly Rate:</span><span>$${(parseFloat(p.monthly_rate)||0).toLocaleString()}</span></div>`;
-      html += `<div class="detail-row"><span>Start Date:</span><span>${p.start_date?new Date(p.start_date).toLocaleDateString():'N/A'}</span></div>`;
-      if (p.invoice_url && p.invoice_url !== '#') {
-        html += `<div class="project-actions"><a href="${p.invoice_url}" class="btn btn-secondary">📄 View Invoice</a></div>`;
+    // Project cards
+    let html = '';
+    if (!projects.length) {
+      html = '<div class="empty-state"><h3>No active projects yet</h3><p>Ready to get started?</p></div>';
+    } else {
+      for (let p of projects) {
+        const typeClass = p.type ? p.type.toLowerCase().replace(' ', '-') : 'website';
+        html += `<div class="project-card fade-in">`;
+        html += `<div class="project-header"><h3 class="project-name">${p.name || 'Project'}</h3>`;
+        html += `<div><span class="type-badge type-${typeClass}">${p.type || 'Website'}</span>`;
+        html += `<span class="status-badge status-${p.status==='active'?'active':'pending'}">${p.status==='active'?'Active':'Pending'}</span></div></div>`;
+        html += `<div class="project-details">`;
+        html += `<div class="detail-row"><span>Monthly Rate:</span><span>$${(parseFloat(p.monthly_rate)||0).toLocaleString()}</span></div>`;
+        html += `<div class="detail-row"><span>Start Date:</span><span>${p.start_date?new Date(p.start_date).toLocaleDateString():'N/A'}</span></div>`;
+        if (p.invoice_url && p.invoice_url !== '#') {
+          html += `<div class="project-actions"><a href="${p.invoice_url}" class="btn btn-secondary">📄 View Invoice</a></div>`;
+        }
+        if (p.client_email) {
+          html += `<div class="project-actions"><a href="mailto:${encodeURIComponent(p.client_email)}?subject=Message about ${encodeURIComponent(p.name||'project')}" class="btn btn-secondary">💬 Message Us</a></div>`;
+        }
+        html += `</div></div>`;
       }
-      if (p.client_email) {
-        html += `<div class="project-actions"><a href="mailto:${encodeURIComponent(p.client_email)}?subject=Message about ${encodeURIComponent(p.name||'project')}" class="btn btn-secondary">💬 Message Us</a></div>`;
+      document.getElementById('project-section').innerHTML = html;
+    }
+
+    // Milestones with skeleton loading
+    const milestonesList = document.getElementById('milestones-list');
+    if (updates.length > 0) {
+      let ml = '';
+      for (let m of updates.slice(0,5)) {
+        ml += `<div class="milestone-item fade-in"><span>🚩</span><div style="font-weight:600">${m.description||'Update'}</div>`;
+        ml += `<div style="font-size:12px;color:var(--text-secondary)">${new Date(m.created_at).toLocaleDateString()}</div></div>`;
       }
-      html += `</div></div>`;
+      milestonesList.innerHTML = ml;
+      document.getElementById('milestones-section').style.display='block';
+    } else {
+      milestonesList.innerHTML = '<p style="font-size:13px;color:var(--text-secondary)">No recent milestones.</p>';
+      document.getElementById('milestones-section').style.display='block';
     }
-    document.getElementById('project-section').innerHTML = html;
-  }
 
-  // Milestones
-  const milestonesList = document.getElementById('milestones-list');
-  if (updates.length > 0) {
-    let ml = '';
-    for (let m of updates.slice(0,5)) {
-      ml += `<div class="milestone-item"><span>🚩</span><div><div style="font-weight:600">${m.description||'Update'}</div>`;
-      ml += `<div style="font-size:12px;color:var(--text-secondary)">${new Date(m.created_at).toLocaleDateString()}</div></div></div>`;
-    }
-    milestonesList.innerHTML = ml;
-    document.getElementById('milestones-section').style.display='block';
-  } else {
-    milestonesList.innerHTML = '<p style="font-size:13px;color:var(--text-secondary)">No recent milestones.</p>';
-    document.getElementById('milestones-section').style.display='block';
-  }
+    // Invoice summary with slide-in effect
+    const totalBilled = invoices.reduce((sum, inv) => sum + (parseFloat(inv.amount)||0), 0);
+    const totalPaid = invoices.reduce((sum, inv) => sum + (parseFloat(inv.paid_amount)||0), 0);
+    const outstanding = totalBilled - totalPaid;
+    const outstandingColor = outstanding > 0 ? '#F59E0B' : (outstanding < 0 ? '#EF4444' : 'var(--accent-blue)');
 
-  // Invoice summary
-  const totalBilled = invoices.reduce((sum, inv) => sum + (parseFloat(inv.amount)||0), 0);
-  const totalPaid = invoices.reduce((sum, inv) => sum + (parseFloat(inv.paid_amount)||0), 0);
-  const outstanding = totalBilled - totalPaid;
-  const outstandingColor = outstanding > 0 ? '#F59E0B' : (outstanding < 0 ? '#EF4444' : 'var(--accent-blue)');
-
-  const statusBar = document.getElementById('stats-bar');
-  statusBar.innerHTML = `
-    <div class="invoice-card"><div class="invoice-label">Total Billed</div><div>$${totalBilled.toLocaleString()}</div></div>
-    <div class="invoice-card"><div class="invoice-label">Amount Paid</div><div style="color:var(--accent-green)">$${totalPaid.toLocaleString()}</div></div>
+    const statusBar = document.getElementById('stats-bar');
+    statusBar.innerHTML = `
+     <div class="invoice-card fade-in" style="animation-delay:100ms"><div class="invoice-label">Total Billed</div><div>$${totalBilled.toLocaleString()}</div></div>
+     <div class="invoice-card fade-in" style="animation-delay:200ms"><div class="invoice-label">Amount Paid</div><div style="color:var(--accent-green)
     <div class="invoice-card"><div class="invoice-label">Outstanding</div><div style="color:${outstandingColor}">$${Math.abs(outstanding).toLocaleString()}</div></div>
   `;
   document.getElementById('invoices-section').style.display='block';
@@ -346,8 +350,20 @@ init().catch(e => console.error('Error:', e));
 /* SMOOTH TRANSITIONS */
 .transition-fade{transition:opacity 0.3s ease,transform 0.3s ease}.fade-in{animation:fadeIn 0.4s cubic-bezier(0.4,0,0.2,1);@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
+/* RELOAD PULSE ANIMATION */
+@keyframes reloadPulse{0%{box-shadow:0 0 0 0 rgba(59,130,246,0.4)}70%{box-shadow:0 0 0 10px rgba(59,130,246,0)}100%{box-shadow:0 0 0 0 rgba(59,130,246,0)}}.reload-pulse{animation:reloadPulse 1.5s ease-out}
+
+/* LOADING SKELETOR BARS - DYNAMIC */
+.skeleton-bar{background:linear-gradient(90deg,rgba(59,130,246,0.1) 25%,rgba(139,92,246,0.1) 50%,rgba(59,130,246,0.1) 75%);background-size:200% 100%;animation:skeletonLoad 1.5s ease-in-out infinite;border-radius:8px;height:24px}.@keyframes skeletonLoad{0%{background-position:-200% 0}100%{background-position:200% 0}}
+
+/* SKELETAL CARD LOADING */
+.skeleton-card{background:linear-gradient(90deg,var(--bg-room) 25%,var(--border-room) 50%,var(--bg-room) 75%);background-size:200% 100%;animation:skeletonPulse 1.5s ease-in-out infinite;border-radius:16px}.@keyframes skeletonPulse{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* GLASS REFLECTIONS */
+.glass-shine{animation:glassShine 2s ease-in-out infinite}.@keyframes glassShine{0%,100%{box-shadow:0 8px 32px rgba(59,130,246,0.15),inset 0 0 0 1px rgba(59,130,246,0.1)}50%{box-shadow:0 8px 32px rgba(59,130,246,0.25),inset 0 0 0 1px rgba(59,130,246,0.2)}}
+
 /* MOBILE CARD STACK FOR PROJECTS */
-@media(max-width:768px){.project-grid{grid-template-columns:1fr}.empty-state{padding:32px 16px;text-align:center}.invoice-card-stacked{display:block}.invoice-card:first-child{margin-bottom:8px}}
+@media(max-width:768px){.project-grid{grid-template-columns:1fr}.empty-state{padding:32px 16px;text-align:center}.invoice-card-stacked{display:block}.invoice-card:last-child{margin-bottom:0}
 
 /* MOBILE CLIENT TABLE - CARD STACK */
 @media(max-width:768px){.admin-clients-table{overflow-x:visible}.admin-clients-table table.display-mobile{display:none}table.mobile-table{display:grid;gap:12px}.mobile-client-card{background:var(--bg-room);border:1px solid var(--border-room);border-radius:12px;padding:16px;animation:slideInCard 0.3s ease-out}@keyframes slideInCard{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.mobile-client-header{display:block;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border-room)}.mobile-client-name{font-size:14px;font-weight:600;color:var(--text-primary)}.mobile-client-email{font-size:12px;color:var(--text-secondary)}.mobile-client-actions{display:flex;gap:8px;margin-top:12px}.mobile-entry-btn,a.mobile-entry-link{display:block;padding:10px 12px;border-radius:6px;text-align:center;text-decoration:none;font-size:12px;transition:all 0.2s}.mobile-entry-btn:first-child,.mobile-entry-link:first-child{background:rgba(59,130,246,0.1);color:var(--accent-blue);border:1px solid rgba(59,130,246,0.3)}.mobile-entry-btn:last-child,a.mobile-entry-link:last-child{background:rgba(139,92,246,0.1);color:var(--accent-purple);border:1px solid rgba(139,92,246,0.3)}}
