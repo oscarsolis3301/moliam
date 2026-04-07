@@ -510,20 +510,187 @@ h1,h2,h3,h4,h5,h6{ font-family:'Inter',system-ui,-apple-system, sans-serif ;} h1
 const form = document.getElementById('loginForm');
 const btn = document.getElementById('loginBtn');
 const alertEl = document.getElementById('alert');
-const passwordInput=document.getElementById('password');
-const passwordToggle=document.getElementById('passwordToggle');
-const email=document.getElementById('email').value;
+const email = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+const passwordToggle = document.getElementById('passwordToggle');
+
+// Password visibility toggle functionality
+if (passwordToggle) {
+  passwordToggle.addEventListener('click', () => {
+    const isPassword = passwordInput.type === 'password';
+    passwordInput.type = isPassword ? 'text' : 'password';
+    passwordToggle.setAttribute('aria-pressed', String(isPassword));
+    passwordToggle.classList.toggle('active');
+    passwordInput.focus();
+  });
+}
+
+function showError(element, message) {
+  const errorEl = element.nextElementSibling;
+  if (errorEl && errorEl.classList.contains('visually-hidden')) {
+    errorEl.textContent = message;
+    errorEl.style.display = 'block';
+  }
+}
+
+function clearError(element) {
+  const errorEl = element.nextElementSibling;
+  if (errorEl && errorEl.classList.contains('visually-hidden')) {
+    errorEl.textContent = '';
+    errorEl.style.display = 'none';
+  }
+}
+
+function showAlert(msg, type) {
+  alertEl.textContent = msg;
+  alertEl.className = `alert ${type}`;
+  alertEl.style.display = 'block';
+}
+
+// Email validation with inline errors
+email.addEventListener('blur', () => {
+  if (email.value && !/^[\w.-]+@[\w.-]+\.\w+$/.test(email.value)) {
+    showError(email, 'Please enter a valid email address');
+  } else {
+    clearError(email);
+  }
+});
+
+passwordInput.addEventListener('blur', () => {
+  if (passwordInput.value && passwordInput.value.length < 6) {
+    showError(passwordInput, 'Password must be at least 6 characters');
+  } else {
+    clearError(passwordInput);
+  }
+});
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  const email=document.getElementById('email').value;
-  if (!email) document.getElementById('error-email-error').textContent = 'Email is required';
-  else passwordInput.focus();
-  return;
+  // Clear any previous errors
+  email.style.borderColor = '';
+  passwordInput.style.borderColor = '';
+
+  const emailValue = email.value.trim();
+  const pwd = passwordInput.value;
+
+  if (!emailValue) {
+    showError(email, 'Email is required');
+    email.focus();
+    return;
+  }
+
+  if (!/^[\w.-]+@[\w.-]+\.\w+$/.test(emailValue)) {
+    showError(email, 'Please enter a valid email address');
+    email.focus();
+    return;
+  }
+
+  if (!pwd) {
+    showError(passwordInput, 'Password is required');
+    passwordInput.focus();
+    return;
+  }
+
+  if (pwd.length < 6) {
+    showError(passwordInput, 'Password must be at least 6 characters');
+    passwordInput.focus();
+    return;
+  }
+
+  // Show loading state
+  btn.disabled = true;
+  btn.classList.add('loading');
+
+ try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email: emailValue, password: pwd }),
+     });
+
+    const data = await res.json();
+
+    if (data.success) {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+      // Redirect based on role
+      if (data.user.role === 'admin') {
+        window.location.href = '/admin';
+       } else {
+        window.location.href = '/dashboard';
+       }
+     } else {
+      showAlert(data.message || 'Login failed.', 'error');
+      btn.classList.remove('loading');
+      btn.disabled = false;
+      passwordInput.value = '';
+      passwordInput.focus();
+     }
+   } catch (err) {
+    showAlert('Connection error. Please try again.', 'error');
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+});
+
+// Handle "Forgot password" click
+document.querySelectorAll('.forgot-link').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    showAlert('Contact hello@moliam.com to reset your password.', 'info');
+  });
+});
+
+// Mobile: collapse branding when form is focused
+const formInputs = document.querySelectorAll('#loginForm input');
+let focusTimeout;
+formInputs.forEach(input => {
+  input.addEventListener('focus', () => {
+    clearTimeout(focusTimeout);
+    document.body.classList.add('form-focused');
+    setTimeout(() => {
+      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+     }, 300);
+   });
+  input.addEventListener('blur', () => {
+    focusTimeout = setTimeout(() => {
+      if (!document.activeElement || !document.activeElement.closest('#loginForm input')) {
+        document.body.classList.remove('form-focused');
+       }
+     }, 200);
+   });
+});
+
+// Check if already logged in on load
+(async () => {
+  try {
+    const res = await fetch('/api/auth/me', { credentials: 'include' });
+    const data = await res.json();
+    if (data.success) {
+      window.location.href = data.user.role === 'admin' ? '/admin.html' : '/dashboard.html';
+     }
+   } catch {}
+})();
+
+// Keyboard navigation support - tab indicators enhanced
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Tab') {
+    document.body.classList.add('keyboard-nav');
+  }
+});
+
+document.addEventListener('mousedown', () => {
+  document.body.classList.remove('keyboard-nav');
+});
+
+// Disable reduced-motion animations for accessibility, support user preference
+if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  document.documentElement.style.setProperty('--transition-smooth', '0ms');
 }
 
-btn.addEventListener('click', function() {
+</script>
   try {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
