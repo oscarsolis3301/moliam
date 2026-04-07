@@ -100,17 +100,26 @@ function showModal(title, content) {
   return '<dialog style="background:var(--bg-room);color:var(--text-primary);padding:24px;border-radius:16px;border:1px solid var(--border-room)"><h3>' + title + '</h3>' + content + '</dialog>';
 }
 
-function showAlert(message, type = 'info') {
+function showAlert(message, type = 'info', duration = 4000) {
   const existingAlert = document.querySelector('.alert-toast');
   if (existingAlert) existingAlert.remove();
   const alert = document.createElement('div');
   alert.className = `alert-toast ${type}`;
-  alert.textContent = message;
+  alert.innerHTML = `<span>${message}</span><button class="alert-dismiss">×</button>`;
   alert.style.background = type === 'error' ? '#EF4444' : type === 'success' ? '#10B981' : '#3B82F6';
+  
+  const dismissBtn = alert.querySelector('.alert-dismiss');
+  dismissBtn.onclick = () => {
+    alert.classList.remove('show');
+    setTimeout(() => alert.remove(), 200);
+  };
+  
   document.body.appendChild(alert);
   requestAnimationFrame(() => alert.classList.add('show'));
-  setTimeout(() => alert.remove(), 3000);
+  setTimeout(() => alert.remove(), duration);
 }
+
+/* Add dismiss button styling in CSS */
 
 async function renderDashboard() {
   const result = await fetchDashboard();
@@ -336,14 +345,33 @@ init().catch(e => console.error('Error:', e));
 /* SMOOTH TRANSITIONS */
 .transition-fade{transition:opacity 0.3s ease,transform 0.3s ease}.fade-in{animation:fadeIn 0.4s cubic-bezier(0.4,0,0.2,1);@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-/* TABLET MOBILE OPTIMIZATIONS */
-/* Combine admin table styles into main CSS */
+/* MOBILE CARD STACK FOR PROJECTS */
+@media(max-width:768px){.project-grid{grid-template-columns:1fr}.empty-state{padding:32px 16px;text-align:center}.invoice-card-stacked{display:block}.invoice-card:first-child{margin-bottom:8px}}
+
+/* MOBILE CLIENT TABLE - CARD STACK */
+@media(max-width:768px){.admin-clients-table{overflow-x:visible}.admin-clients-table table.display-mobile{display:none}table.mobile-table{display:grid;gap:12px}.mobile-client-card{background:var(--bg-room);border:1px solid var(--border-room);border-radius:12px;padding:16px;animation:slideInCard 0.3s ease-out}@keyframes slideInCard{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.mobile-client-header{display:block;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border-room)}.mobile-client-name{font-size:14px;font-weight:600;color:var(--text-primary)}.mobile-client-email{font-size:12px;color:var(--text-secondary)}.mobile-client-actions{display:flex;gap:8px;margin-top:12px}.mobile-entry-btn,a.mobile-entry-link{display:block;padding:10px 12px;border-radius:6px;text-align:center;text-decoration:none;font-size:12px;transition:all 0.2s}.mobile-entry-btn:first-child,.mobile-entry-link:first-child{background:rgba(59,130,246,0.1);color:var(--accent-blue);border:1px solid rgba(59,130,246,0.3)}.mobile-entry-btn:last-child,a.mobile-entry-link:last-child{background:rgba(139,92,246,0.1);color:var(--accent-purple);border:1px solid rgba(139,92,246,0.3)}}
+
+/* ADMIN TABLE STYLES */
 .admin-clients-table{background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.08));border:1px solid var(--border-room);border-radius:16px;overflow:hidden}.admin-clients-table table{width:100%;border-collapse:collapse}
 .admin-clients-table th{background:rgba(59,130,246,0.08);font-weight:600;color:var(--text-primary);padding:14px 16px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:0.05em}.admin-clients-table td{padding:16px;border-top:1px solid var(--border-room);font-size:13px}.admin-clients-table tr:hover{background:rgba(59,130,246,0.05)}.client-actions-bar button,.client-actions-bar a{margin-left:8px}
 
+/* INVOICE CARD STACKING */
+.invoice-card-stacked{display:block;margin-bottom:8px}.invoice-card:last-child{margin-bottom:0}.mobile-invoice-grid{display:grid;gap:8px;margin-top:16px}.invoice-card-mobile{background:var(--bg-room);border-radius:10px;padding:14px;text-align:center}
 
-/* Glass panel helper */
-.glass-panel{background:rgba(31,41,55,0.4);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(55,65,81,0.5)}.spinner{border:3px solid rgba(59,130,246,0.2);border-top-color:#3B82F6}
+/* MICROINTERACTIONS */
+@keyframes shimmer{0%{background-position:-200% 0}50%{background-position:200% 0}100%{background-position:-200% 0}}.skeleton-shimmer{background:linear-gradient(90deg,var(--bg-room) 25%,var(--border-room) 50%,var(--bg-room) 75%);background-size:200% 100%;animation:skeletonShimmer 1.5s infinite;border-radius:8px}@keyframes skeletonShimmer{0%{background-position:-200% 0}50%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* GLASS PANELS */
+.glass-panel{background:rgba(31,41,55,0.4);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(55,65,81,0.5)}.glass-card{background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.08));border:1px solid rgba(55,65,81,0.5);border-radius:16px;backdrop-filter:blur(10px)}
+
+/* TYPography ENHANCEMENT */
+h1{font-feature-settings:'smcp' on,'case' on;letter-spacing:-0.02em}.section-title{text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);font-size:13px;font-weight:600}
+
+/* RESPONSIVE IMPROVEMENTS */
+@media(max-width:768px){nav{padding:0 16px}.container{gap:24px;padding:0 16px}#impersonation-banner .banner-content{font-size:13px;padding:10px 16px}.alert-toast{right:16px;left:16px;font-size:13px;padding:12px 16px!important;color:#fff;font-weight:500;border-radius:8px;text-align:center}}
+
+/* LOADING STATES */
+.loading-state{display:flex;justify-content:center;align-items:center;gap:12px;padding:48px;color:var(--text-secondary)}.loading-dots{display:inline-flex;gap:4px}.dot{width:8px;height:8px;border-radius:50%;background:var(--accent-blue);animation:bounce 0.6s infinite}@keyframes bounce{0%,100%{opacity:0.3;transform:scale(0.8)}50%{opacity:1;transform:scale(1)}}.dot:nth-child(2){animation-delay:0.1s}.dot:nth-child(3){animation-delay:0.2s}
 
 </body>
 </html>
