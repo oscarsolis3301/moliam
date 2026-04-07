@@ -167,42 +167,72 @@ async function init() {
   const result = await renderDashboard();
   if (!result) return;
 
-  // Admin controls
-  async function renderAdminClients() {
+   // Admin controls with search
+  let allClientsData = [];
+
+  async function renderAdminClients(searchTerm = '') {
     try {
       const res = await fetch(API_BASE + 'api/admin/clients', {
         headers: { 'Accept': 'application/json' },
         credentials: 'include'
-      });
+       });
       
       if (!res.ok) return;
       const data = await res.json();
-      const clients = data.clients || [];
+      allClientsData = (data.clients || []).map(c => ({...c, originalId: c.id}));
       
-      let html = '<table style="width:100%;margin-top:12px;"><thead><tr><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Client</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Email</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Status</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Actions</th></tr></thead><tbody>';
+      // Filter by search term
+      const filtered = searchTerm.trim() ? 
+        allClientsData.filter(c => 
+          (c.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (c.email || '').toLowerCase().includes(searchTerm.toLowerCase())
+        ) : 
+        allClientsData;
       
-      for (let c of clients) {
-        const statusClass = c.status === 'active' ? 'status-active' : 'status-inactive';
-        html += '<tr>' +
-          '<td style="padding:8px;border-bottom:1px solid var(--border-room);font-size:13px;">' + (c.name || 'Untitled') + '</td>' +
-          '<td style="padding:8px;border-bottom:1px solid var(--border-room);color:var(--text-secondary);font-size:12px;">' + c.email + '</td>' +
-          '<td style="padding:8px;border-bottom:1px solid var(--border-room);"><span class="' + statusClass + '" style="padding:3px 8px;border-radius:4px;font-size:10px;">' + (c.status === 'active' ? 'Active' : 'Inactive') + '</span></td>' +
-          '<td style="padding:8px;border-bottom:1px solid var(--border-room);"><a href="/dashboard.html?impersonate=' + c.id + '" class="view-btn" style="font-size:11px;padding:3px 8px;background:rgba(59,130,246,0.1);color:var(--accent-blue);border-radius:4px;text-decoration:none;">View as</a></td>' +
-          '</tr>';
-      }
+      let html ='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
+      html += '<h3 style="font-size:14px;margin:0;">Client Management</h3></div>';
+      html += '<input type="text" placeholder="Search clients..." id="admin-search-input" class="admin-filter" style="width:200px;padding:6px 12px;margin-left:8px;"></input></div>';
+      html += '<table style="width:100%;margin-top:12px;"><thead><tr><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Client</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Email</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Status</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Actions</th></tr></thead><tbody>';
+      
+      if (filtered.length === 0 && allClientsData.length > 0) {
+        html += '<tr><td colspan="4" style="padding:32px;text-align:center;color:var(--text-secondary);">No clients found matching "' + searchTerm + '"'+'</td></tr>';
+       } else {
+        for (let c of filtered) {
+          const statusClass = c.status === 'active' ? 'status-active' : 'status-inactive';
+          html += '<tr>' +
+             '<td style="padding:8px;border-bottom:1px solid var(--border-room);font-size:13px;">' + (c.name || 'Untitled') + '</td>' +
+             '<td style="padding:8px;border-bottom:1px solid var(--border-room);color:var(--text-secondary);font-size:12px;">' + c.email + '</td>' +
+             '<td style="padding:8px;border-bottom:1px solid var(--border-room);"><span class="' + statusClass + '" style="padding:3px 8px;border-radius:4px;font-size:10px;">' + (c.status === 'active' ? 'Active' : 'Inactive') + '</span></td>' +
+             '<td style="padding:8px;border-bottom:1px solid var(--border-room);"><a href="/dashboard.html?impersonate=' + c.originalId + '" class="view-btn" style="font-size:11px;padding:3px 8px;background:rgba(59,130,246,0.1);color:var(--accent-blue);border-radius:4px;text-decoration:none;">View as</a></td>' +
+             '</tr>';
+         }
+       }
       
       html += '</tbody></table>';
       
       const existingTable = document.querySelector('.admin-clients-table');
       if (existingTable) {
         existingTable.innerHTML = html;
-      } else {
+        // Setup search event listener
+        setTimeout(() => {
+          const searchInput = document.getElementById('admin-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => renderAdminClients(e.target.value));
+          }
+        }, 0);
+       } else {
         adminControls.children[0].innerHTML = html;
-      }
-    } catch (e) {
+        setTimeout(() => {
+          const searchInput = document.getElementById('admin-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => renderAdminClients(e.target.value));
+          }
+        }, 0);
+       }
+     } catch (e) {
       console.error('Failed to fetch clients:', e);
-    }
-  }
+     }
+   }
 
   const adminControls = document.getElementById('admin-controls');
   if (isAdmin) {
