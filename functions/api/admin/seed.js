@@ -45,12 +45,12 @@ await db.prepare(`INSERT INTO users(name, email, password_hash, role, company) V
   const allUsers = await db.prepare("SELECT id, email FROM users ORDER BY role DESC").all();
 const adminUser = allUsers.results.find(u => u.email === "admin@moliam.com");
 
-    // Insert test sessions - use named parameters for ip_address and user_agent (nullable fields)
-  if (adminUser) await db.prepare(`INSERT INTO sessions(user_id, token, expires_at, created_at, ip_address, user_agent) VALUES(:user_id, :token, datetime('now', '+30 days'), datetime('now), :ip, :ua)`).bind({ user_id: adminUser.id, token: "test-session-1", ip: "host.docker.internal", ua: "Mozilla/5.0 Test Browser" }).run();
+              // Insert test sessions - pre-compute dates in JS and bind all 6 columns (fix for D1 count mismatch)
+   if (adminUser) await db.prepare(`INSERT INTO sessions(user_id, token, expires_at, created_at, ip_address, user_agent) VALUES(:user_id, :token, :expires_at, :created_at, :ip, :ua)`).bind({ user_id: adminUser.id, token: "test-session-1", expires_at: new Date(Date.now() + 30*24*60*60*1000).toISOString(), created_at: new Date().toISOString(), ip_address: "host.docker.internal", ua: "Mozilla/5.0 Test Browser" }).run();
 
-     // Insert oscar's session
-  const oscarUser = allUsers.results.find(u => u.email === "oscar@onepluselectric.com");
-  if (oscarUser) await db.prepare(`INSERT INTO sessions(user_id, token, expires_at, created_at, ip_address, user_agent) VALUES(:user_id, :token, datetime('now', '+30 days'), datetime('now), :ip, :ua)`).bind({ user_id: oscarUser.id, token: "test-session-2", ip: "host.docker.internal", ua: "Mozilla/5.0 Test Browser" }).run();
+                 // Insert oscar's session - same pattern with all 6 values bound
+   const oscarUser = allUsers.results.find(u => u.email === "oscar@onepluselectric.com");
+   if (oscarUser) await db.prepare(`INSERT INTO sessions(user_id, token, expires_at, created_at, ip_address, user_agent) VALUES(:user_id, :token, :expires_at, :created_at, :ip, :ua)`).bind({ user_id: oscarUser.id, token: "test-session-2", expires_at: new Date(Date.now() + 30*24*60*60*1000).toISOString(), created_at: new Date().toISOString(), ip_address: "host.docker.internal", ua: "Mozilla/5.0 Test Browser" }).run();
 
     return new Response(JSON.stringify({
       success: true,
