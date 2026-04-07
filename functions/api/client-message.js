@@ -20,27 +20,35 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
   
-  // -- GET token from cookies
-  const token = getSessionToken(request);
-  if (!token) {
-    return new Response(JSON.stringify({ success: false, error: "Authentication required" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-    });
-  }
+       // -- GET token from cookies
+          const token = getSessionToken(request);
+          if (token === null || token === undefined) {
+            return new Response(JSON.stringify({ error: "Authentication required" }), {
+              status: 401,
+              headers: {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "https://moliam.pages.dev",
+                "X-Frame-Options": "DENY"
+              }
+            });
+          }
 
-  // -- Validate session exists and fetch user data
+       // -- Validate session exists and fetch user data
   if (db) {
     const user = await authenticate(db, token);
     if (!user) {
-      return new Response(JSON.stringify({ success: false, error: "Invalid or expired session" }), {
+      return new Response(JSON.stringify({ error: "Invalid or expired session" }), {
         status: 401,
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "https://moliam.pages.dev",
+          "X-Frame-Options": "DENY"
+        }
       });
     }
   }
-  
-  try {
+
+   try {
     const req = await request.json();
     const { clientId, clientName, message } = req;
 
