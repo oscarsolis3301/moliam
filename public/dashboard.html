@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard | MOLIAMA</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>:root{--bg-deep:#0B0E14;--bg-room:#1F2937;--border-room:#374151;--accent-blue:#3B82F6;--accent-purple:rgb(139,92,246);--accent-green:#10B981;--text-primary:#F9FAFB;--text-secondary:#9CA3AF}body{margin:0;padding:0;background:var(--bg-deep);font-family:'Inter',system-ui,sans-serif;color:var(--text-primary)}nav{height:56px;border-bottom:1px solid var(--border-room);display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(11,14,20,0.8);backdrop-filter:blur(12px);position:fixed;top:0;width:100%;z-index:100}nav.logo{font-size:15px;font-weight:700;letter-spacing:0.1em;color:#fff}nav a{text-decoration:none;color:var(--text-secondary);font-size:13px;margin-left:20px}.back-btn{color:var(--accent-blue)}.container{max-width:1200px;margin:80px auto;padding:0 24px;display:grid;gap:36px}h1{font-size:32px;font-weight:600;margin-bottom:8px}h2{font-size:18px;font-weight:500,color:var(--text-secondary);margin-bottom:16px}h3{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text-primary)}section{padding:0}/* CARD STYLES */.card{background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.05));border:1px solid var(--border-room);border-radius:16px;padding:24px}/* PROJECT CARDS */.project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:24px;margin-bottom:20px}.project-card{padding:24px;background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.08));border:1px solid var(--border-room);border-radius:16px}.project-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}.project-name{font-size:20px;font-weight:600;color:var(--text-primary)}.project-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.type-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em}.status-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-... [truncated]
+<style>:root{--bg-deep:#0B0E14;--bg-room:#1F2937;--border-room:#374151;--accent-blue:#3B82F6;--accent-purple:rgb(139,92,246);--accent-green:#10B981;--text-primary:#F9FAFB;--text-secondary:#9CA3AF}</style>
+<style>body{margin:0;padding:0;background:var(--bg-deep);font-family:'Inter',system-ui,sans-serif;color:var(--text-primary)}nav{height:56px;border-bottom:1px solid var(--border-room);display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(11,14,20,0.8);backdrop-filter:blur(12px);position:fixed;top:0;width:100%;z-index:100}nav.logo{font-size:15px;font-weight:700;letter-spacing:0.1em;color:#fff}nav a{text-decoration:none;color:var(--text-secondary);font-size:13px;margin-left:20px}.back-btn{color:var(--accent-blue)}.container{max-width:1200px;margin:80px auto;padding:0 24px;display:grid;gap:36px}h1{font-size:32px;font-weight:600;margin-bottom:8px}h2{font-size:18px;font-weight:500,color:var(--text-secondary);margin-bottom:16px}h3{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text-primary)}section{padding:0}.card{background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.05));border:1px solid var(--border-room);border-radius:16px;padding:24px}.project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:24px;margin-bottom:20px}.project-card{padding:24px;background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.08));border:1px solid var(--border-room);border-radius:16px}.project-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}.project-name{font-size:20px;font-weight:600;color:var(--text-primary)}.project-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.type-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;background:rgba(59,130,246,0.1);border:1px solid var(--border-room)}.status-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;background:rgba(16,185,129,0.1);border:1px solid var(--border-room)}.status-active{background:rgba(16,185,129,0.15);color:var(--accent-green)}.status-pending{background:rgba(245,158,11,0.1);color:#F59E0B}.project-details{margin-top:12px}.detail-row{display:flex;justify-content:space-between;margin-bottom:8px}.detail-label{color:var(--text-secondary);font-size:13px}.detail-value{font-weight:600;color:var(--text-primary)}.project-actions{display:flex;gap:12px;margin-top:16px}.btn{padding:8px 16px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:500;display:inline-block}.btn-secondary{background:rgba(59,130,246,0.1);border:1px solid var(--border-room);color:var(--accent-blue)}.btn:hover{opacity:0.8}.milestone-item{display:flex;gap:12px;padding:12px;margin-bottom:12px;border-radius:8px;background:rgba(59,130,246,0.03)}.milestone-icon{font-size:18px}.milestone-content{flex:1}.milestone-title{font-weight:600;margin-bottom:4px}.milestone-date{font-size:12px;color:var(--text-secondary)}.empty-state{text-align:center;padding:48px 24px}.invoice-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}.invoice-card{background:rgba(59,130,246,0.05);padding:16px;border-radius:12px;border:1px solid var(--border-room)}.invoice-label{font-size:12px;color:var(--text-secondary);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em}.invoice-value{font-size:24px;font-weight:700;color:var(--text-primary)}.impersonation-banner{position:fixed;top:76px;left:24px;right:24px;background:#FFED00;color:#1F2937;padding:12px 20px;border-radius:8px;display:none;align-items:center;justify-content:space-between;font-weight:600;z-index:99}.banner-content{display:flex;align-items:center;gap:16px}.banner-content a{color:#1F2937;font-weight:600;text-decoration:underline;border-bottom:1px solid transparent}.banner-content a:hover{border-bottom-color:currentColor}.alert-toast{position:fixed;top:72px;right:24px;padding:12px 20px;border-radius:8px;color:white;font-size:14px;font-weight:500;z-index:9999;display:none;animation:slideIn 0.3s ease-out}.alert-toast.show{display:block}@keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}.btn-primary,.refresh-btn,.print-btn,.logout-btn{background:#3B82F6;color:white;border:none;cursor:pointer;padding:6px 14px;border-radius:6px}.btn:hover{opacity:0.9}.admin-controls{margin-top:24px;display:flex;gap:12px}.loading{text-align:center;padding:48px;color:var(--text-secondary)}.container{margin-top:104px}@media(max-width:768px){nav{padding:0 12px}.container{padding:0 12px}.project-card{padding:16px}}</style>
 </head>
 <body>
 <nav><div class="logo">MOLIAMA</div><a href="/" class="back-btn">← Back to Website</a></nav>
@@ -13,227 +14,179 @@
 <div class="container">
 <h1>Your Dashboard</h1>
 <section id="project-section"><div class="loading">Loading projects...</div></section>
-<section id="milestones-section" style="display:none">
-<h2>Milestones Timeline</h2>
-<div id="milestones-list"></div>
-</section>
-<section id="invoices-section" style="display:none">
-<h2>Invoice Summary</h2>
-<div class="invoice-summary" id="stats-bar"></div>
-</div>
+<section id="milestones-section" style="display:none"><h2>Milestones Timeline</h2><div id="milestones-list"></div></section>
+<section id="invoices-section" style="display:none"><h2>Invoice Summary</h2><div class="invoice-summary" id="stats-bar"></div></section>
+<script>const API_BASE='/';let token=localStorage.getItem('auth_token')||'';if(!token){window.location.href='/login.html'}const url=new URL(window.location);const isAdmin=localStorage.getItem('user_role')==='admin';</script>
+
 <script>
-const API_BASE = '/';
-let token=***
-const url = new URL(window.location);
-// Redirect to login if not authenticated
-if (url.href.includes('login.html') || !token) {
-window.location.href = '/login.html';
-return;
-}
-const isAdmin = localStorage.getItem('user_role') === 'admin';
-const impersonateId = url.searchParams.get('impersonate');
+const impersonateId=url.searchParams.get('impersonate');
+
 async function fetchDashboard() {
-try {
-const params = {};
-if (impersonateId) params.impersonate = impersonateId;
-const res = await fetch(API_BASE + 'api/dashboard?' + new URLSearchParams(params), {
-headers: { 'Accept': 'application/json' },
-credentials: 'include'
-});
-if (!res.ok) {
-if (res.status === 401 || res.status === 403) {
-throw new Error('Fetch failed');
-const data = await res.json();
-return { success: data.success, data: data };
-} catch (e) {
-console.error('Fetch error:', e);
-throw e;
+  try {
+    const params = {};
+    if (impersonateId) params.impersonate = impersonateId;
+    const res = await fetch(API_BASE + 'api/dashboard?' + new URLSearchParams(params), {
+      headers: {'Accept': 'application/json'},
+      credentials: 'include'
+    });
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 403) {
+        window.location.href = '/login.html';
+        return null;
+      }
+      const data = await res.json();
+      return { success: data.success, data: data };
+    }
+    return await res.json();
+  } catch (e) {
+    console.error('Fetch error:', e);
+    return { success: false, err: e.message };
+  }
+}
+
 function showImpersonationBanner(client) {
-if (impersonateId && isAdmin) {
-const banner = document.getElementById('impersonation-banner');
-const viewingSpan = document.getElementById('viewing-as');
-banner.style.display = 'block';
-viewingSpan.textContent = client?.name || 'Client';
-document.getElementById('exit-btn').href = window.location.pathname;
-async function renderDashboard() {
-const result = await fetchDashboard();
-if (!result.success) return;
-const client = result.data.client;
-const projectSection = document.getElementById('project-section');
-const milestonesList = document.getElementById('milestones-list');
-const invoicesSection = document.getElementById('invoices-section');
-const statusBar = document.getElementById('stats-bar');
-const projects = result.data.projects || [];
-const invoices = result.data.invoices || [];
-// Show impersonation banner if admin impersonating
-showImpersonationBanner(client);
-// Generate project cards
-let html = '';
-if (!projects.length) {
-html = '<div class="empty-state"><p>No active projects yet.</p><p style="margin-top:12px;font-size:13px">Ready to get started? Our team is here to help.</p></div>';
-} else {
-for (let p of projects) {
-const typeClass = p.type ? p.type.toLowerCase().replace(' ', '-') : 'website';
-html += `<div class="project-card">`;
-html += `<div class="project-header">`;
-html += `<div><h3>${p.name || 'Project ' + p.id}</h3></div>`;
-html += `<div style="display:flex;gap:8px">`;
-html += `<span class="type-badge type-${typeClass}">${p.type || 'Website'}</span>`;
-html += `<span class="status-badge status-${p.status === 'active' ? 'active' : 'pending'}">${p.status === 'active' ? 'Active' : 'Pending'}</span>`;
-html += `</div></div>`;
-html += `<div class="project-details">`;
-html += `<div class="detail-row"><span class="detail-label">Monthly Rate:</span><span class="detail-value">$${(parseFloat(p.monthly_rate) || 0).toLocaleString()}</span></div>`;
-html += `<div class="detail-row"><span class="detail-label">Start Date:</span><span class="detail-value">${p.start_date ? new Date(p.start_date).toLocaleDateString('en-US', {month:'short',year:'numeric'}) : 'N/A'}</span></div>`;
-html += `<div class="project-actions">`;
-const invoiceUrl = p.invoice_url || '#';
-if (invoiceUrl !== '#') {
-html += `<a href="${invoiceUrl}" target="_blank" class="btn btn-secondary">📄 View Invoice</a>`;
-html += `<a href="mailto:${encodeURIComponent(p.client_email)}?subject=Message about ${encodeURIComponent(p.name || 'your project')}" class="btn btn-secondary">💬 Message Us</a>`;
-projectSection.innerHTML = html;
-// Generate milestones timeline
-const updates = result.data.project_updates || [];
-const milestones = updates.slice(0, 5);
-if (milestones.length) {
-let milestonesHtml = '';
-for (let m of milestones) {
-milestonesHtml += `<div class="milestone-item">`;
-milestonesHtml += `<div class="milestone-icon">🚩</div>`;
-milestonesHtml += `<div class="milestone-content">`;
-milestonesHtml += `<div class="milestone-title">${m.description || 'Project update'}</div>`;
-milestonesHtml += `<div class="milestone-date">${new Date(m.created_at).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'})}</div>`;
-milestonesHtml += `</div></div>`;
-milestonesList.innerHTML = milestonesHtml;
-milestonesList.innerHTML = '<div style="font-size:13px;color:var(--text-secondary)">No recent milestones.</div>';
-// Generate invoice summary
-const totalBilled = (invoices || []).reduce((sum, inv) => sum + (parseFloat(inv.amount) || 0), 0);
-const totalPaid = (invoices || []).reduce((sum, inv) => sum + (parseFloat(inv.paid_amount) || 0), 0);
-const outstanding = totalBilled - totalPaid;
-let invoiceHtml = '';
-invoiceHtml += `<div class="invoice-card"><div class="invoice-label">Total Billed</div><div class="invoice-value">$${totalBilled.toLocaleString()}</div></div>`;
-invoiceHtml += `<div class="invoice-card"><div class="invoice-label">Amount Paid</div><div class="invoice-value" style="color:var(--accent-green)">$${totalPaid.toLocaleString()}</div></div>`;
-const outstandingColor = outstanding > 0 ? '#F59E0B' : (outstanding < 0 ? '#EF4444' : 'var(--accent-blue)');
-invoiceHtml += `<div class="invoice-card"><div class="invoice-label">Outstanding</div><div class="invoice-value" style="color:${outstandingColor}">$${Math.abs(outstanding).toLocaleString()}</div></div>`;
-statusBar.innerHTML = invoiceHtml;
-console.error('Render error:', e);
-// Initialize on load
-async function init() {
-if (!result.data) return;
-renderProjectCards(result.data.projects);
-generateMilestones(result.data.project_updates);
-generateInvoiceSummary(result.data.invoices);
-// Show sections if they have content
-if (document.getElementById('milestones-list').innerHTML.trim()) {
-document.getElementById('milestones-section').style.display = 'block';
-document.getElementById('invoices-section').style.display = 'block';
-console.error('Init error:', e);
-// Add event listener for exit impersonation
-document.getElementById('exit-btn')?.addEventListener('click', function(e) {
-if (e.target.id === 'exit-btn' && window.location.search.includes('impersonate')) {
-const currentUrl = new URL(window.location);
-currentUrl.searchParams.delete('impersonate');
-window.location.href = '/' + currentUrl.pathname + currentUrl.search;
-// New: Add print button for dashboard export functionality
-async function handlePrint() {
-window.print();
-// New: Refresh data functionality for real-time updates
-async function refreshDashboard() {
-if (!result.success) {
-showAlert('Failed to refresh data. Please try again.', 'error');
-renderDashboard();
-showAlert('Dashboard updated successfully.', 'success');
-console.error('Refresh error:', e);
-showAlert('Error refreshing dashboard.', 'error');
-// New: Show alert helper for feedback messages
+  if (impersonateId && isAdmin) {
+    const banner = document.getElementById('impersonation-banner');
+    const viewingSpan = document.getElementById('viewing-as');
+    banner.style.display = 'flex';
+    viewingSpan.textContent = client?.name || 'Client';
+    document.getElementById('exit-btn').href = window.location.pathname;
+  }
+}
+
+function showModal(title, content) {
+  return '<dialog style="background:var(--bg-room);color:var(--text-primary);padding:24px;border-radius:16px;border:1px solid var(--border-room)"><h3>' + title + '</h3>' + content + '</dialog>';
+}
+
 function showAlert(message, type = 'info') {
-const existingAlert = document.querySelector('.alert-toast');
-if (existingAlert) existingAlert.remove();
-const alert = document.createElement('div');
-alert.className = `alert-toast ${type}`;
-alert.textContent = message;
-alert.style.cssText = `
-position: fixed; top: 72px; right: 24px; padding: 12px 20px; border-radius: 8px;
-background: ${type === 'error' ? '#EF4444' : type === 'success' ? '#10B981' : '#3B82F6'};
-color: white; font-size: 14px; font-weight: 500; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-`;
-document.body.appendChild(alert);
-setTimeout(() => alert.remove(), 3000);
-// New: Add refresh button to navbar
-const nav = document.querySelector('nav');
-if (nav) {
-const refreshBtn = document.createElement('button');
-refreshBtn.textContent = '🔄 Refresh';
-refreshBtn.style.cssText = `margin-left: 12px; background: transparent; color: var(--accent-blue); border: 1px solid var(--border-room); padding: 6px 16px; border-radius: 4px; font-size: 13px; cursor: pointer;`;
-refreshBtn.addEventListener('click', refreshDashboard);
-nav.appendChild(refreshBtn);
-const printBtn = document.createElement('button');
-printBtn.textContent = '📄 Print';
-printBtn.style.cssText = `margin-left: 12px; background: transparent; color: var(--text-secondary); border: 1px solid var(--border-room); padding: 6px 16px; border-radius: 4px; font-size: 13px; cursor: pointer;`;
-printBtn.addEventListener('click', handlePrint);
-nav.appendChild(printBtn);
-// New: Add logout button to navbar
-const logoutBtn = document.createElement('a');
-logoutBtn.textContent = '🚪 Logout';
-logoutBtn.href = '/api/auth/logout';
-logoutBtn.style.cssText = `margin-left: 12px; background: transparent; color: var(--text-secondary); border: 1px solid var(--border-room); padding: 6px 16px; border-radius: 4px; font-size: 13px; cursor: pointer;`;
-logoutBtn.addEventListener('click', async (e) => {
-e.preventDefault();
-await fetch('/api/auth/logout', { method: 'POST' });
-localStorage.clear();
-} catch (err) {
-console.error('Logout error:', err);
-nav.appendChild(logoutBtn);
-// New: Search functionality for projects
-function initSearch() {
-if (!projectSection) return;
-const searchInput = document.createElement('input');
-searchInput.type = 'text';
-searchInput.placeholder = '🔍 Search projects...';
-searchInput.style.cssText = `width: 100%; max-width: 400px; padding: 10px 16px; border: 1px solid var(--border-room); border-radius: 8px; background: var(--bg-room); color: var(--text-primary); font-size: 14px; margin-bottom: 24px;`;
-searchInput.addEventListener('input', (e) => {
-const query = e.target.value.toLowerCase();
-const cards = projectSection.querySelectorAll('.project-card');
-cards.forEach(card => {
-const text = card.textContent.toLowerCase();
-card.style.display = text.includes(query) ? 'block' : 'none';
-// Insert after the h1 heading
-const h1 = projectSection.querySelector('h1');
-if (h1) h1.insertAdjacentElement('afterend', searchInput);
-// Initialize on load with all features
-showAlert('Dashboard initializing...', 'info');
-initSearch();
-showAlert('Dashboard loaded successfully.', 'success');
-showAlert('Error loading dashboard. Please refresh the page.', 'error');
-init().catch(e => console.error('Init failure:', e));
+  const existingAlert = document.querySelector('.alert-toast');
+  if (existingAlert) existingAlert.remove();
+  const alert = document.createElement('div');
+  alert.className = `alert-toast ${type}`;
+  alert.textContent = message;
+  alert.style.background = type === 'error' ? '#EF4444' : type === 'success' ? '#10B981' : '#3B82F6';
+  document.body.appendChild(alert);
+  requestAnimationFrame(() => alert.classList.add('show'));
+  setTimeout(() => alert.remove(), 3000);
+}
+
+async function renderDashboard() {
+  const result = await fetchDashboard();
+  if (!result || !result.success) return null;
+
+  const client = result.data.client;
+  const projects = result.data.projects || [];
+  const invoices = result.data.invoices || [];
+  const updates = result.data.project_updates || [];
+
+  showImpersonationBanner(client);
+
+  // Project cards
+  let html = '';
+  if (!projects.length) {
+    html = '<div class="empty-state"><h3>No active projects yet</h3><p>Ready to get started?</p></div>';
+  } else {
+    for (let p of projects) {
+      const typeClass = p.type ? p.type.toLowerCase().replace(' ', '-') : 'website';
+      html += `<div class="project-card">`;
+      html += `<div class="project-header"><h3 class="project-name">${p.name || 'Project'} ${p.id}</h3>`;
+      html += `<div><span class="type-badge type-${typeClass}">${p.type || 'Website'}</span>`;
+      html += `<span class="status-badge status-${p.status==='active'?'active':'pending'}">${p.status==='active'?'Active':'Pending'}</span></div></div>`;
+      html += `<div class="project-details">`;
+      html += `<div class="detail-row"><span>Monthly Rate:</span><span>$${(parseFloat(p.monthly_rate)||0).toLocaleString()}</span></div>`;
+      html += `<div class="detail-row"><span>Start Date:</span><span>${p.start_date?new Date(p.start_date).toLocaleDateString():'N/A'}</span></div>`;
+      if (p.invoice_url && p.invoice_url !== '#') {
+        html += `<div class="project-actions"><a href="${p.invoice_url}" class="btn btn-secondary">📄 View Invoice</a></div>`;
+      }
+      if (p.client_email) {
+        html += `<div class="project-actions"><a href="mailto:${encodeURIComponent(p.client_email)}?subject=Message about ${encodeURIComponent(p.name||'project')}" class="btn btn-secondary">💬 Message Us</a></div>`;
+      }
+      html += `</div></div>`;
+    }
+    document.getElementById('project-section').innerHTML = html;
+  }
+
+  // Milestones
+  const milestonesList = document.getElementById('milestones-list');
+  if (updates.length > 0) {
+    let ml = '';
+    for (let m of updates.slice(0,5)) {
+      ml += `<div class="milestone-item"><span>🚩</span><div><div style="font-weight:600">${m.description||'Update'}</div>`;
+      ml += `<div style="font-size:12px;color:var(--text-secondary)">${new Date(m.created_at).toLocaleDateString()}</div></div></div>`;
+    }
+    milestonesList.innerHTML = ml;
+    document.getElementById('milestones-section').style.display='block';
+  } else {
+    milestonesList.innerHTML = '<p style="font-size:13px;color:var(--text-secondary)">No recent milestones.</p>';
+    document.getElementById('milestones-section').style.display='block';
+  }
+
+  // Invoice summary
+  const totalBilled = invoices.reduce((sum, inv) => sum + (parseFloat(inv.amount)||0), 0);
+  const totalPaid = invoices.reduce((sum, inv) => sum + (parseFloat(inv.paid_amount)||0), 0);
+  const outstanding = totalBilled - totalPaid;
+  const outstandingColor = outstanding > 0 ? '#F59E0B' : (outstanding < 0 ? '#EF4444' : 'var(--accent-blue)');
+
+  const statusBar = document.getElementById('stats-bar');
+  statusBar.innerHTML = `
+    <div class="invoice-card"><div class="invoice-label">Total Billed</div><div>$${totalBilled.toLocaleString()}</div></div>
+    <div class="invoice-card"><div class="invoice-label">Amount Paid</div><div style="color:var(--accent-green)">$${totalPaid.toLocaleString()}</div></div>
+    <div class="invoice-card"><div class="invoice-label">Outstanding</div><div style="color:${outstandingColor}">$${Math.abs(outstanding).toLocaleString()}</div></div>
+  `;
+  document.getElementById('invoices-section').style.display='block';
+
+  return result;
+}
+
+function initNavButtons() {
+  const nav = document.querySelector('nav');
+  const refreshBtn = document.createElement('button');
+  refreshBtn.textContent = '🔄 Refresh';
+  refreshBtn.className = 'btn-primary';
+  refreshBtn.addEventListener('click', async () => await renderDashboard());
+  refreshBtn.style.marginLeft='12px';
+
+  const logoutBtn = document.createElement('a');
+  logoutBtn.href='#';
+  logoutBtn.textContent = '🚪 Logout';
+  logoutBtn.className = 'btn-primary';
+  logoutBtn.addEventListener('click', async (e) => { e.preventDefault(); await fetch('/api/auth/logout',{method:'POST'}); localStorage.clear(); window.location.href='/login.html'; });
+  logoutBtn.style.marginLeft='12px';
+
+  const printBtn = document.createElement('button');
+  printBtn.textContent = '📄 Print';
+  printBtn.className = 'btn-primary';
+  printBtn.addEventListener('click', () => window.print());
+  printBtn.style.marginLeft='12px';
+
+  nav.appendChild(refreshBtn);
+  nav.appendChild(logoutBtn);
+  nav.appendChild(printBtn);
+}
+
+async function init() {
+  const result = await renderDashboard();
+  if (!result) return;
+
+  // Admin controls
+  const adminControls = document.getElementById('admin-controls');
+  if (isAdmin) {
+    adminControls.style.display = 'flex';
+    const viewAsBtn = document.createElement('button');
+    viewAsBtn.textContent = '👁 View as Client';
+    viewAsBtn.className = 'btn-primary';
+    logoutBtn.insertBefore(viewAsBtn, nextSibling);
+
+    const clientTable = document.createElement('table');
+    clientTable.innerHTML = '<tr><td style="padding:8px;color:var(--text-secondary)">Client Management Table - Use "View as Client"</td></tr>';
+    adminControls.appendChild(clientTable);
+  }
+
+  showAlert('Dashboard loaded successfully.', 'success');
+}
+
+init().catch(e => console.error('Error:', e));
 </script>
-<style>
-/* Additional styles for new dashboard features */
-.alert-toast { display: none; animation: slideIn 0.3s ease-out forwards; }
-.alert-toast.show { display: block; }
-@keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-/* IMPERSONATION BANNER - Yellow #FFED00 */
-.impersonation-banner {
-  position: fixed;
-  top: 76px; /* Below nav (56px) + buffer */
-  left: 24px;
-  right: 24px;
-  background: #FFED00;
-  color: #1F2937;
-  padding: 12px 20px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-weight: 600;
-
-/* Responsive fixes - add top padding since banner is fixed */
-@media (min-width: 769px) { .container { margin-top: 124px; /* nav + banner */ } }
-
-/* Mobile responsive */
-@media (max-width: 480px) { body { padding-top: 56px; } nav { height: 52px; padding: 0 12px; } h1 { font-size: 24px; margin-bottom: 12px; } h2 { font-size: 16px; } .project-card { padding: 16px; } .project-name { font-size: 18px; }}
-
-/* Mobile improvements for buttons */
-@media (max-width: 768px) { nav button, nav a.logout-btn { padding: 4px 10px; font-size: 11px; margin-left: 4px;}}
-
+<style>@media print{nav button{display:none}}</style>
 </body>
 </html>
