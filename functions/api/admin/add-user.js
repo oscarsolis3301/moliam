@@ -25,7 +25,7 @@ export async function onRequestPost(context) {
 
   try {
     const data = await request.json();
-    const { email, password, name, role, company, phone } = data;
+    const { email, password, name, role, company } = data;
     
     if (!email || !password || !name) {
       return new Response(JSON.stringify({ error: "email, password, name required" }), { 
@@ -35,11 +35,12 @@ export async function onRequestPost(context) {
 
     const hash = await hashPassword(password);
     
+    // Use only columns guaranteed to exist in the actual D1 schema
     await db.prepare(
-      "INSERT OR REPLACE INTO users (email, password_hash, name, role, company, phone, is_active) VALUES (?, ?, ?, ?, ?, ?, 1)"
-    ).bind(email, hash, name, role || "client", company || null, phone || null).run();
+      "INSERT OR REPLACE INTO users (email, password_hash, name, role, company) VALUES (?, ?, ?, ?, ?)"
+    ).bind(email, hash, name, role || "client", company || null).run();
 
-    return new Response(JSON.stringify({ success: true, message: `User ${email} created` }), { 
+    return new Response(JSON.stringify({ success: true, message: "User " + email + " created" }), { 
       status: 200, headers: { "Content-Type": "application/json" } 
     });
   } catch (err) {
