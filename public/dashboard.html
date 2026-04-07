@@ -144,9 +144,10 @@
    144|    projectSection.classList.add('fade-in');
    145|    // Project cards
    146|    let html = '';
-   147|    if (!projects.length) {
-   148|      html = '<div class="empty-state"><h3>No active projects yet</h3><p>Ready to get started?</p></div>';
-   149|    } else {
+    if (!projects.length) {
+      html = '<div class="empty-state" role="alert" aria-live="polite"><span style="font-size:32px;display:block;margin-bottom:12px;">📋</span><h3>No active projects yet</h3><p style="color:var(--text-secondary);margin:8px 0 16px">Nothing to display at the moment. All systems operational, awaiting first project data.</p></div>';
+      html += '<div class="empty-state-help"><span>💡 Tip:</span> <span>Status indicators update automatically when data arrives.</span></div>';
+    } else {
    150|      for (let p of projects) {
    151|        const typeClass = p.type ? p.type.toLowerCase().replace(' ', '-') : 'website';
    152|        html += `<div class="project-card fade-in" role="article" aria-label="Project card: ${p.name || 'Untitled'}">`;
@@ -175,19 +176,18 @@
    175|   // Calculate progress - use completion_status if exists, otherwise show "N/A" instead of fake random
    176| const status = m.completion_status !== undefined && m.completion_status !== null ? m.completion_status : 0;
    177|        const progressClass = status > 80 ? 'progress-high' : (status > 40 ? 'progress-medium' : (status > 0 ? 'progress-low' : 'progress-none'));
-   178|
-   179|        if (status === 0 && (!m.completion_status || m.completion_status === null)) {
-   180|          // No completion_status available - show N/A state
-   181|          ml += `<div class="milestone-item fade-in">` +
-   182|             `<div style="display:flex;justify-content:space-between,align-items:center;margin-bottom:8px;">` +
-   183|               `<span style="font-size:18px;user-select:none">🚩</span>` +
-   184|               `<div style="flex:1;margin-left:12px;"` +
-   185|                 `style="background:var(--bg-room);border-radius:4px;height:6px;overflow:hidden;">` +
-   186|                 `<div class="${progressClass}" style="height:100%;width:0%;transition:all 0.5s ease">N/A —<span style="font-size:10px;color:var(--text-secondary)">No data</span></div></div></div>` +
-   187|               `<div style="font-size:12px;color:${status > 80 ? 'var(--accent-green)':'#F59E0B'};flex-shrink:0;margin-left:12px;">?</div></div>` +
-   188|               `<div>${m.description||'Update'}</div>` +
-   189|               `<div style="font-size:11px;color:var(--text-secondary)">Created ${new Date(m.created_at).toLocaleDateString()}</div></div>`;
-   190|        } else {
+      // No completion_status available - show N/A state with better UX
+      if (status === 0 && (!m.completion_status || m.completion_status === null)) {
+         // Empty state message instead of random progress bar
+         ml += `<div class="milestone-item fade-in">` +
+              `<div style="display:flex;align-items:center;margin-bottom:8px;">` +
+                `<span style="font-size:18px;margin-right:12px;" role="img" aria-label="Information icon">ℹ️</span>` +
+                `<div style="flex:1;color:var(--text-secondary);font-size:13px;">No completion data available. Status will update when progress is reported.</div>` +
+              `</div>` +
+              `<div><strong>${m.description||'Update'}</strong></div>` +
+              `<div style="font-size:11px;color:var(--text-dim);margin-top:4px;">Created ${new Date(m.created_at).toLocaleDateString()}</div>` +
+            `</div>`;
+       } else {
    191|          // Has completion_status - show progress with visual indicators
    192|          ml += `<div class="milestone-item fade-in">` +
    193|             `<div style="display:flex;justify-content:space-between,align-items:center;margin-bottom:8px;">` +
@@ -203,10 +203,10 @@
    203|      }
    204|      milestonesList.innerHTML = ml;
    205|      document.getElementById('milestones-section').style.display='block';
-   206|    } else {
-   207|      milestonesList.innerHTML = '<p style="font-size:13px;color:var(--text-secondary)">No recent milestones.</p>';
-   208|      document.getElementById('milestones-section').style.display='block';
-   209|    }
+      } else {
+      milestonesList.innerHTML = '<div class="empty-state" role="alert" aria-live="polite"><span style="font-size:32px;display:block;margin-bottom:12px;">🚨</span><p style="color:var(--text-primary);margin:8px 0">No recent milestones.</p><p style="color:var(--text-secondary);font-size:12px">Milestone activity will appear here as projects advance through their workflow stages.</p></div>';
+      document.getElementById('milestones-section').style.display='block';
+      }
    210|
    211|    // Invoice summary with slide-in effect
    212|    const totalBilled = invoices.reduce((sum, inv) => sum + (parseFloat(inv.amount)||0), 0);
@@ -401,10 +401,10 @@
    401|.skeleton-card{background:linear-gradient(90deg,var(--bg-room) 25%,var(--border-room) 50%,var(--bg-room) 75%);background-size:200% 100%;animation:skeletonPulse 1.5s ease-in-out infinite;border-radius:16px}@keyframes skeletonPulse{0%{background-position:200% 0}100%{background-position:-200% 0}}
    402|
    403|/* GLASS REFLECTIONS */
-   404|.glass-shine{animation:glassShine 2s ease-in-out infinite}@keyframes glassShine{0%,100%{box-shadow:0 8px 32px rgba(59,130,246,0.15),inset 0 0 0 1px rgba(59,130,246,0.1)}50%{box-shadow:0 8px 32px rgba(59,130,246,0.25),inset 0 0 0 1px rgba(59,130,246,0.2)}}
+   404|.glass-shine{animation:glassShine 2s ease-in-out infinite}@keyframes glassShine{0%,100%{box-shadow:0 8px 32px rgba(59,130,246,0.15),inset 0 0 0 1px rgba(59,130,246,0.1)}50%{box-shadow:0 8px 32px rgba(59,130,246,0.25),inset 0 0 0 1px rgba(59,130,246,0.2)}}@keyframes floatPulse{0%,100%{transform:translateY(0) opacity 1}50%{transform:translateY(-8px) opacity 0.7}}
    405|
    406|/* MOBILE CARD STACK FOR PROJECTS */
-   407|@media(max-width:768px){.project-grid{grid-template-columns:1fr}.empty-state{padding:32px 16px;text-align:center}.invoice-card-stacked{display:block}.invoice-card:last-child{margin-bottom:0}
+   407|@media(max-width:768px){.project-grid{grid-template-columns:1fr}.empty-state{padding:48px 16px;text-align:center;background:var(--bg-building);border-radius:16px;border:1px solid var(--border-room)}.empty-state span{font-size:48px;display:block;margin-bottom:16px;animation:floatPulse 3s ease-in-out infinite}.empty-state h3{font-size:20px;margin-bottom:12px;color:var(--text-primary)}.empty-state>p{margin:8px 0 16px;line-height:1.5}.empty-state-help{display:flex;gap:4px;font-size:13px;color:var(--text-secondary);align-items:center;padding:12px;background:rgba(59,130,246,0.1);border-radius:8px;border:1px solid rgba(59,130,246,0.2);max-width:fit-content;margin-top:12px}.empty-state-help>span{color:#FBBF24;font-weight:600;margin-right:4px;display:inline}}
    408|
    409|/* 🌌 MOBILE CLIENT TABLE - CARD STACK */
    410|@media(max-width:768px){.admin-clients-table{overflow-x:visible}.admin-clients-table table.display-mobile{display:none}table.mobile-table{display:grid;gap:12px}.mobile-client-card{background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.08));border:1px solid var(--border-room);border-radius:12px;padding:16px;animation:slideInCard 0.3s ease-out;box-shadow:0 4px 16px rgba(59,130,246,0.1)}@keyframes slideInCard{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.mobile-client-header{display:block;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border-room)}.mobile-client-name{font-size:14px;font-weight:600;color:var(--text-primary);text-shadow:0 0 8px rgba(59,130,246,0.2)}.mobile-client-email{font-size:12px;color:var(--text-secondary)}.mobile-client-actions{display:flex;gap:8px;margin-top:12px}.mobile-entry-btn,a.mobile-entry-link{display:block;padding:10px 12px;border-radius:6px;text-align:center;text-decoration:none;font-size:12px;transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}.mobile-entry-btn:first-child,a.mobile-entry-link:first-child{background:rgba(59,130,246,0.1);color:var(--accent-blue);border:1px solid rgba(59,130,246,0.3)}.mobile-entry-btn:last-child,a.mobile-entry-link:last-child{background:rgba(139,92,246,0.1);color:var(--accent-purple);border:1px solid rgba(139,92,246,0.3)}.mobile-entry-btn:hover,a.mobile-entry-link:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(59,130,246,0.2)}}
