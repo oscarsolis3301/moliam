@@ -65,8 +65,8 @@ a.view-btn:hover{background:rgba(59,130,246,0.2);transform:translateY(-1px);}
 </style>
 
 <script>
-const API_BASE = '/';
 const token = localStorage.getItem('auth_token');
+
 // Redirect if not authenticated
 if (!token) {
   window.location.href = '/login.html';
