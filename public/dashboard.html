@@ -353,10 +353,13 @@ function renderDashboard(user, data, isTransitioning = false) {
   const isImpersonated = !!new URLSearchParams(window.location.search).get('impersonate');
   if (isImpersonated) {
     contentEl.innerHTML = '';
-    titleEl.textContent = data.user_name + ' - Impersonating';
+    titleEl.textContent = data.user_name + ' - Viewing as';
+    
+    // Create sticky yellow banner at top of nav area, not inside content
     const banner = createBanner(data.impersonation_user_name);
     document.getElementById('app').appendChild(banner);
-    return;
+  } else {
+    titleEl.textContent = data.user_name;
   }
 
   titleEl.textContent = data.user_name;
