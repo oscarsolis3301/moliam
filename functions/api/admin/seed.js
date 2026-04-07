@@ -11,13 +11,14 @@ export async function onRequestPost(context) {
   const db = env.MOLIAM_DB;
 
    // Check seed key header for authentication
+  // Check seed key header for authentication
   const seedKey = request.headers.get("x-seed-key");
   if (seedKey !== "moliam2026") {
     return new Response(JSON.stringify({ error: "Invalid seed key" }), {
       status: 403,
       headers: { "Content-Type": "application/json" }
-     });
-   }
+    });
+  }
 
   try {
      // DROP ALL tables to ensure clean state (including any migrations/other)
@@ -61,10 +62,10 @@ export async function onRequestPost(context) {
     const oscarHash = await hashPassword("OnePlus2026!");
 
     // Insert admin user - uses positional parameters
-    await db.prepare("INSERT INTO users(email, password_hash, role, name, company, is_active) VALUES(?, ?, 'admin', 'Admin', 'Moliam', 1)").run("admin@moliam.com", adminHash);
+    await db.prepare("INSERT INTO users(email, password_hash, role, name, company, is_active) VALUES(?, ?, 'admin', 'Admin', 'Moliam', 1)").run(["admin@moliam.com", adminHash]);
 
-       // Insert oscar user - same schema using positional parameters  
-    await db.prepare("INSERT INTO users(email, password_hash, role, name, company, is_active) VALUES(?, ?, 'client', 'Oscar', 'OnePlus Electric', 1)").run("oscar@onepluselectric.com", oscarHash);
+    // Insert oscar user - same schema using positional parameters   
+    await db.prepare("INSERT INTO users(email, password_hash, role, name, company, is_active) VALUES(?, ?, 'client', 'Oscar', 'OnePlus Electric', 1)").run(["oscar@onepluselectric.com", oscarHash]);
 
     // Create default client profiles for both users
     await db.prepare("INSERT OR REPLACE INTO client_profiles (user_id, display_name, bio) SELECT id, email || ' Profile', 'Client account' FROM users WHERE email = 'admin@moliam.com'").run();
