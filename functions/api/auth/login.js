@@ -1,112 +1,5 @@
 /**
-<<<<<<< HEAD
  * Login API Endpoint
- * POST /api/auth/login
- */
-export default {
-  async post(request, env) {
-    try {
-      const body = await request.json();
-      const { email, password } = body;
-
-      if (!email || !password) {
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            error: "Email and password required" 
-          }),
-          { 
-            status: 400,
-            headers: { "Content-Type": "application/json" }
-              }
-            );
-         }
-
-// Hash password with SHA-256: SHA256(password + "_moliam_salt_2026")
-const encoded = new TextEncoder().encode(password + "_moliam_salt_2026");
-const hash = await crypto.subtle.digest("SHA-256", encoded);
-const passwordHash = Array.from(new Uint8Array(hash))
-   .map((b) => b.toString(16).padStart(2, "0"))
-   .join("");
-
-// Find user in D1 database (env.MOLIAM_DB)
-      const users = env.MOLIAM_DB.prepare(`
-        SELECT id, name, email, role, password_hash 
-        FROM users 
-        WHERE email = ?`).bind(email);
-
-      const userResult = await users.first();
-
-      if (!userResult) {
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            error: "Invalid credentials" 
-          }),
-          { 
-            status: 401,
-            headers: { "Content-Type": "application/json" }
-              }
-            );
-         }
-
-      if (userResult.password_hash !== passwordHash) {
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            error: "Invalid credentials" 
-          }),
-          { 
-            status: 401,
-            headers: { "Content-Type": "application/json" }
-              }
-            );
-         }
-
-// Create session with random 64-char hex token (32 bytes = 64 chars)
-const tokenArray = new Uint8Array(32);
-crypto.getRandomValues(tokenArray);
-const tokenHex = Array.from(new Uint8Array(tokenArray))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-
-     // Store session in sessions table - user_id is FK to users(id), no session id PK needed
-      await env.MOLIAM_DB.prepare(`
-        INSERT INTO sessions(user_id, token, created_at)
-        VALUES(?, ?, datetime('now'))`
-         ).bind(userResult.id, tokenHex).run();
-
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          user: { 
-            id: userResult.id,
-            name: userResult.name, 
-            email: userResult.email,
-            role: userResult.role 
-          },
-          session_token: tokenArr
-         }),
-       { 
-        status: 200,
-        headers: { "Content-Type": "application/json" }
-          });
-
-     } catch (error) {
-      console.error("Login error:", error);
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: "Internal server error" 
-         }),
-       { 
-        status: 500,
-        headers: { "Content-Type": "application/json" }
-          });
-     }
-   }
-};
-=======
  * POST /api/auth/login
  * Authenticates user, creates session, sets cookie
  */
@@ -118,7 +11,9 @@ export async function onRequestPost(context) {
   if (request.method === "OPTIONS") return corsResponse(204);
 
   let data;
-  try { data = await request.json(); } catch {
+  try { 
+    data = await request.json(); 
+  } catch {
     return jsonResp(400, { error: true, message: "Invalid JSON." });
   }
 
@@ -127,30 +22,30 @@ export async function onRequestPost(context) {
 
   if (!email || !password) {
     return jsonResp(400, { error: true, message: "Email and password required." });
-   }
+  }
 
   try {
-      // Find user
-     const user = await db.prepare(
-        "SELECT id, email, name, role, company, password_hash, is_active FROM users WHERE email = ?"
-     ).bind(email).first();
+    // Find user
+    const user = await db.prepare(
+      "SELECT id, email, name, role, company, password_hash, is_active FROM users WHERE email = ?"
+    ).bind(email).first();
 
     if (!user) {
       return jsonResp(401, { error: true, message: "Invalid email or password." });
-     }
+    }
 
     if (!user.is_active) {
       return jsonResp(403, { error: true, message: "Account disabled. Contact support." });
-     }
+    }
 
-     // Verify password (SHA-256 based — simple but effective for CF Workers)
+    // Verify password (SHA-256 based — simple but effective for CF Workers)
     const hash = await hashPassword(password);
     if (hash !== user.password_hash) {
       return jsonResp(401, { error: true, message: "Invalid email or password." });
-     }
+    }
 
     // Create session token
-    const token = await generateToken();
+    const token = generateToken();
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days
     const ip = request.headers.get("cf-connecting-ip") || "unknown";
     const ua = request.headers.get("user-agent") || "";
@@ -243,4 +138,3 @@ function jsonResp(status, body) {
     }
   });
 }
->>>>>>> origin/main

@@ -54,15 +54,15 @@ export async function onRequestPost(context) {
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
 
-    // Insert admin user (7 columns + 2 optional: is_active, last_login)
+     // Insert admin user (all 6 columns with placeholders + params for all)
     await db.prepare(
-      "INSERT INTO users(email, password_hash, name, role, company, is_active) VALUES(?, ?, ?, 'admin', 'Moliam', 1)"
-    ).run(adminHash, "Admin");
+        "INSERT INTO users(email, password_hash, name, role, company, is_active) VALUES(?, ?, ?, ?, ?, ?)"
+      ).run("admin@moliam.com", adminHash, "Admin", "admin", "Moliam", 1);
 
-    // Insert oscar user - same schema (7 columns + 2 optional)
+      // Insert oscar user (all 6 columns with placeholders + params for all)
     await db.prepare(
-      "INSERT INTO users(email, password_hash, name, role, company, is_active) VALUES(?, ?, ?, 'client', 'OnePlus Electric', 1)"
-    ).run(oscarHash, "Oscar");
+        "INSERT INTO users(email, password_hash, name, role, company, is_active) VALUES(?, ?, ?, ?, ?, ?)"
+      ).run("oscar@onepluselectric.com", oscarHash, "Oscar", "client", "OnePlus Electric", 1);
 
     // Create clients table - uses in dashboard (schema v2 style)
     await db.prepare(
