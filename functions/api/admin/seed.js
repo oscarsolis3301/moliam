@@ -33,7 +33,7 @@ export async function onRequestPost(context) {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email TEXT UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
-        role TEXT DEFAULT 'user',
+        role TEXT NOT NULL DEFAULT 'client' CHECK(role IN ('superadmin', 'admin', 'client')),
         name TEXT,
         company TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
