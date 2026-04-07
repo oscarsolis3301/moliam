@@ -15,7 +15,9 @@
 <section id="project-section"><div class="loading">Loading projects...</div></section>
 <section id="milestones-section" style="display:none"><h2>Milestones Timeline</h2><div id="milestones-list"></div></section>
 <section id="invoices-section" style="display:none"><h2>Invoice Summary</h2><div class="invoice-summary" id="stats-bar"></div></section>
-<script>const API_BASE='/';let token=localStorage.getItem('auth_token')||'';if(!token){window.location.href='/login.html'}const url=new URL(window.location);const isAdmin=localStorage.getItem('user_role')==='admin';</script>
+<script>
+const API_BASE = '/';
+</script>
 
 <script>
 const impersonateId=url.searchParams.get('impersonate');
