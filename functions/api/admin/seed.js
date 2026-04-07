@@ -38,20 +38,20 @@ export async function onRequestPost(context) {
       // Insert oscar user - use correct SQL with 5 placeholders (no id, it's auto-incremented)
     await db.prepare("INSERT INTO users(email, password_hash, role, name, company) VALUES(?, ?, ?, ?, ?)").run("oscar@onepluselectric.com", oscarHash, "client", "Oscar", "OnePlus Electric");
 
-      // Create sessions table - 3 columns matching our usage: user_id, token, created_at
-    await db.prepare("CREATE TABLE sessions(user_id INTEGER PRIMARY KEY, token TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)").run();
+      // Create sessions table — match login.js schema (5 columns)
+    await db.prepare("CREATE TABLE sessions(user_id INTEGER PRIMARY KEY, token TEXT UNIQUE NOT NULL, expires_at TEXT NOT NULL, ip_address TEXT, user_agent TEXT)").run();
 
     return new Response(JSON.stringify({
       success: true,
       message: "Users and sessions tables seeded successfully",
       users: [
-          { email: "admin@moliam.com", role: "admin" },
-          { email: "oscar@onepluselectric.com", role: "client" }
-        ]
-      }), {
+             { email: "admin@moliam.com", role: "admin" },
+             { email: "oscar@onepluselectric.com", role: "client" }
+           ]
+         }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
-      });
+         });
     } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
