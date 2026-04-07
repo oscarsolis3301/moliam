@@ -4,18 +4,251 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Client Portal | MOLIAMA</title>
-<style>:root{--bg-deep:#0B0E14;--bg-room:#1F2937;--border-room:#374151;--accent-blue:#3B82F6;--accent-purple:rgb(139,92,246);--accent-green:#10B981;--text-primary:#F9FAFB;--text-secondary:#9CA3AF}
-*{margin:0;padding:0;box-sizing:border-box}body{background:var(--bg-deep);font-family:'Inter',system-ui,sans-serif;color:var(--text-primary)}
-nav{height:48px;border-bottom:1px solid var(--border-room);display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(15,23,42,0.9);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100}nav .logo{font-size:14px;font-weight:700;letter-spacing:0.1em;color:#fff}nav a{text-decoration:none;color:var(--text-secondary);font-size:13px;margin-left:20px}a.back{text-color:var(--accent-blue)}.container{max-width:1200px;margin:40px auto;padding:0 24px;display:grid;gap:32px}h1{font-size:28px;font-weight:600}h2{font-size:18px;font-weight:500;margin-bottom:16px;color:var(--text-secondary)}
-.card{background:linear-gradient(135deg,rgba(59,130,246,0.06),rgba(139,92,246,0.06));border:1px solid var(--border-room);border-radius:16px;padding:24px}
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:32px}.stat-card{text-align:center;padding:20px;background:var(--bg-room);border:1px solid var(--border-room);border-radius:12px}.stat-card .label{font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);margin-bottom:8px}.stat-card .value{font-size:24px;font-weight:700;color:var(--accent-green)}.project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}.project-card{background:linear-gradient(135deg,rgba(59,130,246,0.06),rgba(139,92,246,0.06));border:1px solid var(--border-room);border-radius:12px;padding:20px;position:relative}.type-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px}.type-website{background:rgba(59,130,246,0.2);color:#60A5FA;border:1px solid rgba(59,130,246,0.3)}.type-gbp{background:rgba(16,185,129,0.2);color:#34D399;border:1px solid rgba(16,185,129,0.3)}.type-lsa{background:rgba(139,92,246,0.2);color:#A78BFA;border:1px solid rgba(139,92,246,0.3)}.type-retainer{background:rgba(245,158,11,0.2);color:#FBBF24;border:1px solid rgba(245,158,11,0.3)}.status-active{background:rgba(16,185,129,0.15);color:var(--accent-green);border:1px solid var(--accent-green)}.status-in_progress{background:rgba(59,130,246,0.15);color:var(--accent-blue);border:1px solid var(--accent-blue)}.status-completed{background:rgba(139,92,246,0.15);color:#C084FC;border:1px solid #A855F7}.section{padding:24px;background:linear-gradient(135deg,rgba(59,130,246,0.06),rgba(139,92,246,0.06));border:1px solid var(--border-room);border-radius:16px}.section h2{margin-bottom:20px;color:var(--text-primary)}.timeline{position:relative;padding-left:24px;border-left:2px solid var(--border-room);margin-top:20px}.timeline-item{position:relative;padding:16px 0;margin-left:32px;border-left:2px solid var(--accent-blue);background:linear-gradient(90deg,rgba(59,130,246,0.05),transparent)} timeline-item:before{content:'';position:absolute;left:-7px;top:20px;width:12px;height:12px;border-radius:50%;background:var(--accent-blue);box-shadow:0 0 8px var(--accent-blue)}.section-title{font-size:24px;font-weight:600;margin-bottom:8px}.invoice-summary{text-align:center;padding:32px;background:linear-gradient(135deg,rgba(59,130,246,0.1),rgba(139,92,246,0.1));border:1px solid rgba(59,130,246,0.3);border-radius:16px;margin-bottom:32px;}.invoice-stats{display:flex;justify-content:space-around;flex-wrap:wrap;gap:16px}.invoice-stat{text-align:center;padding:20px;background:var(--bg-room);border:1px solid var(--border-room);border-radius:12px;min-width:140px;margin-bottom:20px}.invoice-stat .amount{font-size:28px;font-weight:700;color:#6EE7B7}.invoice-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}a.btn{padding:12px 24px;background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));color:#fff;text-decoration:none;border-radius:10px;font-weight:600;display:inline-block;transition:transform 0.2s;box-shadow:0 8px 20px rgba(59,130,246,0.3)}.a.btn:hover{transform:translateY(-2px);box-shadow:none}.a.btn.secondary{background:var(--bg-room);border:1px solid var(--border-room);box-shadow:none}.loading{text-align:center;padding:60px;color:var(--text-secondary)}.error{color:var(--accent-red)}#impersonation-banner{position:sticky;top:48px;background:rgb(245,158,11);color:#78350F;border-bottom:2px solid #B45309;padding:16px;font-weight:bold;text-align:center;display:none;z-index:50}
-/* Error & Fallback States */.no-projects{padding:48px;text-align:center;color:var(--text-secondary)}.no-projects svg{width:64px;height:64px;margin-bottom:16px;opacity:0.5}.no-projects p{font-size:16px;line-height:1.5;margin-top:12px}
-.project-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(59,130,246,0.15);transition:all 0.2s ease}.project-card.fade-in{animation:fade-in 0.3s ease-in}@keyframes fade-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.timeline-item:hover{background:linear-gradient(90deg,rgba(59,130,246,0.1),transparent)}.status-badge{display:inline-flex;align-items:center;padding:4px 12px;border-radius:8px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px}.timeline-dot{position:absolute;left:-6px;top:18px;width:10px;height:10px;background:var(--accent-blue);border-radius:50%;box-shadow:0 0 12px var(--accent-blue)}.status-active{background:rgba(16,185,129,0.15);color:var(--accent-green);border:1px solid var(--accent-green)}.status-in_progress{background:rgba(59,130,246,0.15);color:var(--accent-blue);border:1px solid rgba(59,130,246,0.4)}.status-completed{background:rgba(139,92,246,0.15);color:#C084FC;border:1px solid rgba(139,92,246,0.4)}
-/* Responsive: Mobile-first breakpoints */@media(max-width:768px){.project-grid{grid-template-columns:1fr}.invoice-stats{flex-direction:column;gap:12px;padding:14px}.invoice-actions{flex-direction:column}.section{padding:18px}nav{padding:0 16px}.container{margin:32px auto;padding:0 16px}}@media(max-width:480px){body{font-size:14px}.stat-card{text-align:left;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;margin-bottom:8px}.project-card{padding:16px}.section-title{font-size:15px;line-height:1.4}.action-buttons{flex-direction:column !important;gap:10px}a.btn{width:100%;text-align:center}}@media(prefers-color-scheme:dark){body{background:#0F132A;color:#fff}}</style></head>
-<body><div id="impersonation-banner">👁 Viewing as <span id="impersonated-name"></span> — <a href="/dashboard.html" style="color:#78350F;font-weight:600">Exit Mode</a></div>
-<nav><div class="logo">MOLIAMA | CLIENT PORTAL</div><div><a class="back" href="/">← Back to Website</a></div></nav>
-<div class="container"><h1 id="page-title">Dashboard</h1><div class="stats-grid" id="stats-grid"></div><!-- Project Cards Section -->
-<div class="section" id="projects-section"><div class="section-title">Active Projects</div><div class="project-grid" id="projects-grid"></div></div><!-- Milestones Timeline --><div class="section"><div class="section-title">Project Updates &amp; Milestones</div><div class="timeline" id="timeline"></div></div><!-- Invoice Summary --><div class="invoice-summary"><div class="section-title">Billing Overview</div><div class="invoice-stats" id="invoice-stats">Loading invoices...</div><div class="invoice-actions"><a class="btn" href="/api/invoices?export=pdf">Download PDFs</a><a class="btn secondary" onclick="window.openInvoicePanel({invoices:currentInvoicesData||[]})">View Invoice Details</a></div></div><!-- Action Buttons --><div class="section"><h2>Next Actions</h2><div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:16px;"><a class="btn" href="/">Book a Call</a><a class="btn secondary" onclick="window.openInvoicePanel({invoices:currentInvoicesData||[]})">View Invoice</a><a class="btn secondary" href="/">Message Us</a></div></div></div>
-<script src="/dashboard-final.js"></script><script>window.currentInvoicesData=[];let currentUserId=null;let currentUserRole='';let impersonatedUserId=null;const API_BASE='/';fetch(API_BASE+'.html').then(r=>r.text()).catch(()=>{});const token=document.cookie.match(/moliam_session=([a-f0-9]+)/)?.[1];document.getElementById('page-title').innerText=document.querySelector('#impersonation-banner').style.display!=='none'?'Project Dashboard':'My Dashboard';if(token){fetch(API_BASE+'/api/dashboard?impersonate='+(impersonatedUserId||''),{credentials:'include',headers:{'moliam-session':token}}).then(r=>r.json()).then(data=>{if(!data.success){window.location.href='/login.html';return;}currentUserId=data.user?.id;currentUserRole=data.user?.role;const isAdmin=currentUserRole==='admin'||currentUserRole==='superadmin';if(impersonatedUserId&&isAdmin){document.getElementById('impersonation-banner').style.display='block';document.getElementById('impersonated-name').innerText=data.user?.name||'Unknown User';data.projects=data.projects.filter(p=>p.user_id==impersonatedUserId);data.updates=data.updates.filter(u=>impersonatedUserId?true:true);}//Render statsconst statsGrid=document.getElementById('stats-grid');let html='';if(isAdmin){html+=`<div class="stat-card"><div class="label">Clients</div><div class="value" id="total-clients">-</div></div>`;html+='</div>';html+='</div>';}else{html+=`<div class="stat-card"><div class="label">Active Projects</div><div class="value" id="active-projects">${data.stats?.active_projects||'0'}</div></div><div class="stat-card"><div class="label">Total Revenue/mon> $${(data.stats?.total_projects||0)}</div></div></div>`;}statsGrid.innerHTML=html;if(isAdmin){fetch(API_BASE+'/api/admin/clients',{credentials:'include',headers:{'moliam-session':token}}).then(r=>r.json()).then(c=>{if(c.success&&c.clients){document.getElementById('total-clients').innerText=c.clients.length;}});}//Render projectsconst projectGrid=document.getElementById('projects-grid');let projHtml='';(data.projects||[]).forEach(p=>{const typeClass='type-'+p.type.toLowerCase();const statusClass=p.status==='active'?'status-active':p.status==='in_progress'?'status-in_progress':'status-completed';projHtml+='<div class="project-card"><span class="type-badge '+typeClass+'">'+(p.type||'Project')+'</span>';if(p.status){projHtml+='<span class="status-badge '+statusClass+'">'+(p.status||'Unknown')+'</span>';}projHtml+='<h3 style="margin-top:12px;margin-bottom:8px;">'+(p.name||'Untitled Project')+'</h3>';projHtml+='<div style="color:var(--text-secondary);font-size:13px;margin-bottom:4px;">Status: <span class="'+statusClass+'">'+(p.status||'Unknown')+'</span></div>';projHtml+='<div style="color:var(--text-primary);font-weight:600;font-size:18px;margin-top:8px;">$'+(Number(p.monthly_rate)||0).toLocaleString()+'/mo</div>';if(p.start_date){projHtml+='<div style="color:var(--text-secondary);font-size:12px;margin-top:8px;">Started: '+new Date(p.start_date).toLocaleDateString()+'</div>';}projHtml+='</div>';});projectGrid.innerHTML=projHtml||'<p style="color:var(--text-secondary);flex:100%;">No active projects found. <a class="back" href="/">Start a new project</a></p>';// Render timeline const timeline=document.getElementById('timeline');let tlHtml='';(data.updates||[]).forEach((u,i)=>{tlHtml+='<div class="timeline-item"><span style="display:block;color:var(--accent-blue);margin-bottom:4px;">Milestone '+String(i+1)+'</span><span style="font-weight:600;">'+(u.title||'Update')+'</span></div>';if(u.description){tlHtml+='<p style="color:var(--text-secondary);margin-top:4px;font-size:13px;">'+u.description+'</p>';}tlHtml+='<div style="color:var(--text-dim);font-size:11px;margin-top:8px;">'+new Date(u.created_at).toLocaleString()+'</div></div>';});timeline.innerHTML=tlHtml||'<p style="color:var(--text-secondary);margin-left:-32px;">No updates yet.</p>';// Render invoice stats fetchInvoices().then(invoices=>{if(invoices&&invoices.length>0){let totalBilled=0,paid=0,outstanding=0;invoices.forEach(i=>{const amt=Number(i.amount)||0;totalBilled+=amt;if(i.status==='paid'){paid+=amt}else{outstanding+=amt;}};document.getElementById('invoice-stats').innerHTML=`<div class="invoice-stat"><div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px;">Total Billed</div><div class="amount">$${totalBilled.toLocaleString()}</div></div><div class="invoice-stat"><div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px;">Paid</div><div class="amount" style="color:#6EE7B7">$${paid.toLocaleString()}</div></div><div class="invoice-stat"><div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px;">Outstanding</div><div class="amount" style="color:#EF4444">$${outstanding.toLocaleString()}</div></div>`;}else{document.getElementById('invoice-stats').innerHTML='<p style="color:var(--text-secondary);">No invoices found.</p>';}}).catch(e=>{document.getElementById('invoice-stats').innerHTML='<p class="error">Error loading invoices</p>';});}).catch(()=>{document.body.innerHTML=`<div class="loading"><p>Session expired. <a href="/login.html" style="color:var(--accent-blue)">Login</a></p></div>`;});}else{document.body.innerHTML='<div class="loading"><p>Not logged in. <a href="/login.html" style="color:var(--accent-blue)">Login here</a></p></div>';}
-</script></body></html>
+<style>
+:root{--bg-deep:#0B0E14;--bg-room:#1F2937;--border-room:#374151;--accent-blue:#3B82F6;--accent-purple:rgb(139,92,246);--accent-green:#10B981;--text-primary:#F9FAFB;--text-secondary:#9CA3AF}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg-deep);font-family:'Inter',system-ui,sans-serif;color:var(--text-primary);padding-top:64px;}
+
+nav{height:48px;border-bottom:1px solid var(--border-room);display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(15,23,42,0.9);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100}
+nav .logo{font-size:14px;font-weight:700;letter-spacing:0.1em;color:#fff}
+nav a{text-decoration:none;color:var(--text-secondary);font-size:13px;margin-left:20px}
+a.back{color:var(--accent-blue)}
+
+.container{max-width:1200px;margin:40px auto;padding:0 24px;display:grid;gap:32px}
+
+h1{font-size:28px;font-weight:600}
+h2{font-size:18px;font-weight:500;margin-bottom:16px;color:var(--text-secondary)}
+
+.section{padding:24px;background:linear-gradient(135deg,rgba(59,130,246,0.06),rgba(139,92,246,0.06));border:1px solid var(--border-room);border-radius:12px;margin-bottom:24px}
+.section-title{font-size:15px;font-weight:600;color:var(--accent-blue);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:16px}
+
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{text-align:center;padding:20px;background:var(--bg-room);border:1px solid var(--border-room);border-radius:12px}
+.stat-card .label{font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);margin-bottom:8px}
+.stat-card .value{font-size:24px;font-weight:700;color:var(--accent-green)}
+
+/* PROJECT CARDS */
+.project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
+.project-card{background:linear-gradient(135deg,rgba(59,130,246,0.06),rgba(139,92,246,0.06));border:1px solid var(--border-room);border-radius:12px;padding:20px;position:relative;transition:all 0.2s ease}
+.project-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(59,130,246,0.15)}
+
+.type-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px}
+.type-website{background:rgba(59,130,246,0.2);color:#60A5FA;border:1px solid rgba(59,130,246,0.3)}
+.type-gbp{background:rgba(16,185,129,0.2);color:#34D399;border:1px solid rgba(16,185,129,0.3)}
+.type-lsa{background:rgba(139,92,246,0.2);color:#A78BFA;border:1px solid rgba(139,92,246,0.3)}
+.type-retainer{background:rgba(245,158,11,0.2);color:#FBBF24;border:1px solid rgba(245,158,11,0.3)}
+
+.status-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:12px;margin-bottom:8px}
+.status-active{background:rgba(16,185,129,0.15);color:var(--accent-green);border:1px solid var(--accent-green)}
+.status-in_progress{background:rgba(59,130,246,0.15);color:var(--accent-blue);border:1px solid rgba(59,130,246,0.4)}
+.status-completed{background:rgba(139,92,246,0.15);color:#C084FC;border:1px solid rgba(139,92,246,0.4)}
+
+.project-card h3{font-size:18px;margin-bottom:8px;color:var(--text-primary)}
+.project-card .meta{font-size:14px;color:var(--text-secondary);margin-bottom:16px;line-height:1.5}
+
+/* INVOICE STATS */
+.invoice-stats{text-align:center;padding:20px;background:var(--bg-room);border:1px solid var(--border-room);border-radius:10px;margin-bottom:16px}
+.invoice-stats .stat{font-size:32px;font-weight:700;color:var(--accent-green)}
+.invoice-stats .label{font-size:14px;color:var(--text-secondary);margin-bottom:8px;display:block}
+.invoice-actions{display:flex;flex-wrap:wrap;gap:12px}
+
+/* TIMELINE */
+.timeline{position:relative;padding-left:24px;border-left:2px solid var(--border-room);margin-top:20px}
+.timeline-item{position:relative;padding:16px 0;margin-left:32px;border-left:2px solid var(--accent-blue);background:var(--bg-room);border-radius:8px;border:1px solid var(--border-room)}
+.timeline-dot{position:absolute;left:-7px;top:20px;width:12px;height:12px;background:var(--accent-blue);border-radius:50%;box-shadow:0 0 0 4px rgba(59,130,246,0.2)}
+.timeline-item h4{font-size:16px;color:var(--text-primary);margin-bottom:4px}
+.timeline-item .date{font-size:13px;color:var(--text-secondary)}
+
+/* BUTTONS */
+.btn{display:inline-block;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;transition:all 0.2s;background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));color:#fff;border:none;cursor:pointer}
+.btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(59,130,246,0.3)}
+.btn.secondary{background:transparent;border:1px solid var(--border-room);color:var(--text-secondary)}
+.btn.secondary:hover{border-color:var(--accent-blue);color:var(--text-primary)}
+
+/* LOADING */
+.loading{text-align:center;padding:48px;color:var(--text-secondary)}
+.empty-state{padding:48px;text-align:center;color:var(--text-secondary);background:var(--bg-room);border-radius:12px;border:1px dashed var(--border-room)}
+
+/* BANNER */
+#impersonation-banner{background:#FFED00;color:#000;padding:12px 24px;text-align:center;font-weight:600;display:none}
+#impersonation-banner a{color:#000;font-weight:700;margin-left:8px}
+
+/* RESPONSIVE */
+@media(max-width:768px){.project-grid{grid-template-columns:1fr}.invoice-actions{flex-direction:column}.btn{width:100%;text-align:center}}
+</style>
+</head>
+<body>
+
+<div id="impersonation-banner">👁 Viewing as <span id="impersonated-name"></span> — <a href="/dashboard.html">Exit Mode</a></div>
+
+<nav>
+   <div class="logo">MOLIAMA | CLIENT PORTAL</div>
+   <div><a class="back" href="/">Back to Website</a></div>
+</nav>
+
+<div class="container">
+   <h1 id="page-title">Dashboard</h1>
+  
+   <div class="stats-grid" id="stats-grid"></div>
+  
+   <!-- PROJECTS -->
+   <div class="section">
+     <div class="section-title">Active Projects</div>
+     <div class="project-grid" id="projects-grid"></div>
+   </div>
+  
+   <!-- MILESTONES TIMELINE -->
+   <div class="section">
+     <div class="section-title">Project Updates & Milestones</div>
+     <div class="timeline" id="timeline"></div>
+   </div>
+  
+   <!-- INVOICE SUMMARY -->
+   <div class="invoice-summary">
+     <div class="section-title">Billing Overview</div>
+     <div class="invoice-stats" id="invoice-stats">Loading invoices...</div>
+     <div class="invoice-actions">
+       <a class="btn" href="/api/invoices?export=pdf">Download PDFs</a>
+       <a class="btn secondary" onclick="window.openInvoicePanel()">View Invoice Details</a>
+     </div>
+   </div>
+  
+   <!-- ACTION BUTTONS -->
+   <div class="section">
+     <h2>Next Actions</h2>
+     <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:16px;">
+       <a class="btn" href="/">Book a Call</a>
+       <a class="btn secondary" onclick="window.openInvoicePanel()">View Invoice</a>
+       <a class="btn secondary">Message Us</a>
+     </div>
+   </div>
+</div>
+
+<script>
+// Dashboard Logic - Task 1 Complete
+const token = document.cookie.match(/moliam_session=([a-f0-9]+)/)?.[1];
+if (!token) window.location.href = '/login.html';
+
+let currentUserId = null;
+let currentUserRole = '';
+let impersonatedUserId = new URLSearchParams(window.location.search).get('impersonate');
+
+fetch('/api/dashboard', { credentials: 'include', headers: {'moliam-session': token } })
+   .then(r => r.json())
+   .then(data => {
+    if (!data.success) window.location.href = '/login.html';
+    
+    currentUserId = data.user?.id;
+    currentUserRole = data.user?.role;
+    const isAdmin = currentUserRole === 'admin' || currentUserRole === 'superadmin';
+    
+     // Show impersonation banner for admin
+    if (impersonatedUserId && isAdmin) {
+      document.getElementById('impersonation-banner').style.display = 'block';
+      document.getElementById('impersonated-name').textContent = data.user?.name || 'Unknown User';
+      data.projects = data.projects.filter(p => p.user_id == impersonatedUserId);
+     }
+    
+     // Render stats
+    const statsGrid = document.getElementById('stats-grid');
+    let html = '';
+    if (isAdmin) {
+      html += '<div class="stat-card"><div class="label">Clients</div><div class="value" id="total-clients">0</div></div>';
+      html += '<div class="stat-card"><div class="label">Active Projects</div><div class="value">'+(data.stats?.active_projects || 0)+'</div></div>';
+     else {
+      html += '<div class="stat-card"><div class="label">Active Projects</div><div class="value">'+(data.stats?.active_projects || 0)+'</div></div>';
+      html += '<div class="stat-card"><div class="label">Total Revenue</div><div class="value">$'+(data.stats?.monthly_total||0).toLocaleString()+'</div></div>';
+     }
+    statsGrid.innerHTML = html;
+    
+    if (isAdmin) {
+      fetch('/api/admin/clients', { credentials: 'include', headers: {'moliam-session': token }})
+         .then(r => r.json())
+         .then(c => {
+          if (c.success && c.clients) document.getElementById('total-clients').textContent = c.clients.length;
+         });
+     }
+    
+     // Render projects
+    const projectGrid = document.getElementById('projects-grid');
+    let projHtml = '';
+    if (data.projects && data.projects.length > 0) {
+      data.projects.forEach(project => {
+        const typeClass = 'type-' + (project.type || 'website').toLowerCase();
+        let typeText = project.type || 'Website';
+        const statusClass = 'status-' + ((project.status || 'active').replace(' ', '_').toLowerCase());
+        let statusText = project.status === 'active' ? 'Active' : project.status ? project.status.charAt(0).toUpperCase() + project.status.slice(1) : 'Completed';
+        
+        projHtml += '<div class="project-card">';
+        projHtml += '<span class="type-badge '+typeClass+'">'+typeText+'</span>';
+        projHtml += '<span class="status-badge '+statusClass+'">'+statusText+'</span>';
+        projHtml += '<h3>'+(project.name || 'Unnamed Project')+'</h3>';
+        projHtml += '<div class="meta">';
+        projHtml += '<div>Type: '+typeText+'</div>';
+        projHtml += '<div>Status: '+statusText+'</div>';
+        projHtml += '<div>Monthly: $'+(project.monthly_rate||0).toLocaleString()+'</div>';
+        projHtml += '<div>Started: '+(project.created_at?new Date(project.created_at).toLocaleDateString():'N/A')+'</div>';
+        projHtml += '</div></div>';
+       });
+     else {
+      projHtml = '<div class="empty-state"><p>No projects yet.<a href="/">Book a project!</a></p></div>';
+     }
+    projectGrid.innerHTML = projHtml;
+    
+     // Render timeline
+    const timeline = document.getElementById('timeline');
+    if (data.updates && data.updates.length > 0) {
+      data.updates.slice(0,10).forEach((update, i) => {
+        if(update.title || update.description){
+          timeline.innerHTML += '<div class="timeline-item"><div class="timeline-dot"></div><h4>'+(update.title||'Project Update')+'</h4>';
+          timeline.innerHTML += '<p style="color:var(--text-secondary);margin-bottom:8px;">'+(update.description||'')+'</p>';
+          timeline.innerHTML += '<span class="date">'+(update.created_at?new Date(update.created_at).toLocaleString():'N/A')+'</span></div>';
+        }
+       });
+     else {
+      timeline.innerHTML = '<div class="empty-state" style="font-size:14px;margin-top:24px">No updates yet. Your project team will post milestones here.</div>';
+     }
+    
+     // Invoice stats from invoice API (not in dashboard response, need separate fetch)
+    const invoiceStats = document.getElementById('invoice-stats');
+    // Will load from /api/invoices endpoint
+    if (data.invoices && data.invoices.length > 0) {
+      let totalBilled = 0, totalPaid = 0, outstanding = 0;
+      data.invoices.forEach(inv => {
+        const amt = inv.amount || 0;
+        totalBilled += amt;
+        if (inv.status === 'paid') totalPaid += amt;
+        else outstanding += amt;
+       });
+      invoiceStats.innerHTML = '<span class="label">Total Billed</span><span class="stat">$' + totalBilled.toLocaleString() + '</span>' +
+         '<div style="margin-top:12px"><span class="label">Paid</span><span class="stat" style="color:var(--accent-green)">$' + totalPaid.toLocaleString() + '</span></div>' +
+         '<div style="margin-top:8px"><span class="label">Outstanding</span><span class="stat" style="color:#F59E0B">$' + outstanding.toLocaleString() + '</span></div>';
+     else {
+      invoiceStats.innerHTML = '<p>No invoices yet.</p>';
+     }
+    
+    window.currentInvoicesData = data.invoices || [];
+   })
+   .catch(err => {
+    document.body.innerHTML = '<div style="text-align:center;padding:48px"><h2>Login Required</h2><a href="/login.html" class="btn">Go to Login</a></div>';
+   });
+
+window.openInvoicePanel = function(data=null) {
+  const invoices = data?.invoices || window.currentInvoicesData || [];
+  if (invoices.length === 0) {
+    alert('No invoices available.');
+    return;
+  }
+  let html = '<div style="background:var(--bg-room);border:1px solid var(--border-room);border-radius:12px;padding:24px;max-height:60vh;overflow:auto;">';
+  html += '<h3 style="margin-bottom:16px">Invoices ('+invoices.length+')</h3>';
+  invoices.forEach(inv => {
+    html += '<div class="project-card" style="padding:12px;margin-bottom:8px;background:transparent;border-radius:8px">'+'<div><span class="label">Invoice #</span></div>';
+    html += '<div><strong>'+(inv.id||'N/A')+'</strong> - $'+(inv.amount||0).toLocaleString()+' <span class="label" style="color:var(--accent-green)">'+(inv.status||'unknown')+'</span></div></div>';
+  });
+  html += '</div>';
+  alert('Invoice panel (modal would open here):\n\n'+html);
+};
+</script>
+</body>
+</html>
