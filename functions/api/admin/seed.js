@@ -28,7 +28,7 @@ export async function onRequestPost(context) {
 
     const now = new Date().toISOString();
 
-    // Match the ACTUAL D1 schema that login.js uses (9 columns: id,email,password_hash,role,name,company,is_active,last_login,created_at)
+      // Match the ACTUAL D1 schema that login.js uses (8 columns: id,email,password_hash,role,name,company,created_at)
     await db.prepare(`CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email TEXT UNIQUE NOT NULL,
@@ -36,22 +36,25 @@ export async function onRequestPost(context) {
         role TEXT DEFAULT 'user',
         name TEXT,
         company TEXT,
-        is_active INTEGER DEFAULT 1,
-        last_login TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
-      )`).run();
+       )`).run();
 
-     // sessions table - match login.js schema (5 columns: id,user_id,token,expires_at,ip_address,user_agent)
-    await db.prepare("CREATE TABLE sessions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, expires_at TEXT NOT NULL, ip_address TEXT, user_agent TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (user_id) REFERENCES users(id))").run();
+     // sessions table - match login.js INSERT schema exactly (5 columns: id,user_id,token,expires_at,ip_address,user_agent - id auto-increment)
+    await db.prepare("CREATE TABLE sessions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, expires_at TEXT NOT NULL, ip_address TEXT, user_agent TEXT, FOREIGN KEY (user_id) REFERENCES users(id))").run();
 
-      // Hash passwords using hashPassword(), then insert BOTH users with ALL 9 columns matching D1 schema
+    // Hash passwords using hashPassword(), then insert BOTH users with ALL 7 columns matching D1 schema (auto-increment id)
     const hash_admin = await hashPassword("Moliam2026!");
     const hash_oscar = await hashPassword("OnePlus2026!");
 
-    await db.prepare("INSERT INTO users (email, password_hash, role, name, company, is_active, last_login, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)").run("admin@moliam.com", hash_admin, "admin", "Administrator", "Moliam", 1, now, now);
-    await db.prepare("INSERT INTO users (email, password_hash, role, name, company, is_active, last_login, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)").run("oscar@onepluselectric.com", hash_oscar, "user", "Oscar Solis", "OnePlus Electric", 1, now, now);
+     await db.prepare("INSERT INTO users (email, password_hash, role, name, company, created_at) VALUES (?, ?, ?, ?, ?, ?)").run("admin@moliam.com", hash_admin, "admin", "Administrator", "Moliam", now);
+    await db.prepare("INSERT INTO users (email, password_hash, role, name, company, created_at) VALUES (?, ?, ?, ?, ?, ?)").run("oscar@onepluselectric.com", hash_oscar, "user", "Oscar Solis", "OnePlus Electric", now);
 
-     // Verify seeding worked - return count from SELECT
+    // Insert a sample session to test the schema
+    const sampleToken = "***" + Math.random().toString(36).substring(2);
+    const sampleExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    await db.prepare("INSERT INTO sessions (user_id, token, expires_at, ip_address, user_agent) VALUES (?, ?, ?, ?, ?)").run(1, sampleToken, sampleExpiresAt, "192.168.1.1", "Mozilla/5.0");
+
+   // Verify seeding worked - return count from SELECT
     const result = await db.prepare("SELECT id, email, name, role, company FROM users").all();
 
     if (result.data.length !== 2) {
