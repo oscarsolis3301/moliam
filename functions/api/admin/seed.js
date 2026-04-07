@@ -28,7 +28,7 @@ export async function onRequestPost(context) {
 
     const now = new Date().toISOString();
 
-     // Match the ACTUAL D1 schema that login.js uses (9 columns: id,email,password_hash,role,name,company,is_active,last_login,created_at)
+    // Match the ACTUAL D1 schema that login.js uses (9 columns: id,email,password_hash,role,name,company,is_active,last_login,created_at)
     await db.prepare(`CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email TEXT UNIQUE NOT NULL,
@@ -39,15 +39,17 @@ export async function onRequestPost(context) {
         is_active INTEGER DEFAULT 1,
         last_login TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
-     )`).run();
+      )`).run();
 
-    // sessions table - match login.js schema (5 columns: id,user_id,token,expires_at,ip_address,user_agent)
+     // sessions table - match login.js schema (5 columns: id,user_id,token,expires_at,ip_address,user_agent)
     await db.prepare("CREATE TABLE sessions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, expires_at TEXT NOT NULL, ip_address TEXT, user_agent TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (user_id) REFERENCES users(id))").run();
 
-     // Insert admin and oscar with ALL 9 columns matching D1 schema
-    await db.prepare("INSERT INTO users (id, email, password_hash, role, name, company, is_active, last_login, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)").run(null, "admin@moliam.com", hash1, "admin", "Administrator", "Moliam", 1, now, now);
+      // Hash passwords using hashPassword(), then insert BOTH users with ALL 9 columns matching D1 schema
+    const hash_admin = await hashPassword("Moliam2026!");
+    const hash_oscar = await hashPassword("OnePlus2026!");
 
-    await db.prepare("INSERT INTO users (id, email, password_hash, role, name, company, is_active, last_login, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)").run(null, "oscar@onepluselectric.com", hash2, "user", "Oscar Solis", "OnePlus Electric", 1, now, now);
+    await db.prepare("INSERT INTO users (id, email, password_hash, role, name, company, is_active, last_login, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)").run(null, "admin@moliam.com", hash_admin, "admin", "Administrator", "Moliam", 1, now, now);
+    await db.prepare("INSERT INTO users (id, email, password_hash, role, name, company, is_active, last_login, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)").run(null, "oscar@onepluselectric.com", hash_oscar, "user", "Oscar Solis", "OnePlus Electric", 1, now, now);
 
      // Verify seeding worked - return count from SELECT
     const result = await db.prepare("SELECT id, email, name, role, company FROM users").all();
