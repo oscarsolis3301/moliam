@@ -34,29 +34,28 @@ export async function onRequestPost(context) {
     await db.prepare(`
       CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
         role TEXT DEFAULT 'user',
-        name TEXT,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-        user_status INTEGER DEFAULT 1
-         )
-      `).run();
+        enabled INTEGER DEFAULT 0
+          )
+       `).run();
 
     const saltedPassword1 = await hashPassword("Moliam2026!");
     const saltedPassword2 = await hashPassword("OnePlus2026!");
 
-     // Insert admin user (ignore if exists)
+      // Insert admin user (ignore if exists)
     await db.prepare(`
-      INSERT INTO users (email, password_hash, name, role, user_status, created_at)
-      VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP) ON CONFLICT(email) DO UPDATE SET name = excluded.name
-        `).run("admin@moliam.com", saltedPassword1, "Administrator", "admin", true);
+      INSERT INTO users (name, email, password_hash, role, enabled)
+      VALUES (?, ?, ?, ?, ?) ON CONFLICT(email) DO UPDATE SET name = excluded.name
+         `).run("Administrator", "admin@moliam.com", saltedPassword1, "admin", 1);
 
-         // Insert Oscar One Plus Electric user (ignore if exists)
+          // Insert Oscar One Plus Electric user (ignore if exists)
     await db.prepare(`
-      INSERT INTO users (email, password_hash, name, role, user_status, created_at)
-      VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP) ON CONFLICT(email) DO UPDATE SET name = excluded.name
-        `).run("oscar@onepluselectric.com", saltedPassword2, "Oscar Johnson", "user", false);
+      INSERT INTO users (name, email, password_hash, role, enabled)
+      VALUES (?, ?, ?, ?, ?) ON CONFLICT(email) DO UPDATE SET name = excluded.name
+         `).run("Oscar Johnson", "oscar@onepluselectric.com", saltedPassword2, "user", 0);
 
 
     return new Response(JSON.stringify({ 
