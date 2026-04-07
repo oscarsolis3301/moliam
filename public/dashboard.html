@@ -168,6 +168,42 @@ async function init() {
   if (!result) return;
 
   // Admin controls
+  async function renderAdminClients() {
+    try {
+      const res = await fetch(API_BASE + 'api/admin/clients', {
+        headers: { 'Accept': 'application/json' },
+        credentials: 'include'
+      });
+      
+      if (!res.ok) return;
+      const data = await res.json();
+      const clients = data.clients || [];
+      
+      let html = '<table style="width:100%;margin-top:12px;"><thead><tr><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Client</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Email</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Status</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Actions</th></tr></thead><tbody>';
+      
+      for (let c of clients) {
+        const statusClass = c.status === 'active' ? 'status-active' : 'status-inactive';
+        html += '<tr>' +
+          '<td style="padding:8px;border-bottom:1px solid var(--border-room);font-size:13px;">' + (c.name || 'Untitled') + '</td>' +
+          '<td style="padding:8px;border-bottom:1px solid var(--border-room);color:var(--text-secondary);font-size:12px;">' + c.email + '</td>' +
+          '<td style="padding:8px;border-bottom:1px solid var(--border-room);"><span class="' + statusClass + '" style="padding:3px 8px;border-radius:4px;font-size:10px;">' + (c.status === 'active' ? 'Active' : 'Inactive') + '</span></td>' +
+          '<td style="padding:8px;border-bottom:1px solid var(--border-room);"><a href="/dashboard.html?impersonate=' + c.id + '" class="view-btn" style="font-size:11px;padding:3px 8px;background:rgba(59,130,246,0.1);color:var(--accent-blue);border-radius:4px;text-decoration:none;">View as</a></td>' +
+          '</tr>';
+      }
+      
+      html += '</tbody></table>';
+      
+      const existingTable = document.querySelector('.admin-clients-table');
+      if (existingTable) {
+        existingTable.innerHTML = html;
+      } else {
+        adminControls.children[0].innerHTML = html;
+      }
+    } catch (e) {
+      console.error('Failed to fetch clients:', e);
+    }
+  }
+
   const adminControls = document.getElementById('admin-controls');
   if (isAdmin) {
     adminControls.style.display = 'flex';
@@ -176,9 +212,11 @@ async function init() {
     viewAsBtn.className = 'btn-primary';
     logoutBtn.insertBefore(viewAsBtn, logoutBtn.nextSibling);
 
-    const clientTable = document.createElement('table');
-    clientTable.innerHTML = '<tr><td style="padding:8px;color:var(--text-secondary)">Client Management Table - Use "View as Client"</td></tr>';
-    adminControls.appendChild(clientTable);
+    // Replace placeholder with actual client management table
+    const clientTableWrapper = document.createElement('div');
+    clientTableWrapper.className = 'admin-clients-table';
+    renderAdminClients();
+    adminControls.appendChild(clientTableWrapper);
   }
 
   showAlert('Dashboard loaded successfully.', 'success');
