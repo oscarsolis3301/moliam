@@ -28,23 +28,23 @@ export async function onRequestPost(context) {
       // Table might not exist, that's OK
     }
 
-    // Insert Admin - use 6-column schema matching actual DB: id, email, password_hash, role, name, created_at
+     // Admin insert: 8 columns matching schema.sql: email, password_hash, name, role, company, phone, created_at, last_login
     try {
       await db.prepare(
-         "INSERT INTO users (email, password_hash, role, name, created_at) VALUES (?, ?, ?, ?, datetime('now'))"
-       ).bind("admin@moliam.com", adminHash, "superadmin", "Admin User").run();
-     } catch (e) {
-       // users table might not exist, skip
-     }
+          "INSERT INTO users (email, password_hash, name, role, company, phone, created_at, last_login) VALUES (?, ?, ?, ?, ?, NULL, datetime('now'), NULL)"
+        ).bind("admin@moliam.com", adminHash, "Admin User", "superadmin", null).run();
+      } catch (e) {
+        // users table might not exist, skip
+      }
 
-     // Insert Oscar - same 6-column schema
+    // Oscar insert: same 8-column schema
     try {
       await db.prepare(
-         "INSERT INTO users (email, password_hash, role, name, created_at) VALUES (?, ?, ?, ?, datetime('now'))"
-       ).bind("oscar@onepluselectric.com", oscarHash, "user", "Oscar Johnson").run();
-     } catch (e) {
-       // users table might not exist, skip
-     }
+          "INSERT INTO users (email, password_hash, name, role, company, phone, created_at, last_login) VALUES (?, ?, ?, ?, ?, NULL, datetime('now'), NULL)"
+        ).bind("oscar@onepluselectric.com", oscarHash, "Oscar Johnson", "user", "One Plus Electric").run();
+      } catch (e) {
+        // users table might not exist, skip
+      }
 
     return jsonResp(200, { 
       success: true, 
