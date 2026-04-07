@@ -26,35 +26,39 @@ export async function onRequestPost(context) {
     await db.prepare("DROP TABLE IF EXISTS users").run();
     await db.prepare("DROP TABLE IF EXISTS sessions").run();
 
+    const now = new Date().toISOString();
+
+    // Match the ACTUAL D1 schema that login.js uses (9 columns: id,email,password_hash,role,name,company,is_active,last_login,created_at)
     await db.prepare(`CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
-        role TEXT NOT NULL,
+        role TEXT DEFAULT 'user',
+        name TEXT,
         company TEXT,
         is_active INTEGER DEFAULT 1,
         last_login TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
-    )`).run();
+      )`).run();
 
+     // sessions table - match login.js schema (5 columns: id,user_id,token,expires_at,ip_address,user_agent)
     await db.prepare("CREATE TABLE sessions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, expires_at TEXT NOT NULL, ip_address TEXT, user_agent TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (user_id) REFERENCES users(id))").run();
 
-    const now = new Date().toISOString();
-    const hash1 = await hashPassword("Moliam2026!");
-    const hash2 = await hashPassword("OnePlus2026!");
+      // Hash passwords using hashPassword(), then insert BOTH users with ALL 9 columns matching D1 schema
+    const hash_admin = await hashPassword("Moliam2026!");
+    const hash_oscar = await hashPassword("OnePlus2026!");
 
-    await db.prepare("INSERT INTO users (name, email, password_hash, role, company, is_active, last_login, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
-          .bind("Administrator", "admin@moliam.com", hash1, "admin", "Moliam", 1, now, now)
-          .run();
+    await db.prepare("INSERT INTO users (email, password_hash, role, name, company, is_active, last_login, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)").run("admin@moliam.com", hash_admin, "admin", "Administrator", "Moliam", 1, now, now);
+    await db.prepare("INSERT INTO users (email, password_hash, role, name, company, is_active, last_login, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)").run("oscar@onepluselectric.com", hash_oscar, "user", "Oscar Solis", "OnePlus Electric", 1, now, now);
 
-    await db.prepare("INSERT INTO users (name, email, password_hash, role, company, is_active, last_login, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
-          .bind("Oscar Solis", "oscar@onepluselectric.com", hash2, "user", "OnePlus Electric", 1, now, now)
-          .run();
+     // Verify seeding worked - return count from SELECT
+    const result = await db.prepare("SELECT id, email, name, role, company FROM users").all();
 
-    const count = await db.prepare("SELECT COUNT(*) as cnt FROM users").all();
-    
-    return new Response(JSON.stringify({ success: true, message: `Database seeded successfully (${count.cnt} users)`, users: [{ email: "admin@moliam.com", role: "admin" }, { email: "oscar@onepluselectric.com", role: "user" }] }), { status: 200, headers: { "Content-Type": "application/json" }});
+    if (result.data.length !== 2) {
+        throw new Error(`Expected 2 users, got ${result.data.length}`);
+    }
+
+    return new Response(JSON.stringify({ success: true, message: `Database seeded successfully (${result.data.length} users)`, users: [{ email: "admin@moliam.com", role: "admin" }, { email: "oscar@onepluselectric.com", role: "user" }] }), { status: 200, headers: { "Content-Type": "application/json" }});
 
    } catch (err) {
     console.error("Seed error:", err);
