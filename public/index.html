@@ -1297,7 +1297,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .mobile-menu-overlay a:hover,
 .mobile-menu-overlay a:focus {
   color: var(--text-primary);
-  transform: translateX(4px);
+  transform: translateX(8px) scale(1.02);
 }
 .mobile-menu-overlay a::before {
   content: '';
@@ -1308,9 +1308,37 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   background: var(--accent-blue);
   opacity: 0;
   transform: translateY(-50%);
-  transition: opacity var(--transition-fast);
+  transition: opacity var(--transition-fast), left 0.2s ease;
 }
-.mobile-menu-overlay a:hover::before { opacity: 1; }
+.mobile-menu-overlay a:hover::before { 
+  opacity: 1; 
+  left: 12px;
+}
+
+/* Enhanced mobile menu for modern touch devices */
+@media (max-width: 768px) {
+  .mobile-menu-overlay a {
+    padding: 24px 40px;
+    font-size: 22px;
+    min-height: 56px; /* Touch-friendly */
+  }
+  .mobile-menu-overlay.open {
+    animation: slideInMenu 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Smooth menu reveal on mobile tablets */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .mobile-menu-overlay a {
+    padding: 20px 50px;
+    font-size: 20px;
+  }
+}
+
+@keyframes slideInMenu {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 /* ═══════════════════════════════════════════
    RESPONSIVE
