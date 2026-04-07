@@ -39,7 +39,6 @@ export async function onRequestPost(context) {
         company TEXT
        )`).run()
 
-;
 
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
