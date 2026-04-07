@@ -22,24 +22,24 @@ export async function onRequestPost(context) {
     );
   }
 
-  try {
-       // Drop existing tables to ensure fresh start (use if exists syntax)
+try {
+      // Drop existing tables to ensure fresh start (use if exists syntax)
 await db.prepare("DROP TABLE IF EXISTS `sessions`").run();
     await db.prepare("DROP TABLE IF EXISTS `users`").run();
 
-      // Create users table with autoincrement id and all required columns
+   // Create users table with autoincrement id and all required columns
     await db
-      .prepare(
-        "CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, name TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'client', company TEXT, phone TEXT, avatar_url TEXT, is_active INTEGER DEFAULT 1, created_at TEXT DEFAULT CURRENT_TIMESTAMP, last_login TEXT)",
-      )
-      .run();
+       prepare(
+         "CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, name TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'client', company TEXT, phone TEXT, avatar_url TEXT, is_active INTEGER DEFAULT 1, created_at TEXT DEFAULT CURRENT_TIMESTAMP, last_login TEXT)",
+       )
+       .run();
 
-    // Create sessions table with exactly 3 columns matching what INSERT will provide
+   // Create sessions table with matching INSERT (3 columns only) matching login.js schema
     await db
-      .prepare(
-        "CREATE TABLE sessions(user_id INTEGER NOT NULL REFERENCES users(id), token TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP)",
-      )
-      .run();
+         prepare(
+           "CREATE TABLE IF NOT EXISTS sessions(user_id INTEGER NOT NULL REFERENCES users(id), token TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP)"
+         )
+         .run();
 
     // Insert admin user with hash password
     const insertAdmin = await db
