@@ -30,22 +30,22 @@ export async function onRequestPost(context) {
        // Create users table with minimal schema - 5 DATA COLUMNS after id/AI: email + password_hash + role + name + company  
     await db.prepare(`CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'user', name TEXT, company TEXT)`).run();
 
-       // Create sessions table with NO auto-increment - 3 DATA COLUMNS matching login.js expectations: user_id + token + created_at
+    // Create sessions table with NO auto-increment - 4 COLUMNS: id + user_id + token + created_at
     await db.prepare(`CREATE TABLE sessions (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)`).run();
 
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
 
-       // Insert admin user - 5 VALUES matching CREATE: email + password_hash + role + name + company (NO id)  
+        // Insert admin user - 5 VALUES matching CREATE: email + password_hash + role + name + company (NO id)   
     await db.prepare(`INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`).run("admin@moliam.com", adminHash, "admin", "Admin", "Moliam");
 
-       // Insert oscar user - same 5 VALUES, same order  
+        // Insert oscar user - same 5 VALUES, same order   
     await db.prepare(`INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`).run("oscar@onepluselectric.com", oscarHash, "user", "Oscar", "OnePlus Electric");
 
-       // Insert session record - use 4 COLUMNS matching sessions table: id + user_id + token + created_at (id must be provided! PK is INTEGER PRIMARY KEY NO AI)
+        // Insert session record - provide ALL 4 COLUMNS: id + user_id + token + created_at
     const now = new Date().toISOString();
     const randomToken="***" + Math.random().toString(36);
-    await db.prepare(`INSERT INTO sessions (user_id, token, created_at) VALUES (?, ?, ?)`).run(1, randomToken, now);
+    await db.prepare(`INSERT INTO sessions (id, user_id, token, created_at) VALUES (?, ?, ?, ?)`).run(1, 1, randomToken, now);
 
        // Validate by counting users - should be exactly 2 rows
     const result = await db.prepare("SELECT COUNT(*) as total FROM users").all();
