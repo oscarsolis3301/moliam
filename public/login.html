@@ -474,7 +474,7 @@ h1,h2,h3,h4,h5,h6{ font-family:'Inter',system-ui,-apple-system, sans-serif ;} h1
           <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password"
                  aria-required="true" tabindex="2">
           <button type="button" class="password-toggle" id="passwordToggle" tabindex="3"
-                  aria-label="Show password" aria-pressed="false">
+                  aria-label="Show password" aria-pressed="false" role="switch" title="Toggle password visibility">
             <svg class="icon-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
               <circle cx="12" cy="12" r="3"/>
@@ -485,9 +485,9 @@ h1,h2,h3,h4,h5,h6{ font-family:'Inter',system-ui,-apple-system, sans-serif ;} h1
             </svg>
           </button>
         </div>
-        <div class="field-footer">
-          <a href="#" class="forgot-link" tabindex="4" onclick="event.preventDefault(); showAlert('Contact hello@moliam.com to reset your password.', 'error');">Forgot password?</a>
-        </div>
+       <div class="field-footer">
+         <a href="#" class="forgot-link" tabindex="4" onclick="event.preventDefault(); showAlert('Contact hello@moliam.com to reset your password.', 'error');" aria-label="Navigate to password recovery dialog">Forgot password?</a>
+       </div>
 </div>
 <button type="submit" class="btn-login" id="loginBtn" tabindex="5">
 <span class="btn-text">Sign In</span>
