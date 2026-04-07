@@ -2,7 +2,7 @@
  * Admin Seed API Endpoint  
  * POST /api/admin/seed - Seeded admin and oscar users into existing tables only
  */
-import { hashPassword, jsonResp, corsResponse } from "../../../lib/auth.js";
+import { hashPassword, jsonResp, corsResponse } from "../../lib/auth.js";
 
 export async function onRequestPost(context) {
   const { request, env } = context;

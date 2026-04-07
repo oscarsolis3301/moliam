@@ -16,27 +16,27 @@
     <meta property="og:url" content="https://moliam.com/portfolio">
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700,800,900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-deep: #0B0E14;
+            --bg-room: #1F2937;
+            --accent-blue: #3B82F6;
+            --accent-purple: #8B5CF6;
+            --text-primary: #F9FAFB;
+            --text-secondary: #9CA3AF;
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-    	<style>
-    	        .sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0 }
-    	        :focus-visible { outline: 3px solid #3B82F6; outline-offset: 4px; }
-    	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    	<style>
-          /* Screen reader only - for skip-to-content accessibility */
-          .sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0 }
-          :focus-visible { outline: 3px solid #3B82F6; outline-offset: 4px; }
-          .sr-only:focus { position:static;width:auto;height:auto;margin:0;overflow:visible;padding:12px 24px;background:#3B82F6;color:#fff;border-radius:8px;z-index:9999;font-weight:600 }
-
-          * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: 'Inter', sans-serif;
-            background: #0f172a;
-            color: #e2e8f0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
             min-height: 100vh;
-          }
+        }
 
-          /* Navigation */
         /* Navigation */
         .portfolio-nav {
             position: fixed; top: 0; left: 0; right: 0;
@@ -47,12 +47,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(168, 85, 247, 0.2);
-        }
-        .portfolio-nav a { color: #e2e8f0; text-decoration: none; font-weight: 600; }
+            border-bottom: 1px solid var(--glass-border);
+         }
+        .portfolio-nav a { color: var(--text-primary); text-decoration: none; font-weight: 600; }
         .portfolio-nav .nav-links { display: flex; gap: 2rem; }
         .portfolio-nav .nav-links a { font-size: 0.9rem; opacity: 0.8; transition: opacity 0.2s; }
-        .portfolio-nav .nav-links a:hover { opacity: 1; color: #a855f7; }
+        .portfolio-nav .nav-links a:hover { opacity: 1; color: var(--accent-purple); }
 
         /* Hero */
         .portfolio-hero {

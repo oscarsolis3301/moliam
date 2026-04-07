@@ -1,439 +1,440 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard | MOLIAMA</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>:root{--bg-deep:#0B0E14;--bg-room:#1F2937;--border-room:#374151;--accent-blue:#3B82F6;--accent-purple:rgb(139,92,246);--accent-green:#10B981;--text-primary:#F9FAFB;--text-secondary:#9CA3AF}skeletonShimmer{background:linear-gradient(90deg,var(--bg-room) 25%,var(--border-room) 50%,var(--bg-room) 75%);background-size:200% 100%;animation:skeletonPulse 1.5s ease-in-out infinite}@keyframes skeletonPulse{0%{background-position:200% 0}100%{background-position:-200% 0}}body{margin:0;padding:0;background:var(--bg-deep);font-family:'Inter',system-ui,sans-serif;color:var(--text-primary)}nav{height:56px;border-bottom:1px solid var(--border-room);display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(11,14,20,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);position:fixed;top:0;width:100%;z-index:100}.nav-wrapper{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}.logo{font-size:15px;font-weight:700;letter-spacing:0.1em;color:#fff}nav a{text-decoration:none;color:var(--text-secondary);font-size:13px}.back-btn{color:var(--accent-blue)}.container{max-width:1200px;margin:80px auto;padding:0 24px;display:grid;gap:36px}.section-title{font-size:18px;font-weight:500;color:var(--text-secondary);margin-bottom:16px}h1{font-size:36px;font-weight:700;margin-bottom:12px;color:var(--text-primary)}section{padding:0;animation:slideUp 0.4s ease-out forwards;opacity:0;transform:translateY(20px)}.@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-/* CARD GLASS EFFECTS - ENHANCED */
-.card{background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.08));border:1px solid rgba(55,56,81,0.5);border-radius:16px;padding:24px;transition:all 0.4s cubic-bezier(0.4,0,0.2,1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}.card:hover{box-shadow:0 8px 32px rgba(59,130,246,0.2);transform:translateY(-4px);border-color:rgba(59,130,246,0.3)}
-/* ═══════════════════════════════════════════
-   PROJECT CARD POLISH */
-.project-card{background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.08));border:1px solid rgba(55,65,81,0.5);border-radius:16px;padding:24px;transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);position:relative;overflow:hidden}.project-card::after{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(59,130,246,0.15),transparent 70%);opacity:0;transition:opacity 0.4s}.project-card:hover::after{opacity:1}.project-card:hover{box-shadow:0 8px 40px rgba(59,130,246,0.2),inset 0 0 0 1px rgba(59,130,246,0.15);transform:translateY(-5px)}.project-card h3{letter-spacing:-0.01em}.project-name{background:linear-gradient(135deg,#3B82F6,#8B5CF6,-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-fill-color:transparent)}
-
-/* TYPE BADGES */
-.type-badge{display:inline-block;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;transition:all 0.3s;cursor:pointer;border:1px solid transparent}.type-badge:hover{transform:scale(1.05);box-shadow:0 4px 12px rgba(59,130,246,0.2)}.type-website{background:rgba(59,130,246,0.1);color:#60A5FA;border-color:rgba(59,130,246,0.3)}.type-gbp{background:rgba(16,185,129,0.1);color:#34D399;border-color:rgba(16,185,129,0.3)}.type-lsa{background:rgba(139,92,246,0.1);color:#A78BFA;border-color:rgba(139,92,246,0.3)}.type-retainer{background:rgba(251,191,36,0.1);color:#FBBF24;border-color:rgba(251,191,36,0.3)}
-
-/* STATUS BADGES */
-.status-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);position:relative}.status-active{background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(16,185,129,0.05));color:var(--accent-green);border:1px solid rgba(16,185,129,0.3);box-shadow:inset 0 0 0 1px rgba(16,185,129,0.2)}.status-pending{background:linear-gradient(135deg,rgba(251,191,36,0.1),rgba(251,191,36,0.05));color:#FBBF24;border:1px solid rgba(251,191,36,0.3);box-shadow:inset 0 0 0 1px rgba(251,191,36,0.2)}.status-badge::before{content:'';position:absolute;top:-1px;bottom:-1px;left:-1px;right:-1px;border-radius:6px;padding:1px;background:linear-gradient(45deg,var(--accent-green),var(--accent-blue));opacity:0;transition:opacity 0.3s}.status-badge:hover::before{opacity:1}.status-badge:hover{box-shadow:0 0 12px rgba(16,185,129,0.3),inset 0 0 0 1px rgba(16,185,129,0.4);transform:scale(1.05)}
-
-/* BUTTON HOVER EFFECTS */
-.project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:24px;margin-bottom:20px}.project-card{padding:24px;background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.08));border:1px solid rgba(55, 65, 81, 0.5);border-radius:16px;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}#project-section{ animation-delay:0ms }#milestones-section{animation-delay:150ms}#invoices-section{animation-delay:300ms}.progress-high{background:linear-gradient(90deg,var(--accent-green),#059669)}.progress-medium{background:linear-gradient(90deg,#F59E0B,#F59E0B)}.progress-low{background:linear-gradient(90deg,rgba(139,92,246,0.5),var(--accent-purple))}.progress-none{background:linear-gradient(90deg,rgba(156,163,175,0.3),#6B7280)}
-
-#page-loading-spinner { display: none; text-align: center; padding: 48px; animation: fadeIn 0.3s ease; }
-.spinner { border: 3px solid rgba(59,130,246,0.2); border-top-color: #3B82F6; width: 32px; height: 32px; border-radius: 50%; margin: 0 auto; animation: spin 1s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-#error-state { display: none; text-align: center; padding: 48px; background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; animation: slideIn 0.3s ease; }
-#error-state h2 { color: #EF4444; margin-bottom: 12px; }
-#error-state p { color: var(--text-secondary); margin-bottom: 16px; }
-.loading { display: none; text-align: center; padding: 48px; animation: fadeIn 0.3s ease; }</style>
-</head>
-<body>
-<nav role="navigation" aria-label="Main site navigation"><div class="logo" id="site-logo">MOLIAMA</div><a href="/" class="back-btn" aria-label="Navigate back to Moliam homepage">← Back to Website</a></nav>
-<div id="impersonation-banner" role="alert" aria-live="polite"><div class="banner-content">👁 Viewing as <span id="viewing-as"></span> - <a id="exit-btn" href="/dashboard.html" aria-label="Exit impersonation mode and return to your own dashboard">Exit</a></div></div>
-<div class="container" role="main" aria-label="User Dashboard">
-<h1>Your Dashboard</h1>
-<section id="project-section" aria-label="Your projects"><div class="loading">Loading projects...</div></section>
-<section id="milestones-section" style="display:none" aria-label="Project milestones timeline"><h2>Milestones Timeline</h2><div id="milestones-list"></div></section>
-<section id="invoices-section" style="display:none" aria-label="Invoice summary and billing status"><h2>Invoice Summary</h2><div class="invoice-summary" id="stats-bar"></div></section>
-
-<!-- Progress loading state for better UX -->
-<div class="loading" id="page-loading-spinner" style="display:none;text-align:center;padding:48px;">
-  <div class="spinner" style="border:3px solid rgba(59,130,246,0.2);border-top-color:#3B82F6;width:32px;height:32px;border-radius:50%;margin:0 auto;"></div>
-  <p style="margin-top:16px;color:var(--text-secondary);font-size:13px;">Loading dashboard data...</p>
-</div>
-
-<!-- Error state UI -->
-<div id="error-state" class="error-state" style="display:none;text-align:center;padding:48px;background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.3);border-radius:12px;">
-  <h2 style="color:#EF4444;margin-bottom:12px;">Unable to Load Dashboard</h2>
-  <p id="error-message" style="color:var(--text-secondary);margin-bottom:16px;"></p>
-  <a href="/dashboard.html" class="btn-primary" style="display:inline-block;padding:10px 20px;background:var(--accent-blue);color:#fff;border:none;border-radius:8px;cursor:pointer;">Refresh Dashboard</a>
-</div>
-<script>
-const API_BASE = '/';
-</script>
-
-<script>
-const url = new URL(window.location);
-const impersonateId = url.searchParams.get('impersonate');
-
-async function fetchDashboard() {
-  try {
-    const params = {};
-    if (impersonateId) params.impersonate = impersonateId;
-    const res = await fetch(API_BASE + 'api/dashboard?' + new URLSearchParams(params), {
-      headers: {'Accept': 'application/json'},
-      credentials: 'include'
-    });
-    if (!res.ok) {
-      if (res.status === 401 || res.status === 403) {
-        window.location.href = '/login.html';
-        return null;
-      }
-      const data = await res.json();
-      return { success: data.success, data: data };
-    }
-    return await res.json();
-  } catch (e) {
-    console.error('Fetch error:', e);
-    return { success: false, err: e.message };
-  }
-}
-
-function showImpersonationBanner(client) {
-  if (impersonateId) {
-    const isAdmin = localStorage.getItem('user_role') === 'admin';
-    if (isAdmin) {
-      const banner = document.getElementById('impersonation-banner');
-      const viewingSpan = document.getElementById('viewing-as');
-      banner.style.display = 'flex';
-      viewingSpan.textContent = client?.name || 'Client';
-      document.getElementById('exit-btn').href = window.location.pathname;
-    } else {
-      // Non-admin trying to impersonate - redirect away
-      delete params.impersonate;
-    }
-  }
-}
-
-function showModal(title, content) {
-  return '<dialog style="background:var(--bg-room);color:var(--text-primary);padding:24px;border-radius:16px;border:1px solid var(--border-room)"><h3>' + title + '</h3>' + content + '</dialog>';
-}
-
-function showAlert(message, type = 'info', duration = 4000) {
-  const existingAlert = document.querySelector('.alert-toast');
-  if (existingAlert) existingAlert.remove();
-  const alert = document.createElement('div');
-  alert.className = `alert-toast ${type}`;
-  alert.innerHTML = `<span>${message}</span><button class="alert-dismiss">&times;</button>`;
-  alert.style.background = type === 'error' ? '#EF4444' : type === 'success' ? '#10B981' : '#3B82F6';
-  
-  const dismissBtn = alert.querySelector('.alert-dismiss');
-  dismissBtn.onclick = () => {
-    alert.classList.remove('show');
-    setTimeout(() => alert.remove(), 200);
-  };
-  
-  document.body.appendChild(alert);
-  requestAnimationFrame(() => alert.classList.add('show'));
-  setTimeout(() => alert.remove(), duration);
-}
-
-/* TOAST NOTIFICATIONS - Styled alert toasts with dismiss button */
-.alert-toast{position:fixed;top:72px;right:24px;z-index:1000;padding:16px 20px;border-radius:10px;color:#fff;font-size:13px;font-weight:500;box-shadow:0 4px 24px rgba(0,0,0,0.3);border:1px solid var(--border-room);animation:toastSlideIn 0.3s cubic-bezier(0.4,0,0.2,1);max-width:360px;overflow-wrap:break-word}.@keyframes toastSlideIn{from{opacity:0;transform:translateX(48px)}to{opacity:1;transform:translateX(0)}}.alert-toast.show{opacity:1}.alert-toast button.alert-dismiss{position:absolute;top:50%;right:12px;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0;margin:0;line-height:1;opacity:0.6;transition:opacity 0.2s ease}.alert-toast button.alert-dismiss:hover{opacity:1}.alert-toast.info{background:#3B82F6}.alert-toast.success{background:#10B981}.alert-toast.error{background:#EF4444}@media(max-width:768px){.alert-toast{top:60px;right:16px;left:16px;max-width:none;padding:12px 16px;font-size:12px}}
-
-async function renderDashboard() {
-  const result = await fetchDashboard();
-  if (!result || !result.success) return null;
-
-  const client = result.data.client;
-  const projects = result.data.projects || [];
-  const invoices = result.data.invoices || [];
-  const updates = result.data.project_updates || [];
-
-  showImpersonationBanner(client);
-
-  // Show skeleton loading for first render with better UX feedback
-const projectSection = document.getElementById('project-section');
-if (!projects.length && !updates.length && !invoices.length) {
-    projectSection.innerHTML = '<div class="skeleton-card skeletonShimmer" style="height:180px;border-radius:16px;"></div>';
-    projectSection.dataset.loading='true';
-  } else {
-    projectSection.dataset.loading='false';
-    projectSection.classList.add('fade-in');
-    // Project cards
-    let html = '';
-    if (!projects.length) {
-      html = '<div class="empty-state"><h3>No active projects yet</h3><p>Ready to get started?</p></div>';
-    } else {
-      for (let p of projects) {
-        const typeClass = p.type ? p.type.toLowerCase().replace(' ', '-') : 'website';
-        html += `<div class="project-card fade-in" role="article" aria-label="Project card: ${p.name || 'Untitled'}">`;
-        html += `<div class="project-header"><h3 class="project-name">${p.name || 'Project'}</h3>`;
-        html += `<div><span class="type-badge type-${typeClass}" role="img" aria-label="${p.type || 'Website'} type badge">${p.type || 'Website'}</span>`;
-        html += `<span class="status-badge status-${p.status==='active'?'active':'pending'}" role="img" aria-label="${p.status==='active'?'Active':'Pending'} status">${p.status==='active'?'Active':'Pending'}</span></div></div>`;
-        html += `<div class="project-details">`;
-        html += `<div class="detail-row"><span>Monthly Rate:</span><span>$${(parseFloat(p.monthly_rate)||0).toLocaleString()}</span></div>`;
-        html += `<div class="detail-row"><span>Start Date:</span><span>${p.start_date?new Date(p.start_date).toLocaleDateString():'N/A'}</span></div>`;
-        if (p.invoice_url && p.invoice_url !== '#') {
-          html += `<div class="project-actions"><a href="${p.invoice_url}" class="btn btn-secondary">📄 View Invoice</a></div>`;
-        }
-        if (p.client_email) {
-          html += `<div class="project-actions"><a href="mailto:${encodeURIComponent(p.client_email)}?subject=Message about ${encodeURIComponent(p.name||'project')}" class="btn btn-secondary">💬 Message Us</a></div>`;
-        }
-        html += `</div></div>`;
-      }
-      document.getElementById('project-section').innerHTML = html;
-    }
-
-     // Milestones with skeleton loading and progress visualization
-    const milestonesList = document.getElementById('milestones-list');
-    if (updates.length > 0) {
-      let ml = '';
-      for (let m of updates.slice(0,5)) {
-   // Calculate progress - use completion_status if exists, otherwise show "N/A" instead of fake random
- const status = m.completion_status !== undefined && m.completion_status !== null ? m.completion_status : 0;
-        const progressClass = status > 80 ? 'progress-high' : (status > 40 ? 'progress-medium' : (status > 0 ? 'progress-low' : 'progress-none'));
-
-        if (status === 0 && (!m.completion_status || m.completion_status === null)) {
-          // No completion_status available - show N/A state
-          ml += `<div class="milestone-item fade-in">` +
-             `<div style="display:flex;justify-content:space-between,align-items:center;margin-bottom:8px;">` +
-               `<span style="font-size:18px;user-select:none">🚩</span>` +
-               `<div style="flex:1;margin-left:12px;"` +
-                 `style="background:var(--bg-room);border-radius:4px;height:6px;overflow:hidden;">` +
-                 `<div class="${progressClass}" style="height:100%;width:0%;transition:all 0.5s ease">N/A —<span style="font-size:10px;color:var(--text-secondary)">No data</span></div></div></div>` +
-               `<div style="font-size:12px;color:${status > 80 ? 'var(--accent-green)':'#F59E0B'};flex-shrink:0;margin-left:12px;">?</div></div>` +
-               `<div>${m.description||'Update'}</div>` +
-               `<div style="font-size:11px;color:var(--text-secondary)">Created ${new Date(m.created_at).toLocaleDateString()}</div></div>`;
-        } else {
-          // Has completion_status - show progress with visual indicators
-          ml += `<div class="milestone-item fade-in">` +
-             `<div style="display:flex;justify-content:space-between,align-items:center;margin-bottom:8px;">` +
-               `<span style="font-size:18px;user-select:none">🚩</span>` +
-               `<div style="flex:1;margin-left:12px;"` +
-                 `style="background:var(--bg-room);border-radius:4px;height:6px;overflow:hidden;">` +
-                 `<div class="${progressClass}" style="height:100%;width:${status}%;transition:all 0.5s ease">` +
-                   `${status}% ${status > 70 ? '✓✅' : (status < 40 ? '⏳' : '')}</div></div></div>` +
-               `<div style="font-size:12px;color:${status > 80 ? 'var(--accent-green)':'#F59E0B'};flex-shrink:0;margin-left:12px;">${status}%</div></div>` +
-               `<div>${m.description||'Update'}</div>` +
-               `<div style="font-size:11px;color:var(--text-secondary)">Created ${new Date(m.created_at).toLocaleDateString()}</div></div>`;
-        }
-      }
-      milestonesList.innerHTML = ml;
-      document.getElementById('milestones-section').style.display='block';
-    } else {
-      milestonesList.innerHTML = '<p style="font-size:13px;color:var(--text-secondary)">No recent milestones.</p>';
-      document.getElementById('milestones-section').style.display='block';
-    }
-
-    // Invoice summary with slide-in effect
-    const totalBilled = invoices.reduce((sum, inv) => sum + (parseFloat(inv.amount)||0), 0);
-    const totalPaid = invoices.reduce((sum, inv) => sum + (parseFloat(inv.paid_amount)||0), 0);
-    const outstanding = totalBilled - totalPaid;
-    const accentGreen = '#10B981';
-    const outstandingColor = outstanding > 0 ? '#F59E0B' : (outstanding < 0 ? '#EF4444' : 'var(--accent-blue)');
-
-const statusBar = document.getElementById('stats-bar');
-    
-    // Get latest invoice actioned_at for display
-    const lastPaidInvoice = invoices.find(inv => (parseFloat(inv.paid_amount)||0) > 0);
-    const lastActionDate = lastPaidInvoice?.actioned_at ? new Date(lastPaidInvoice.actioned_at).toLocaleDateString() : null;
-    
-    statusBar.innerHTML = `
-       <div class="invoice-card fade-in" style="animation-delay:100ms"><div class="invoice-label">Total Billed</div><div>$${totalBilled.toLocaleString()}</div></div>
-       <div class="invoice-card fade-in" style="animation-delay:200ms"><div class="invoice-label">Amount Paid</div><div style="color:${accentGreen}">$${totalPaid.toLocaleString()}${lastActionDate ? '<br><span style="font-size:11px;color:var(--text-primary)">Last actioned: ' + lastActionDate + '</span>' : ''}</div></div>
-       <div class="invoice-card fade-in" style="animation-delay:300ms"><div class="invoice-label">Outstanding</div><div style="color:${outstandingColor}">$${Math.abs(outstanding).toLocaleString()}</div></div>
-    `;
-    document.getElementById('invoices-section').style.display='block';
-
-  return result;
-}
-
-function initNavButtons() {
-  const nav = document.querySelector('nav');
-  const refreshBtn = document.createElement('button');
-  refreshBtn.textContent = '🔄 Refresh';
-  refreshBtn.className = 'btn-primary';
-  refreshBtn.addEventListener('click', async () => await renderDashboard());
-  refreshBtn.style.marginLeft='12px';
-
-  const logoutBtn = document.createElement('a');
-  logoutBtn.href='#';
-  logoutBtn.textContent = '🚪 Logout';
-  logoutBtn.className = 'btn-primary';
-  logoutBtn.addEventListener('click', async (e) => { e.preventDefault(); await fetch('/api/auth/logout',{method:'POST'}); localStorage.clear(); window.location.href='/login.html'; });
-  logoutBtn.style.marginLeft='12px';
-
-  const printBtn = document.createElement('button');
-  printBtn.textContent = '📄 Print';
-  printBtn.className = 'btn-primary';
-  printBtn.addEventListener('click', () => window.print());
-  printBtn.style.marginLeft='12px';
-
-  nav.appendChild(refreshBtn);
-  nav.appendChild(logoutBtn);
-  nav.appendChild(printBtn);
-}
-
-async function init() {
-  const result = await renderDashboard();
-  if (!result) return;
-
-  // Admin controls with search
-  let allClientsData = [];
-  const isAdmin = localStorage.getItem('user_role') === 'admin';
-
-  async function renderAdminClients(searchTerm = '') {
-    try {
-      const res = await fetch(API_BASE + 'api/admin/clients', {
-        headers: { 'Accept': 'application/json' },
-        credentials: 'include'
-      });
-      
-      if (!res.ok) return;
-      const data = await res.json();
-      allClientsData = (data.clients || []).map(c => ({...c, originalId: c.id}));
-      
-      // Filter by search term
-      const filtered = searchTerm.trim() ? 
-        allClientsData.filter(c => 
-           (c.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-           (c.email || '').toLowerCase().includes(searchTerm.toLowerCase())
-         ) : 
-        allClientsData;
-      
-      html += '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:12px;gap:12px;">';
-      html += '<h3 style="font-size:14px;margin:0;">Client Management</h3>' +
-          '<div style="display:flex;gap:8px;">' +
-          '<input type="text" placeholder="Search clients..." class="client-search-input"' +
-            'style="background:var(--bg-room);border:1px solid var(--border-room);border-radius:6px;padding:6px 12px;color:var(--text-primary);font-size:12px;width:180px;">' +
-          '<select class="type-filter" style="background:var(--bg-room);border:1px solid var(--border-room);border-radius:6px;padding:6px 12px;color:var(--text-primary);font-size:12px;">' +
-            '<option value="">All Types</option>' +
-            '<option value="active">Active Clients</option>' +
-            '<option value="inactive">Inactive Clients</option>' +
-          '</select>' +
-          '</div>' +
-          '</div>';
-      html += '<input type="search" placeholder="Search clients..." id="admin-search-input" class="admin-filter" style="width:200px;padding:6px 12px;margin-left:8px;" aria-label="Search for clients by name or email">';
-      html += '</div>';
-      html += '<table style="width:100%;margin-top:12px;"><thead><tr><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Client</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Email</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Status</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Actions</th></tr></thead><tbody>';
-      
-      if (filtered.length === 0 && allClientsData.length > 0) {
-        html += '<tr><td colspan="4" style="padding:32px;text-align:center;color:var(--text-secondary);">No clients found matching "' + searchTerm + '"'+ '</td></tr>';
-      } else {
-        for (let c of filtered) {
-          const statusClass = c.status === 'active' ? 'status-active' : 'status-inactive';
-          html += '<tr>' +
-              '<td style="padding:8px;border-bottom:1px solid var(--border-room);font-size:13px;">' + (c.name || 'Untitled') + '</td>' +
-              '<td style="padding:8px;border-bottom:1px solid var(--border-room);color:var(--text-secondary);font-size:12px;">' + c.email + '</td>' +
-              '<td style="padding:8px;border-bottom:1px solid var(--border-room);"><span class="' + statusClass + '" style="padding:3px 8px;border-radius:4px;font-size:10px;">' + (c.status === 'active' ? 'Active' : 'Inactive') + '</span></td>' +
-               '<td style="padding:8px;border-bottom:1px solid var(--border-room);"><a href="/dashboard.html?impersonate=' + c.originalId + '" class="view-btn" style="font-size:11px;padding:3px 8px;background:rgba(59,130,246,0.1);color:var(--accent-blue);border-radius:4px;text-decoration:none;" aria-label="View dashboard as ' + (c.name || 'client') + '">View as</a></td>' +
-               '</tr>';
-        }
-      }
-      
-      html += '</tbody></table>';
-      
-      const existingTable = document.querySelector('.admin-clients-table');
-      if (existingTable) {
-        existingTable.innerHTML = html;
-        // Setup search event listener
-        setTimeout(() => {
-          const searchInput = document.getElementById('admin-search-input');
-          if (searchInput) {
-            searchInput.addEventListener('input', (e) => renderAdminClients(e.target.value));
-          }
-        }, 0);
-      } else {
-        console.warn('admin-controls container not found, appending table to nav');
-        const tableWrapper = document.createElement('div');
-        tableWrapper.className = 'admin-clients-table';
-        tableWrapper.innerHTML = html;
-        // Append after logout button
-        const nav = document.querySelector('nav');
-        if (nav) {
-          const adminContainer = document.createElement('div');
-          adminContainer.style.marginTop = '12px';
-          adminContainer.appendChild(tableWrapper);
-          nav.appendChild(adminContainer);
-          setTimeout(() => {
-            const searchInput = document.getElementById('admin-search-input');
-            if (searchInput) {
-              searchInput.addEventListener('input', (e) => renderAdminClients(e.target.value));
-            }
-          }, 0);
-        }
-      }
-    } catch (e) {
-      console.error('Failed to fetch clients:', e);
-    }
-  }
-
-  const nav = document.querySelector('nav');
-  if (isAdmin && nav) {
-    // Find logout button and add admin controls after it
-    const logoutBtn = nav.querySelector('.btn-primary:last-child');
-    if (logoutBtn) {
-      const viewAsBtn = document.createElement('button');
-      viewAsBtn.textContent = '👁 View as Client';
-      viewAsBtn.className = 'btn-primary';
-      viewAsBtn.style.marginLeft = '12px';
-      viewAsBtn.addEventListener('click', () => {
-        window.location.href = '/admin.html';
-      });
-      nav.appendChild(viewAsBtn);
-
-      // Replace placeholder with actual client management table
-      const adminContainer = document.createElement('div');
-      adminContainer.className = 'client-management-section';
-      adminContainer.style.marginTop = '12px';
-      
-      const tableWrapper = document.createElement('div');
-      tableWrapper.className = 'admin-clients-table';
-      renderAdminClients();
-      
-      adminContainer.appendChild(tableWrapper);
-      nav.insertBefore(adminContainer, logoutBtn.nextSibling);
-    }
-  }
-
-  showAlert('Dashboard loaded successfully.', 'success');
-}
-
-// Initialize dashboard
-init().catch(e => console.error('Error:', e));
-
-</script>
-
-
-<style>\n/* KEYBOARD NAVIGATION SUPPORT */\n.keyboard-nav :focus{outline:3px solid var(--accent-blue);outline-offset:4px}\n.keyboard-nav a:focus,.keyboard-nav button:focus{box-shadow:0 0 0 3px rgba(59,130,246,0.3)}\n.keyboard-nav dialog:focus-within{border-color:var(--accent-blue)}\na[href][aria-current='focus']{box-shadow:0 0 0 2px var(--accent-blue);transition:box-shadow 0.2s ease}\n@media(max-width:768px){.container{padding:0 16px;gap:24px;}h1{font-size:24px}.project-grid{grid-template-columns:1fr;gap:16px}.card{padding:16px}.invoice-card{flex-direction:column;gap:12px}}
-.transition-fade{transition:opacity 0.3s ease,transform 0.3s ease}.fade-in{animation:fadeIn 0.4s cubic-bezier(0.4,0,0.2,1);@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
-/* RELOAD PULSE ANIMATION */
-@keyframes reloadPulse{0%{box-shadow:0 0 0 0 rgba(59,130,246,0.4)}70%{box-shadow:0 0 0 10px rgba(59,130,246,0)}100%{box-shadow:0 0 0 0 rgba(59,130,246,0)}}.reload-pulse{animation:reloadPulse 1.5s ease-out}
-
-/* LOADING SKELETOR BARS - DYNAMIC */
-.skeleton-bar{background:linear-gradient(90deg,rgba(59,130,246,0.1) 25%,rgba(139,92,246,0.1) 50%,rgba(59,130,246,0.1) 75%);background-size:200% 100%;animation:skeletonLoad 1.5s ease-in-out infinite;border-radius:8px;height:24px}.@keyframes skeletonLoad{0%{background-position:-200% 0}100%{background-position:200% 0}}
-
-/* SKELETAL CARD LOADING */
-.skeleton-card{background:linear-gradient(90deg,var(--bg-room) 25%,var(--border-room) 50%,var(--bg-room) 75%);background-size:200% 100%;animation:skeletonPulse 1.5s ease-in-out infinite;border-radius:16px}.@keyframes skeletonPulse{0%{background-position:200% 0}100%{background-position:-200% 0}}
-
-/* GLASS REFLECTIONS */
-.glass-shine{animation:glassShine 2s ease-in-out infinite}.@keyframes glassShine{0%,100%{box-shadow:0 8px 32px rgba(59,130,246,0.15),inset 0 0 0 1px rgba(59,130,246,0.1)}50%{box-shadow:0 8px 32px rgba(59,130,246,0.25),inset 0 0 0 1px rgba(59,130,246,0.2)}}
-
-/* MOBILE CARD STACK FOR PROJECTS */
-@media(max-width:768px){.project-grid{grid-template-columns:1fr}.empty-state{padding:32px 16px;text-align:center}.invoice-card-stacked{display:block}.invoice-card:last-child{margin-bottom:0}
-
-/* 🌌 MOBILE CLIENT TABLE - CARD STACK */
-@media(max-width:768px){.admin-clients-table{overflow-x:visible}.admin-clients-table table.display-mobile{display:none}table.mobile-table{display:grid;gap:12px}.mobile-client-card{background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.08));border:1px solid var(--border-room);border-radius:12px;padding:16px;animation:slideInCard 0.3s ease-out;box-shadow:0 4px 16px rgba(59,130,246,0.1)}@keyframes slideInCard{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.mobile-client-header{display:block;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border-room)}.mobile-client-name{font-size:14px;font-weight:600;color:var(--text-primary);text-shadow:0 0 8px rgba(59,130,246,0.2)}.mobile-client-email{font-size:12px;color:var(--text-secondary)}.mobile-client-actions{display:flex;gap:8px;margin-top:12px}.mobile-entry-btn,a.mobile-entry-link{display:block;padding:10px 12px;border-radius:6px;text-align:center;text-decoration:none;font-size:12px;transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}.mobile-entry-btn:first-child,a.mobile-entry-link:first-child{background:rgba(59,130,246,0.1);color:var(--accent-blue);border:1px solid rgba(59,130,246,0.3)}.mobile-entry-btn:last-child,a.mobile-entry-link:last-child{background:rgba(139,92,246,0.1);color:var(--accent-purple);border:1px solid rgba(139,92,246,0.3)}.mobile-entry-btn:hover,a.mobile-entry-link:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(59,130,246,0.2)}}
-
-/* 🌌 ADMIN TABLE STYLES */
-.admin-clients-table{background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.08));border:1px solid var(--border-room);border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(59,130,246,0.08);transition:box-shadow 0.3s ease}.admin-clients-table:hover{box-shadow:0 8px 32px rgba(59,130,246,0.15)}.admin-clients-table table{width:100%;border-collapse:collapse}
-.admin-clients-table th{background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.05));font-weight:600;color:var(--text-primary);padding:14px 16px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;box-shadow:inset 0 -1px 0 rgba(59,130,246,0.3)}.admin-clients-table td{padding:16px;border-top:1px solid var(--border-room);font-size:13px}.admin-clients-table tr:hover{background:rgba(59,130,246,0.08);box-shadow:inset 0 0 0 1px rgba(59,130,246,0.15);transform:translateY(-1px)}.client-actions-bar button,.client-actions-bar a{margin-left:8px}
-
-/* INVOICE CARD STACKING */
-.invoice-card-stacked{display:block;margin-bottom:8px}.invoice-card:last-child{margin-bottom:0}.mobile-invoice-grid{display:grid;gap:8px;margin-top:16px}.invoice-card-mobile{background:var(--bg-room);border-radius:10px;padding:14px;text-align:center}
-
-/* MICROINTERACTIONS */
-@keyframes shimmer{0%{background-position:-200% 0}50%{background-position:200% 0}100%{background-position:-200% 0}}.skeleton-shimmer{background:linear-gradient(90deg,var(--bg-room) 25%,var(--border-room) 50%,var(--bg-room) 75%);background-size:200% 100%;animation:skeletonShimmer 1.5s infinite;border-radius:8px}@keyframes skeletonShimmer{0%{background-position:-200% 0}50%{background-position:200% 0}100%{background-position:-200% 0}}
-
-/* GLASS PANELS */
-.glass-panel{background:rgba(31,41,55,0.4);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(55,65,81,0.5)}.glass-card{background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.08));border:1px solid rgba(55,65,81,0.5);border-radius:16px;backdrop-filter:blur(10px)}
-
-/* TYPography ENHANCEMENT */
-h1{font-feature-settings:'smcp' on,'case' on;letter-spacing:-0.02em}.section-title{text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);font-size:13px;font-weight:600}
-
-/* RESPONSIVE IMPROVEMENTS */
-
-
-/* TABLET MOBILE POLISH */
-@media(max-width:992px){body{padding-top:56px}.container{gap:24px;padding:24px}.project-card{margin-bottom:8px;transform:none!important!important;transition:all 0.3s ease}.invoice-card-stacked{display:block;margin-bottom:12px;max-width:400px;margin-left:auto;margin-right:auto}.stat-values{font-size:14px!important;font-weight:600!important}}
-
-/* TABLET CLIENT CARD STYLING */
-@media(max-width:992px and min-width:769px){.admin-clients-table table{max-width:1000px;margin:auto;display:grid;gap:8px}.admin-client-card{background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.05));border-radius:10px;padding:14px;margin-bottom:8px;position:relative}.admin-card-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}.mobile-actions-grid{display:flex;gap:8px;flex-wrap:wrap}.client-entry-btn,a.mobile-link-btn{padding:8px 16px;border-radius:6px;text-align:center;font-size:11px!important}}
-.loading-state{display:flex;justify-content:center;align-items:center;gap:12px;padding:48px;color:var(--text-secondary)}.loading-dots{display:inline-flex;gap:4px}.dot{width:8px;height:8px;border-radius:50%;background:var(--accent-blue);animation:bounce 0.6s infinite}@keyframes bounce{0%,100%{opacity:0.3;transform:scale(0.8)}50%{opacity:1;transform:scale(1)}}.dot:nth-child(2){animation-delay:0.1s}.dot:nth-child(3){animation-delay:0.2s}
-
-</body>
-</html>
+     1|<!DOCTYPE html>
+     2|<html lang="en">
+     3|<head>
+     4|<meta charset="UTF-8">
+     5|<meta name="viewport" content="width=device-width, initial-scale=1.0">
+     6|<title>Dashboard | MOLIAMA</title>
+     7|<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+     8|<style>:root{--bg-deep:#0B0E14;--bg-room:#1F2937;--border-room:#374151;--accent-blue:#3B82F6;--accent-purple:rgb(139,92,246);--accent-green:#10B981;--text-primary:#F9FAFB;--text-secondary:#9CA3AF}skeletonShimmer{background:linear-gradient(90deg,var(--bg-room) 25%,var(--border-room) 50%,var(--bg-room) 75%);background-size:200% 100%;animation:skeletonPulse 1.5s ease-in-out infinite}@keyframes skeletonPulse{0%{background-position:200% 0}100%{background-position:-200% 0}}body{margin:0;padding:0;background:var(--bg-deep);font-family:'Inter',system-ui,sans-serif;color:var(--text-primary)}nav{height:56px;border-bottom:1px solid var(--border-room);display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(11,14,20,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);position:fixed;top:0;width:100%;z-index:100}.nav-wrapper{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}.logo{font-size:15px;font-weight:700;letter-spacing:0.1em;color:#fff}nav a{text-decoration:none;color:var(--text-secondary);font-size:13px}.back-btn{color:var(--accent-blue)}.container{max-width:1200px;margin:80px auto;padding:0 24px;display:grid;gap:36px}.section-title{font-size:18px;font-weight:500;color:var(--text-secondary);margin-bottom:16px}h1{font-size:36px;font-weight:700;margin-bottom:12px;color:var(--text-primary)}section{padding:0;animation:slideUp 0.4s ease-out forwards;opacity:0;transform:translateY(20px)}@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+     9|/* CARD GLASS EFFECTS - ENHANCED */
+    10|.card{background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.08));border:1px solid rgba(55,56,81,0.5);border-radius:16px;padding:24px;transition:all 0.4s cubic-bezier(0.4,0,0.2,1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}.card:hover{box-shadow:0 8px 32px rgba(59,130,246,0.2);transform:translateY(-4px);border-color:rgba(59,130,246,0.3)}
+    11|/* ═══════════════════════════════════════════
+    12|   PROJECT CARD POLISH */
+    13|.project-card{background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.08));border:1px solid rgba(55,65,81,0.5);border-radius:16px;padding:24px;transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);position:relative;overflow:hidden}.project-card::after{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(59,130,246,0.15),transparent 70%);opacity:0;transition:opacity 0.4s}.project-card:hover::after{opacity:1}.project-card:hover{box-shadow:0 8px 40px rgba(59,130,246,0.2),inset 0 0 0 1px rgba(59,130,246,0.15);transform:translateY(-5px)}.project-card h3{letter-spacing:-0.01em}.project-name{background:linear-gradient(135deg,#3B82F6,#8B5CF6,-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-fill-color:transparent)}
+    14|
+    15|/* TYPE BADGES */
+    16|.type-badge{display:inline-block;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;transition:all 0.3s;cursor:pointer;border:1px solid transparent}.type-badge:hover{transform:scale(1.05);box-shadow:0 4px 12px rgba(59,130,246,0.2)}.type-website{background:rgba(59,130,246,0.1);color:#60A5FA;border-color:rgba(59,130,246,0.3)}.type-gbp{background:rgba(16,185,129,0.1);color:#34D399;border-color:rgba(16,185,129,0.3)}.type-lsa{background:rgba(139,92,246,0.1);color:#A78BFA;border-color:rgba(139,92,246,0.3)}.type-retainer{background:rgba(251,191,36,0.1);color:#FBBF24;border-color:rgba(251,191,36,0.3)}
+    17|
+    18|/* STATUS BADGES */
+    19|.status-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);position:relative}.status-active{background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(16,185,129,0.05));color:var(--accent-green);border:1px solid rgba(16,185,129,0.3);box-shadow:inset 0 0 0 1px rgba(16,185,129,0.2)}.status-pending{background:linear-gradient(135deg,rgba(251,191,36,0.1),rgba(251,191,36,0.05));color:#FBBF24;border:1px solid rgba(251,191,36,0.3);box-shadow:inset 0 0 0 1px rgba(251,191,36,0.2)}.status-badge::before{content:'';position:absolute;top:-1px;bottom:-1px;left:-1px;right:-1px;border-radius:6px;padding:1px;background:linear-gradient(45deg,var(--accent-green),var(--accent-blue));opacity:0;transition:opacity 0.3s}.status-badge:hover::before{opacity:1}.status-badge:hover{box-shadow:0 0 12px rgba(16,185,129,0.3),inset 0 0 0 1px rgba(16,185,129,0.4);transform:scale(1.05)}
+    20|
+    21|/* BUTTON HOVER EFFECTS */
+    22|.project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:24px;margin-bottom:20px}.project-card{padding:24px;background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.08));border:1px solid rgba(55, 65, 81, 0.5);border-radius:16px;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}#project-section{ animation-delay:0ms }#milestones-section{animation-delay:150ms}#invoices-section{animation-delay:300ms}.progress-high{background:linear-gradient(90deg,var(--accent-green),#059669)}.progress-medium{background:linear-gradient(90deg,#F59E0B,#F59E0B)}.progress-low{background:linear-gradient(90deg,rgba(139,92,246,0.5),var(--accent-purple))}.progress-none{background:linear-gradient(90deg,rgba(156,163,175,0.3),#6B7280)}
+    23|
+    24|#page-loading-spinner { display: none; text-align: center; padding: 48px; animation: fadeIn 0.3s ease; }
+    25|.spinner { border: 3px solid rgba(59,130,246,0.2); border-top-color: #3B82F6; width: 32px; height: 32px; border-radius: 50%; margin: 0 auto; animation: spin 1s linear infinite; }
+    26|@keyframes spin { to { transform: rotate(360deg); } }
+    27|#error-state { display: none; text-align: center; padding: 48px; background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; animation: slideIn 0.3s ease; }
+    28|#error-state h2 { color: #EF4444; margin-bottom: 12px; }
+    29|#error-state p { color: var(--text-secondary); margin-bottom: 16px; }
+    30|.loading { display: none; text-align: center; padding: 48px; animation: fadeIn 0.3s ease; }</style>
+    31|</head>
+    32|<body>
+    33|<nav role="navigation" aria-label="Main site navigation"><div class="logo" id="site-logo">MOLIAMA</div><a href="/" class="back-btn" aria-label="Navigate back to Moliam homepage">← Back to Website</a></nav>
+    34|<div id="impersonation-banner" role="alert" aria-live="polite"><div class="banner-content">👁 Viewing as <span id="viewing-as"></span> - <a id="exit-btn" href="/dashboard.html" aria-label="Exit impersonation mode and return to your own dashboard">Exit</a></div></div>
+    35|<div class="container" role="main" aria-label="User Dashboard">
+    36|<h1>Your Dashboard</h1>
+    37|<section id="project-section" aria-label="Your projects"><div class="loading">Loading projects...</div></section>
+    38|<section id="milestones-section" style="display:none" aria-label="Project milestones timeline"><h2>Milestones Timeline</h2><div id="milestones-list"></div></section>
+    39|<section id="invoices-section" style="display:none" aria-label="Invoice summary and billing status"><h2>Invoice Summary</h2><div class="invoice-summary" id="stats-bar"></div></section>
+    40|
+    41|<!-- Progress loading state for better UX -->
+    42|<div class="loading" id="page-loading-spinner" style="display:none;text-align:center;padding:48px;">
+    43|  <div class="spinner" style="border:3px solid rgba(59,130,246,0.2);border-top-color:#3B82F6;width:32px;height:32px;border-radius:50%;margin:0 auto;"></div>
+    44|  <p style="margin-top:16px;color:var(--text-secondary);font-size:13px;">Loading dashboard data...</p>
+    45|</div>
+    46|
+    47|<!-- Error state UI -->
+    48|<div id="error-state" class="error-state" style="display:none;text-align:center;padding:48px;background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.3);border-radius:12px;">
+    49|  <h2 style="color:#EF4444;margin-bottom:12px;">Unable to Load Dashboard</h2>
+    50|  <p id="error-message" style="color:var(--text-secondary);margin-bottom:16px;"></p>
+    51|  <a href="/dashboard.html" class="btn-primary" style="display:inline-block;padding:10px 20px;background:var(--accent-blue);color:#fff;border:none;border-radius:8px;cursor:pointer;">Refresh Dashboard</a>
+    52|</div>
+    53|<script>
+    54|const API_BASE = '/';
+    55|</script>
+    56|
+    57|<script>
+    58|const url = new URL(window.location);
+    59|const impersonateId = url.searchParams.get('impersonate');
+    60|
+    61|async function fetchDashboard() {
+    62|  try {
+    63|    const params = {};
+    64|    if (impersonateId) params.impersonate = impersonateId;
+    65|    const res = await fetch(API_BASE + 'api/dashboard?' + new URLSearchParams(params), {
+    66|      headers: {'Accept': 'application/json'},
+    67|      credentials: 'include'
+    68|    });
+    69|    if (!res.ok) {
+    70|      if (res.status === 401 || res.status === 403) {
+    71|        window.location.href = '/login.html';
+    72|        return null;
+    73|      }
+    74|      const data = await res.json();
+    75|      return { success: data.success, data: data };
+    76|    }
+    77|    return await res.json();
+    78|  } catch (e) {
+    79|    console.error('Fetch error:', e);
+    80|    return { success: false, err: e.message };
+    81|  }
+    82|}
+    83|
+    84|function showImpersonationBanner(client) {
+    85|  if (impersonateId) {
+    86|    const isAdmin = localStorage.getItem('user_role') === 'admin';
+    87|    if (isAdmin) {
+    88|      const banner = document.getElementById('impersonation-banner');
+    89|      const viewingSpan = document.getElementById('viewing-as');
+    90|      banner.style.display = 'flex';
+    91|      viewingSpan.textContent = client?.name || 'Client';
+    92|      document.getElementById('exit-btn').href = window.location.pathname;
+    93|    } else {
+    94|      // Non-admin trying to impersonate - redirect away
+    95|      delete params.impersonate;
+    96|    }
+    97|  }
+    98|}
+    99|
+   100|function showModal(title, content) {
+   101|  return '<dialog style="background:var(--bg-room);color:var(--text-primary);padding:24px;border-radius:16px;border:1px solid var(--border-room)"><h3>' + title + '</h3>' + content + '</dialog>';
+   102|}
+   103|
+   104|function showAlert(message, type = 'info', duration = 4000) {
+   105|  const existingAlert = document.querySelector('.alert-toast');
+   106|  if (existingAlert) existingAlert.remove();
+   107|  const alert = document.createElement('div');
+   108|  alert.className = `alert-toast ${type}`;
+   109|  alert.innerHTML = `<span>${message}</span><button class="alert-dismiss">&times;</button>`;
+   110|  alert.style.background = type === 'error' ? '#EF4444' : type === 'success' ? '#10B981' : '#3B82F6';
+   111|  
+   112|  const dismissBtn = alert.querySelector('.alert-dismiss');
+   113|  dismissBtn.onclick = () => {
+   114|    alert.classList.remove('show');
+   115|    setTimeout(() => alert.remove(), 200);
+   116|  };
+   117|  
+   118|  document.body.appendChild(alert);
+   119|  requestAnimationFrame(() => alert.classList.add('show'));
+   120|  setTimeout(() => alert.remove(), duration);
+   121|}
+   122|
+   123|/* TOAST NOTIFICATIONS - Styled alert toasts with dismiss button */
+   124|.alert-toast{position:fixed;top:72px;right:24px;z-index:1000;padding:16px 20px;border-radius:10px;color:#fff;font-size:13px;font-weight:500;box-shadow:0 4px 24px rgba(0,0,0,0.3);border:1px solid var(--border-room);animation:toastSlideIn 0.3s cubic-bezier(0.4,0,0.2,1);max-width:360px;overflow-wrap:break-word}@keyframes toastSlideIn{from{opacity:0;transform:translateX(48px)}to{opacity:1;transform:translateX(0)}}.alert-toast.show{opacity:1}.alert-toast button.alert-dismiss{position:absolute;top:50%;right:12px;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0;margin:0;line-height:1;opacity:0.6;transition:opacity 0.2s ease}.alert-toast button.alert-dismiss:hover{opacity:1}.alert-toast.info{background:#3B82F6}.alert-toast.success{background:#10B981}.alert-toast.error{background:#EF4444}@media(max-width:768px){.alert-toast{top:60px;right:16px;left:16px;max-width:none;padding:12px 16px;font-size:12px}}
+   125|
+   126|async function renderDashboard() {
+   127|  const result = await fetchDashboard();
+   128|  if (!result || !result.success) return null;
+   129|
+   130|  const client = result.data.client;
+   131|  const projects = result.data.projects || [];
+   132|  const invoices = result.data.invoices || [];
+   133|  const updates = result.data.project_updates || [];
+   134|
+   135|  showImpersonationBanner(client);
+   136|
+   137|  // Show skeleton loading for first render with better UX feedback
+   138|const projectSection = document.getElementById('project-section');
+   139|if (!projects.length && !updates.length && !invoices.length) {
+   140|    projectSection.innerHTML = '<div class="skeleton-card skeletonShimmer" style="height:180px;border-radius:16px;"></div>';
+   141|    projectSection.dataset.loading='true';
+   142|  } else {
+   143|    projectSection.dataset.loading='false';
+   144|    projectSection.classList.add('fade-in');
+   145|    // Project cards
+   146|    let html = '';
+   147|    if (!projects.length) {
+   148|      html = '<div class="empty-state"><h3>No active projects yet</h3><p>Ready to get started?</p></div>';
+   149|    } else {
+   150|      for (let p of projects) {
+   151|        const typeClass = p.type ? p.type.toLowerCase().replace(' ', '-') : 'website';
+   152|        html += `<div class="project-card fade-in" role="article" aria-label="Project card: ${p.name || 'Untitled'}">`;
+   153|        html += `<div class="project-header"><h3 class="project-name">${p.name || 'Project'}</h3>`;
+   154|        html += `<div><span class="type-badge type-${typeClass}" role="img" aria-label="${p.type || 'Website'} type badge">${p.type || 'Website'}</span>`;
+   155|        html += `<span class="status-badge status-${p.status==='active'?'active':'pending'}" role="img" aria-label="${p.status==='active'?'Active':'Pending'} status">${p.status==='active'?'Active':'Pending'}</span></div></div>`;
+   156|        html += `<div class="project-details">`;
+   157|        html += `<div class="detail-row"><span>Monthly Rate:</span><span>$${(parseFloat(p.monthly_rate)||0).toLocaleString()}</span></div>`;
+   158|        html += `<div class="detail-row"><span>Start Date:</span><span>${p.start_date?new Date(p.start_date).toLocaleDateString():'N/A'}</span></div>`;
+   159|        if (p.invoice_url && p.invoice_url !== '#') {
+   160|          html += `<div class="project-actions"><a href="${p.invoice_url}" class="btn btn-secondary">📄 View Invoice</a></div>`;
+   161|        }
+   162|        if (p.client_email) {
+   163|          html += `<div class="project-actions"><a href="mailto:${encodeURIComponent(p.client_email)}?subject=Message about ${encodeURIComponent(p.name||'project')}" class="btn btn-secondary">💬 Message Us</a></div>`;
+   164|        }
+   165|        html += `</div></div>`;
+   166|      }
+   167|      document.getElementById('project-section').innerHTML = html;
+   168|    }
+   169|
+   170|     // Milestones with skeleton loading and progress visualization
+   171|    const milestonesList = document.getElementById('milestones-list');
+   172|    if (updates.length > 0) {
+   173|      let ml = '';
+   174|      for (let m of updates.slice(0,5)) {
+   175|   // Calculate progress - use completion_status if exists, otherwise show "N/A" instead of fake random
+   176| const status = m.completion_status !== undefined && m.completion_status !== null ? m.completion_status : 0;
+   177|        const progressClass = status > 80 ? 'progress-high' : (status > 40 ? 'progress-medium' : (status > 0 ? 'progress-low' : 'progress-none'));
+   178|
+   179|        if (status === 0 && (!m.completion_status || m.completion_status === null)) {
+   180|          // No completion_status available - show N/A state
+   181|          ml += `<div class="milestone-item fade-in">` +
+   182|             `<div style="display:flex;justify-content:space-between,align-items:center;margin-bottom:8px;">` +
+   183|               `<span style="font-size:18px;user-select:none">🚩</span>` +
+   184|               `<div style="flex:1;margin-left:12px;"` +
+   185|                 `style="background:var(--bg-room);border-radius:4px;height:6px;overflow:hidden;">` +
+   186|                 `<div class="${progressClass}" style="height:100%;width:0%;transition:all 0.5s ease">N/A —<span style="font-size:10px;color:var(--text-secondary)">No data</span></div></div></div>` +
+   187|               `<div style="font-size:12px;color:${status > 80 ? 'var(--accent-green)':'#F59E0B'};flex-shrink:0;margin-left:12px;">?</div></div>` +
+   188|               `<div>${m.description||'Update'}</div>` +
+   189|               `<div style="font-size:11px;color:var(--text-secondary)">Created ${new Date(m.created_at).toLocaleDateString()}</div></div>`;
+   190|        } else {
+   191|          // Has completion_status - show progress with visual indicators
+   192|          ml += `<div class="milestone-item fade-in">` +
+   193|             `<div style="display:flex;justify-content:space-between,align-items:center;margin-bottom:8px;">` +
+   194|               `<span style="font-size:18px;user-select:none">🚩</span>` +
+   195|               `<div style="flex:1;margin-left:12px;"` +
+   196|                 `style="background:var(--bg-room);border-radius:4px;height:6px;overflow:hidden;">` +
+   197|                 `<div class="${progressClass}" style="height:100%;width:${status}%;transition:all 0.5s ease">` +
+   198|                   `${status}% ${status > 70 ? '✓✅' : (status < 40 ? '⏳' : '')}</div></div></div>` +
+   199|               `<div style="font-size:12px;color:${status > 80 ? 'var(--accent-green)':'#F59E0B'};flex-shrink:0;margin-left:12px;">${status}%</div></div>` +
+   200|               `<div>${m.description||'Update'}</div>` +
+   201|               `<div style="font-size:11px;color:var(--text-secondary)">Created ${new Date(m.created_at).toLocaleDateString()}</div></div>`;
+   202|        }
+   203|      }
+   204|      milestonesList.innerHTML = ml;
+   205|      document.getElementById('milestones-section').style.display='block';
+   206|    } else {
+   207|      milestonesList.innerHTML = '<p style="font-size:13px;color:var(--text-secondary)">No recent milestones.</p>';
+   208|      document.getElementById('milestones-section').style.display='block';
+   209|    }
+   210|
+   211|    // Invoice summary with slide-in effect
+   212|    const totalBilled = invoices.reduce((sum, inv) => sum + (parseFloat(inv.amount)||0), 0);
+   213|    const totalPaid = invoices.reduce((sum, inv) => sum + (parseFloat(inv.paid_amount)||0), 0);
+   214|    const outstanding = totalBilled - totalPaid;
+   215|    const accentGreen = '#10B981';
+   216|    const outstandingColor = outstanding > 0 ? '#F59E0B' : (outstanding < 0 ? '#EF4444' : 'var(--accent-blue)');
+   217|
+   218|const statusBar = document.getElementById('stats-bar');
+   219|    
+   220|    // Get latest invoice actioned_at for display
+   221|    const lastPaidInvoice = invoices.find(inv => (parseFloat(inv.paid_amount)||0) > 0);
+   222|    const lastActionDate = lastPaidInvoice?.actioned_at ? new Date(lastPaidInvoice.actioned_at).toLocaleDateString() : null;
+   223|    
+   224|    statusBar.innerHTML = `
+   225|       <div class="invoice-card fade-in" style="animation-delay:100ms"><div class="invoice-label">Total Billed</div><div>$${totalBilled.toLocaleString()}</div></div>
+   226|       <div class="invoice-card fade-in" style="animation-delay:200ms"><div class="invoice-label">Amount Paid</div><div style="color:${accentGreen}">$${totalPaid.toLocaleString()}${lastActionDate ? '<br><span style="font-size:11px;color:var(--text-primary)">Last actioned: ' + lastActionDate + '</span>' : ''}</div></div>
+   227|       <div class="invoice-card fade-in" style="animation-delay:300ms"><div class="invoice-label">Outstanding</div><div style="color:${outstandingColor}">$${Math.abs(outstanding).toLocaleString()}</div></div>
+   228|    `;
+   229|    document.getElementById('invoices-section').style.display='block';
+   230|
+   231|  return result;
+   232|}
+   233|
+   234|function initNavButtons() {
+   235|  const nav = document.querySelector('nav');
+   236|  const refreshBtn = document.createElement('button');
+   237|  refreshBtn.textContent = '🔄 Refresh';
+   238|  refreshBtn.className = 'btn-primary';
+   239|  refreshBtn.addEventListener('click', async () => await renderDashboard());
+   240|  refreshBtn.style.marginLeft='12px';
+   241|
+   242|  const logoutBtn = document.createElement('a');
+   243|  logoutBtn.href='#';
+   244|  logoutBtn.textContent = '🚪 Logout';
+   245|  logoutBtn.className = 'btn-primary';
+   246|  logoutBtn.addEventListener('click', async (e) => { e.preventDefault(); await fetch('/api/auth/logout',{method:'POST'}); localStorage.clear(); window.location.href='/login.html'; });
+   247|  logoutBtn.style.marginLeft='12px';
+   248|
+   249|  const printBtn = document.createElement('button');
+   250|  printBtn.textContent = '📄 Print';
+   251|  printBtn.className = 'btn-primary';
+   252|  printBtn.addEventListener('click', () => window.print());
+   253|  printBtn.style.marginLeft='12px';
+   254|
+   255|  nav.appendChild(refreshBtn);
+   256|  nav.appendChild(logoutBtn);
+   257|  nav.appendChild(printBtn);
+   258|}
+   259|
+   260|async function init() {
+   261|  const result = await renderDashboard();
+   262|  if (!result) return;
+   263|
+   264|  // Admin controls with search
+   265|  let allClientsData = [];
+   266|  const isAdmin = localStorage.getItem('user_role') === 'admin';
+   267|
+   268|  async function renderAdminClients(searchTerm = '') {
+   269|    try {
+   270|      const res = await fetch(API_BASE + 'api/admin/clients', {
+   271|        headers: { 'Accept': 'application/json' },
+   272|        credentials: 'include'
+   273|      });
+   274|      
+   275|      if (!res.ok) return;
+   276|      const data = await res.json();
+   277|      allClientsData = (data.clients || []).map(c => ({...c, originalId: c.id}));
+   278|      
+   279|      // Filter by search term
+   280|      const filtered = searchTerm.trim() ? 
+   281|        allClientsData.filter(c => 
+   282|           (c.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+   283|           (c.email || '').toLowerCase().includes(searchTerm.toLowerCase())
+   284|         ) : 
+   285|        allClientsData;
+   286|      
+   287|      html += '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:12px;gap:12px;">';
+   288|      html += '<h3 style="font-size:14px;margin:0;">Client Management</h3>' +
+   289|          '<div style="display:flex;gap:8px;">' +
+   290|          '<input type="text" placeholder="Search clients..." class="client-search-input"' +
+   291|            'style="background:var(--bg-room);border:1px solid var(--border-room);border-radius:6px;padding:6px 12px;color:var(--text-primary);font-size:12px;width:180px;">' +
+   292|          '<select class="type-filter" style="background:var(--bg-room);border:1px solid var(--border-room);border-radius:6px;padding:6px 12px;color:var(--text-primary);font-size:12px;">' +
+   293|            '<option value="">All Types</option>' +
+   294|            '<option value="active">Active Clients</option>' +
+   295|            '<option value="inactive">Inactive Clients</option>' +
+   296|          '</select>' +
+   297|          '</div>' +
+   298|          '</div>';
+   299|      html += '<input type="search" placeholder="Search clients..." id="admin-search-input" class="admin-filter" style="width:200px;padding:6px 12px;margin-left:8px;" aria-label="Search for clients by name or email">';
+   300|      html += '</div>';
+   301|      html += '<table style="width:100%;margin-top:12px;"><thead><tr><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Client</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Email</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Status</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Actions</th></tr></thead><tbody>';
+   302|      
+   303|      if (filtered.length === 0 && allClientsData.length > 0) {
+   304|        html += '<tr><td colspan="4" style="padding:32px;text-align:center;color:var(--text-secondary);">No clients found matching "' + searchTerm + '"'+ '</td></tr>';
+   305|      } else {
+   306|        for (let c of filtered) {
+   307|          const statusClass = c.status === 'active' ? 'status-active' : 'status-inactive';
+   308|          html += '<tr>' +
+   309|              '<td style="padding:8px;border-bottom:1px solid var(--border-room);font-size:13px;">' + (c.name || 'Untitled') + '</td>' +
+   310|              '<td style="padding:8px;border-bottom:1px solid var(--border-room);color:var(--text-secondary);font-size:12px;">' + c.email + '</td>' +
+   311|              '<td style="padding:8px;border-bottom:1px solid var(--border-room);"><span class="' + statusClass + '" style="padding:3px 8px;border-radius:4px;font-size:10px;">' + (c.status === 'active' ? 'Active' : 'Inactive') + '</span></td>' +
+   312|               '<td style="padding:8px;border-bottom:1px solid var(--border-room);"><a href="/dashboard.html?impersonate=' + c.originalId + '" class="view-btn" style="font-size:11px;padding:3px 8px;background:rgba(59,130,246,0.1);color:var(--accent-blue);border-radius:4px;text-decoration:none;" aria-label="View dashboard as ' + (c.name || 'client') + '">View as</a></td>' +
+   313|               '</tr>';
+   314|        }
+   315|      }
+   316|      
+   317|      html += '</tbody></table>';
+   318|      
+   319|      const existingTable = document.querySelector('.admin-clients-table');
+   320|      if (existingTable) {
+   321|        existingTable.innerHTML = html;
+   322|        // Setup search event listener
+   323|        setTimeout(() => {
+   324|          const searchInput = document.getElementById('admin-search-input');
+   325|          if (searchInput) {
+   326|            searchInput.addEventListener('input', (e) => renderAdminClients(e.target.value));
+   327|          }
+   328|        }, 0);
+   329|      } else {
+   330|        console.warn('admin-controls container not found, appending table to nav');
+   331|        const tableWrapper = document.createElement('div');
+   332|        tableWrapper.className = 'admin-clients-table';
+   333|        tableWrapper.innerHTML = html;
+   334|        // Append after logout button
+   335|        const nav = document.querySelector('nav');
+   336|        if (nav) {
+   337|          const adminContainer = document.createElement('div');
+   338|          adminContainer.style.marginTop = '12px';
+   339|          adminContainer.appendChild(tableWrapper);
+   340|          nav.appendChild(adminContainer);
+   341|          setTimeout(() => {
+   342|            const searchInput = document.getElementById('admin-search-input');
+   343|            if (searchInput) {
+   344|              searchInput.addEventListener('input', (e) => renderAdminClients(e.target.value));
+   345|            }
+   346|          }, 0);
+   347|        }
+   348|      }
+   349|    } catch (e) {
+   350|      console.error('Failed to fetch clients:', e);
+   351|    }
+   352|  }
+   353|
+   354|  const nav = document.querySelector('nav');
+   355|  if (isAdmin && nav) {
+   356|    // Find logout button and add admin controls after it
+   357|    const logoutBtn = nav.querySelector('.btn-primary:last-child');
+   358|    if (logoutBtn) {
+   359|      const viewAsBtn = document.createElement('button');
+   360|      viewAsBtn.textContent = '👁 View as Client';
+   361|      viewAsBtn.className = 'btn-primary';
+   362|      viewAsBtn.style.marginLeft = '12px';
+   363|      viewAsBtn.addEventListener('click', () => {
+   364|        window.location.href = '/admin.html';
+   365|      });
+   366|      nav.appendChild(viewAsBtn);
+   367|
+   368|      // Replace placeholder with actual client management table
+   369|      const adminContainer = document.createElement('div');
+   370|      adminContainer.className = 'client-management-section';
+   371|      adminContainer.style.marginTop = '12px';
+   372|      
+   373|      const tableWrapper = document.createElement('div');
+   374|      tableWrapper.className = 'admin-clients-table';
+   375|      renderAdminClients();
+   376|      
+   377|      adminContainer.appendChild(tableWrapper);
+   378|      nav.insertBefore(adminContainer, logoutBtn.nextSibling);
+   379|    }
+   380|  }
+   381|
+   382|  showAlert('Dashboard loaded successfully.', 'success');
+   383|}
+   384|
+   385|// Initialize dashboard
+   386|init().catch(e => console.error('Error:', e));
+   387|
+   388|</script>
+   389|
+   390|
+   391|<style>\n/* KEYBOARD NAVIGATION SUPPORT */\n.keyboard-nav :focus{outline:3px solid var(--accent-blue);outline-offset:4px}\n.keyboard-nav a:focus,.keyboard-nav button:focus{box-shadow:0 0 0 3px rgba(59,130,246,0.3)}\n.keyboard-nav dialog:focus-within{border-color:var(--accent-blue)}\na[href][aria-current='focus']{box-shadow:0 0 0 2px var(--accent-blue);transition:box-shadow 0.2s ease}\n@media(max-width:768px){.container{padding:0 16px;gap:24px;}h1{font-size:24px}.project-grid{grid-template-columns:1fr;gap:16px}.card{padding:16px}.invoice-card{flex-direction:column;gap:12px}}
+   392|.transition-fade{transition:opacity 0.3s ease,transform 0.3s ease}.fade-in{animation:fadeIn 0.4s cubic-bezier(0.4,0,0.2,1)}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+   393|
+   394|/* RELOAD PULSE ANIMATION */
+   395|@keyframes reloadPulse{0%{box-shadow:0 0 0 0 rgba(59,130,246,0.4)}70%{box-shadow:0 0 0 10px rgba(59,130,246,0)}100%{box-shadow:0 0 0 0 rgba(59,130,246,0)}}.reload-pulse{animation:reloadPulse 1.5s ease-out}
+   396|
+   397|/* LOADING SKELETOR BARS - DYNAMIC */
+   398|.skeleton-bar{background:linear-gradient(90deg,rgba(59,130,246,0.1) 25%,rgba(139,92,246,0.1) 50%,rgba(59,130,246,0.1) 75%);background-size:200% 100%;animation:skeletonLoad 1.5s ease-in-out infinite;border-radius:8px;height:24px}@keyframes skeletonLoad{0%{background-position:-200% 0}100%{background-position:200% 0}}
+   399|
+   400|/* SKELETAL CARD LOADING */
+   401|.skeleton-card{background:linear-gradient(90deg,var(--bg-room) 25%,var(--border-room) 50%,var(--bg-room) 75%);background-size:200% 100%;animation:skeletonPulse 1.5s ease-in-out infinite;border-radius:16px}@keyframes skeletonPulse{0%{background-position:200% 0}100%{background-position:-200% 0}}
+   402|
+   403|/* GLASS REFLECTIONS */
+   404|.glass-shine{animation:glassShine 2s ease-in-out infinite}@keyframes glassShine{0%,100%{box-shadow:0 8px 32px rgba(59,130,246,0.15),inset 0 0 0 1px rgba(59,130,246,0.1)}50%{box-shadow:0 8px 32px rgba(59,130,246,0.25),inset 0 0 0 1px rgba(59,130,246,0.2)}}
+   405|
+   406|/* MOBILE CARD STACK FOR PROJECTS */
+   407|@media(max-width:768px){.project-grid{grid-template-columns:1fr}.empty-state{padding:32px 16px;text-align:center}.invoice-card-stacked{display:block}.invoice-card:last-child{margin-bottom:0}
+   408|
+   409|/* 🌌 MOBILE CLIENT TABLE - CARD STACK */
+   410|@media(max-width:768px){.admin-clients-table{overflow-x:visible}.admin-clients-table table.display-mobile{display:none}table.mobile-table{display:grid;gap:12px}.mobile-client-card{background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.08));border:1px solid var(--border-room);border-radius:12px;padding:16px;animation:slideInCard 0.3s ease-out;box-shadow:0 4px 16px rgba(59,130,246,0.1)}@keyframes slideInCard{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.mobile-client-header{display:block;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border-room)}.mobile-client-name{font-size:14px;font-weight:600;color:var(--text-primary);text-shadow:0 0 8px rgba(59,130,246,0.2)}.mobile-client-email{font-size:12px;color:var(--text-secondary)}.mobile-client-actions{display:flex;gap:8px;margin-top:12px}.mobile-entry-btn,a.mobile-entry-link{display:block;padding:10px 12px;border-radius:6px;text-align:center;text-decoration:none;font-size:12px;transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}.mobile-entry-btn:first-child,a.mobile-entry-link:first-child{background:rgba(59,130,246,0.1);color:var(--accent-blue);border:1px solid rgba(59,130,246,0.3)}.mobile-entry-btn:last-child,a.mobile-entry-link:last-child{background:rgba(139,92,246,0.1);color:var(--accent-purple);border:1px solid rgba(139,92,246,0.3)}.mobile-entry-btn:hover,a.mobile-entry-link:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(59,130,246,0.2)}}
+   411|
+   412|/* 🌌 ADMIN TABLE STYLES */
+   413|.admin-clients-table{background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.08));border:1px solid var(--border-room);border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(59,130,246,0.08);transition:box-shadow 0.3s ease}.admin-clients-table:hover{box-shadow:0 8px 32px rgba(59,130,246,0.15)}.admin-clients-table table{width:100%;border-collapse:collapse}
+   414|.admin-clients-table th{background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.05));font-weight:600;color:var(--text-primary);padding:14px 16px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;box-shadow:inset 0 -1px 0 rgba(59,130,246,0.3)}.admin-clients-table td{padding:16px;border-top:1px solid var(--border-room);font-size:13px}.admin-clients-table tr:hover{background:rgba(59,130,246,0.08);box-shadow:inset 0 0 0 1px rgba(59,130,246,0.15);transform:translateY(-1px)}.client-actions-bar button,.client-actions-bar a{margin-left:8px}
+   415|
+   416|/* INVOICE CARD STACKING */
+   417|.invoice-card-stacked{display:block;margin-bottom:8px}.invoice-card:last-child{margin-bottom:0}.mobile-invoice-grid{display:grid;gap:8px;margin-top:16px}.invoice-card-mobile{background:var(--bg-room);border-radius:10px;padding:14px;text-align:center}
+   418|
+   419|/* MICROINTERACTIONS */
+   420|@keyframes shimmer{0%{background-position:-200% 0}50%{background-position:200% 0}100%{background-position:-200% 0}}.skeleton-shimmer{background:linear-gradient(90deg,var(--bg-room) 25%,var(--border-room) 50%,var(--bg-room) 75%);background-size:200% 100%;animation:skeletonShimmer 1.5s infinite;border-radius:8px}@keyframes skeletonShimmer{0%{background-position:-200% 0}50%{background-position:200% 0}100%{background-position:-200% 0}}
+   421|
+   422|/* GLASS PANELS */
+   423|.glass-panel{background:rgba(31,41,55,0.4);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(55,65,81,0.5)}.glass-card{background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.08));border:1px solid rgba(55,65,81,0.5);border-radius:16px;backdrop-filter:blur(10px)}
+   424|
+   425|/* TYPography ENHANCEMENT */
+   426|h1{font-feature-settings:'smcp' on,'case' on;letter-spacing:-0.02em}.section-title{text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);font-size:13px;font-weight:600}
+   427|
+   428|/* RESPONSIVE IMPROVEMENTS */
+   429|
+   430|
+   431|/* TABLET MOBILE POLISH */
+   432|@media(max-width:992px){body{padding-top:56px}.container{gap:24px;padding:24px}.project-card{margin-bottom:8px;transform:none!important;transition:all 0.3s ease}.invoice-card-stacked{display:block;margin-bottom:12px;max-width:400px;margin-left:auto;margin-right:auto}.stat-values{font-size:14px!important;font-weight:600!important}}
+   433|
+   434|/* TABLET CLIENT CARD STYLING */
+   435|@media(max-width:992px and min-width:769px){.admin-clients-table table{max-width:1000px;margin:auto;display:grid;gap:8px}.admin-client-card{background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.05));border-radius:10px;padding:14px;margin-bottom:8px;position:relative}.admin-card-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}.mobile-actions-grid{display:flex;gap:8px;flex-wrap:wrap}.client-entry-btn,a.mobile-link-btn{padding:8px 16px;border-radius:6px;text-align:center;font-size:11px!important}}
+   436|.loading-state{display:flex;justify-content:center;align-items:center;gap:12px;padding:48px;color:var(--text-secondary)}.loading-dots{display:inline-flex;gap:4px}.dot{width:8px;height:8px;border-radius:50%;background:var(--accent-blue);animation:bounce 0.6s infinite}@keyframes bounce{0%,100%{opacity:0.3;transform:scale(0.8)}50%{opacity:1;transform:scale(1)}}.dot:nth-child(2){animation-delay:0.1s}.dot:nth-child(3){animation-delay:0.2s}
+   437|
+   438|</body>
+   439|</html>
+   440|
