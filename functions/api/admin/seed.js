@@ -28,20 +28,20 @@ export async function onRequestPost(context) {
        // Table might not exist, that's OK
      }
 
-     // Admin insert: match admin/index.js CREATE TABLE exactly using 6 columns: id (auto), email, password_hash, role, name, created_at (auto)
+      // Admin insert: use 4 columns matching staging DB - must provide exactly 4 values
     try {
       await db.prepare(
-            "INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, 'Admin User', 'superadmin')"
-          ).bind("admin@moliam.com", adminHash).run();
+             "INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, 'Admin User', 'superadmin')"
+           ).bind("admin@moliam.com", adminHash, "Admin User", "superadmin").run();
         } catch (e) {
           // Table schema differs or already seeded, skip gracefully
         }
 
-      // Oscar insert: same 6-column match (id, email, password_hash auto-generated; name, role explicit)
+       // Oscar insert: match the 4-column schema from staging (email, password_hash, name, role)
     try {
       await db.prepare(
-            "INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, 'Oscar Johnson', 'user')"
-          ).bind("oscar@onepluselectric.com", oscarHash).run();
+             "INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, 'Oscar Johnson', 'user')"
+            ).bind("oscar@onepluselectric.com", oscarHash, "Oscar Johnson", "user").run();
         } catch (e) {
           // Table schema differs or already seeded, skip gracefully
         }
