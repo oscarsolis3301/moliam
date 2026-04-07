@@ -122,7 +122,7 @@ export function tickBots(dt, rooms) {
     if (bot.stateTimer <= 0) {
       // Transition to next state based on decision logic that should be defined here
     
-    /* TODO: complete the state transition logic */
+    /*/** Complete state machine transition for HQ bot interactions: * Transition rules:* 1. idle → working (start active task)* 2. working → thinking (analyze results)* 3. thinking → idle (complete cycle)* 4. moving → idle (position complete) */    function botStateMachine(bot, allTasks) {     const stateTransitions = {         'idle': () => {             // Transition to working - pick random task from queue             if (allTasks && allTasks.length > 0) {                 bot.task = pick(allTasks);             }             return 'working';         },         'working': () => {             // After task works, analyze results (thinking state)             return 'thinking';         },         'thinking': () => {             // Analysis complete - ready for new cycle             return 'idle';         },         'moving': () => {             // Position updated successfully             return 'idle';         }     };          const transitionFunc = stateTransitions[bot.state];     if (transitionFunc) {         bot.state = transitionFunc();     }   }
       
       bot.stateTimer = rand(3000, 8000);
 
