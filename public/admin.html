@@ -5,151 +5,81 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Dashboard | MOLIAMA</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>:root{--bg-deep:#0B0E14;--bg-room:#1F2937;--border-room:#374151;--accent-blue:#3B82F6;--accent-purple:rgb(139,92,246);--accent-green:#10B981;--text-primary:#F9FAFB;--text-secondary:#9CA3AF}body{margin:0;padding:0;background:var(--bg-deep);font-family:'Inter',system-ui,sans-serif;color:var(--text-primary)}nav{height:56px;border-bottom:1px solid var(--border-room);display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(11,14,20,0.8);backdrop-filter:blur(12px);position:fixed;top:0;width:100%;z-index:100}nav.logo{font-size:15px;font-weight:700;letter-spacing:0.1em;color:#fff}nav a{text-decoration:none;color:var(--text-secondary);font-size:13px;margin-left:20px}.back-btn{color:var(--accent-blue)}.container{max-width:1400px;margin:80px auto;padding:0 24px;display:grid;gap:36px}h1{font-size:32px;font-weight:600;margin-bottom:8px}h2{font-size:18px;font-weight:500,color:var(--text-secondary);margin-bottom:16px}section{padding:0}/* STATS BAR */.stats-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px}.stat-card{text-align:center;padding:24px;background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.05));border:1px solid var(--border-room);border-radius:12px}.stat-label{font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);margin-bottom:8px}.stat-value{font-size:28px;font-weight:700;color:var(--accent-blue)}.stat-change{font-size:12px;margin-top:4px}.positive{color:var(--accent-green)}.negative{color:#EF4444}/* CLIENT TABLE */.table-container{background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.05));border:1px solid var(--border-room);border-radius:16px;overflow:hidden}.table-header{padding:20px 24px;border-bottom:1px solid var(--border-room);display:flex;justify-content:space-between;align-items:center}h3{font-size:18px;margin:0;color:var(--text-primary)}.search-input{background:var(--bg-room);border:1px solid var(--border-room);border-radius:8px;padding:10px 16px;color:var(--text-primary);font-size:14px;width:300px}.client-table{width:100%;border-collapse:collapse}.client-table th{background:rgba(59,130,246,0.1);padding:14px 16px;text-align:left;font-weight:600;font-size:13px;color:var(--text-secondary);border-bottom:1px solid var(--border-room)}.client-table td{padding:16px;border-bottom:1px solid var(--border-room);font-size:14px}.client-table tr:last-child td{border-bottom:none}.client-table tr:hover{background:rgba(59,130,246,0.05)}.client-name{font-weight:600;color:var(--accent-blue)}.client-email{color:var(--text-secondary);font-size:13px}.status-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;background:rgba(16,185,129,0.2);color:#34D399;border:1px solid rgba(16,185,129,0.3)}.status-badge.inactive{background:rgba(245,158,11,0.2);color:#FBBF24;border-color:#F59E0B}.view-btn{display:inline-flex;align-items:center;padding:8px 14px;background:transparent;color:var(--accent-blue);border:1px solid var(--border-room);border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;transition:all 0.2s}.view-btn:hover{background:rgba(59,130,246,0.1)}.impersonate-btn{display:inline-flex;align-items:center;padding:8px 14px;background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;transition:all 0.2s;margin-left:8px}.impersonate-btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(59,130,246,0.3)}.loading{text-align:center;padding:60px 24px;color:var(--text-secondary)}.empty-state{text-align:center;padding:40px 24px;color:var(--text-secondary)}.no-results{padding:32px;text-align:center;color:var(--text-secondary)}@media(max-width:768px){container{margin:60px auto;padding:0 16px}nav{padding:0 16px}.stats-bar{grid-template-columns:1fr;gap:12px}.table-header{flex-direction:column;align-items:flex-start;gap:16px}.search-input{width:100%}.client-table{overflow-x:auto}}</style>
+<style>
+:root{--bg-deep:#0B0E14;--bg-room:#1F2937;--border-room:#374151;--accent-blue:#3B82F6;--accent-purple:#8B5CF6;--accent-green:#10B981;--text-primary:#F9FAFB;--text-secondary:#9CA3AF}
+body{margin:0;padding:0;background:var(--bg-deep);font-family:'Inter',system-ui,sans-serif;color:var(--text-primary);padding-top:56px;}
+nav{height:56px;border-bottom:1px solid var(--border-room);display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(11,14,20,0.8);backdrop-filter:blur(12px);position:fixed;top:0;width:100%;z-index:100;}
+nav.logo{font-size:15px;font-weight:700;letter-spacing:0.1em;color:#fff;}
+nav a{text-decoration:none;color:var(--text-secondary);font-size:13px;margin-left:20px;}
+a.back-btn{color:var(--accent-blue);}
+.container{max-width:1400px;margin:56px auto;padding:0 24px;display:grid;gap:36px;}
+h1{font-size:32px;font-weight:600;margin-bottom:8px;}
+h2{font-size:18px;font-weight:500,color:var(--text-secondary);margin-bottom:16px;}
+section{padding:0;}
+
+/* STATS BAR */
+.stats-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px;}
+.stat-card{text-align:center;padding:24px;background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.05));border:1px solid var(--border-room);border-radius:12px;}
+.stat-label{font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);margin-bottom:8px;}
+.stat-value{font-size:28px;font-weight:700;color:var(--accent-blue);}
+.stat-change{font-size:12px;margin-top:4px;}
+.positive{color:var(--accent-green);}
+.negative{color:#EF4444;}
+
+/* CLIENT TABLE */
+.table-container{background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.05));border:1px solid var(--border-room);border-radius:16px;overflow:hidden;}
+.table-header{padding:20px 24px;border-bottom:1px solid var(--border-room);display:flex;justify-content:space-between;align-items:center;}
+table{width:100%;border-collapse:collapse;}
+th,td{padding:16px;text-align:left;border-bottom:1px solid var(--border-room);}
+th{background:rgba(59,130,246,0.08);font-weight:600;color:var(--text-primary);}
+tr:hover td{background:rgba(59,130,246,0.05);}
+
+/* CLIENT DETAILS */
+.client-name{font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:4px;}
+.client-email{font-size:13px;color:var(--text-secondary);}
+
+/* BADGES */
+.status-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;}
+.status-active{background:rgba(16,185,129,0.1);color:var(--accent-green);border:1px solid rgba(16,185,129,0.3);}
+.status-inactive{background:rgba(239,68,68,0.1);color:#EF4444;border:1px solid rgba(239,68,68,0.3);}
+
+/* BUTTONS */
+a.view-btn{display:inline-block;padding:6px 14px;border-radius:6px;text-decoration:none;background:rgba(59,130,246,0.1);color:var(--accent-blue);border:1px solid rgba(59,130,246,0.3);font-size:12px;margin-right:8px;transition:all 0.2s;}a.view-btn:hover{background:rgba(59,130,246,0.2);transform:translateY(-1px);}
+.search-input{background:var(--bg-room);border:1px solid var(--border-room);border-radius:8px;padding:8px 16px;color:var(--text-primary);font-size:13px;width:240px;}
+
+.loading{padding:48px;text-align:center;color:var(--text-secondary);}
+.empty-state{padding:48px;text-align:center;color:var(--text-secondary);background:var(--bg-room);border-radius:12px;border:1px dashed var(--border-room);}
+
+/* ADMIN BANNER */
+#impersonation-banner{background:#FFED00;color:#000000;padding:12px;position:sticky;top:56px;z-index:99;text-align:center;font-weight:600;display:none;border-bottom:1px solid #000;}
+
+/* MOBILE */
+@media(max-width:768px){container{margin:48px auto;padding:0 16px;}h1{font-size:24px;}.stats-bar{grid-template-columns:1fr;gap:12px;}nav{padding:0 16px;}table{display:block;overflow-x:auto;}th,td{padding:12px;font-size:13px;}a.view-btn{margin-bottom:8px;display:inline-block;margin-right:0;}}
+</style>
+<script async src="dist/admin.js"></script>
+<link rel="icon" href="/favicon.ico">
 </head>
 <body>
 
-<nav><div class="logo">MOLIAMA <span style="font-size:11px;color:var(--accent-blue);margin-left:8px;opacity:0.6">(ADMIN)</span></div><a href="/" class="back-btn">← Back to Website</a></nav>
+<nav><div class="logo">MOLIAMA <span style="font-size:11px;color:var(--accent-blue);margin-left:8px;opacity:.6">(ADMIN)</span></div><a href="/" class="back-btn">← Back to Website</a></nav>
+
+<div id="impersonation-banner"><strong id="impersonated-name"></strong> | <a href="/admin.html" style="color:#000;">✕ Exit</a></div>
 
 <div class="container">
 <h1>Admin Dashboard</h1>
 <p style="color:var(--text-secondary);margin-bottom:24px;">Overview of all clients and platform metrics</p>
 
-   <section class="stats-bar">
-     <div class="stat-card"><div class="stat-label">Total Clients</div><div class="stat-value" id="total-clients">-</div></div>
-     <div class="stat-card"><div class="stat-label">Active Projects</div><div class="stat-value" id="active-projects">-</div></div>
-     <div class="stat-card"><div class="stat-label">Monthly Recurring Revenue</div><div class="stat-value" id="mrr">$0</div><div class="stat-change positive">+ All recurring</div></div>
-   </section>
+    <section class="stats-bar">
+      <div class="stat-card"><div class="stat-label">Total Clients</div><div class="stat-value" id="total-clients">—</div></div>
+      <div class="stat-card"><div class="stat-label">Active Projects</div><div class="stat-value" id="active-projects">—</div></div>
+      <div class="stat-card"><div class="stat-label">Monthly Recurring Revenue</div><div class="stat-value" id="mrr">$0</div></div>
+    </section>
 
 <section class="table-container">
-<div class="table-header"><h3>All Clients</h3><input type="text" class="search-input" placeholder="Search clients..."></div>
+<div class="table-header"><h3>All Clients</h3><input type="text" class="search-input" placeholder="🔍 Search by name or email"></div>
 <div id="clients-table-wrapper"><div class="loading">Loading clients...</div></div>
 </section>
 
 </div>
-
-<script>
-const API_BASE = '/';
-let token = localStorage.getItem('auth_token');
-const url = new URL(window.location);
-
-// Verify admin access
-if (!token) {
-  window.location.href = '/login.html';
-} else if (localStorage.getItem('user_role') !== 'admin') {
-  alert('Access denied. Admin privileges required.');
-  window.location.href = '/index.html';
-}
-
-async function fetchAdminClients() {
-  try {
-    const res = await fetch(API_BASE + 'api/admin/clients', {
-      headers: { 
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      credentials: 'include'
-     });
-    
-    if (!res.ok) {
-      if (res.status === 401 || res.status === 403) {
-        window.location.href = '/login.html';
-       }
-      throw new Error('Failed to fetch clients');
-     }
-    
-    return await res.json();
-   } catch (e) {
-    console.error('Fetch error:', e);
-    throw e;
-  }
-}
-
-async function renderClients() {
-  try {
-    const result = await fetchAdminClients();
-    if (!result.success) return;
-    
-    const staffId = localStorage.getItem('user_id');
-    const clients = result.data.clients || [];
-    const wrapper = document.getElementById('clients-table-wrapper');
-
-     // Calculate stats
-     const totalClients = clients.length;
-    const activeProjects = clients.reduce((sum, c) => sum + (c.projects_count || 0), 0);
-    const mrr = clients.reduce((sum, c) => sum + (parseFloat(c.monthly_revenue) || 0), 0);
-
-     // Update stats
-    document.getElementById('total-clients').textContent = totalClients;
-    document.getElementById('active-projects').textContent = activeProjects;
-    document.getElementById('mrr').textContent = '$' + mrr.toLocaleString();
-
-     // Generate table
-     if (!clients.length) {
-      wrapper.innerHTML = '<div class="empty-state">No clients found.</div>';
-      return;
-     }
-
-     let html = '<table class="client-table"><thead><tr><th style="width:40%">Client</th><th>Status</th><th>Projects</th><th>Revenue</th><th>Actions</th></tr></thead><tbody>';
-    
-    for (let c of clients) {
-      const statusClass = c.is_active ? 'active' : 'inactive';
-      const projectsCount = c.projects_count || 0;
-      const revenueMonthly = parseFloat(c.monthly_revenue) || 0;
-
-      html += '<tr>';
-      html += `<td><div class="client-name">${c.name}</div><div class="client-email">${c.email}</div></td>`;
-      html += `<td><span class="status-badge ${statusClass}">${c.is_active ? 'Active' : 'Inactive'}</span></td>`;
-      html += `<td>${projectsCount} project(s)</td>`;
-      html += `<td>$${revenueMonthly.toLocaleString()}/mo</td>`;
-      html += '<td>';
-
-       // View as Client button (redirects to dashboard)
-      const viewUrl = '/dashboard.html?impersonate=' + c.id;
-      html += `<a href="/dashboard.html?id=${c.id}" target="_blank" class="view-btn">👁 View as Client</a>`;
-      
-       // Exit link for admin themselves
-      if (c.id !== staffId) {
-        html += `<a href="${viewUrl}" class="impersonate-btn">View Dashboard</a>`;
-       }
-
-      html += '</td></tr>';
-    }
-    
-    html += '</tbody></table>';
-    wrapper.innerHTML = html;
-
-     // Add search functionality
-    document.querySelector('.search-input').addEventListener('input', function(e) {
-      const term = e.target.value.toLowerCase();
-      const rows = wrapper.querySelectorAll('tbody tr');
-      
-      for (let row of rows) {
-        const name = row.cells[0].textContent.toLowerCase();
-        const email = row.cells[1]?.textContent?.toLowerCase() || '';
-        
-        if (name.includes(term) || email.includes(term)) {
-          row.style.display = '';
-         } else {
-          row.style.display = 'none';
-       }
-     }
-      
-      if (!term.trim()) {
-        for (let row of rows) row.style.display = '';
-      }
-    });
-
-  } catch (e) {
-    console.error('Render error:', e);
-    document.getElementById('clients-table-wrapper').innerHTML = 
-      '<div class="empty-state">Error loading clients. Please try again.</div>';
-  }
-}
-
-// Initialize
-renderClients();
-</script>
-
 </body>
 </html>

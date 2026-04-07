@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -337,3 +338,167 @@ nav { display: none !important; }
 
 </body>
 </html>
+=======
+     1|<!DOCTYPE html>
+     2|<html lang="en">
+     3|<head>
+     4|<meta charset="UTF-8">
+     5|<meta name="viewport" content="width=device-width, initial-scale=1.0">
+     6|<title>Client Portal | MOLIAMA</title>
+     7|<style>
+     8|:root{--bg-deep:#0B0E14;--bg-room:#1F2937;--border-room:#374151;--accent-blue:#3B82F6;--accent-purple:rgb(139,92,246);--accent-green:#10B981;--text-primary:#F9FAFB;--text-secondary:#9CA3AF}
+     9|*{margin:0;padding:0;box-sizing:border-box}
+    10|body{background:var(--bg-deep);font-family:'Inter',system-ui,sans-serif;color:var(--text-primary);padding-top:64px;}
+    11|nav{height:48px;border-bottom:1px solid var(--border-room);display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(15,23,42,0.9);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100}
+    12|nav .logo{font-size:14px;font-weight:700;letter-spacing:0.1em;color:#fff}
+    13|nav a{text-decoration:none;color:var(--text-secondary);font-size:13px;margin-left:20px}
+    14|a.back{color:var(--accent-blue)}
+    15|.container{max-width:1200px;margin:40px auto;padding:0 24px;display:grid;gap:32px}
+    16|h1{font-size:28px;font-weight:600}
+    17|.section{padding:24px;background:linear-gradient(135deg,rgba(59,130,246,0.06),rgba(139,92,246,0.06));border:1px solid var(--border-room);border-radius:12px;margin-bottom:24px}
+    18|.section-title{font-size:15px;font-weight:600;color:var(--accent-blue);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:16px}
+    19|
+    20|/* STAT CARDS */
+    21|.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+    22|.stat-card{text-align:center;padding:20px;background:var(--bg-room);border:1px solid var(--border-room);border-radius:12px}
+    23|.stat-card .label{font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);margin-bottom:8px}
+    24|.stat-card .value{font-size:24px;font-weight:700;color:var(--accent-green)}
+    25|
+    26|/* PROJECT CARDS */
+    27|.project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
+    28|.project-card{background:linear-gradient(135deg,rgba(59,130,246,0.06),rgba(139,92,246,0.06));border:1px solid var(--border-room);border-radius:12px;padding:20px;transition:all 0.2s ease}
+    29|.project-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(59,130,246,0.15)}
+    30|.type-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px}
+    31|.type-website{background:rgba(59,130,246,0.2);color:#60A5FA;border:1px solid rgba(59,130,246,0.3)}
+    32|.type-gbp{background:rgba(16,185,129,0.2);color:#34D399;border:1px solid rgba(16,185,129,0.3)}
+    33|.type-lsa{background:rgba(139,92,246,0.2);color:#A78BFA;border:1px solid rgba(139,92,246,0.3)}
+    34|.type-retainer{background:rgba(245,158,11,0.2);color:#FBBF24;border:1px solid rgba(245,158,11,0.3)}
+    35|.status-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:12px;margin-bottom:8px}
+    36|.status-active{background:rgba(16,185,129,0.15);color:var(--accent-green);border:1px solid var(--accent-green)}
+    37|.status-in_progress{background:rgba(59,130,246,0.15);color:var(--accent-blue);border:1px solid rgba(59,130,246,0.4)}
+    38|.project-card h3{font-size:18px;margin-bottom:8px;color:var(--text-primary)}
+    39|.project-card .meta{font-size:14px;color:var(--text-secondary);margin-bottom:16px;line-height:1.5}
+    40|
+    41|/* INVOICE STATS */
+    42|.invoice-stats{text-align:center;padding:24px;background:var(--bg-room);border:1px solid var(--border-room);border-radius:10px;margin-bottom:16px}
+    43|.invoice-stats .value{font-size:32px;font-weight:700;color:var(--accent-green)}
+    44|.invoice-stats .value.paid{color:#34D399}
+    45|.invoice-stats .value.pending{color:#F59E0B}
+    46|.invoice-stats .sub-label{display:block;margin-bottom:8px;font-size:13px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em}
+    47|.invoice-actions{display:flex;flex-wrap:wrap;gap:12px}
+    48|
+    49|/* TIMELINE */
+    50|.timeline{position:relative;padding-left:24px;border-left:2px solid var(--border-room);margin-top:20px}
+    51|.timeline-item{position:relative;padding:16px 0;margin-left:32px;border-left:2px solid #5B6CFF;background:var(--bg-room);border-radius:8px;border:1px solid var(--border-room)}
+    52|.timeline-dot{position:absolute;left:-7px;top:20px;width:12px;height:12px;background:#5B6CFF;border-radius:50%;box-shadow:0 0 0 4px rgba(91,108,255,0.3)}
+    53|.timeline-item h4{font-size:16px;color:var(--text-primary);margin-bottom:4px}
+    54|.timeline-item .date{font-size:13px;color:var(--text-secondary)}
+    55|
+    56|/* BUTTONS */
+    57|.btn{display:inline-block;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;transition:all 0.2s;background:linear-gradient(135deg,#3B82F6,var(--accent-purple));color:#fff;border:none;cursor:pointer}
+    58|.btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(59,130,246,0.3)}
+    59|.btn.secondary{background:transparent;border:1px solid var(--border-room);color:var(--text-secondary)}
+    60|.btn.secondary:hover{border-color:#3B82F6;color:var(--text-primary)}
+    61|
+    62|/* LOADING/EMPTY */
+    63|.empty-state{padding:48px;text-align:center;color:var(--text-secondary);background:var(--bg-room);border-radius:12px;border:1px dashed var(--border-room)}
+    64|
+    65|/* IMPERSONATION BANNER */
+    66|#impersonation-banner{background:#FFED00;color:#000;padding:12px;position:sticky;top:48px;z-index:99;text-align:center;font-weight:600;display:none}
+    67|/* MOBILE OPTIMIZATION */
+    68|@media(max-width:768px){
+    69|  .container{padding:16px;margin:32px auto}
+    70|  nav{padding:0 16px}
+    71|  h1{font-size:24px}
+    72|  .project-grid{grid-template-columns:1fr}
+    73|  .project-card{margin-bottom:16px}
+    74|  .invoice-actions{flex-direction:column;gap:8px}
+    75|  .btn{width:100%;text-align:center;padding:10px 16px}
+    76|  .stats-grid, .stats-bar{grid-template-columns:1fr!important;gap:12px}
+    77|  nav a.back{font-size:12px}
+    78|}
+    79|
+    80|@media(max-width:480px){
+    81|  .container{margin:28px auto;padding:0 12px}
+    82|  h1{font-size:20px}
+    83|  .section{padding:16px}
+    84|  .stats-grid, .stats-bar{grid-template-columns:1fr!important}
+    85|}
+    86|
+    87|/* Responsive timeline */
+    88|@media(max-width:768px){.timeline{padding-left:16px}.timeline-item{margin-left:16px;padding:12px}.invoice-actions{flex-direction:column;font-size:13px}}
+    89|
+    90|/* MICRO-INTERACTIONS */
+    91|.project-card{animation:fadeInUp 0.4s ease-out}
+    92|@keyframes fadeInUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    93|.container>*{animation:fadeInUp 0.4s ease-out}
+    94|
+    95|/* Skeleton loading */
+    96|@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+    97|.loading-skeleton{background:linear-gradient(90deg,rgba(91,108,242,0.05),rgba(91,108,242,0.15),rgba(91,108,242,0.05));background-size:200% 100%;animation:pulse 1.5s infinite}
+    98|
+/* MICRO-INTERACTIONS */
+.project-card{box-shadow:0 4px 16px rgba(59,130,246,0.08),0 1px 2px rgba(0,0,0,0.1);overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,var(--accent-blue),transparent)}
+.stat-card:hover::before{left:4px}
+.timeline-item{opacity:0;transform:translateX(-15px);animation:slideIn 0.5s cubic-bezier(0.4,0,0.2,1) forwards}
+@keyframes slideIn{from{opacity:0;transform:translateX(-15px)}to{opacity:1;transform:translateX(0)}}</style>
+    99|</head>
+   100|<body>
+   101|
+   102|<div id="impersonation-banner"><strong id="impersonated-name"></strong><a href="/dashboard" onclick="document.getElementById('impersonation-banner').style.display='none';location.reload()">Exit</a></div>
+   103|
+   104|<nav><div class="logo">MOLIAMA | CLIENT PORTAL</div><div><a class="back" href="/">← Back to Website</a></div></nav>
+   105|
+   106|<div class="container">
+   107|     <h1>Dashboard</h1>
+   108|
+   109|      <!-- Stats Cards -->
+   110|      <div class="stats-grid" id="stats-grid"></div>
+   111|
+   112|      <!-- Projects -->
+   113|      <div class="section">
+   114|          <div class="section-title">Active Projects</div>
+   115|          <div class="project-grid" id="projects-grid"></div>
+   116|      </div>
+   117|
+   118|      <!-- Timeline/Milestones -->
+   119|      <div class="section">
+   120|          <div class="section-title">Project Updates &amp; Milestones</div>
+   121|          <div class="timeline" id="timeline"></div>
+   122|      </div>
+   123|
+   124|      <!-- Invoice Summary -->
+   125|      <div class="invoice-summary">
+   126|          <div class="section-title">Billing Overview</div>
+   127|          <div class="invoice-stats" id="invoice-stats">Loading invoices...</div>
+   128|          <div class="invoice-actions">
+   129|              <a class="btn" href="/api/invoices?export=pdf">Download PDFs</a>
+   130|              <a class="btn secondary" onclick="window.showInvoices()">View Details</a>
+   131|          </div>
+   132|      </div>
+   133|
+   134|      <!-- Action Buttons -->
+   135|      <div class="section" style="margin-top:8px;">
+   136|          <h2>Next Actions</h2>
+   137|          <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:16px;">
+   138|              <a class="btn" href="/">Book a Call</a>
+   139|              <a class="btn secondary" onclick="window.showInvoices()">View Invoice</a>
+   140|              <a class="btn secondary" href="#contact">Message Us</a>
+   141|          </div>
+   142|      </div>
+   143|
+   144|      <!-- Loading Skeleton (hidden when data loaded) -->
+   145|      <div class="stats-grid" id="skeleton-stats" style="display:none;">
+   146|          <div class="stat-card loading-skeleton" style="--h:80px;height:var(--h);border:none;background:transparent"></div>
+   147|          <div class="stat-card loading-skeleton" style="--h:80px;height:var(--h);border:none;background:transparent"></div>
+   148|      </div>
+   149|
+<div class="section">
+          <div class="section-title">Active Projects</div>
+          <div class="project-grid" id="skeleton-projects" style="display:none;"></div>
+      </div>
+</div>
+
+<script async src="/dist/dashboard.js"></script></body></html>
+>>>>>>> 47ad736 (fix: refactored dashboard with clean JavaScript, removed 250-line broken inline code ✓ @<@1466244456088080569)
