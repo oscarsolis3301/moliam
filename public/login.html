@@ -507,28 +507,9 @@ const btn = document.getElementById('loginBtn');
 const alertEl = document.getElementById('alert');
 const passwordInput = document.getElementById('password');
 const passwordToggle = document.getElementById('passwordToggle');
+</script>
 
-// Password show/hide toggle
-passwordToggle.addEventListener('click', () => {
-  const isPassword = passwordInput.type === 'password';
-  passwordInput.type = isPassword ? 'text' : 'password';
-  passwordToggle.classList.toggle('active', isPassword);
-  passwordToggle.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
-  passwordToggle.setAttribute('aria-pressed', isPassword ? 'true' : 'false');
-  passwordInput.focus();
-});
-
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  alertEl.className = 'alert';
-  alertEl.style.display = 'none';
-  alertEl.textContent = '';
-
-  const email = document.getElementById('email').value.trim();
-  const password = passwordInput.value;
-
-  if (!email || !password) {
-    showAlert('Please fill in all fields.', 'error');
+<style>
     if (!email) document.getElementById('email').focus();
     else passwordInput.focus();
     return;
