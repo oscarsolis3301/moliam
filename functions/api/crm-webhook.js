@@ -41,7 +41,7 @@ export async function onRequestPost(context) {
     // Simple HMAC validation - log to D1 for debugging
     try {
       if (db) {
-         await db.prepare("INSERT INTO webhook_logs (event_type, payload_hash, signature_valid, received_at) VALUES (?, ?, datetime('now'), ?)") \n              .bind(data.type || data.event || "crm_callback", data.submission_id || "unknown", false).run();
+         await db.prepare("INSERT INTO webhook_logs (event_type, payload_hash, signature_valid, received_at) VALUES (?, ?, datetime('now'), ?)")               .bind(data.type || data.event || "crm_callback", data.submission_id || "unknown", false).run();
        }
      } catch {}
       // Note: Full HMAC verification can be added per CRM provider requirements  
@@ -69,7 +69,7 @@ export async function onRequestPost(context) {
          // Log the attempted validation to db
         try {
           if (db) {
-             await db.prepare("INSERT INTO webhook_logs (event_type, payload_hash, signature_valid, received_at) VALUES (?, ?, 'partial_verification', datetime('now'))") \n                   .bind(data.type || data.event || "crm_callback", String(data.submission_id || "").slice(0, 64)).run();
+             await db.prepare("INSERT INTO webhook_logs (event_type, payload_hash, signature_valid, received_at) VALUES (?, ?, 'partial_verification', datetime('now'))")                    .bind(data.type || data.event || "crm_callback", String(data.submission_id || "").slice(0, 64)).run();
            }
          } catch {}
          // Note: Full HMAC verification can be added per CRM provider requirements  
@@ -77,7 +77,7 @@ export async function onRequestPost(context) {
          // No signature provided - log to D1 for debugging
         try {
           if (db) {
-             await db.prepare("INSERT INTO webhook_logs (event_type, payload_hash, note, received_at) VALUES (?, ?, 'no_signature_provided', datetime('now'))") \n                   .bind(data.type || data.event || "crm_callback", "").run();
+             await db.prepare("INSERT INTO webhook_logs (event_type, payload_hash, note, received_at) VALUES (?, ?, 'no_signature_provided', datetime('now'))")                    .bind(data.type || data.event || "crm_callback", "").run();
            }
          } catch {}
        }
@@ -90,7 +90,7 @@ export async function onRequestPost(context) {
 function logPayloadToD1(db, data) {
   try {
     if (db && data.submission_id) {
-       db.prepare("INSERT INTO webhook_logs (event_type, payload_hash, signature_valid, received_at) VALUES (?, ?, 'logged', datetime('now'))") \n               .bind(data.type || data.event || "unknown", String(data.submission_id).slice(0, 64)).run();
+       db.prepare("INSERT INTO webhook_logs (event_type, payload_hash, signature_valid, received_at) VALUES (?, ?, 'logged', datetime('now'))")                .bind(data.type || data.event || "unknown", String(data.submission_id).slice(0, 64)).run();
     }
   } catch {}
 }
