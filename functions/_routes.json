@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "resources": {
+    "excludes": []
+  },
+  "apiRoutes": {
+    "prefixes": ["/api/*"],
+    "globbing": 2
+  }
+}
