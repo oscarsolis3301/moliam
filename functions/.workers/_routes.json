@@ -1,0 +1,4 @@
+{
+   "match": [{"route": ":path*"}],
+   "fallback": false
+ }
