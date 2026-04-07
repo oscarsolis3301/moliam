@@ -114,10 +114,10 @@ h1{font-size:28px;font-weight:600}
 
 <script>
 (function(){
-    const tokenMatch=document.cookie.match(/authToken=([^;]+)/);
-    if (!tokenMatch) { window.location.href = '/login.html'; return; }
-    
-    const authToken=tokenMatch[1];
+const tokenMatch=location.href.match(/moliam-session=([^&]+)/);
+if (!tokenMatch) { window.location.href = '/login.html'; return; }
+
+const authToken = decodeURIComponent(tokenMatch[1]);
     const urlParams = new URLSearchParams(window.location.search);
     let impersonatedUserId = urlParams.get('impersonate');
 
