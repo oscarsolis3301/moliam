@@ -34,12 +34,16 @@ await db.prepare("DROP TABLE IF EXISTS `sessions`").run();
        )
        .run();
 
-   // Create sessions table with matching INSERT (3 columns only) matching login.js schema
+      // Create sessions table with matching INSERT (3 columns only) matching login.js schema
     await db
-         prepare(
-           "CREATE TABLE IF NOT EXISTS sessions(user_id INTEGER NOT NULL REFERENCES users(id), token TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP)"
-         )
-         .run();
+           prepare(
+              "CREATE TABLE IF NOT EXISTS sessions(user_id INTEGER NOT NULL REFERENCES users(id), token TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP)"
+            )
+            run();
+
+    // Debug: show schema
+    const schema = await db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='sessions'").first();
+    console.log("SESS SCHEMA:", JSON.stringify(schema));
 
     // Insert admin user with hash password
     const insertAdmin = await db
@@ -91,25 +95,20 @@ await db.prepare("DROP TABLE IF EXISTS `sessions`").run();
       throw new Error("Failed to retrieve Oscar ID after insert");
      }
 
-      // Create sessions table matching login.js schema (user_id, token, created_at)
-    await db
-         .prepare(
-           "CREATE TABLE IF NOT EXISTS sessions(user_id INTEGER NOT NULL REFERENCES users(id), token TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP, expires_at TEXT)"
-         )
-         .run();
 
-      // Insert test sessions for both users - 4 params matching table schema (user_id, token, created_at, expires_at)
+      // Insert test session for admin user (3 columns: user_id, token, created_at)
     await db
-         .prepare(
-           "INSERT INTO sessions(user_id, token, created_at, expires_at) VALUES(?, ?, datetime('now'), datetime('2099-12-31'))",
-         )
-         .run(adminId, "test-session-1");
+            prepare(
+              "INSERT INTO sessions(user_id,token,created_at) VALUES(?, datetime('now'), '9999-12-31 23:59:59')"
+            )
+            run(adminId, "test-session-1");
 
     await db
-         .prepare(
-           "INSERT INTO sessions(user_id, token, created_at, expires_at) VALUES(?, ?, datetime('now'), datetime('2099-12-31'))",
-         )
-         .run(oscarId, "test-session-2");
+            prepare(
+              "INSERT INTO sessions(user_id,token,created_at) VALUES(?, datetime('now'), '9999-12-31 23:59:59')"
+            )
+            run(oscarId,"test-session-2");
+
 
     // Success response
     return new Response(
