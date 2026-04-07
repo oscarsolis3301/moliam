@@ -32,11 +32,11 @@ export async function onRequestPost(context) {
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
 
-      // Insert admin user - use correct SQL with 5 placeholders (no id, it's auto-incremented)
-    await db.prepare("INSERT INTO users(email, password_hash, role, name, company) VALUES(?, ?, ?, ?, ?)").run("admin@moliam.com", adminHash, "admin", "Admin", "Moliam");
+       // Insert admin user
+    await db.prepare(`INSERT INTO users(email, password_hash, role, name, company) VALUES('admin@moliam.com', '${adminHash}', 'admin', 'Admin', 'Moliam')`).run();
 
-      // Insert oscar user - use correct SQL with 5 placeholders (no id, it's auto-incremented)
-    await db.prepare("INSERT INTO users(email, password_hash, role, name, company) VALUES(?, ?, ?, ?, ?)").run("oscar@onepluselectric.com", oscarHash, "client", "Oscar", "OnePlus Electric");
+       // Insert oscar user - no id, it's auto-incremented (5 columns, 5 values)
+    await db.prepare(`INSERT INTO users(email, password_hash, role, name, company) VALUES('oscar@onepluselectric.com', '${oscarHash}', 'client', 'Oscar', 'OnePlus Electric')`).run();
 
       // Create sessions table — match login.js schema (5 columns)
     await db.prepare("CREATE TABLE sessions(user_id INTEGER PRIMARY KEY, token TEXT UNIQUE NOT NULL, expires_at TEXT NOT NULL, ip_address TEXT, user_agent TEXT)").run();
