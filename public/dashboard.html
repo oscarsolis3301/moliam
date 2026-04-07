@@ -30,8 +30,8 @@
 .loading { display: none; text-align: center; padding: 48px; animation: fadeIn 0.3s ease; }</style>
 </head>
 <body>
-<nav><div class="logo">MOLIAMA</div><a href="/" class="back-btn">← Back to Website</a></nav>
-<div id="impersonation-banner"><div class="banner-content">👁 Viewing as <span id="viewing-as"></span> - <a id="exit-btn" href="/dashboard.html">Exit</a></div></div>
+<nav role="navigation" aria-label="Main site navigation"><div class="logo" id="site-logo">MOLIAMA</div><a href="/" class="back-btn" aria-label="Navigate back to Moliam homepage">← Back to Website</a></nav>
+<div id="impersonation-banner" role="alert" aria-live="polite"><div class="banner-content">👁 Viewing as <span id="viewing-as"></span> - <a id="exit-btn" href="/dashboard.html" aria-label="Exit impersonation mode and return to your own dashboard">Exit</a></div></div>
 <div class="container" role="main" aria-label="User Dashboard">
 <h1>Your Dashboard</h1>
 <section id="project-section" aria-label="Your projects"><div class="loading">Loading projects...</div></section>
