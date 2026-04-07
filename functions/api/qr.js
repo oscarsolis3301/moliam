@@ -34,10 +34,10 @@ export async function onRequestGet(context) {
     return sendError(400, "Size must be between 128 and 2048 pixels");
   }
 
-  // Parse and validate color - convert hex to proper format
+  // Validate color - convert hex to proper format
   if (!/^[#]?[0-9a-fA-F]{6}$/.test(colorHex)) {
-    return sendError(400, "Invalid 'color' parameter — must be 6-digit hex like #3B82F6");
-  }
+    return sendErrorWithErrorInfo(400, "Invalid 'color' parameter — must be 6-digit hex like #3B82F6", env);
+   }
 
   // --- Rate limiting (D1) ---
   if (db) {
@@ -95,13 +95,15 @@ async function sendRateLimited(url, size, colorHex, db, ipHash) {
     generateQRCodeSVG(url, size, colorHex),
      {
       status: 429,
-      headers: {
-        "Content-Type": "image/svg+xml",
-        "Cache-Control": "public, max-age=86400",
-        "Access-Control-Allow-Origin": "*",
-      },
-    }
-  );
+      headers: { 
+               "Content-Type": "image/svg+xml",
+              "Cache-Control": "public, max-age=86400",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, OPTIONS",
+               "Access-Control-Allow-Headers": "Content-Type" 
+             },
+     }
+     );
 }
 
 /**

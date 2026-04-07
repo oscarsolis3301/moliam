@@ -96,7 +96,13 @@ export async function onRequestPost(context) {
        }
 
       return new Response(JSON.stringify({ success: true }), {
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+        headers: { 
+            "Content-Type": "application/json", 
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            "Cache-Control": "no-cache"
+         }
        });
      } catch (e) {
        return new Response(JSON.stringify({ success: false, error: "Internal error" }), {

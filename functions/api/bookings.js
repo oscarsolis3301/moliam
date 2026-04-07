@@ -21,10 +21,18 @@ if (context.request.url.includes('/list')) {
       LIMIT 50
        `).all({ limit: 50 });
 
-    return new Response(JSON.stringify({ success: true, appointments: data.results }), { 
+   return new Response(JSON.stringify({ success: true, appointments: data.results }), { 
       status: 200, 
-      headers: { 'Content-Type': 'application/json', 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY' }
-      });
+      headers: { 
+          'Content-Type': 'application/json', 
+          'X-Content-Type-Options': 'nosniff', 
+          'X-Frame-Options': 'DENY',
+          'Access-Control-Allow-Origin': 'https://moliam.pages.dev',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+          'Cache-Control': 'no-cache'
+       }
+     });
    }
 
     // Get specific appointment

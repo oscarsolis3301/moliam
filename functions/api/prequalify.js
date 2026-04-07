@@ -139,13 +139,23 @@ export async function onRequestPost(context) {
       await generateBooking(context, prequalId);
     }
 
-    return new Response(JSON.stringify({ 
+return new Response(JSON.stringify({ 
       success: true, 
       message: calendarAccessGranted ? "✓ You're qualified! Click the link below to book." : "Thanks for your response. We'll review and get back to you.",
       score,
       calendar_access_granted: calendarAccessGranted,
-      next_step: calendarAccessGranted ? 'booking' : 'review'
-    }), { status: 200 });
+      next_step: calendarAccessGranted ? 'booking' : 'review',
+      cors_info: { origin: context.request.headers.get('Origin') || "*" } // Log CORS origin for debugging
+     }), { 
+           status: 200,
+           headers: {  
+                 "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                 "Access-Control-Allow-Methods": "POST, OPTIONS",
+                 "Access-Control-Allow-Headers": "Content-Type",
+                  "Cache-Control": "no-cache" 
+                       }
+         });
 
   } catch (err) {
     console.error("Pre-qualify error:", err);
