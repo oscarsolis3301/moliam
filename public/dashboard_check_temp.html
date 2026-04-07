@@ -171,7 +171,6 @@ async function init() {
 
    // Admin controls with search
   let allClientsData = [];
-  const isAdmin = localStorage.getItem('user_role') === 'admin';
 
   async function renderAdminClients(searchTerm = '') {
     try {
