@@ -81,7 +81,7 @@ function openInvoicePanel(data) {
       summariesHTML += '  <div style="text-align:center;"><div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:8px;">Total Billed</div><div style="color:#6EE7B7;font-weight:700">$' + totalBilled.toLocaleString() + '</div></div>\n';
       summariesHTML += '  <div style="height:40px;width:2px;background:rgba(59,130,246,0.3);"></div>\n';
       summariesHTML += '  <div style="text-align:center;"><div style="font-size:0.85rem;color:var(--text-dim);margin-bottom:8px;">Paid: $' + paidAmount.toLocaleString() + '</div><div style="color:#10B981;font-weight:700">Outstanding: $' + outstandingAmount.toLocaleString() + '</div></div>\n';
-      summariesHTML += '</div>';\
+      summariesHTML += '</div>';
 
       bodyEl.innerHTML = summariesHTML;
     }
