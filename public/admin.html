@@ -71,12 +71,25 @@ a.view-btn:hover{background:rgba(59,130,246,0.2);transform:translateY(-1px);}
 </style>
 
 <script>
-const token=localStorage.getItem('token');
+const token = localStorage.getItem('token');
 
 // Redirect if not authenticated
 if (!token) {
   window.location.href = '/login.html';
 }
+
+async function initAdminAuthCheck() {
+    // If we're impersonating, verify admin permissions first
+    const impersonateId = new URL(window.location).searchParams.get('impersonate');
+    if (impersonateId) {
+        const role = localStorage.getItem('user_role');
+        if (role !== 'admin') {
+            window.location.href = '/dashboard.html'; // Non-admins can't impersonate
+        }
+    }
+}
+
+initAdminAuthCheck();
 
 const url = new URL(window.location);
 const impersonateId = url.searchParams.get('impersonate');
