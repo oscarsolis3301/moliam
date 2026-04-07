@@ -169,7 +169,7 @@ async function init() {
   const result = await renderDashboard();
   if (!result) return;
 
-   // Admin controls with search
+  // Admin controls with search
   let allClientsData = [];
   const isAdmin = localStorage.getItem('user_role') === 'admin';
 
@@ -178,7 +178,7 @@ async function init() {
       const res = await fetch(API_BASE + 'api/admin/clients', {
         headers: { 'Accept': 'application/json' },
         credentials: 'include'
-       });
+      });
       
       if (!res.ok) return;
       const data = await res.json();
@@ -187,29 +187,30 @@ async function init() {
       // Filter by search term
       const filtered = searchTerm.trim() ? 
         allClientsData.filter(c => 
-          (c.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (c.email || '').toLowerCase().includes(searchTerm.toLowerCase())
-        ) : 
+           (c.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+           (c.email || '').toLowerCase().includes(searchTerm.toLowerCase())
+         ) : 
         allClientsData;
       
-      let html ='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
-      html += '<h3 style="font-size:14px;margin:0;">Client Management</h3></div>';
-      html += '<input type="text" placeholder="Search clients..." id="admin-search-input" class="admin-filter" style="width:200px;padding:6px 12px;margin-left:8px;"></input></div>';
+      let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
+      html += '<h3 style="font-size:14px;margin:0;">Client Management</h3>';
+      html += '<input type="text" placeholder="Search clients..." id="admin-search-input" class="admin-filter" style="width:200px;padding:6px 12px;margin-left:8px;"></input>';
+      html += '</div>';
       html += '<table style="width:100%;margin-top:12px;"><thead><tr><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Client</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Email</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Status</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--border-room);font-size:12px;">Actions</th></tr></thead><tbody>';
       
       if (filtered.length === 0 && allClientsData.length > 0) {
-        html += '<tr><td colspan="4" style="padding:32px;text-align:center;color:var(--text-secondary);">No clients found matching "' + searchTerm + '"'+'</td></tr>';
-       } else {
+        html += '<tr><td colspan="4" style="padding:32px;text-align:center;color:var(--text-secondary);">No clients found matching "' + searchTerm + '"'+ '</td></tr>';
+      } else {
         for (let c of filtered) {
           const statusClass = c.status === 'active' ? 'status-active' : 'status-inactive';
           html += '<tr>' +
-             '<td style="padding:8px;border-bottom:1px solid var(--border-room);font-size:13px;">' + (c.name || 'Untitled') + '</td>' +
-             '<td style="padding:8px;border-bottom:1px solid var(--border-room);color:var(--text-secondary);font-size:12px;">' + c.email + '</td>' +
-             '<td style="padding:8px;border-bottom:1px solid var(--border-room);"><span class="' + statusClass + '" style="padding:3px 8px;border-radius:4px;font-size:10px;">' + (c.status === 'active' ? 'Active' : 'Inactive') + '</span></td>' +
-             '<td style="padding:8px;border-bottom:1px solid var(--border-room);"><a href="/dashboard.html?impersonate=' + c.originalId + '" class="view-btn" style="font-size:11px;padding:3px 8px;background:rgba(59,130,246,0.1);color:var(--accent-blue);border-radius:4px;text-decoration:none;">View as</a></td>' +
-             '</tr>';
-         }
-       }
+              '<td style="padding:8px;border-bottom:1px solid var(--border-room);font-size:13px;">' + (c.name || 'Untitled') + '</td>' +
+              '<td style="padding:8px;border-bottom:1px solid var(--border-room);color:var(--text-secondary);font-size:12px;">' + c.email + '</td>' +
+              '<td style="padding:8px;border-bottom:1px solid var(--border-room);"><span class="' + statusClass + '" style="padding:3px 8px;border-radius:4px;font-size:10px;">' + (c.status === 'active' ? 'Active' : 'Inactive') + '</span></td>' +
+              '<td style="padding:8px;border-bottom:1px solid var(--border-room);"><a href="/dashboard.html?impersonate=' + c.originalId + '" class="view-btn" style="font-size:11px;padding:3px 8px;background:rgba(59,130,246,0.1);color:var(--accent-blue);border-radius:4px;text-decoration:none;">View as</a></td>' +
+              '</tr>';
+        }
+      }
       
       html += '</tbody></table>';
       
@@ -223,33 +224,57 @@ async function init() {
             searchInput.addEventListener('input', (e) => renderAdminClients(e.target.value));
           }
         }, 0);
-       } else {
-        adminControls.children[0].innerHTML = html;
-        setTimeout(() => {
-          const searchInput = document.getElementById('admin-search-input');
-          if (searchInput) {
-            searchInput.addEventListener('input', (e) => renderAdminClients(e.target.value));
-          }
-        }, 0);
-       }
-     } catch (e) {
+      } else {
+        console.warn('admin-controls container not found, appending table to nav');
+        const tableWrapper = document.createElement('div');
+        tableWrapper.className = 'admin-clients-table';
+        tableWrapper.innerHTML = html;
+        // Append after logout button
+        const nav = document.querySelector('nav');
+        if (nav) {
+          const adminContainer = document.createElement('div');
+          adminContainer.style.marginTop = '12px';
+          adminContainer.appendChild(tableWrapper);
+          nav.appendChild(adminContainer);
+          setTimeout(() => {
+            const searchInput = document.getElementById('admin-search-input');
+            if (searchInput) {
+              searchInput.addEventListener('input', (e) => renderAdminClients(e.target.value));
+            }
+          }, 0);
+        }
+      }
+    } catch (e) {
       console.error('Failed to fetch clients:', e);
-     }
-   }
+    }
+  }
 
-  const adminControls = document.getElementById('admin-controls');
-  if (isAdmin) {
-    adminControls.style.display = 'flex';
-    const viewAsBtn = document.createElement('button');
-    viewAsBtn.textContent = '👁 View as Client';
-    viewAsBtn.className = 'btn-primary';
-    logoutBtn.insertBefore(viewAsBtn, logoutBtn.nextSibling);
+  const nav = document.querySelector('nav');
+  if (isAdmin && nav) {
+    // Find logout button and add admin controls after it
+    const logoutBtn = nav.querySelector('.btn-primary:last-child');
+    if (logoutBtn) {
+      const viewAsBtn = document.createElement('button');
+      viewAsBtn.textContent = '👁 View as Client';
+      viewAsBtn.className = 'btn-primary';
+      viewAsBtn.style.marginLeft = '12px';
+      viewAsBtn.addEventListener('click', () => {
+        window.location.href = '/admin.html';
+      });
+      nav.appendChild(viewAsBtn);
 
-    // Replace placeholder with actual client management table
-    const clientTableWrapper = document.createElement('div');
-    clientTableWrapper.className = 'admin-clients-table';
-    renderAdminClients();
-    adminControls.appendChild(clientTableWrapper);
+      // Replace placeholder with actual client management table
+      const adminContainer = document.createElement('div');
+      adminContainer.className = 'client-management-section';
+      adminContainer.style.marginTop = '12px';
+      
+      const tableWrapper = document.createElement('div');
+      tableWrapper.className = 'admin-clients-table';
+      renderAdminClients();
+      
+      adminContainer.appendChild(tableWrapper);
+      nav.insertBefore(adminContainer, logoutBtn.nextSibling);
+    }
   }
 
   showAlert('Dashboard loaded successfully.', 'success');
