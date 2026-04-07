@@ -46,12 +46,18 @@ async function fetchDashboard() {
 }
 
 function showImpersonationBanner(client) {
-  if (impersonateId && isAdmin) {
-    const banner = document.getElementById('impersonation-banner');
-    const viewingSpan = document.getElementById('viewing-as');
-    banner.style.display = 'flex';
-    viewingSpan.textContent = client?.name || 'Client';
-    document.getElementById('exit-btn').href = window.location.pathname;
+  if (impersonateId) {
+    const isAdmin = localStorage.getItem('user_role') === 'admin';
+    if (isAdmin) {
+      const banner = document.getElementById('impersonation-banner');
+      const viewingSpan = document.getElementById('viewing-as');
+      banner.style.display = 'flex';
+      viewingSpan.textContent = client?.name || 'Client';
+      document.getElementById('exit-btn').href = window.location.pathname;
+    } else {
+      // Non-admin trying to impersonate - redirect away
+      delete params.impersonate;
+    }
   }
 }
 
