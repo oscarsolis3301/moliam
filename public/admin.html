@@ -31,7 +31,7 @@ nav{height:48px;border-bottom:1px solid var(--border-room);display:flex;align-it
 
 <script>
 const API_BASE = '/';
-const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+const token=localStorage.getItem('moliam-session') || sessionStorage.getItem('authToken');
 
 if(token){fetch(API_BASE+'/api/admin/clients',{credentials:'include',headers:{'moliam-session':token}}).then(r=>r.json()).then(d=>{
 const clients=d.clients||[];
