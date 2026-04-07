@@ -86,13 +86,13 @@ export async function onRequestPost(context) {
        "INSERT INTO users(email, password_hash, role, name, company, is_active) VALUES(?, ?, 'client', 'Oscar', 'OnePlus Electric', 1)"
      ).run(["oscar@onepluselectric.com", oscarHash]);
 
-     // Get user IDs after insert for profile creation - INSERT uses 4 values: (user_id, display_name, bio, created_at) to match client_profiles table schema
+    // Get user IDs after insert for profile creation - INSERT uses 4 values: (user_id, display_name, bio, created_at) to match client_profiles table schema
     const users = await db.prepare("SELECT id FROM users").all();
     for (const user of users.results) {
       await db.prepare(
-         "INSERT INTO client_profiles(user_id, display_name, bio, created_at) VALUES(?, ?, ?, ?)"
-       ).run(user.id, `${user.email} Profile`, "Client account", "CURRENT_TIMESTAMP");
-     }
+           "INSERT INTO client_profiles(user_id, display_name, bio, created_at) VALUES(?, ?, ?, ?)"
+           .run([user.id, "Profile", "Client account", "CURRENT_TIMESTAMP"]);
+    }
 
     return new Response(JSON.stringify({
       success: true,
