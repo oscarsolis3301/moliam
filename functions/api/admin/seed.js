@@ -26,7 +26,17 @@ export async function onRequestPost(context) {
     await db.prepare("DROP TABLE IF EXISTS users").run();
     await db.prepare("DROP TABLE IF EXISTS sessions").run();
 
-    await db.prepare("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT NOT NULL, company TEXT, is_active INTEGER DEFAULT 1, last_login TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP)").run();
+    await db.prepare(`CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        role TEXT NOT NULL,
+        company TEXT,
+        is_active INTEGER DEFAULT 1,
+        last_login TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )`).run();
 
     await db.prepare("CREATE TABLE sessions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, expires_at TEXT NOT NULL, ip_address TEXT, user_agent TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (user_id) REFERENCES users(id))").run();
 
@@ -35,14 +45,16 @@ export async function onRequestPost(context) {
     const hash2 = await hashPassword("OnePlus2026!");
 
     await db.prepare("INSERT INTO users (name, email, password_hash, role, company, is_active, last_login, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
-         .bind("Administrator", "admin@moliam.com", hash1, "admin", "Moliam", 1, now, now)
-         .run();
+          .bind("Administrator", "admin@moliam.com", hash1, "admin", "Moliam", 1, now, now)
+          .run();
 
     await db.prepare("INSERT INTO users (name, email, password_hash, role, company, is_active, last_login, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
-         .bind("Oscar Solis", "oscar@onepluselectric.com", hash2, "user", "OnePlus Electric", 1, now, now)
-         .run();
+          .bind("Oscar Solis", "oscar@onepluselectric.com", hash2, "user", "OnePlus Electric", 1, now, now)
+          .run();
 
-    return new Response(JSON.stringify({ success: true, message: "Database seeded successfully", users: [{ email: "admin@moliam.com", role: "admin" }, { email: "oscar@onepluselectric.com", role: "user" }] }), { status: 200, headers: { "Content-Type": "application/json" }});
+    const count = await db.prepare("SELECT COUNT(*) as cnt FROM users").all();
+    
+    return new Response(JSON.stringify({ success: true, message: `Database seeded successfully (${count.cnt} users)`, users: [{ email: "admin@moliam.com", role: "admin" }, { email: "oscar@onepluselectric.com", role: "user" }] }), { status: 200, headers: { "Content-Type": "application/json" }});
 
    } catch (err) {
     console.error("Seed error:", err);
