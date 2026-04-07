@@ -31,22 +31,19 @@ export async function onRequestPost(context) {
       // Force drop and recreate - ensure no old schema exists
     await db.prepare(`DROP TABLE IF EXISTS users`).run();
     await db.prepare(`DROP TABLE IF EXISTS sessions`).run();
+         // Create fresh user table with same column order as login.js SELECT expects: id, email, password_hash, role, name
+    await db.prepare(`CREATE TABLE users (\\nid INTEGER PRIMARY KEY AUTOINCREMENT, \\nemail TEXT UNIQUE NOT NULL, \\npassword_hash TEXT NOT NULL, \\nrole TEXT DEFAULT 'user', \\nname TEXT\\n)`).run();
 
-           // Create fresh user session, and users table matching login.js expected schema exactly
-// login.js SELECTs: id, name, email, role, password_hash (exactly 5 columns for users)
-          // login.js INSERT into sessions: user_id, token, created_at (exactly 3 columns)
-    await db.prepare("CREATE TABLE users(\nid INTEGER PRIMARY KEY AUTOINCREMENT,\nemail TEXT UNIQUE NOT NULL,\npassword_hash TEXT NOT NULL,\nrole TEXT DEFAULT 'user',\nname TEXT\n)").run();
-    
-    // Create sessions table with correct schema matching login.js expectations
-    await db.prepare("CREATE TABLE sessions(\nid INTEGER PRIMARY KEY AUTOINCREMENT,\nuser_id INTEGER NOT NULL,\ntoken TEXT UNIQUE NOT NULL,\ncreated_at TEXT NOT NULL\n)").run();
+        // Create sessions table with correct schema matching login.js expectations
+    await db.prepare("CREATE TABLE sessions(\\nid INTEGER PRIMARY KEY AUTOINCREMENT, \\nuser_id INTEGER NOT NULL, \\ntoken TEXT UNIQUE NOT NULL, \\ncreated_at TEXT NOT NULL\\n)").run();
 
-      // Insert admin user - D1 auto-increments id column
-    let usersStmt = db.prepare(`INSERT INTO users (email, password_hash, role, name) VALUES (?, ?, ?, ?)`);
-    await usersStmt.run("admin@moliam.com", saltedPassword1, "admin", "Admin User");
+     // Insert admin user - use explicit column names (4 columns + id auto-increments)
+    await db.prepare(`INSERT INTO users (email, password_hash, role, name) VALUES (?, ?, ?, ?)`).run("admin@moliam.com", saltedPassword1, "admin", "Admin User");
+    console.log("Admin user inserted successfully");
 
-       // Insert Oscar One Plus Electric user - D1 auto-increments id column   
-    let usersStmt2 = db.prepare(`INSERT INTO users (email, password_hash, role, name) VALUES (?, ?, ?, ?)`);
-    await usersStmt2.run("oscar@onepluselectric.com", saltedPassword2, "user", "Oscar Johnson");
+        // Insert Oscar One Plus Electric user - explicit column names (4 columns + id auto-increments)    
+    await db.prepare(`INSERT INTO users (email, password_hash, role, name) VALUES (?, ?, ?, ?)`).run("oscar@onepluselectric.com", saltedPassword2, "user", "Oscar Johnson");
+    console.log("Oscar user inserted successfully");
 
         return new Response(JSON.stringify({
       success: true,
