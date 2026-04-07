@@ -275,16 +275,28 @@ async function init() {
     }
 
     currentUser = data.user;
-    renderDashboard(data);
+    
+    // Fetch invoices for summary
+    let invoiceData = null;
+    try {
+      const invRes = await fetch('/api/invoices', { credentials: 'include' });
+      if (invRes.ok) {
+        invoiceData = await invRes.json();
+      }
+    } catch(e) {
+      console.warn('Invoice fetch failed');
+    }
+    
+    renderDashboard(data, invoiceData);
 
     // Welcome toast
     setTimeout(() => {
       showToast(`Welcome back, ${data.user.name.split(' ')[0]}!`, '👋', 4500);
     }, 600);
 
-  } catch (err) {
+   } catch (err) {
     window.location.href = '/login';
-  }
+   }
 }
 
 function renderDashboard(data) {
@@ -599,10 +611,8 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
   window.location.href = '/login';
 });
 
-// ═══ MESSAGING PANEL FUNCTIONS ═══
-let isConnected = false;
-let currentMessages = [];
-let adminClientIdFilter = null;
+// ═══ MESSAGING PANEL FUNCTIONS ═══\nlet isConnected = false;\nlet currentMessages = [];\nlet adminClientIdFilter = null;
+let currentInvoices = [];
 
 function openMessagingPanel() {
   if (document.getElementById('messagingPanel')) return;
@@ -806,44 +816,9 @@ setInterval(() => {
 
 init();
 
-let windowInvoiceData = [   // Placeholder data (no API - per spec)
-    {id:1,period:'Mar 2026',amount:4950,due_date:'2026-03-15',status:'paid'},
-    {id:2,period:'Feb 2026',amount:4950,due_date:'2026-02-15',status:'paid'},
-    {id:3,period:'Jan 2026',amount:4950,due_date:'2026-01-15',status:'pending'},
-    {id:4,period:'Dec 2025',amount:4950,due_date:'2025-12-15',status:'paid'}];
-
-function openInvoicePanel() {
-   if (document.getElementById('invoicePanel')) return;
-   
-   const body = document.body;
-   const panel = document.createElement('div');
-   panel.id = 'invoicePanel';
-   panel.className = 'invoice-panel';
-   
-   // Build invoice list HTML from placeholder data
-   const invoicesHTML = windowInvoiceData.map(inv => 
-       `<div class="invoice-card">\n` +
-       `  <div class="invoice-meta-line"><span>${esc(inv.period)}</span>`+
-       `<span class="invoice-date">${new Date(inv.due_date).toLocaleDateString()}</span></div>`+
-       `  <div class="invoice-period">Status: <span class="invoice-status-badge invoice-status-${inv.status}">${inv.status.toUpperCase()}</span></div>` +
-       `  <div style="margin-top:8px;display:flex;justify-content:space-between;">`+
-       `    <span>Amount:</span><span class="invoice-amount">$${inv.amount.toLocaleString()}</span></div>` +
-       `  </div>`
-   ).join('');
-   
-   panel.innerHTML = `<div class="invoice-overlay" onclick="closeInvoicePanel()"></div><div class="invoice-container"><div class="invoice-header"><h3>💳 Billing History</h3><button class="invoice-close" onclick="closeInvoicePanel()">×</button></div><div class="invoice-body">${invoicesHTML || '<div class="empty-invoice-state"><span class="empty-icon">🧾</span><p>No invoices yet.</p></div>'}</div></div>`;
-   
-   body.appendChild(panel);
-   setTimeout(() => panel.classList.add('open'), 10);
-}
-
-function closeInvoicePanel() {
-   const panel = document.getElementById('invoicePanel');
-   if (panel) {panel.classList.remove('open');setTimeout(() => panel.remove(), 400);}
-}
-
-// Make invoice panel globally accessible via window API for onclick in button
-window.openInvoicePanel = openInvoicePanel;
+let currentInvoicesData = [];\n\nfunction calculateInvoiceSummary(invoices) {\n  // Calculate total billed, paid, outstanding from invoices array\n  const summary = invoices.reduce((acc, inv) => {\n    const amount = parseFloat(inv.amount) || 0;\n    acc.total += amount;\n    if (inv.status === 'paid') {\n      acc.paid += amount;\n     } else if (inv.status && inv.status !== 'paid' && inv.status !== null && inv.status !== 'draft') {\n      acc.outstanding += amount;\n     }\n    return acc;\n   }, { total: 0, paid: 0, outstanding: 0 });\n   \n  return summary;\n}\n\nfunction openInvoicePanel(invoiceData) {\n  if (document.getElementById('invoicePanel')) return;\n  \n  // Use passed-in invoice data or fetch from currentInvoicesData\n  const invoices = invoiceData && Array.isArray(invoiceData.invoices) ? invoiceData.invoices : currentInvoicesData;\n  const summary = calculateInvoiceSummary(invoices);\n  \n  const body = document.body;\n  const panel = document.createElement('div');\n  panel.id = 'invoicePanel';\n  panel.className = 'invoice-panel';\n  \n    // Build invoice list HTML with real API data and add summary\n  const invoicesHTML = invoices.map(inv => \\n`   <div class="invoice-card">\\n` +\n     `   <div class="invoice-meta-line"><span>${esc(inv.period || inv.created_at)}</span>`+ \n       `<span class="invoice-date">${new Date(inv.due_date || inv.created_at).toLocaleDateString()}</span></div>`+ \n     `   <div class="invoice-period">Status: <span class="invoice-status-badge invoice-status-${(inv.status || 'unknown').toLowerCase()}">${(inv.status || 'Unknown').toUpperCase()}</span></div>` +\n     `   <div style="margin-top:8px;display:flex;justify-content:space-between;">`+ \n       `<span>Amount:</span><span class="invoice-amount">$${(parseFloat(inv.amount) || 0).toLocaleString()}</span></div>` +\n     `   </div>` \n   ).join('');\n\n    // Add invoice summary (total billed, paid, outstanding)\n  const summariesHTML = `\n      <div class="invoice-summary-bar">\n        <div style="font-size:0.75rem;color:var(--text-secondary);margin-bottom:12px;text-align:center;">Billing Summary</div>\n        <div style="display:flex;gap:16px;align-items:center;justify-content:space-around;background:linear-gradient(135deg,rgba(59,130,246,0.1),rgba(139,92,246,0.1));border-radius:14px;padding:16px;border:1px solid rgba(59,130,246,0.3);">\n          <div style="text-align:center;">\n            <div style="font-size:0.85rem;color:var(--text-dim);margin-bottom:4px;">Total Billed</div>\n            <div style="color:#6EE7B7;font-weight:700;font-size:1.1rem">$${(summary.total || 0).toLocaleString()}</div>\n          </div>\n          <div style="height:32px;width:1px;background:rgba(59,130,246,0.3);"></div>\n          <div style="text-align:center;">\n            <div style="font-size:0.85rem;color:var(--text-dim);margin-bottom:4px;">Paid</div>\n            <div style="color:#10B981;font-weight:700;font-size:1.1rem">$${(summary.paid || 0).toLocaleString()}</div>\n          </div>\n          <div style="height:32px;width:1px;background:rgba(59,130,246,0.3);"></div>\n          <div style="text-align:center;">\n            <div style="font-size:0.85rem;color:var(--text-dim);margin-bottom:4px;">Outstanding</div>\n            <div style="color:#FCD34D;font-weight:700;font-size:1.1rem">$${(summary.outstanding || 0).toLocaleString()}</div>\n          </div>\n        </div>\n      </div>`;\n\n    // Insert summary before invoice list, or show empty state if no invoices\n  const bodyEl = document.querySelector('.invoice-body');\n  if (bodyEl && currentInvoicesData.length === 0 && (!invoices || invoices.length === 0)) {\n    panel.innerHTML = `<div class="invoice-overlay" onclick="closeInvoicePanel()"></div><div class="invoice-container"><div class="invoice-header"><h3>💳 Billing History</h3><button class="invoice-close" onclick="closeInvoicePanel()">×</button></div><div class="invoice-body"><div class="empty-invoice-state"><span class="empty-icon">🧾</span><p>No invoices yet.</p></div></div>`;\n   } else {\n    bodyEl.innerHTML = summariesHTML + invoice;
+    
+  panel.innerHTML = `<div class="invoice-overlay" onclick="closeInvoicePanel()"></div>\n<div class="invoice-container">\n  <div class="invoice-header"><h3>💳 Billing History</h3><button class="invoice-close" onclick="closeInvoicePanel()">×</button></div>\n<div class="invoice-body">${bodyEl.innerHTML}</div>\n</div>`;\n  \n  body.appendChild(panel);\n  setTimeout(() => panel.classList.add('open'), 10);\n}\n\n// Fetch invoices on init and store for invoice panel\nasync function fetchAndStoreInvoices() {\n  try {\n    const invRes = await fetch('/api/invoices?limit=50', { credentials: 'include' });\n    if (invRes.ok) {\n      const data = await invRes.json();\n      if (data.success && data.invoices) {\n        currentInvoicesData = data.invoices.filter(inv => ['paid', 'pending', 'overdue'].includes(inv.status));\n       }\n     }\n   } catch(e) { console.warn('Could not fetch invoices:', e); }\n}\n\nfunction closeInvoicePanel() {\n  const panel = document.getElementById('invoicePanel');\n  if (panel) {panel.classList.remove('open');setTimeout(() => panel.remove(), 400);} \n}\n\nwindow.openInvoicePanel = openInvoicePanel;\nwindow.closeInvoicePanel = closeInvoicePanel;\n
 window.closeInvoicePanel = closeInvoicePanel;
 </script>
 </body>
