@@ -1,31 +1,39 @@
 // Seed endpoint for Cloudflare Pages - uses Web Crypto API + CF D1 binding
 
 async function hashPassword(password) {
-  const buf = await crypto.subtle.digest("SHA-256",
-    new TextEncoder().encode(password + "_moliam_salt_2026")
-  );
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+  const encoded = new TextEncoder().encode(password + "_moliam_salt_2026");
+  const hash = await crypto.subtle.digest("SHA-256", encoded);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
 export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
-  // Check seed key header for authentication
+   // Check seed key header for authentication
   const seedKey = request.headers.get("x-seed-key");
   if (seedKey !== "moliam2026") {
     return new Response(JSON.stringify({ error: "Invalid seed key" }), {
       status: 403,
       headers: { "Content-Type": "application/json" }
-    });
-  }
+     });
+   }
 
   try {
-    // Create users table with all 7 columns (id auto-increment)
-    // id + email + password_hash + name + role + company + is_active = 6 insertable columns
+     // DROP ALL tables to ensure clean state (including any migrations/other)
+    await db.prepare('DROP TABLE IF EXISTS users').run();
+    await db.prepare("DROP TABLE IF EXISTS sessions").run();
+    await db.prepare("DROP TABLE IF EXISTS submissions").run();
+    await db.prepare("DROP TABLE IF EXISTS leads").run();
+    await db.prepare("DROP TABLE IF EXISTS rate_limits").run();
+    await db.prepare("DROP TABLE IF EXISTS client_profiles").run();
+    await db.prepare("DROP TABLE IF EXISTS client_messages").run();
+    await db.prepare("DROP TABLE IF EXISTS client_activity").run();
+
+       // Create users table - matches login.js SELECT and INSERT schemas (9 columns: id auto, email, password_hash, role, name, company, is_active, last_login)
     await db.prepare(
-      "CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, name TEXT, role TEXT DEFAULT 'client', company TEXT, is_active INTEGER DEFAULT 1)"
-    ).run();
+       "CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'user', name TEXT, company TEXT, is_active INTEGER DEFAULT 1, last_login TEXT)"
+     ).run();
 
     // Create sessions table with all 6 columns (id auto-increment)  
     // id + user_id + token + expires_at + ip_address + user_agent = 5 insertable columns
@@ -52,11 +60,12 @@ export async function onRequestPost(context) {
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
 
-    // Insert admin user (id auto-increment + 6 values = 7 columns)
-    await db.prepare("INSERT OR REPLACE INTO users (email, password_hash, name, role, company, is_active) VALUES (?, ?, ?, ?, ?, ?)").run('admin@moliam.com', adminHash, 'Admin', 'admin', 'Moliam', 1);
+<<<<<<< HEAD
+// Insert admin user - uses positional parameters
+    await db.prepare("INSERT INTO users(email, password_hash, role, name, company, is_active) VALUES(?, ?, 'admin', 'Admin', 'Moliam', 1)").run("admin@moliam.com", adminHash);
 
-    // Insert oscar user (6 values for 6 non-id columns)
-    await db.prepare("INSERT OR REPLACE INTO users (email, password_hash, name, role, company, is_active) VALUES (?, ?, ?, ?, ?, ?)").run('oscar@onepluselectric.com', oscarHash, 'Oscar', 'client', 'OnePlus Electric', 1);
+       // Insert oscar user - same schema using positional parameters  
+    await db.prepare("INSERT INTO users(email, password_hash, role, name, company, is_active) VALUES(?, ?, 'client', 'Oscar', 'OnePlus Electric', 1)").run("oscar@onepluselectric.com", oscarHash);
 
     // Create default client profiles for both users
     await db.prepare("INSERT OR REPLACE INTO client_profiles (user_id, display_name, bio) SELECT id, email || ' Profile', 'Client account' FROM users WHERE email = 'admin@moliam.com'").run();
