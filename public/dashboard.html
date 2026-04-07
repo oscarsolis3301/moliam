@@ -282,10 +282,22 @@ async function init() {
 
 init().catch(e => console.error('Error:', e));
 </script>
+
 <style>
 @media print{nav button{display:none}}
 /* Mobile Responsive Improvements */
-@media (max-width: 768px) { .container{padding:0 16px} h1{font-size:24px}.project-grid{grid-template-columns:1fr;gap:16px}.card{padding:16px}.invoice-card{flex-direction:column;gap:12px}.milestone-item{padding:12px}.nav-wrapper{padding:0 16px}.logo{font-size:14px} #impersonation-banner .banner-content{font-size:13px;padding:10px 16px}}
+@media (max-width: 768px) { .container{padding:0 16px;gap:24px;} h1{font-size:24px}.project-grid{grid-template-columns:1fr;gap:16px}.card{padding:16px}.invoice-card{flex-direction:column;gap:12px}.milestone-item{padding:12px}.nav-wrapper{padding:0 16px}.logo{font-size:14px} #impersonation-banner .banner-content{font-size:13px;padding:10px 16px}.alert-toast{right:16px;left:16px;font-size:13px;padding:10px 16px!important}.btn{padding:10px 14px!important;font-size:13px!important}}
+/* Animation: float for project cards */
+@keyframes float{from{transform:translateY(4px)}to{transform:translateY(0)}}
+.project-card:hover{box-shadow:0 8px 24px rgba(59,130,246,0.2);border-color:rgba(59,130,246,0.4);}
+/* Glass cards */
+.glass-panel{background:rgba(31,41,55,0.4);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.08);}
+/* Loading spinner */
+@keyframes spin{to{transform:rotate(360deg)}}.spinner{width:40px;height:40px;border:3px solid rgba(59,130,246,0.2);border-top-color:#3B82F6;border-radius:50%;animation:spin 1s linear infinite;}
+/* Toast notification */
+.alert-toast{position:fixed;bottom:-60px;left:50%;transform:translateX(-50%);background:rgba(59,130,246,0.9);color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;opacity:0;transition:all 0.3s ease;z-index:1000;box-shadow:0 4px 16px rgba(59,130,246,0.3);}
+.alert-toast.show{opacity:1;bottom:24px;}
+
 </style>
 </body>
 </html>
