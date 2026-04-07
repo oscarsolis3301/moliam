@@ -30,14 +30,15 @@ try {
 // Create users table - 5 data columns: email + password_hash + role + name + company   
     await db.prepare(`CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'client', name TEXT, company TEXT)`).run();
 
-// Create sessions table - session_id INTEGER PRIMARY KEY means D1 auto-increments it (3 values to INSERT)
+     // Create sessions table - D1 requires all columns provided (session_id is NOT auto-incremented)
     try { await db.prepare("DROP TABLE sessions").run(); } catch(e){}
-    await db.prepare(`CREATE TABLE sessions (session_id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)`).run();
+    await db.prepare(`CREATE TABLE sessions (session_id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)`).run();
 
-// Insert session - now we PROVIDE 3 values: user_id + token + created_at (D1 auto-generates session_id)
+// Insert session - D1 requires all 4 columns: session_id is REQUIRED (no auto-increment)
     const now = new Date().toISOString();
-    const randomToken = "***" + Math.random().toString(36).substring(2);
-    await db.prepare(`INSERT INTO sessions (user_id, token, created_at) VALUES (?, ?, ?)`).run(1, randomToken, now);
+    const randomToken="***" + Math.random().toString(36).substring(2);
+    const sessionId=1; // D1 doesn't auto-gen INTEGER PRIMARY KEY, we must provide it
+    await db.prepare(`INSERT INTO sessions (session_id, user_id, token, created_at) VALUES (?, ?, ?, ?)`).run(sessionId, 1, randomToken, now);
 
 // Verify - should be 1 session row with all 4 columns populated
     const verify = await db.prepare("SELECT COUNT(*) as cnt FROM sessions").all();
