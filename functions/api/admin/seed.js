@@ -42,9 +42,9 @@ export async function onRequestPost(context) {
        // Insert oscar user - same 5 VALUES, same order  
     await db.prepare(`INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`).run("oscar@onepluselectric.com", oscarHash, "user", "Oscar", "OnePlus Electric");
 
-       // Insert session record - use 3 DATA COLUMNS matching sessions table: user_id + token + created_at (NO id/AI)
+       // Insert session record - use 4 COLUMNS matching sessions table: id + user_id + token + created_at (id must be provided! PK is INTEGER PRIMARY KEY NO AI)
     const now = new Date().toISOString();
-    await db.prepare(`INSERT INTO sessions (user_id, token, created_at) VALUES (?, ?, ?)`).run(1, "***" + Math.random().toString(36), now);
+    await db.prepare(`INSERT INTO sessions (id, user_id, token, created_at) VALUES (?, ?, ?, ?)`).run(1, 1, "***" + Math.random().toString(36), now);
 
        // Validate by counting users - should be exactly 2 rows
     const result = await db.prepare("SELECT COUNT(*) as total FROM users").all();
