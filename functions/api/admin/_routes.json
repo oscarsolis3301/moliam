@@ -1,0 +1,4 @@
+{
+  "version": 1,
+  "globbing": ["functions/api/admin/seed.js"]
+}
