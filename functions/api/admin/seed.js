@@ -13,75 +13,75 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
-  // Check seed key header
+   // Check seed key header
   const seedKey = request.headers.get("x-seed-key");
   if (seedKey !== "moliam2026") {
     return new Response(JSON.stringify({ error: "Invalid seed key" }), {
       status: 403,
       headers: { "Content-Type": "application/json" }
-    });
-  }
+     });
+   }
 
   try {
-    // Drop existing tables to reset schema completely
+     // Drop existing tables to reset schema completely
     await db.prepare("DROP TABLE IF EXISTS sessions").run();
     await db.prepare("DROP TABLE IF EXISTS users").run();
 
-    // Recreate with minimal schema that D1 supports
+     // Create minimal users table with NO foreign key references - D1 doesn't support same-table FKs
     await db.prepare(
-      `CREATE TABLE users (
+       `CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email TEXT UNIQUE NOT NULL,
-        password_hash TEXT REFERENCES users(email),
+        password_hash TEXT NOT NULL,
         role TEXT DEFAULT 'user',
         name TEXT,
         company TEXT
-      )`
-    ).run();
+       )`
+     ).run();
 
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
 
-    // Insert admin user - 5 values for 5 columns (id auto-increment)
+     // Insert admin user - 5 values (email + password_hash + role + name + company) matching columns in CREATE TABLE after id
     await db.prepare(
-      `INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`
-    ).run("admin@moliam.com", adminHash, "admin", "Admin", "Moliam");
+       `INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`
+     ).run("admin@moliam.com", adminHash, "admin", "Admin", "Moliam");
 
-    // Insert oscar user - 5 values for 5 columns (id auto-increment)
+     // Insert oscar user - same 5 values in same order
     await db.prepare(
-      `INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`
-    ).run("oscar@onepluselectric.com", oscarHash, "user", "Oscar", "OnePlus Electric");
+       `INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`
+     ).run("oscar@onepluselectric.com", oscarHash, "user", "Oscar", "OnePlus Electric");
 
-    // Simple sessions table with no FK constraint issues - 3 columns matching login.js expectations
+     // Simple sessions table - 3 columns: user_id + token + created_at
     await db.prepare(
-      `CREATE TABLE sessions (
+       `CREATE TABLE sessions (
         user_id INTEGER,
         token TEXT,
         created_at TEXT
-      )`
-    ).run();
+       )`
+     ).run();
 
-    // Validate seeding - run final query to confirm tables exist
+     // Validate seeding completed successfully
     const tables = await db.prepare(
-      `SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;`
-    ).all();
+       `SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;`
+     ).all();
 
     return new Response(JSON.stringify({
       success: true,
       message: "Users and sessions tables seeded successfully",
       users: [
-        { email: "admin@moliam.com", role: "admin" },
-        { email: "oscar@onepluselectric.com", role: "user" }
-      ]
-    }), {
+         { email: "admin@moliam.com", role: "admin" },
+         { email: "oscar@onepluselectric.com", role: "user" }
+       ]
+     }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
-    });
+     });
 
-  } catch (err) {
+   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" }
-    });
-  }
+     });
+   }
 }
