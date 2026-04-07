@@ -22,21 +22,25 @@ export async function onRequestPost(context) {
        });
      }
 
-  try {
-       // Drop existing tables to reset everything (ensure clean state for re-seeding)
-    await db.prepare("DROP TABLE IF EXISTS sessions").run();
-    await db.prepare("DROP TABLE IF EXISTS users").run();
+try {
+        // Ensure clean slate with strong drop syntax
+    try { await db.prepare("DROP TABLE IF EXISTS sessions").run(); } catch(e){}
+    try { await db.prepare("DROP TABLE IF EXISTS users").run(); } catch(e){}
 
-       // Create users table with minimal schema - 5 DATA COLUMNS after id/AI: email + password_hash + role + name + company  
-    await db.prepare(`CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'user', name TEXT, company TEXT)`).run();
+// Create users table - 5 data columns: email + password_hash + role + name + company   
+    await db.prepare(`CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'client', name TEXT, company TEXT)`).run();
 
-    // Create sessions table with NO auto-increment - 4 COLUMNS: id + user_id + token + created_at
-    await db.prepare(`CREATE TABLE sessions (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)`).run();
+// Create sessions table - provide all 4 values explicitly: session_id + user_id + token + created_at
+    try { await db.prepare("DROP TABLE sessions").run(); } catch(e){}
+    await db.prepare(`CREATE TABLE sessions (session_id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)`).run();
 
-// Insert session WITHOUT id (let SQLite auto-increment handle it) - provides 3 VALUES: user_id + token + created_at
+// Insert session - now we PROVIDE all 4 VALUES matching CREATE: session_id + user_id + token + created_at
     const now = new Date().toISOString();
-    const randomToken = "session_" + Math.random().toString(36);
-    await db.prepare(`INSERT INTO sessions (user_id, token, created_at) VALUES (?, ?, ?)`).run(1, randomToken, now);
+    const randomToken="***" + Math.random().toString(36);
+    await db.prepare(`INSERT INTO sessions (session_id, user_id, token, created_at) VALUES (?, ?, ?, ?)`).run(Math.floor(Math.random() * 1000000), 1, randomToken, now);
+
+// Verify - should be 1 session row with all 4 columns populated
+    const verify = await db.prepare("SELECT COUNT(*) as cnt FROM sessions").all();
 
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
@@ -45,7 +49,7 @@ export async function onRequestPost(context) {
     await db.prepare(`INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`).run("admin@moliam.com", adminHash, "admin", "Admin", "Moliam");
 
         // Insert oscar user - same 5 VALUES, same order   
-    await db.prepare(`INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`).run("oscar@onepluselectric.com", oscarHash, "user", "Oscar", "OnePlus Electric");
+    await db.prepare(`INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`).run("oscar@onepluselectric.com", oscarHash, "client", "Oscar", "OnePlus Electric");
 
         
 
@@ -58,7 +62,7 @@ export async function onRequestPost(context) {
       user_count: result.data[0].total,
       users: [
            { email: "admin@moliam.com", role: "admin" },
-           { email: "oscar@onepluselectric.com", role: "user" }
+           { email: "oscar@onepluselectric.com", role: "client" }
          ]
        }), {
       status: 200,
