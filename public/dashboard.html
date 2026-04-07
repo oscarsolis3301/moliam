@@ -88,7 +88,7 @@ async function renderDashboard() {
     for (let p of projects) {
       const typeClass = p.type ? p.type.toLowerCase().replace(' ', '-') : 'website';
       html += `<div class="project-card">`;
-      html += `<div class="project-header"><h3 class="project-name">${p.name || 'Project'} ${p.id}</h3>`;
+      html += `<div class="project-header"><h3 class="project-name">${p.name || 'Project'}</h3>`;
       html += `<div><span class="type-badge type-${typeClass}">${p.type || 'Website'}</span>`;
       html += `<span class="status-badge status-${p.status==='active'?'active':'pending'}">${p.status==='active'?'Active':'Pending'}</span></div></div>`;
       html += `<div class="project-details">`;
@@ -174,7 +174,7 @@ async function init() {
     const viewAsBtn = document.createElement('button');
     viewAsBtn.textContent = '👁 View as Client';
     viewAsBtn.className = 'btn-primary';
-    logoutBtn.insertBefore(viewAsBtn, nextSibling);
+    logoutBtn.insertBefore(viewAsBtn, logoutBtn.nextSibling);
 
     const clientTable = document.createElement('table');
     clientTable.innerHTML = '<tr><td style="padding:8px;color:var(--text-secondary)">Client Management Table - Use "View as Client"</td></tr>';
