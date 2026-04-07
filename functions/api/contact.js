@@ -32,7 +32,56 @@ export async function onRequestPost(context) {
   if (message.length > 5000) errors.push("Message cannot exceed 5000 characters.");
   if (errors.length) return jsonResp(400, { error: true, message: errors.join(" ") });
 
-   // --- Check D1 availability ---
+/**
+ * Enhanced Lead Scoring based on service interest (core requirement v3)
+ * Service tiers: retainer=100pts (hot), lsa=80pts, gbp=60pts, website=40pts, other=20pts
+ * Auto-categorization: hot (80+), warm (40-79), cold (<40)
+ */
+function calculateLeadScore(service, budget, timeline) {
+  let score = 0;
+  const svc = (service || "").toLowerCase();
+
+// SERVICE-BASED SCORING — Core v3 requirement: priority by service type
+  if (svc.includes("retainer")) {
+    score += 100; // retainer = 100pts (hot)
+  } else if (svc.includes("lsa") || svc.includes("google_ads")) {
+    score += 80; // lsa = 80pts
+  } else if (svc.includes("gbp") || svc.includes("google_business")) {
+    score += 60; // gbp = 60pts  
+  } else if (svc.includes("website") || svc.includes("web build")) {
+    score += 40; // website = 40pts
+  } else {
+    score += 20; // other = 20pts
+  }
+
+// Budget bonus: adds 5-15 points
+  const bgt = (budget || "").toLowerCase();
+  if (bgt.includes("10k+") || bgt.includes("10000") || bgt.includes("enterprise")) score += 15;
+  else if (bgt.includes("5k") || bgt.includes("5000")) score += 10;
+  else if (bgt.includes("2.5k") || bgt.includes("2500")) score += 7;
+  else if (bgt.includes("1k") || bgt.includes("1000")) score += 5;
+
+// Timeline urgency bonus: adds 0-20 points
+  const tl = (timeline || "").toLowerCase();
+  if (tl.includes("immediate") || tl.includes("asap") || tl.includes("today")) score += 20;
+  else if (tl.includes("1-2") || tl.includes("this week") || tl.includes("week")) score += 15;
+  else if (tl.includes("month")) score += 10;
+  else if (tl.includes("explor") || tl.includes("soon")) score += 5;
+
+// Auto-categorization based on final score
+  let category = "cold";
+  if (score >= 80) {
+    category = "hot";
+  } else if (score >= 40 && score < 80) {
+    category = "warm";
+  } else {
+    category = "cold";
+  }
+
+  return { score: Math.max(0, Math.min(100, score)), category };
+}
+
+    // --- Check D1 availability ---
   if (!db) {
      // D1 not bound — still send webhook and return success
     await sendWebhook(env, { name, email, phone, company, message, service: data.service, score: 0, category: "cold", subId: 0 });
@@ -229,53 +278,4 @@ function jsonResp(status, body) {
       "X-Frame-Options": "DENY",
     },
   });
-}
 
-/**
- * Enhanced Lead Scoring based on service interest (core requirement v3)
- * Service tiers: retainer=100pts (hot), lsa=80pts, gbp=60pts, website=40pts, other=20pts
- * Auto-categorization: hot (80+), warm (40-79), cold (<40)
- */
-function calculateLeadScore(service, budget, timeline) {
-  let score = 0;
-  const svc = (service || "").toLowerCase();
-
-   // SERVICE-BASED SCORING — Core v3 requirement: priority by service type
-  if (svc.includes("retainer")) {
-    score += 100; // retainer = 100pts (hot)
-  } else if (svc.includes("lsa") || svc.includes("google_ads")) {
-    score += 80; // lsa = 80pts
-  } else if (svc.includes("gbp") || svc.includes("google_business")) {
-    score += 60; // gbp = 60pts  
-  } else if (svc.includes("website") || svc.includes("web build")) {
-    score += 40; // website = 40pts
-  } else {
-    score += 20; // other = 20pts
-  }
-
-   // Budget bonus: adds 5-15 points
-  const bgt = (budget || "").toLowerCase();
-  if (bgt.includes("10k+") || bgt.includes("10000") || bgt.includes("enterprise")) score += 15;
-  else if (bgt.includes("5k") || bgt.includes("5000")) score += 10;
-  else if (bgt.includes("2.5k") || bgt.includes("2500")) score += 7;
-  else if (bgt.includes("1k") || bgt.includes("1000")) score += 5;
-
-   // Timeline urgency bonus: adds 0-20 points
-  const tl = (timeline || "").toLowerCase();
-  if (tl.includes("immediate") || tl.includes("asap") || tl.includes("today")) score += 20;
-  else if (tl.includes("1-2") || tl.includes("this week") || tl.includes("week")) score += 15;
-  else if (tl.includes("month")) score += 10;
-  else if (tl.includes("explor") || tl.includes("soon")) score += 5;
-
-   // Auto-categorization based on final score
-  let category = "cold";
-  if (score >= 80) {
-    category = "hot";
-  } else if (score >= 40 && score < 80) {
-    category = "warm";
-  } else {
-    category = "cold";
-  }
-
-  return { score: Math.max(0, Math.min(100, score)), category };
-}
