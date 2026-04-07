@@ -31,7 +31,7 @@ nav{height:48px;border-bottom:1px solid var(--border-room);display:flex;align-it
 
 <script>
 const API_BASE = '/';
-const token = localStorage.getItem('authToken');
+const token=localStorage.getItem('authToken');
 
 if(token){fetch(API_BASE+'/api/admin/clients',{credentials:'include',headers:{'moliam-session':token}}).then(r=>r.json()).then(d=>{
 const clients=d.clients||[];
@@ -66,7 +66,7 @@ let rows='';
 tbody.innerHTML=rows||'<tr><td colspan="5">No clients found</td></tr>';
 
 }).catch(e=>{console.error('Error:',e);document.getElementById('stats-bar').innerHTML='<p>Session expired. <a href="/login.html">Login here</a></p>';})
-} else{document.body.innerHTML='<div class="loading"><p>Not logged in. <a href="/login.html">Login here</a></p></div>';}
+}else{document.body.innerHTML='<div class="loading"><p>Not logged in. <a href="/login.html">Login here</a></p></div>';}
 </script>
 </body>
 </html>

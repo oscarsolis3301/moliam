@@ -148,28 +148,28 @@ async function fetchDashboard(token) {
 }
 
 (async function main() {
-    // Get stored auth token from localStorage instead of cookie extraction
-    const token = localStorage.getItem('authToken');
+       // Get stored auth token from localStorage instead of cookie extraction
+    const token=localStorage.getItem('authToken');
 
     if (!token) {
         window.location.href = '/login.html'; 
         return;
-      }
+       }
 
-     // Check if user is still authenticated
+        // Check if user is still authenticated
      async function checkAuth(token) {
          try {
              const res = await fetch('/api/auth/status', { method: 'HEAD' });
              return res.ok;
-         } catch (e) { return false; }
-     } 
-     const isAuthenticated = await checkAuth(token);
+            } catch (e) { return false; }
+        } 
+     const isAuthenticated=await checkAuth(token);
 
     if (!isAuthenticated) {
         localStorage.removeItem('authToken');
-        window.location.href = '/login.html'; 
+        window.location.href = '/login.html';
         return;
-     }
+      }
 
     let impersonatedUserId = urlParams.get('impersonate');
      
