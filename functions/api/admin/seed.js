@@ -88,9 +88,10 @@ export async function onRequestPost(context) {
      // Get user IDs after insert for profile creation - INSERT uses 3 values: (user_id, display_name, bio) to match client_profiles table's 3 non-auto columns
     const users = await db.prepare("SELECT id FROM users").all();
     for (const user of users.results) {
+      // Use NULL for auto-increment id column + 3 actual values = 4 total placeholders matching 4 columns
       await db.prepare(
-                   "INSERT INTO client_profiles(user_id, display_name, bio) VALUES(?, ?, ?)"
-                 ).run([user.id, "Profile", "Client account"]);
+                    "INSERT INTO client_profiles(id, user_id, display_name, bio) VALUES(NULL, ?, ?, ?)"
+                  ).run([user.id, "Profile", "Client account"]);
       }
 
       // Test login verification for Oscar - verify password works correctly (for testing purposes only)
