@@ -98,18 +98,18 @@ await db.prepare("DROP TABLE IF EXISTS `sessions`").run();
          )
          .run();
 
-     // Insert test sessions for both users - 3 params matching table schema (user_id, token, created_at)
+      // Insert test sessions for both users - 4 params matching table schema (user_id, token, created_at, expires_at)
     await db
-        .prepare(
-          "INSERT INTO sessions(user_id, token, created_at) VALUES(?, ?, datetime('now'))",
-        )
-        .run(adminId, "test-session-1");
+         .prepare(
+           "INSERT INTO sessions(user_id, token, created_at, expires_at) VALUES(?, ?, datetime('now'), datetime('2099-12-31'))",
+         )
+         .run(adminId, "test-session-1");
 
     await db
-        .prepare(
-          "INSERT INTO sessions(user_id, token, created_at) VALUES(?, ?, datetime('now'))",
-        )
-        .run(oscarId, "test-session-2");
+         .prepare(
+           "INSERT INTO sessions(user_id, token, created_at, expires_at) VALUES(?, ?, datetime('now'), datetime('2099-12-31'))",
+         )
+         .run(oscarId, "test-session-2");
 
     // Success response
     return new Response(
