@@ -46,13 +46,14 @@ export async function onRequestPost(context) {
     const saltedPassword1 = await hashPassword("Moliam2026!");
       const saltedPassword2 = await hashPassword("OnePlus2026!");
 
+    // Fix: INSERT has 7 placeholders, provide exactly 7 values (remove extra column)
     await db.prepare(
-       "INSERT INTO users (name,email,password_hash,role,company,is_active,last_login) VALUES (?, ?, ?, ?, ?, ?, ?)"
-    ).run("Administrator","admin@moliam.com",saltedPassword1,"admin",null,1,null);
+        "INSERT INTO users (name,email,password_hash,role,is_active,last_login) VALUES (?, ?, ?, ?, ?, ?)"
+     ).run("Administrator","admin@moliam.com",saltedPassword1,"admin",1,null);
 
     await db.prepare(
-       "INSERT INTO users (name,email,password_hash,role,company,is_active,last_login) VALUES (?, ?, ?, ?, ?, ?, ?)"
-    ).run("Oscar Johnson","oscar@onepluselectric.com",saltedPassword2,"user","One Plus Electric",1,null);
+        "INSERT INTO users (name,email,password_hash,role,is_active,last_login) VALUES (?, ?, ?, ?, ?, ?)"
+     ).run("Oscar Johnson","oscar@onepluselectric.com",saltedPassword2,"user",1, null);
 
     return new Response(JSON.stringify({ 
       success:true, 
