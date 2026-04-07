@@ -108,11 +108,11 @@ export async function onRequestPost(context) {
       }
     }
 
-     // --- Create lead (best effort) ---
+      // --- Create lead (best effort) ---
     try {
       await db.prepare(
-         "INSERT INTO leads (submission_id, status, score, created_at) VALUES (?, 'new', ?, datetime('now'))"
-       ).bind(subId, score).run();
+          "INSERT INTO leads (submission_id, email, first_name, last_name, phone, company, source, created_at, is_active) VALUES (?, ?, '', '', ?, ?, 'webform', datetime('now'), 1)"
+        ).bind(subId, email, phone, data.company || null).run();
     } catch {
       // leads table might not exist — skip
     }
