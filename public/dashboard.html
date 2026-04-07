@@ -1,874 +1,529 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard — Moliam</title>
-<meta name="robots" content="noindex">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Moliam</title>
+    <style>
+        :root {
+            --bg-deep: #0B0E14;
+            --bg-room: #1F2937;
+            --border-room: #374151;
+            --accent-blue: #3B82F6;
+            --accent-purple: #8B5CF6;
+            --accent-green: #10B981;
+            --text-primary: #F9FAFB;
+            --text-secondary: #9CA3AF;
+        }
 
-<!-- Messaging Panel CSS -->
-<style>
-.messaging-panel {
-  position: fixed;
-  inset: 0;
-  z-index: 900;
-  display: none;
-  align-items: flex-end;
-  justify-content: center;
-}
-.messaging-panel.open {
-  display: flex;
-}
-.messaging-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(11, 14, 20, 0.7);
-  backdrop-filter: blur(8px);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-.messaging-panel.open .messaging-overlay {
-  opacity: 1;
-}
-.messaging-container {
-  position: relative;
-  width: 100%;
-  max-width: 600px;
-  height: 85vh;
-  max-height: 700px;
-  background: var(--bg-building);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px 20px 0 0;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.35);
-  transform: translateY(100%);
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.messaging-panel.open .messaging-container {
-  transform: translateY(0);
-}
-.messaging-header {
-  padding: 18px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.02);
-}
-.messaging-header h3 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-}
-.messaging-close {
-  background: none;
-  border: none;
-  color: var(--text-dim);
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 4px 8px;
-  line-height: 1;
-  transition: color 0.2s;
-}
-.messaging-close:hover {
-  color: var(--text-primary);
-}
-.messaging-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.message-thread {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.message-bubble {
-  max-width: 85%;
-  padding: 14px 18px;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  animation: messageSlideIn 0.3s ease forwards;
-}
-@keyframes messageSlideIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.message-bubble.received {
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  align-self: flex-start;
-}
-.message-bubble.sent {
-  background: linear-gradient(135deg, var(--accent-blue), #2563EB);
-  color: white;
-  border: none;
-  align-self: flex-end;
-}
-.message-meta {
-  font-size: 0.7rem;
-  opacity: 0.8;
-  margin-top: 8px;
-}
-.message-sender {
-  font-weight: 600;
-  color: #93C5FD;
-  margin-bottom: 4px;
-  font-size: 0.8rem;
-}
-.messaging-input-area {
-  padding: 18px 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  gap: 12px;
-  background: rgba(255, 255, 255, 0.02);
-}
-.messaging-input {
-  flex: 1;
-  padding: 12px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  background: rgba(17, 24, 39, 0.5);
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 0.85rem;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.messaging-input:focus {
-  border-color: rgba(59, 130, 246, 0.4);
-}
-.messaging-send-btn {
-  padding: 12px 24px;
-  background: linear-gradient(135deg, var(--accent-blue), #2563EB);
-  border: none;
-  border-radius: 12px;
-  color: white;
-  font-family: inherit;
-  font-weight: 600;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.messaging-send-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
-}
-.messaging-send-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  color: var(--text-dim);
-}
-.empty-state .empty-icon {
-  font-size: 3rem;
-  margin-bottom: 12px;
-}
-.empty-state p {
-  font-size: 0.9rem;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-/* Mobile */
-@media (max-width: 768px) {
-  .messaging-container {
-    height: 95vh;
-    max-height: none;
-    border-radius: 20px 20px 0 0;
-  }
-  .messaging-input-area {
-    padding: 14px 16px;
-  }
-  .messaging-input {
-    font-size: 14px;
-  }
-  .message-bubble {
-    max-width: 95%;
-  }
-}
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 20px;
+        }
 
-<!-- Invoice Panel CSS -->
-<style>.invoice-panel {position:fixed;inset:0;z-index:950;display:none;align-items:flex-end;justify-content:center;}
-.invoice-panel.open{display:flex}.invoice-overlay{position:absolute;inset:0;background:rgba(11,14,20,0.7);backdrop-filter:blur(8px);opacity:0;transition:opacity 0.3s ease;}
-.invoice-panel.open .invoice-overlay{opacity:1}.invoice-container{position:relative;width:100%;max-width:750px;height:auto;max-height:90vh;background:var(--bg-building);border:1px solid var(--glass-border);border-radius:20px 20px 0 0;display:flex;flex-direction:column;box-shadow:0 -8px 40px rgba(0,0,0,0.35);transform:translateY(100%);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);}
-.invoice-panel.open .invoice-container{transform:translateY(0)}.invoice-header{padding:18px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--glass-border);background:rgba(255,255,255,0.02)}
-.invoice-header h3{font-size:1.1rem;font-weight:700;letter-spacing:-0.01em;display:flex;align-items:center;gap:10px;margin:0}.invoice-close{background:none;border:none;color:var(--text-dim);font-size:1.5rem;cursor:pointer;padding:4px 8px;line-height:1;transition:color 0.2s}
-.invoice-close:hover{color:var(--text-primary)}.invoice-body{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px}.invoice-list{display:flex;flex-direction:column;gap:12px}.invoice-card{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:14px;padding:18px}
-.invoice-card:first-child{margin-top:-2px}.invoice-meta-line{display:flex;justify-content:space-between;margin-bottom:8px;font-size:0.9rem}.invoice-amount{font-weight:700;color:#6EE7B7;font-size:1.1rem}
-.invoice-date{color:var(--text-secondary);font-size:0.85rem}.invoice-period{color:var(--text-primary);font-weight:600;margin:4px 0}.invoice-status-badge{display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;padding:3px 10px;border-radius:100px;letter-spacing:0.08em}
-.invoice-status-paid{background:rgba(16,185,129,0.15);color:#6EE7B7}.invoice-status-pending{background:rgba(245,158,11,0.15);color:#FCD34D}.empty-invoice-state{text-align:center;padding:40px 20px;color:var(--text-dim)}
-.empty-invoice-state .empty-icon{font-size:3rem;margin-bottom:12px}.empty-invoice-state p{font-size:0.9rem}@media (max-width:768px){.invoice-container{border-radius:20px 20px 0 0;height:95vh;max-height:none}
-.invoice-body{padding:18px 20px}.invoice-card{border-radius:10px}</style>
-</style>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Impersonation Banner */
+        .impersonation-banner {
+            display: none;
+            background: yellow;
+            color: black;
+            padding: 1rem;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+        }
+
+        .impersonation-banner.active {
+            display: block;
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: linear-gradient(135deg, rgba(31, 41, 55, 0.7), rgba(11, 14, 20, 0.7));
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-room);
+            border-radius: 14px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+        }
+
+        /* Project Cards */
+        .projects-section h2, .milestones-section h2, .invoices-section h2 {
+            margin-bottom: 1rem;
+            color: var(--accent-blue);
+            font-size: 1.25rem;
+        }
+
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+         .project-card {
+            background: linear-gradient(135deg, rgba(31, 41, 55, 0.7), rgba(11, 14, 20, 0.7));
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-room);
+            border-radius: 14px;
+            padding: 1.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+         }
+
+        .project-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .project-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .badges {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .badge-type {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .badge-status {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .project-info p {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .project-label {
+            color: var(--text-secondary);
+        }
+
+        .project-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(55, 65, 81, 0.5);
+            color: var(--text-primary);
+            border: 1px solid var(--border-room);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Milestones Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+            margin-top: 1rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0.75rem;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--border-room);
+        }
+
+        .milestone-item {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .milestone-item::before {
+            content: '';
+            position: absolute;
+            left: -0.25rem;
+            top: 0.375rem;
+            width: 0.5rem;
+            height: 0.5rem;
+            background: var(--accent-green);
+            border-radius: 50%;
+        }
+
+        .milestone-date {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .milestone-title {
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 1rem;
+        }
+
+        /* Invoice Summary */
+           .invoice-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+          }
+
+          .invoice-card {
+            background: rgba(31, 41, 55, 0.7);
+            border-radius: 14px;
+            padding: 1.25rem;
+            text-align: center;
+          }
+
+          .invoice-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .invoice-value {
+            color: var(--accent-green);
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* Loading and Error States */
+        .loading, .error {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .error {
+            color: #EF4444;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 0;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .project-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .invoice-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <!-- Impersonation Banner -->
+        <div id="impersonationBanner" class="impersonation-banner">
+            👁 Viewing as <span id="viewingAsName"></span> — 
+            <a href="/dashboard" style="color: #000; font-weight: bold;">Exit</a>
+        </div>
 
-<div class="gradient-accent"></div>
+        <header class="header">
+            <h1>Your Dashboard</h1>
+            <p>Manage your projects and track progress</p>
+        </header>
 
-<div class="toast-container" id="toastContainer"></div>
+        <!-- Projects Section -->
+        <section id="projectsSection" class="glass-card projects-section">
+            <h2>Your Projects</h2>
+            <div id="projectContainer">
+                <div class="loading">Loading projects...</div>
+            </div>
+            <div class="action-buttons">
+                <a href="/" class="btn btn-primary">Book a Call</a>
+                <button class="btn btn-secondary" onclick="window.location.href='/invoices'">View Invoice</button>
+                <button class="btn btn-secondary" onclick="window.location.href='https://discord.com'">Message Us</button>
+            </div>
+        </section>
 
-<nav class="topnav">
-  <a href="/" class="brand">Moliam</a>
-  <div class="user-area">
-    <span class="user-name" id="userGreeting">Loading...</span>
-    <div class="user-avatar" id="userAvatar">—</div>
-    <button class="btn-logout" id="logoutBtn">Sign Out</button>
-  </div>
-</nav>
+        <!-- Milestones Section -->
+        <section id="milestonesSection" class="glass-card milestones-section">
+            <h2>Milestones Timeline</h2>
+            <div id="timelineContainer">
+                <div class="loading">Loading milestones...</div>
+            </div>
+        </section>
 
-<main class="main" id="mainContent">
-  <div class="loading-state" id="loadingState">
-    <div class="loading-spin"></div>
-    <span>Loading dashboard...</span>
-  </div>
-</main>
-
-<script>
-let currentUser = null;
-
-// ═══ TOAST SYSTEM ═══
-function showToast(message, icon = '✨', duration = 4000) {
-  const container = document.getElementById('toastContainer');
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.innerHTML = `
-    <span class="toast-icon">${icon}</span>
-    <span class="toast-msg">${message}</span>
-    <button class="toast-close" onclick="this.parentElement.classList.add('toast-exit'); setTimeout(() => this.parentElement.remove(), 300);">&times;</button>
-  `;
-  container.appendChild(toast);
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => toast.classList.add('show'));
-  });
-  setTimeout(() => {
-    if (toast.parentElement) {
-      toast.classList.add('toast-exit');
-      setTimeout(() => toast.remove(), 300);
-    }
-  }, duration);
-}
-
-async function init() {
-  try {
-    const res = await fetch('/api/dashboard', { credentials: 'include' });
-    const data = await res.json();
-
-    if (!data.success) {
-      window.location.href = '/login';
-      return;
-     }
-
-    currentUser = data.user;
-    
-    // Check for impersonation mode
-    const urlParams = new URLSearchParams(window.location.search);
-    const impersonateId = urlParams.get('impersonate');
-    if (currentUser.role === 'admin' && impersonateId && !data.impersonate) {
-      enableImpersonationMode(impersonateId, data);
-      return;
-     }
-
-    // Fetch invoices for summary
-    let invoiceData = null;
-    try {
-      const invRes = await fetch('/api/invoices', { credentials: 'include' });
-      if (invRes.ok) {
-        invoiceData = await invRes.json();
-       }
-     } catch(e) {
-      console.warn('Invoice fetch failed');
-     }
-     
-    renderDashboard(data, invoiceData);
-
-    // Welcome toast
-    setTimeout(() => {
-      showToast(`Welcome back, ${data.user.name.split(' ')[0]}!`, '👋', 4500);
-     }, 600);
-
-    } catch (err) {
-    window.location.href = '/login';
-    }
-}
-
-// ═══ IMPERSONATION MODE ═══
-async function enableImpersonationMode(impersonateId, data) {
-  try {
-    const res = await fetch(`/api/admin/clients/${impersonateId}`, { credentials: 'include' });
-    if (!res.ok) {
-      console.error('Failed to fetch impersonated user');
-      window.location.href = '/dashboard';
-      return;
-     }
-    
-    const clientData = await res.json();
-    currentUser = clientData.client || clientData.data?.client || clientData;
-    
-    // Inject yellow banner
-    const nav = document.querySelector('.topnav');
-    if (nav) {
-      const banner = document.createElement('div');
-      banner.className = 'impersonation-banner';
-      banner.innerHTML = `
-        <span style="display:inline-block;width:12px;height:12px;background:#F59E0B;border-radius:50%;margin-right:8px;"></span>
-        <strong>👁 Viewing as ${currentUser.name}${currentUser.company ? ' — ' + esc(currentUser.company) : ''}</strong>
-        <button id="exitImpersonation">Exit</button>
-      `;
-      banner.style.cssText = 'background:linear-gradient(90deg,#F59E0B,#FBBF24);color:#1F2937;padding:8px 16px;display:flex;align-items:center;gap:12px;font-weight:600;font-size:0.85rem;border-radius:12px;margin-left:16px;box-shadow:0 4px 12px rgba(245,158,11,0.3);';
-      
-      const exitBtn = banner.querySelector('#exitImpersonation');
-      exitBtn.onclick = () => {
-        window.location.href = '/dashboard';
-      };
-      
-      nav.appendChild(banner);
-    }
-    
-  } catch (err) {
-    console.error('Error enabling impersonation:', err);
-  }
-}
-
-// ═══ MESSAGING PANEL FUNCTIONS ═══
-let isConnected = false;
-
-function renderDashboard(data) {
-  const { user, projects, updates, stats } = data;
-
-  // Nav user info
-  document.getElementById('userGreeting').innerHTML =
-    `<strong>${user.name}</strong> · ${user.company || user.role}`;
-  const initials = user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-  document.getElementById('userAvatar').textContent = initials;
-
-  const main = document.getElementById('mainContent');
-  const greeting = getGreeting();
-
-  // Calculate project completion percentages
-  const projectsWithProgress = projects.map(p => ({
-    ...p,
-    progress: getProjectProgress(p)
-  }));
-
-  // Placeholder documents
-  const documents = getPlaceholderDocuments(projects);
-
-  main.innerHTML = `
-    <div class="page-header fade-in-up delay-1">
-      <h1 class="page-title">${greeting}, ${user.name.split(' ')[0]} 👋</h1>
-      <p class="page-subtitle">${user.role === 'admin' ? 'Admin overview — manage clients and projects' : 'Here\'s what\'s happening with your projects'}</p>
+        <!-- Invoices Section -->
+        <section id="invoicesSection" class="glass-card invoices-section">
+            <h2>Invoice Summary</h2>
+            <div id="invoiceContainer">
+                <div class="loading">Loading invoice data...</div>
+            </div>
+        </section>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="quick-actions fade-in-up delay-2">
-      <a href="https://calendly.com/visualark/demo" target="_blank" rel="noopener" class="quick-action-btn primary">
-        <span class="btn-icon">📅</span> Book a Call
-      </a>
-     <button class="quick-action-btn secondary" onclick="openInvoicePanel()">
-         <span class="btn-icon">📄</span> View Invoice
-       </button>
-       <button class="quick-action-btn secondary" onclick="openMessagingPanel()">
-         <span class="btn-icon">💬</span> Message Us
-       </button>
-     </div>
+    <script>
+        // Check for impersonate parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const impersonateId = urlParams.get('impersonate');
 
-    <!-- Stats -->
-    <div class="stats-grid fade-in-up delay-3">
-      ${user.role === 'admin' ? `
-        <div class="stat-card blue-accent">
-          <div class="stat-icon">👥</div>
-          <div class="stat-label">Total Clients</div>
-          <div class="stat-value blue">${stats.total_clients || 0}</div>
-        </div>
-        <div class="stat-card green-accent">
-          <div class="stat-icon">🚀</div>
-          <div class="stat-label">Active Projects</div>
-          <div class="stat-value green">${stats.active_projects || 0}</div>
-        </div>
-        <div class="stat-card purple-accent">
-          <div class="stat-icon">💰</div>
-          <div class="stat-label">Monthly Revenue</div>
-          <div class="stat-value purple">$${(stats.monthly_revenue || 0).toLocaleString()}</div>
-        </div>
-        <div class="stat-card amber-accent">
-          <div class="stat-icon">✨</div>
-          <div class="stat-label">New Leads</div>
-          <div class="stat-value amber">${stats.new_leads || 0}</div>
-        </div>
-        <div class="stat-card" id="healthCard" style="border-left:3px solid #6B7280;">
-          <div class="stat-icon">📡</div>
-          <div class="stat-label">System Status</div>
-          <div class="stat-value" id="healthValue" style="font-size:1rem;">Loading...</div>
-        </div>
-      ` : `
-        <div class="stat-card blue-accent">
-          <div class="stat-icon">🚀</div>
-          <div class="stat-label">Active Projects</div>
-          <div class="stat-value blue">${stats.active_projects || 0}</div>
-        </div>
-        <div class="stat-card green-accent">
-          <div class="stat-icon">📁</div>
-          <div class="stat-label">Total Projects</div>
-          <div class="stat-value green">${stats.total_projects || 0}</div>
-        </div>
-        <div class="stat-card purple-accent">
-          <div class="stat-icon">💰</div>
-          <div class="stat-label">Monthly Total</div>
-          <div class="stat-value purple">$${(stats.monthly_total || 0).toLocaleString()}</div>
-        </div>
-      `}
-    </div>
+        if (impersonateId) {
+            document.getElementById('impersonationBanner').classList.add('active');
+            document.getElementById('viewingAsName').textContent = 'Loading...';
+            
+            // Fetch user name to display in banner
+            fetch('/api/user', { credentials: 'include' })
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('viewingAsName').textContent = data.user?.name || `User ${impersonateId}`;
+                });
+        }
 
-    <!-- Projects -->
-    <div class="section-title fade-in-up delay-4">
-      <span class="icon">📁</span> Your Projects
-      ${projects.length > 0 ? `<span class="badge">${projects.length}</span>` : ''}
-    </div>
-    ${projects.length > 0 ? `
-      <div class="projects-grid fade-in-up delay-4">
-        ${projectsWithProgress.map(p => renderProjectCard(p, user.role)).join('')}
-      </div>
-    ` : `
-      <div class="empty-state fade-in-up delay-4">
-        <div class="empty-icon">📋</div>
-        <p>No projects yet. ${user.role === 'admin' ? 'Create one from the admin panel.' : 'Your team will set things up soon!'}</p>
-      </div>
-    `}
+        // Check authentication and redirect if not logged in
+        async function checkAuth() {
+            try {
+                const res = await fetch('/api/user', { credentials: 'include' });
+                if (!res.ok) {
+                    window.location.href = '/login';
+                }
+            } catch (err) {
+                window.location.href = '/login';
+            }
+        }
 
-    <!-- Documents -->
-    <div class="section-title fade-in-up delay-5">
-      <span class="icon">📎</span> Recent Documents
-      ${documents.length > 0 ? `<span class="badge">${documents.length}</span>` : ''}
-    </div>
-    ${documents.length > 0 ? `
-      <div class="documents-grid fade-in-up delay-5">
-        ${documents.map(d => renderDocCard(d)).join('')}
-      </div>
-    ` : `
-      <div class="empty-state fade-in-up delay-5" style="padding: 30px;">
-        <p>No documents yet.</p>
-      </div>
-    `}
+        // Fetch dashboard data
+        async function fetchDashboardData() {
+            try {
+                const res = await fetch('/api/dashboard', { 
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
 
-    <!-- Timeline -->
-    <div class="section-title fade-in-up delay-6">
-      <span class="icon">📰</span> Recent Updates
-      ${updates.length > 0 ? `<span class="badge">${updates.length}</span>` : ''}
-    </div>
-    ${updates.length > 0 ? `
-      <div class="timeline fade-in-up delay-6">
-        ${updates.map(u => renderTimelineItem(u)).join('')}
-      </div>
-    ` : `
-      <div class="empty-state fade-in-up delay-6" style="padding: 30px;">
-        <p>No updates yet.</p>
-      </div>
-    `}
-  `;
+                if (!res.ok) {
+                    throw new Error('Failed to load dashboard data');
+                }
 
-  // Fetch system health for admin users
-  if (user.role === 'admin') {
-    fetch('/api/health', { credentials: 'include' })
-      .then(r => r.ok ? r.json() : Promise.reject())
-      .then(h => {
-        const card = document.getElementById('healthCard');
-        const val = document.getElementById('healthValue');
-        if (!card || !val) return;
-        const up = h.status === 'ok';
-        card.style.borderLeftColor = up ? '#10B981' : '#EF4444';
-        const uptime = h.uptime ? formatUptime(h.uptime) : '';
-        val.innerHTML = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${up ? '#10B981' : '#EF4444'};box-shadow:0 0 8px ${up ? 'rgba(16,185,129,0.6)' : 'rgba(239,68,68,0.6)'};margin-right:8px;"></span>${up ? 'Healthy' : 'Degraded'}${uptime ? '<br><span style=\"font-size:0.75rem;color:#9CA3AF;\">' + uptime + ' · DB ' + (h.database || '?') + '</span>' : ''}`;
-      })
-      .catch(() => {
-        const card = document.getElementById('healthCard');
-        const val = document.getElementById('healthValue');
-        if (!card || !val) return;
-        card.style.borderLeftColor = '#EF4444';
-        val.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#EF4444;margin-right:8px;"></span>Unreachable';
-      });
-  }
-}
+                const data = await res.json();
+                
+                // Handle impersonation - use user_id from params if present
+                const targetUserId = impersonateId;
+                
+                renderProjects(data.projects, targetUserId);
+                renderMilestones(data.milestones);
+                renderInvoices(data.invoices);
 
-function formatUptime(seconds) {
-  if (!seconds) return '';
-  const d = Math.floor(seconds / 86400);
-  const h = Math.floor((seconds % 86400) / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  if (d > 0) return d + 'd ' + h + 'h';
-  if (h > 0) return h + 'h ' + m + 'm';
-  return m + 'm';
-}
+            } catch (err) {
+                console.error('Dashboard error:', err);
+                document.getElementById('projectContainer').innerHTML = 
+                    '<div class="error">Failed to load dashboard data. Please refresh.</div>';
+            }
+        }
 
-function getProjectProgress(p) {
-  const progressMap = {
-    onboarding: 10,
-    in_progress: 45,
-    review: 75,
-    active: 60,
-    paused: 30,
-    completed: 100
-  };
-  return progressMap[p.status] || 20;
-}
+        // Render projects
+        function renderProjects(projects, targetUserId) {
+            const container = document.getElementById('projectContainer');
 
-function getProgressColor(pct) {
-  if (pct >= 100) return 'green';
-  if (pct >= 60) return '';
-  return 'amber';
-}
+            if (!projects || projects.length === 0) {
+                container.innerHTML = '<div class="empty-state">No active projects yet. <br><a href="/" class="btn btn-primary" style="margin-top: 1rem;">Book a Call</a></div>';
+                return;
+            }
 
-function renderProjectCard(p, role) {
-  const statusLabels = {
-    onboarding: 'Onboarding', in_progress: 'In Progress',
-    review: 'In Review', active: 'Active',
-    paused: 'Paused', completed: 'Completed'
-  };
-  const typeClass = `type-${p.type}`;
-  const statusClass = `status-${p.status}`;
-  const progressColor = getProgressColor(p.progress);
+            const projectCardHTML = projects.map(project => `
+                <div class="project-card">
+                    <div class="project-header">
+                        <div>
+                            <p class="project-name">${escapeHtml(project.name || 'Unnamed Project')}</p>
+                            <div class="badges">
+                                <span class="badge badge-type">${escapeHtml(project.type || 'website').toLowerCase()}</span>
+                                <span class="badge badge-status">${escapeHtml(project.status || 'active').toLowerCase()}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="project-info">
+                        <p><span class="project-label">Monthly Rate:</span> <span class="project-value">$${(project.monthly_rate || 0).toLocaleString()}</span></p>
+                        <p><span class="project-label">Start Date:</span> <span class="project-value">${formatDate(project.start_date || project.created_at)}</span></p>
+                    </div>
+                </div>
+            `).join('');
 
-  return `
-    <div class="project-card">
-      <div class="project-header">
-        <div class="project-name">${esc(p.name)}</div>
-        <span class="project-type ${typeClass}">${p.type.toUpperCase()}</span>
-      </div>
-      ${role === 'admin' && p.client_name ? `<div style="font-size:0.8rem; color:var(--text-dim); margin-bottom:8px;">Client: ${esc(p.client_name)}${p.client_company ? ' · ' + esc(p.client_company) : ''}</div>` : ''}
-      <div class="status-badge ${statusClass}">
-        <span class="status-dot"></span>
-        ${statusLabels[p.status] || p.status}
-      </div>
-      ${p.notes ? `<div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.5; margin-bottom:14px;">${esc(p.notes)}</div>` : ''}
-      <div class="progress-section">
-        <div class="progress-header">
-          <span class="progress-label">Completion</span>
-          <span class="progress-pct">${p.progress}%</span>
-        </div>
-        <div class="progress-track">
-          <div class="progress-fill ${progressColor}" style="width: ${p.progress}%;"></div>
-        </div>
-      </div>
-      <div class="project-meta">
-        ${p.monthly_rate ? `<div class="meta-item"><span class="meta-label">Monthly</span><br><span class="meta-value">$${p.monthly_rate.toLocaleString()}/mo</span></div>` : ''}
-        ${p.start_date ? `<div class="meta-item"><span class="meta-label">Started</span><br><span class="meta-value">${formatDate(p.start_date)}</span></div>` : ''}
-        ${p.setup_fee ? `<div class="meta-item"><span class="meta-label">Setup Fee</span><br><span class="meta-value">$${p.setup_fee.toLocaleString()}</span></div>` : ''}
-      </div>
-    </div>
-  `;
-}
+            container.innerHTML = `<div class="project-grid">${projectCardHTML}</div>`;
+        }
 
-function getPlaceholderDocuments(projects) {
-  if (projects.length === 0) return [];
-  const projectName = projects[0]?.name || 'Project';
-  return [
-    { name: 'Brand Guidelines v2.pdf', type: 'pdf', size: '2.4 MB', date: 'Mar 28, 2026', project: projectName },
-    { name: 'Homepage Mockup.png', type: 'img', size: '1.8 MB', date: 'Mar 25, 2026', project: projectName },
-    { name: 'SEO Audit Report.pdf', type: 'pdf', size: '890 KB', date: 'Mar 22, 2026', project: projectName },
-    { name: 'Logo Assets.zip', type: 'zip', size: '5.1 MB', date: 'Mar 18, 2026', project: projectName },
-  ];
-}
+        // Render milestones timeline
+        function renderMilestones(milestones) {
+            const container = document.getElementById('timelineContainer');
 
-function renderDocCard(d) {
-  const icons = { pdf: '📕', img: '🖼️', doc: '📄', zip: '📦', fig: '🎨' };
-  return `
-    <div class="doc-card" onclick="showToast('Downloads coming soon!', '📥', 3000)">
-      <div class="doc-icon ${d.type}">${icons[d.type] || '📄'}</div>
-      <div class="doc-info">
-        <div class="doc-name">${esc(d.name)}</div>
-        <div class="doc-meta">
-          <span>${d.size}</span>
-          <span>·</span>
-          <span>${d.date}</span>
-        </div>
-      </div>
-      <button class="doc-download" title="Download">↓</button>
-    </div>
-  `;
-}
+            if (!milestones || milestones.length === 0) {
+                container.innerHTML = '<div class="empty-state">No milestones have been added yet.</div>';
+                return;
+            }
 
-function renderTimelineItem(u) {
-  const typeColors = {
-    update: 'update', milestone: 'milestone',
-    deliverable: 'deliverable', report: 'report', invoice: 'invoice'
-  };
-  const typeLabels = {
-    update: '💬 Update', milestone: '🏁 Milestone',
-    deliverable: '📦 Deliverable', report: '📊 Report', invoice: '💰 Invoice'
-  };
+            const timelineHTML = milestones.map(milestone => `
+                <div class="milestone-item">
+                    <p class="milestone-date">${formatDate(milestone.created_at)}</p>
+                    <p class="milestone-title">${escapeHtml(milestone.title || 'Untitled Milestone')}</p>
+                    ${milestone.description ? `<p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.25rem;">${escapeHtml(milestone.description)}</p>` : ''}
+                </div>
+            `).join('');
 
-  return `
-    <div class="timeline-item">
-      <div class="timeline-dot-col">
-        <div class="timeline-dot ${typeColors[u.type] || 'update'}"></div>
-        <div class="timeline-line"></div>
-      </div>
-      <div class="timeline-content">
-        <div class="timeline-title">${esc(u.title)}</div>
-        ${u.description ? `<div class="timeline-desc">${esc(u.description)}</div>` : ''}
-        <div class="timeline-meta">
-          <span>${typeLabels[u.type] || u.type}</span>
-          ${u.project_name ? `<span>· ${esc(u.project_name)}</span>` : ''}
-          <span>· ${formatDate(u.created_at)}</span>
-        </div>
-      </div>
-    </div>
-  `;
-}
+            container.innerHTML = `<div class="timeline">${timelineHTML}</div>`;
+        }
 
-function getGreeting() {
-  const h = new Date().getHours();
-  if (h < 12) return 'Good morning';
-  if (h < 18) return 'Good afternoon';
-  return 'Good evening';
-}
+        // Render invoice summary
+        function renderInvoices(invoices) {
+            const container = document.getElementById('invoiceContainer');
 
-function formatDate(d) {
-  if (!d) return '';
-  try {
-    return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  } catch { return d; }
-}
+            if (!invoices || invoices.length === 0) {
+                container.innerHTML = '<div class="empty-state">No invoices generated yet.</div>';
+                return;
+            }
 
-function esc(s) {
-  if (!s) return '';
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
-}
+            // Calculate totals from invoice data
+            let totalBilled = 0;
+            let totalPaid = 0;
+            let totalOutstanding = 0;
 
-// Logout
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-  try {
-    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-   } catch {}
-  window.location.href = '/login';
-});
+            const invoiceCardsHTML = invoices.map(invoice => {
+                const billed = invoice.billed_amount || 0;
+                const paid = invoice.paid_amount || 0;
+                const outstanding = billed - paid;
 
-// ═══ MESSAGING PANEL FUNCTIONS ═══\nlet isConnected = false;\nlet currentMessages = [];\nlet adminClientIdFilter = null;
-let currentInvoices = [];
+                totalBilled += billed;
+                totalPaid += paid;
+                totalOutstanding += outstanding;
 
-function openMessagingPanel() {
-  if (document.getElementById('messagingPanel')) return;
-  
-  const body = document.body;
-  const panel = document.createElement('div');
-  panel.id = 'messagingPanel';
-  panel.className = 'messaging-panel';
-  
-  panel.innerHTML = `
-<div class="messaging-overlay" onclick="closeMessagingPanel()"></div>
-<div class="messaging-container">
-  <div class="messaging-header">
-    <h3><span>💬</span> Messages</h3>
-    <button class="messaging-close" onclick="closeMessagingPanel()">×</button>
-  </div>
-  <div class="messaging-body" id="messageBody">
-    <div class="loading-state"><div class="loading-spin"></div><span>Loading...</span></div>
-  </div>
-  <div class="messaging-input-area">
-    <input type="text" class="messaging-input" id="messageInput" placeholder="Type your message..."/>
-    <button class="messaging-send-btn" onclick="sendMessage()">Send</button>
-  </div>
-</div>
-`;
-  
-  body.appendChild(panel);
-  setTimeout(() => panel.classList.add('open'), 10);
+                return `
+                    <div class="invoice-card">
+                        <p class="invoice-label">${escapeHtml(invoice.name)}</p>
+                        <p class="project-value">$${billed.toLocaleString()}</p>
+                    </div>
+                `;
+            }).join('');
 
-  // Enter key to send (attached once per panel open)
-  document.getElementById('messageInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  });
+            container.innerHTML = `
+                ${invoiceCardsHTML}
+                <div class="invoice-grid">
+                    <div class="invoice-card">
+                        <p class="invoice-label">Total Billed</p>
+                        <p class="invoice-value">$${totalBilled.toLocaleString()}</p>
+                    </div>
+                    <div class="invoice-card">
+                        <p class="invoice-label">Amount Paid</p>
+                        <p class="invoice-value" style="color: var(--accent-green);">$${totalPaid.toLocaleString()}</p>
+                    </div>
+                    <div class="invoice-card">
+                        <p class="invoice-label">Outstanding</p>
+                        <p class="invoice-value" style="color: #EF4444;">$${totalOutstanding.toLocaleString()}</p>
+                    </div>
+                </div>
+            `;
+        }
 
-  refreshMessages();
-}
+        // Utility functions
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
 
-function closeMessagingPanel() {
-  const panel = document.getElementById('messagingPanel');
-  if (panel) {
-    panel.classList.remove('open');
-    setTimeout(() => panel.remove(), 400);
-  }
-}
+        function formatDate(dateStr) {
+            if (!dateStr) return 'N/A';
+            return new Date(dateStr).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
 
-async function refreshMessages() {
-  const messageBody = document.getElementById('messageBody');
-  messageBody.innerHTML = '<div class="loading-state"><div class="loading-spin"></div><span>Loading...</span></div>';
-  
-  try {
-    const url = adminClientIdFilter 
-      ? `/api/messages?client_id=${adminClientIdFilter}`
-      : '/api/messages';
-    
-    const res = await fetch(url, { credentials: 'include' });
-    const data = await res.json();
-    
-    if (!data.success) {
-      messageBody.innerHTML = '<div class="empty-state"><p> Failed to load messages. </p></div>';
-      return;
-    }
-    
-    currentMessages = data.messages || [];
-    
-    if (adminClientIdFilter) {
-      const clientName = currentMessages.length > 0 ? currentMessages[0].client_name : `Client #${adminClientIdFilter}`;
-      messageBody.innerHTML = `
-        <div class="empty-state"><p>Viewing: ${esc(clientName)}</p></div>
-`;
-    }
-    
-    renderMessages();
-    
-  } catch (err) {
-    messageBody.innerHTML = '<div class="empty-state"><p>Error loading messages.</p></div>';
-  }
-}
-
-function renderMessages() {
-  const messageBody = document.getElementById('messageBody');
-  
-  if (currentMessages.length === 0) {
-    messageBody.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">💬</div>
-        <p>No messages yet. Start the conversation!</p>
-      </div>`;
-    return;
-  }
-  
-  const threadHtml = currentMessages.map(msg => {
-    const isSent = msg.sender === currentUser.name;
-    const timeAgo = getTimeAgo(new Date(msg.created_at));
-    
-    return `
-      <div class="message-bubble ${isSent ? 'sent' : 'received'}">
-        ${!isSent ? `<div class="message-sender">${esc(msg.sender)}</div>` : ''}
-        <div>${esc(msg.message)}</div>
-        <div class="message-meta">${timeAgo}</div>
-      </div>`;
-  }).join('');
-  
-  const containerClass = adminClientIdFilter ? '' : 'message-thread';
-  messageBody.innerHTML = `
-    <div class="${containerClass}">
-      ${threadHtml}
-    </div>`;
-  
-  // Auto-scroll to bottom
-  setTimeout(() => {
-    messageBody.scrollTop = messageBody.scrollHeight;
-  }, 50);
-}
-
-function sendMessage() {
-  const input = document.getElementById('messageInput');
-  const text = input.value.trim();
-  
-  if (!text) return;
-  
-  const sendBtn = document.querySelector('.messaging-send-btn');
-  sendBtn.disabled = true;
-  sendBtn.innerHTML = '<span class="loading-spin-sm" style="width:14px;height:14px;border-width:2px;"></span>';
-  
-  fetch('/api/messages', {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      message: text,
-      client_id: adminClientIdFilter || undefined
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      input.value = '';
-      sendBtn.disabled = false;
-      sendBtn.innerHTML = 'Send';
-      refreshMessages();
-      showToast('Message sent!', '✓', 3000);
-      setTimeout(() => addMyMessage(text), 500);
-    } else {
-      showToast('Failed to send: ' + data.message || 'Error', '⚠', 4000);
-      sendBtn.disabled = false;
-      sendBtn.innerHTML = 'Send';
-    }
-  })
-  .catch(err => {
-    showToast('Error sending message', '⚠', 4000);
-    sendBtn.disabled = false;
-    sendBtn.innerHTML = 'Send';
-  });
-}
-
-function addMyMessage(text) {
-  const messageBody = document.getElementById('messageBody');
-  const thread = messageBody.querySelector('.message-thread, .empty-state + div');
-  
-  if (thread) {
-    const timeAgo = getTimeAgo(new Date());
-    const bubbleHtml = `
-      <div class="message-bubble sent">
-        <div>${esc(text)}</div>
-        <div class="message-meta">${timeAgo}</div>
-      </div>`;
-    
-    // Remove existing empty state if any
-    const emptyState = thread.querySelector('.empty-state');
-    if (emptyState) emptyState.remove();
-    
-    thread.insertAdjacentHTML('beforeend', bubbleHtml);
-    thread.scrollTop = thread.scrollHeight;
-  }
-}
-
-function getTimeAgo(date) {
-  const now = new Date();
-  const then = new Date(date);
-  const diffMs = now - then;
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-  
-  if (diffMins < 1) return '\u2003Just now';
-  if (diffMins < 60) return ` ${diffMins}m ago`;
-  if (diffHours < 24) return ` ${diffHours}h ago`;
-  return ` ${diffDays}d ago`;
-}
-
-
-// Auto-refresh every 30 seconds (Bug 5 spec fix)
-setInterval(() => {
-   if (document.getElementById('messagingPanel') && document.getElementById('messagingPanel').classList.contains('open')) {
-       refreshMessages();
-   }
-}, 30000);
-
-init();
-
-let currentInvoicesData = [];\n\nfunction calculateInvoiceSummary(invoices) {\n  // Calculate total billed, paid, outstanding from invoices array\n  const summary = invoices.reduce((acc, inv) => {\n    const amount = parseFloat(inv.amount) || 0;\n    acc.total += amount;\n    if (inv.status === 'paid') {\n      acc.paid += amount;\n     } else if (inv.status && inv.status !== 'paid' && inv.status !== null && inv.status !== 'draft') {\n      acc.outstanding += amount;\n     }\n    return acc;\n   }, { total: 0, paid: 0, outstanding: 0 });\n   \n  return summary;\n}\n\nfunction openInvoicePanel(invoiceData) {\n  if (document.getElementById('invoicePanel')) return;\n  \n  // Use passed-in invoice data or fetch from currentInvoicesData\n  const invoices = invoiceData && Array.isArray(invoiceData.invoices) ? invoiceData.invoices : currentInvoicesData;\n  const summary = calculateInvoiceSummary(invoices);\n  \n  const body = document.body;\n  const panel = document.createElement('div');\n  panel.id = 'invoicePanel';\n  panel.className = 'invoice-panel';\n  \n    // Build invoice list HTML with real API data and add summary\n  const invoicesHTML = invoices.map(inv => \\n`   <div class="invoice-card">\\n` +\n     `   <div class="invoice-meta-line"><span>${esc(inv.period || inv.created_at)}</span>`+ \n       `<span class="invoice-date">${new Date(inv.due_date || inv.created_at).toLocaleDateString()}</span></div>`+ \n     `   <div class="invoice-period">Status: <span class="invoice-status-badge invoice-status-${(inv.status || 'unknown').toLowerCase()}">${(inv.status || 'Unknown').toUpperCase()}</span></div>` +\n     `   <div style="margin-top:8px;display:flex;justify-content:space-between;">`+ \n       `<span>Amount:</span><span class="invoice-amount">$${(parseFloat(inv.amount) || 0).toLocaleString()}</span></div>` +\n     `   </div>` \n   ).join('');\n\n    // Add invoice summary (total billed, paid, outstanding)\n  const summariesHTML = `\n      <div class="invoice-summary-bar">\n        <div style="font-size:0.75rem;color:var(--text-secondary);margin-bottom:12px;text-align:center;">Billing Summary</div>\n        <div style="display:flex;gap:16px;align-items:center;justify-content:space-around;background:linear-gradient(135deg,rgba(59,130,246,0.1),rgba(139,92,246,0.1));border-radius:14px;padding:16px;border:1px solid rgba(59,130,246,0.3);">\n          <div style="text-align:center;">\n            <div style="font-size:0.85rem;color:var(--text-dim);margin-bottom:4px;">Total Billed</div>\n            <div style="color:#6EE7B7;font-weight:700;font-size:1.1rem">$${(summary.total || 0).toLocaleString()}</div>\n          </div>\n          <div style="height:32px;width:1px;background:rgba(59,130,246,0.3);"></div>\n          <div style="text-align:center;">\n            <div style="font-size:0.85rem;color:var(--text-dim);margin-bottom:4px;">Paid</div>\n            <div style="color:#10B981;font-weight:700;font-size:1.1rem">$${(summary.paid || 0).toLocaleString()}</div>\n          </div>\n          <div style="height:32px;width:1px;background:rgba(59,130,246,0.3);"></div>\n          <div style="text-align:center;">\n            <div style="font-size:0.85rem;color:var(--text-dim);margin-bottom:4px;">Outstanding</div>\n            <div style="color:#FCD34D;font-weight:700;font-size:1.1rem">$${(summary.outstanding || 0).toLocaleString()}</div>\n          </div>\n        </div>\n      </div>`;\n\n    // Insert summary before invoice list, or show empty state if no invoices\n  const bodyEl = document.querySelector('.invoice-body');\n  if (bodyEl && currentInvoicesData.length === 0 && (!invoices || invoices.length === 0)) {\n    panel.innerHTML = `<div class="invoice-overlay" onclick="closeInvoicePanel()"></div><div class="invoice-container"><div class="invoice-header"><h3>💳 Billing History</h3><button class="invoice-close" onclick="closeInvoicePanel()">×</button></div><div class="invoice-body"><div class="empty-invoice-state"><span class="empty-icon">🧾</span><p>No invoices yet.</p></div></div>`;\n   } else {\n    bodyEl.innerHTML = summariesHTML + invoice;
-    
-  panel.innerHTML = `<div class="invoice-overlay" onclick="closeInvoicePanel()"></div>\n<div class="invoice-container">\n  <div class="invoice-header"><h3>💳 Billing History</h3><button class="invoice-close" onclick="closeInvoicePanel()">×</button></div>\n<div class="invoice-body">${bodyEl.innerHTML}</div>\n</div>`;\n  \n  body.appendChild(panel);\n  setTimeout(() => panel.classList.add('open'), 10);\n}\n\n// Fetch invoices on init and store for invoice panel\nasync function fetchAndStoreInvoices() {\n  try {\n    const invRes = await fetch('/api/invoices?limit=50', { credentials: 'include' });\n    if (invRes.ok) {\n      const data = await invRes.json();\n      if (data.success && data.invoices) {\n        currentInvoicesData = data.invoices.filter(inv => ['paid', 'pending', 'overdue'].includes(inv.status));\n       }\n     }\n   } catch(e) { console.warn('Could not fetch invoices:', e); }\n}\n\nfunction closeInvoicePanel() {\n  const panel = document.getElementById('invoicePanel');\n  if (panel) {panel.classList.remove('open');setTimeout(() => panel.remove(), 400);} \n}\n\nwindow.openInvoicePanel = openInvoicePanel;\nwindow.closeInvoicePanel = closeInvoicePanel;\n
-window.closeInvoicePanel = closeInvoicePanel;
-</script>
+        // Initialize
+        checkAuth().then(() => {
+            fetchDashboardData();
+        });
+    </script>
 </body>
 </html>
