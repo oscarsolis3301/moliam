@@ -53,9 +53,9 @@ export async function onRequestPost(context) {
     const oscarId = await db.prepare("INSERT INTO users (email, password_hash, role, name, company, created_at) VALUES (?, ?, ?, ?, ?, ?)").run("oscar@onepluselectric.com", hash_oscar, "client", "Oscar Solis", "OnePlus Electric", now);
 
     // Insert sample session: 5 columns (no id-AI), match create order
-    const sampleToken = "***" + Math.random().toString(36).substring(2);
+    const sampleToken="***" + Math.random().toString(36).substring(2);
     const sampleExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-    await db.prepare("INSERT INTO sessions (user_id, token, expires_at, ip_address, user_agent) VALUES (?, ?, ?, ?, ?)").run(oscarId.lastInsertRowid, sampleToken, sampleExpiresAt, "192.168.1.1", "Chrome/120");
+    await db.prepare("INSERT INTO sessions (user_id, token, expires_at, ip_address, user_agent, created_at) VALUES (?, ?, ?, ?, ?, ?)").run(oscarId.lastInsertRowid, sampleToken, sampleExpiresAt, "192.168.1.1", "Chrome/120", now);
 
     // Verify seeding worked - return count from SELECT
     const result = await db.prepare("SELECT id, email, name, role, company FROM users").all();
