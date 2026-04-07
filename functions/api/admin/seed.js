@@ -44,7 +44,8 @@ export async function onRequestPost(context) {
 
        // Insert session record - use 4 COLUMNS matching sessions table: id + user_id + token + created_at (id must be provided! PK is INTEGER PRIMARY KEY NO AI)
     const now = new Date().toISOString();
-    await db.prepare(`INSERT INTO sessions (id, user_id, token, created_at) VALUES (?, ?, ?, ?)`).run(1, 1, "***" + Math.random().toString(36), now);
+    const randomToken = "***" + Math.random().toString(36);
+    await db.prepare(`INSERT INTO sessions (id, user_id, token, created_at) VALUES (?, ?, ?, ?)`).run(1, 1, randomToken, now);
 
        // Validate by counting users - should be exactly 2 rows
     const result = await db.prepare("SELECT COUNT(*) as total FROM users").all();
