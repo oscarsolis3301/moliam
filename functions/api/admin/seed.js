@@ -27,32 +27,35 @@ export async function onRequestPost(context) {
   }
 
   try {
-    // Create users table if not exists
+    // Drop and recreate users table to ensure consistent schema
+      await db.prepare(`DROP TABLE IF EXISTS users`).run();
+      
+      // Create users table with consistent lowercase column names (D1 is case-sensitive)
     await db.prepare(`
-      CREATE TABLE IF NOT EXISTS users (
+      CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email TEXT UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
         role TEXT DEFAULT 'user',
         name TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
-      )
-    `).run();
+       )
+     `).run();
 
     const saltedPassword1 = await hashPassword("Moliam2026!");
     const saltedPassword2 = await hashPassword("OnePlus2026!");
 
     // Insert admin user (ignore if exists)
     await db.prepare(`
-      INSERT INTO users (email, password_hash, role, name)
-      VALUES (?, ?, ?) ON CONFLICT(email) DO NOTHING
-    `).run("admin@moliam.com", saltedPassword1, "Administrator");
+      INSERT INTO users (email, password_hash, name, role)
+      VALUES (?, ?, ?, ?) ON CONFLICT(email) DO NOTHING
+      `).run("admin@moliam.com", saltedPassword1, "Administrator", "admin");
 
-    // Insert Oscar One Plus Electric user (ignore if exists)
+     // Insert Oscar One Plus Electric user (ignore if exists)
     await db.prepare(`
-      INSERT INTO users (email, password_hash, role, name)
-      VALUES (?, ?, ?) ON CONFLICT(email) DO NOTHING
-    `).run("oscar@onepluselectric.com", saltedPassword2, "Oscar Johnson");
+      INSERT INTO users (email, password_hash, name, role)
+      VALUES (?, ?, ?, ?) ON CONFLICT(email) DO NOTHING
+      `).run("oscar@onepluselectric.com", saltedPassword2, "Oscar Johnson", "user");
 
     return new Response(JSON.stringify({ 
       success: true, 
