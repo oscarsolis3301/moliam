@@ -29,28 +29,36 @@ export async function onRequestPost(context) {
        // Create users table - exact schema from production (no email unique, simpler)
     await db.prepare("CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT, password_hash TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'client', company TEXT, phone TEXT, avatar_url TEXT, is_active INTEGER DEFAULT 1, created_at TEXT DEFAULT CURRENT_TIMESTAMP, last_login TEXT)").run();
 
-      // Create sessions table - production schema (4 columns: id, user_id, token, created_at)
+    // Create sessions table - production schema uses 3 columns after id: user_id, token, created_at
     await db.prepare("CREATE TABLE sessions(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token TEXT NOT NULL UNIQUE, created_at TEXT DEFAULT CURRENT_TIMESTAMP)").run();
 
-    const adminHash = await hashPassword("Moliam2026!");
+const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
 
-       // Insert admin user - match all columns exactly (id auto-incremented)
+    // Insert admin user - match all columns exactly (id auto-incremented)
  await db.prepare(`INSERT INTO users(name, email, password_hash, role, company) VALUES(:name, :email, :password, :role, :company)`).bind({ name: "Admin", email: "admin@moliam.com", password: adminHash, role: "superadmin", company: "Moliam" }).run();
-
-       // Insert oscar user - same pattern (id auto-incremented)
+    
+    // Insert oscar user - same pattern (id auto-incremented)
 await db.prepare(`INSERT INTO users(name, email, password_hash, role, company) VALUES(:name, :email, :password, :role, :company)`).bind({ name: "Oscar", email: "oscar@onepluselectric.com", password: oscarHash, role: "client", company: "OnePlus Electric" }).run();
 
 // Get actual user IDs from inserted users
   const allUsers = await db.prepare("SELECT id, email FROM users ORDER BY role DESC").all();
 const adminUser = allUsers.results.find(u => u.email === "admin@moliam.com");
 
-        // Insert test session with production schema (created_at uses datetime('now'))
-   if (adminUser) await db.prepare(`INSERT INTO sessions(user_id, token, created_at) VALUES(?, ?, datetime('now'))`).bind(adminUser.id, "test-session-1").run();
+         // Insert test session: use named params with 3 placeholder columns (skip id - it's auto)
+   if (adminUser) await db.prepare(`INSERT INTO sessions(user_id, token, created_at) VALUES(:user_id, :token, :created_at)`).bind({ 
+       user_id: adminUser.id,
+       token: "test-session-1",
+       created_at: 'datetime("now")'
+   }).run();
 
-                       // Insert oscar's session - same 3-column pattern as login.js
+                        // Insert oscar's session - same named param pattern
    const oscarUser = allUsers.results.find(u => u.email === "oscar@onepluselectric.com");
-   if (oscarUser) await db.prepare(`INSERT INTO sessions(user_id, token, created_at) VALUES(?, ?, datetime('now'))`).bind(oscarUser.id, "test-session-2").run();
+   if (oscarUser) await db.prepare(`INSERT INTO sessions(user_id, token, created_at) VALUES(:user_id, :token, :created_at)`).bind({ 
+       user_id: oscarUser.id,
+       token: "test-session-2",
+       created_at: 'datetime("now")'
+   }).run();
 
     return new Response(JSON.stringify({
       success: true,
