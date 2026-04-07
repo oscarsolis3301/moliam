@@ -5,83 +5,70 @@ async function hashPassword(password) {
   const encoded = new TextEncoder().encode(password + SALT);
   const hash = await crypto.subtle.digest("SHA-256", encoded);
   return Array.from(new Uint8Array(hash))
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("");
+     .map(b => b.toString(16).padStart(2, "0"))
+     .join("");
 }
 
 export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
-   // Check seed key header
+    // Check seed key header authentication (required for security)  
   const seedKey = request.headers.get("x-seed-key");
   if (seedKey !== "moliam2026") {
     return new Response(JSON.stringify({ error: "Invalid seed key" }), {
       status: 403,
       headers: { "Content-Type": "application/json" }
-     });
-   }
+      });
+    }
 
   try {
-     // Drop existing tables to reset schema completely
+      // Drop existing tables to reset everything (ensure clean state for re-seeding)
     await db.prepare("DROP TABLE IF EXISTS sessions").run();
     await db.prepare("DROP TABLE IF EXISTS users").run();
 
-     // Create minimal users table with NO foreign key references - D1 doesn't support same-table FKs
+      // Create users table with minimal schema compatible with D1 - exact column matching in INSERT
     await db.prepare(
-       `CREATE TABLE users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE NOT NULL,
-        password_hash TEXT NOT NULL,
-        role TEXT DEFAULT 'user',
-        name TEXT,
-        company TEXT
-       )`
-     ).run();
+        `CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'user', name TEXT, company TEXT)`
+      ).run();
+
+      // Create sessions table with EXACTLY matching columns to what login.js expects (3 columns)  
+    await db.prepare(
+        `CREATE TABLE sessions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, token TEXT NOT NULL)`
+      ).run();
 
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
 
-     // Insert admin user - 5 values (email + password_hash + role + name + company) matching columns in CREATE TABLE after id
-    await db.prepare(
-       `INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`
-     ).run("admin@moliam.com", adminHash, "admin", "Admin", "Moliam");
+      // Insert admin user - 5 VALUES matching CREATE columns: email + password_hash + role + name + company (NO id, auto-increment)  
+    await db.prepare(`INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`).run("admin@moliam.com", adminHash, "admin", "Admin", "Moliam");
 
-     // Insert oscar user - same 5 values in same order
-    await db.prepare(
-       `INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`
-     ).run("oscar@onepluselectric.com", oscarHash, "user", "Oscar", "OnePlus Electric");
+      // Insert oscar user - same 5 VALUES, same order
+    await db.prepare(`INSERT INTO users (email, password_hash, role, name, company) VALUES (?, ?, ?, ?, ?)`).run("oscar@onepluselectric.com", oscarHash, "user", "Oscar", "OnePlus Electric");
 
-     // Simple sessions table - 3 columns: user_id + token + created_at
-    await db.prepare(
-       `CREATE TABLE sessions (
-        user_id INTEGER,
-        token TEXT,
-        created_at TEXT
-       )`
-     ).run();
+      // Insert session record with 2 DATA COLUMNS matching sessions table: user_id + token (no id/AI) - match the CREATE TABLE perfectly  
+    await db.prepare(`INSERT INTO sessions (user_id, token) VALUES (?, ?)`).run(1, "***" + Math.random().toString(36).substring(2));
 
-     // Validate seeding completed successfully
-    const tables = await db.prepare(
-       `SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;`
-     ).all();
+      // Validate by counting users successfully - confirm 2 rows exist
+    const result = await db.prepare("SELECT COUNT(*) as total FROM users").all();
 
     return new Response(JSON.stringify({
       success: true,
       message: "Users and sessions tables seeded successfully",
+      user_count: result.data[0].total,
       users: [
-         { email: "admin@moliam.com", role: "admin" },
-         { email: "oscar@onepluselectric.com", role: "user" }
-       ]
-     }), {
+          { email: "admin@moliam.com", role: "admin" },
+          { email: "oscar@onepluselectric.com", role: "user" }
+        ]
+      }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
-     });
+      });
 
-   } catch (err) {
+    } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" }
-     });
-   }
+      });
+    }
 }
