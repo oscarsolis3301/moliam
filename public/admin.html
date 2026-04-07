@@ -60,8 +60,8 @@ a.view-btn:hover{background:rgba(59,130,246,0.2);transform:translateY(-1px);}
 
 .section-title{font-size:13px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);margin-bottom:12px;font-weight:600;}
 
-/* MOBILE */
-@media(max-width:768px){container{margin:48px auto;padding:0 16px;}h1{font-size:24px;}.stats-bar{grid-template-columns:1fr;gap:12px;}nav{padding:0 16px;}table{display:block;overflow-x:auto;}th,td{padding:12px;font-size:13px;}a.view-btn{margin-bottom:8px;display:inline-block;margin-right:0;}load-more-wrapper{width:100%;}}
+/* MOBILE - CARD STACK LAYOUT */
+@media(max-width:768px){container{margin:48px auto;padding:0 16px;}h1{font-size:24px;}stats-bar{grid-template-columns:1fr;gap:12px;}nav{padding:0 16px;}.stats-card{text-align:center;padding:16px;border-radius:12px;background:linear-gradient(135deg,rgba(59,130,246,0.05),rgba(139,92,246,0.05));border:1px solid var(--border-room);}table{display:none;}/* Hide table on mobile */.client-card-stack{display:grid;gap:12px;}.client-card{background:var(--bg-room);border:1px solid var(--border-room);border-radius:12px;padding:16px;animation:slideIn 0.3s ease-out;}@keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.client-header{display:grid;gap:4px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border-room);}.client-name-lg{font-size:15px;font-weight:600;color:var(--text-primary);}.client-email-lg{font-size:13px;color:var(--text-secondary);}.status-badge-lg{display:inline-block;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:600;margin-top:6px;}.client-actions-grid{display:grid;gap:8px;}a.client-btn{display:block;padding:10px;border-radius:6px;text-align:center;text-decoration:none;font-size:12px;transition:all 0.2s;}a.client-btn:first-child{background:rgba(59,130,246,0.1);color:var(--accent-blue);border:1px solid rgba(59,130,246,0.3);}.a.client-btn:last-child{background:rgba(139,92,246,0.1);color:var(--accent-purple);border:1px solid rgba(139,92,246,0.3);}client-projects-mobile{display:block;margin-top:12px;padding-top:12px;border-top:1px dashed var(--border-room);font-size:12px;color:var(--text-secondary);}}
 </style>
 
 <script>
@@ -126,38 +126,72 @@ async function renderAdminDashboard() {
   const mrr = projects.reduce((sum, p) => sum + (parseFloat(p.monthly_rate) || 0), 0);
   document.getElementById('mrr').textContent = '$' + mrr.toLocaleString();
   
-  // Render clients table
-  if (clients && clients.length > 0) {
-    let html = '<table><thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+// Render clients - desktop table vs mobile card stack
+if (clients && clients.length > 0) {
+    // Desktop: table layout
+    const isMobile = window.innerWidth <= 768;
     
-    for (let c of clients) {
-      const statusClass = c.status === 'active' ? 'status-active' : 'status-inactive';
-      const clientName = c.name || 'Untitled Client';
+    if (!isMobile) {
+      let html = '<table><thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
       
-      html += '<tr>' +
-        '<td class="client-name">' + clientName + '</td>' +
-        `<td class="client-email">${c.email}</td>` +
-        '<td><span class="' + statusClass + '">' + (c.status === 'active' ? 'Active' : 'Inactive') + '</span></td>' +
-        '<td>';
-      
-      // Show projects as dropdown/expandable section if any
-      const userProjects = projects.filter(p => p.client_id == c.id);
-      if (userProjects.length > 0) {
-        html += '<div class="client-projects">' + 
-                 '<span style="color:var(--text-primary);font-size:12px;">+ ' + userProjects.length + ' project(s)</span></div>';
+      for (let c of clients) {
+        const statusClass = c.status === 'active' ? 'status-active' : 'status-inactive';
+        const clientName = c.name || 'Untitled Client';
+        
+        html += '<tr>' +
+           '<td class="client-name">' + clientName + '</td>' +
+          `<td class="client-email">${c.email}</td>` +
+          '<td><span class="' + statusClass + '">' + (c.status === 'active' ? 'Active' : 'Inactive') + '</span></td>' +
+          '<td>';
+        
+        // Show projects count if any
+        const userProjects = projects.filter(p => p.client_id == c.id);
+        if (userProjects.length > 0) {
+          html += '<div class="client-projects">' + 
+                    '<span style="color:var(--text-primary);font-size:12px;">+ ' + userProjects.length + ' project(s)</span></div>';
+        }
+        
+        // View as client button (redirect to dashboard with impersonate param)
+        html += `<a href="/dashboard.html?impersonate=${c.id}" class="view-btn">View as Client</a>`;
+        html += `<a href="mailto:${c.email}" class="view-btn" style="background:rgba(139,92,246,0.1);color:var(--accent-purple);border-color:rgba(139,92,246,0.3)">✉️ Email</a>`;
+        html += '</td></tr>';
       }
       
-      // View as client button (redirect to dashboard with impersonate param)
-      html += `<a href="/dashboard.html?impersonate=${c.id}" class="view-btn">View as Client</a>`;
-      html += '<a href="mailto:' + c.email + '" class="view-btn" style="background:rgba(139,92,246,0.1);color:var(--accent-purple);border-color:rgba(139,92,246,0.3)">✉️ Email</a>';
-      html += '</td></tr>';
-    }
-    
-    html += '</tbody></table>';
-  } else {
+      html += '</tbody></table>';
+     } else {
+       // Mobile: card stack layout
+      let html = '<div class="client-card-stack">';
+      
+      for (let c of clients) {
+        const statusClass = c.status === 'active' ? 'status-active' : 'status-inactive';
+        const clientName = c.name || 'Untitled Client';
+        
+        html += '<div class="client-card">' +
+          '<div class="client-header">' +
+             '<div class="client-name-lg">' + clientName + '</div>' +
+            `<div class="client-email-lg">${c.email}</div>` +
+            `<span class="${statusClass} status-badge-lg">${c.status === 'active' ? 'Active' : 'Inactive'}</span>` +
+          '</div>' +
+          '<div class="client-actions-grid">' +
+            `<a href="/dashboard.html?impersonate=${c.id}" class="client-btn">👁 View as ${clientName.split()[0]}</a>` +
+            `<a href="mailto:${c.email}" class="client-btn">✉️ Email Client</a>` +
+          '</div>';
+          
+          // Show projects mobile
+        const userProjects = projects.filter(p => p.client_id == c.id);
+        if (userProjects.length > 0) {
+          html += `<div class="client-projects-mobile">+ ${userProjects.length} project(s)</div>`;
+         }
+         
+        html += '</div>';
+       }
+       
+      html += '</div>';
+     }
+   } else {
     html = '<div class="empty-state"><p>No clients found.</p></div>';
-  }
-  
+   }
+   
   document.getElementById('clients-table-wrapper').innerHTML = html;
 }
 
