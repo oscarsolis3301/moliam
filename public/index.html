@@ -264,6 +264,37 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   text-align: center;
   padding: 120px 24px 80px;
 }
+
+/* Mobile hero optimization - reduce excessive vertical padding */
+@media (max-width: 480px) {
+  #hero {
+    padding: 72px 16px 48px;
+  }
+  #hero h1 {
+    font-size: clamp(32px, 5vw, 56px);
+    line-height: 1.1;
+  }
+  #hero .tagline {
+    font-size: clamp(15px, 2.5vw, 18px);
+    padding: 0 8px;
+  }
+}
+
+/* Staggered fade-in delays for visual hierarchy */
+#hero .badge { animation-delay: 0ms; }
+#hero h1 { animation-delay: 100ms; }
+#hero .tagline { animation-delay: 200ms; }
+#hero .contact-section { animation-delay: 300ms; }
+
+@keyframes floatCard {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.service-card {
+  animation: floatCard 4s ease-in-out infinite;
+}
+.service-card:nth-child(odd) { animation-delay: 0.5s; }
 #hero .badge {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 6px 16px; border-radius: 100px;
@@ -310,10 +341,30 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   color: white; font-size: 15px; font-weight: 600;
   transition: all var(--transition-smooth);
   box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+  position: relative; overflow: hidden;
 }
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4), inset 0 0 20px rgba(255,255,255,0.1);
+}
+
+/* Glass-shine effect on buttons */
+@keyframes glassShine {
+  0%, 100% { box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3), inset 0 0 0 transparency; }
+  50% { box-shadow: 0 8px 30px rgba(59, 130, 246, 0.5), inset 0 0 25px rgba(255,255,255,0.08); }
+}
+.btn-primary { animation: glassShine 3s ease-in-out infinite; }
+
+/* Secondary button mobile polish */
+@media (max-width: 480px) {
+  #hero .btn-primary {
+    padding: 12px 24px; font-size: 14px;
+    animation: none; /* Save battery, reduce complexity on small screens */
+   }
+   .btn-secondary {
+    min-height: 48px; /* Touch target size */
+    flex: 1 1 auto;
+   }
 }
 .btn-secondary {
   display: inline-flex; align-items: center; gap: 8px;
