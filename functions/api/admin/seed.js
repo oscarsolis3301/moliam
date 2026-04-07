@@ -38,8 +38,8 @@ export async function onRequestPost(context) {
        // Insert oscar user - no id, it's auto-incremented (5 columns, 5 values)
     await db.prepare(`INSERT INTO users(email, password_hash, role, name, company) VALUES('oscar@onepluselectric.com', '${oscarHash}', 'client', 'Oscar', 'OnePlus Electric')`).run();
 
-      // Create sessions table - correct 5-column schema
-    await db.prepare("CREATE TABLE sessions(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, expires_at TEXT NOT NULL, ip_address TEXT, user_agent TEXT, FOREIGN KEY(user_id) REFERENCES users(id))").run();
+// Create sessions table - exact schema from login.js INSERT (6 columns: id auto-increment + 5 data cols)
+await db.prepare("CREATE TABLE sessions(id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, expires_at TEXT NOT NULL, ip_address TEXT, user_agent TEXT)").run();
 
     return new Response(JSON.stringify({
       success: true,
