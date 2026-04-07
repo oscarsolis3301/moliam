@@ -93,10 +93,10 @@ await db.prepare("DROP TABLE IF EXISTS `sessions`").run();
 
       // Create sessions table matching login.js schema (user_id, token, created_at)
     await db
-        .prepare(
-          "CREATE TABLE sessions(user_id INTEGER NOT NULL REFERENCES users(id), token TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP)",
-        )
-        .run();
+         .prepare(
+           "CREATE TABLE IF NOT EXISTS sessions(user_id INTEGER NOT NULL REFERENCES users(id), token TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP, expires_at TEXT)"
+         )
+         .run();
 
      // Insert test sessions for both users - 3 params matching table schema (user_id, token, created_at)
     await db

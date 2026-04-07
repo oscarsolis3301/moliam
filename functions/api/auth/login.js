@@ -25,8 +25,8 @@ export default {
 const encoded = new TextEncoder().encode(password + "_moliam_salt_2026");
 const hash = await crypto.subtle.digest("SHA-256", encoded);
 const passwordHash = Array.from(new Uint8Array(hash))
-  .map((b) => b.toString(16).padStart(2, "0"))
-  .join("");
+   .map((b) => b.toString(16).padStart(2, "0"))
+   .join("");
 
 // Find user in D1 database (env.MOLIAM_DB)
       const users = env.MOLIAM_DB.prepare(`
@@ -66,8 +66,8 @@ const passwordHash = Array.from(new Uint8Array(hash))
 const tokenArray = new Uint8Array(32);
 crypto.getRandomValues(tokenArray);
 const tokenHex = Array.from(new Uint8Array(tokenArray))
-   .map((b) => b.toString(16).padStart(2, "0"))
-   .join("");
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 
      // Store session in sessions table - user_id is FK to users(id), no session id PK needed
       await env.MOLIAM_DB.prepare(`
