@@ -89,13 +89,23 @@ export async function onRequestOptions() {
 
 // ── Shared helpers ──
 
+/**
+ * requireAdmin - Validates admin session and returns authenticated user
+ * @param {object} request - Cloudflare Pages Request object
+ * @param {object} env - Cloudflare Pages environment binding (MOLIAM_DB)
+ * @returns {Promise<Response|object>} Session object for admins, Response for errors
+ */
 async function requireAdmin(request, env) {
-  const token = getSessionToken(request);
-  if (!token) return jsonResp(401, { error: true, message: "Not authenticated." }, request);
+  const cookies = request.headers.get("Cookie") || "";
+  const match = cookies.match(/moliam_session=([a-f0-9]+)/);
+  const token = match ? match[1] : null;
+
+  if (!token) return jsonResp(401, { error: "Not authenticated." }, request);
+  
   const db = env.MOLIAM_DB;
   const session = await db.prepare(
-    "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND u.is_active = 1 AND s.expires_at > datetime('now')"
-  ).bind(token).first();
+     "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND u.is_active = 1 AND s.expires_at > datetime('now')"
+    ).bind(token).first();
   if (!session) return jsonResp(401, { error: true, message: "Session invalid." }, request);
   if (session.role !== "admin" && session.role !== "superadmin") return jsonResp(403, { error: true, message: "Admin only." }, request);
   return session;

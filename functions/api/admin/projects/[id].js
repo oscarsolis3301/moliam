@@ -4,16 +4,27 @@
  */
 
 export async function onRequestPatch(context) {
-  const { request, env, params } = context;
-  const user = await requireAdmin(request, env);
-  if (user instanceof Response) return user;
+  const cookies = request.headers.get("Cookie") || "";
+  const match = cookies.match(/moliam_session=([a-f0-9]+)/);
+  const token = match ? match[1] : null;
 
-  const projectId = parseInt(params.id);
-  if (!projectId) {
-    return jsonResp(400, { error: true, message: "Invalid project ID." }, request);
-  }
+  if (!token) return jsonResp(401, { error: "Not authenticated." }, request);
 
   const db = env.MOLIAM_DB;
+  const session = await db.prepare(
+      "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND u.is_active = 1"
+    ).bind(token).first();
+
+  if (!session) return jsonResp(401, { error: "Not authenticated." }, request);
+  if (session.role !== "admin" && session.role !== "superadmin") return jsonResp(403, { error: "Admin access required." }, request);
+
+  const projectId = parseInt(params.id);
+
+  if (!projectId) {
+    return jsonResp(400, { error: "Invalid project ID." }, request);
+  }
+
+  const authedSession = session;
 
   let data;
   try { data = await request.json(); } catch {
