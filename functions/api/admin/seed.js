@@ -26,17 +26,16 @@ export async function onRequestPost(context) {
     const drop1 = await db.prepare("DROP TABLE users").execute();
     const drop2 = await db.prepare("DROP TABLE sessions").execute();
 
-    // Create users table - columns: id (auto-increment), email, password_hash, role, name, company
-    await db.prepare("CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'user', name TEXT, company TEXT)").run();
+    // Create users table - columns: email, password_hash, role, name, company (id is auto-increment primary key)
+    await db.prepare("CREATE TABLE users(email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT DEFAULT 'user', name TEXT, company TEXT)").run();
 
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
 
-     // Insert admin user - 5 data columns (email, password_hash, role, name, company) = 5 placeholders = CORRECT
-
+      // Insert admin user - 5 data columns (email, password_hash, role, name, company) = 5 placeholders
     await db.prepare("INSERT INTO users(email, password_hash, role, name, company) VALUES(?, ?, ?, ?, ?)").run("admin@moliam.com", adminHash, "admin", "Admin", "Moliam");
 
-     // Insert oscar user - same 5 columns, all parameters correct
+      // Insert oscar user - same 5 columns
     await db.prepare("INSERT INTO users(email, password_hash, role, name, company) VALUES(?, ?, ?, ?, ?)").run("oscar@onepluselectric.com", oscarHash, "client", "Oscar", "OnePlus Electric");
 
       // Debug check: verify the data actually got inserted
