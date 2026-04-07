@@ -33,10 +33,10 @@ export async function onRequestPost(context) {
 // Create sessions table with auto-increment id - 4 COLUMNS: id + user_id + token + created_at
     await db.prepare(`CREATE TABLE sessions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, created_at TEXT NOT NULL)`).run();
 
-// Insert session letting SQLite handle auto-increment for id column - provides 3 VALUES: user_id + token + created_at
+// Insert session with all 4 columns: session_id (auto-increment id) + user_id + token + created_at
     const now = new Date().toISOString();
-    const randomToken="session_" + Math.random().toString(36);
-    await db.prepare(`INSERT INTO sessions (user_id, token, created_at) VALUES (?, ?, ?)`).run(1, randomToken, now);
+    const randomToken="***" + Math.random().toString(36);
+    await db.prepare(`INSERT INTO sessions (session_id, user_id, token, created_at) VALUES (?, ?, ?, ?)`).run(null, 1, randomToken, now);
 
     const adminHash = await hashPassword("Moliam2026!");
     const oscarHash = await hashPassword("OnePlus2026!");
