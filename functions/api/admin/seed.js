@@ -52,7 +52,7 @@ export async function onRequestPost(context) {
     // Insert a session - columns: id(AI),user_id,token,expires_at,ip_address,user_agent = 6 cols, insert 5 values (no id)
     const sampleToken="***" + Math.random().toString(36).substring(2);
     const sampleExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-    await db.prepare("INSERT INTO sessions (user_id, token, expires_at, ip_address, user_agent) VALUES (?, ?, ?, ?, ?)").run(2, sampleToken, sampleExpiresAt, "192.168.1.1", "Mozilla/5.0");
+    await db.prepare("INSERT INTO sessions (user_id, token, expires_at, ip_address, user_agent) VALUES (?, ?, ?, ?, ?)").run(2, sampleToken, sampleExpiresAt, "192.168.1.1", "Chrome/120");
 
 
    // Verify seeding worked - return count from SELECT
