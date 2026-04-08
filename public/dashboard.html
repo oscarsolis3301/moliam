@@ -225,10 +225,15 @@ h1{font-size:28px;font-weight:600}
 .alert.info { background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #93C5FD; }
 
 /* Empty state styling */
-.empty-state { padding: 48px; text-align: center; color: var(--text-secondary); background: var(--bg-room); border-radius: 12px; border: 1px dashed var(--border-room); animation: fadeInUp 0.5s ease-out; }
+.empty-state { padding: 48px; text-align: center; color: var(--text-secondary); background: var(--bg-room); border-radius: 12px; border: 1px dashed var(--border-box); animation: fadeInUp 0.5s ease-out; }
 
-/* Card hover effects for project list */
-.project-card { border: 1px solid var(--border-room); border-radius: 12px; padding: 20px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+/* Next actions container - replaces inline styles in body */
+.next-actions { margin-top: 8px; display: flex; flex-direction: column; gap: 16px; }
+.next-actions-flex { display: flex; justify-content: space-between; align-items: center; }
+.next-actions-wr { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
+
+/* Skeleton active */
+.skeleton-active { display: grid !important; }
 
 </style>
 </head>
@@ -266,17 +271,8 @@ h1{font-size:28px;font-weight:600}
     </div>
 </div>
 
- <div class="section" style="margin-top:8px;display:flex;flex-direction:column;gap:16px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-   <h2>Next Actions</h2>
-   <button class="btn-refresh" onclick="window.location.reload()"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>Refresh Data</button>
-    </div>
-    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;">
-   <a class="btn" href="/">Book a Call</a>
-   <a class="btn secondary" onclick="window.showInvoices()">View Invoice</a>
-   <a class="btn secondary" href="#contact">Message Us</a>
-    </div>
- </div>
+ <div class="section next-actions"><div class="next-actions-flex"><h2>Next Actions</h2><button class="btn-refresh" onclick="window.location.reload()" aria-label="Refresh dashboard data from server">
+       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>Refresh Data</button></div><div class="next-actions-wr"><a class="btn" href="/">Book a Call</a><a class="btn secondary" onclick="window.showInvoices()">View Invoice</a><a class="btn secondary" href="#contact">Message Us</a></div></div>
 
 <!-- Loading Skeleton (hidden when data loaded) -->
 <div class="stats-grid" id="skeleton-stats" style="display:none;">

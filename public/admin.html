@@ -902,9 +902,10 @@ body {
       <h2 id="admin-actions-title">Quick Actions</h2>
     </header>
     <div class="action-list">
-      <button type="button" class="btn btn-primary btn-sm action-reset">Reset All Metrics</button>
-      <button type="button" class="btn btn-secondary btn-sm action-export">Export Data CSV</button>
-      <button type="button" class="btn btn-secondary btn-sm action-refresh">Refresh Dashboard</button>
+ <!-- Accessibility improvements: Added aria-label to all inline buttons -->
+     <button type="button" class="btn btn-primary btn-sm action-reset" aria-label="Reset all metrics for testing purposes">Reset All Metrics</button>
+       <button type="button" class="btn btn-secondary btn-sm action-export" aria-label="Export client data to CSV file">Export Data CSV</button>
+       <button type="button" class="btn btn-secondary btn-sm action-refresh" aria-label="Refresh dashboard data from server">Refresh Dashboard</button>
     </div>
   </section>
 
@@ -917,10 +918,11 @@ body {
       </header>
       <div class="modal-body">
         <p id="modal-message-text" style="color: var(--text-secondary); margin-bottom: 24px;">Are you sure? This action cannot be undone.</p>
-        <div class="modal-actions" style="display: flex; gap: 12px;">
-          <button id="modal-confirm-btn" type="button" class="btn btn-secondary">Cancel</button>
-          <button id="modal-yes-btn" type="button" class="btn btn-danger">Confirm Action</button>
-        </div>
+          <!-- Accessibility: Added aria-labels to modal action buttons -->
+         <div class="modal-actions" style="display: flex; gap: 12px;">
+           <button id="modal-confirm-btn" type="button" class="btn btn-secondary" aria-label="Cancel and close this dialog">Cancel</button>
+           <button id="modal-yes-btn" type="button" class="btn btn-danger" aria-label="Confirm and execute the selected action">Confirm Action</button>
+         </div>
       </div>
     </article>
   </div>
