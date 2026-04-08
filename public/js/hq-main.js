@@ -1,3 +1,4 @@
+  const COLORS = {
   bgDeep:'#0B0E14', bgBuilding:'#111827', bgRoom:'#1F2937', borderRoom:'#374151',
   blue:'#3B82F6', purple:'#8B5CF6', green:'#10B981', amber:'#F59E0B',
   red:'#EF4444', cyan:'#06B6D4', textPri:'#F9FAFB', textSec:'#9CA3AF', textDim:'#6B7280'
@@ -28,6 +29,20 @@ let orbs = [];
 let popover = {visible:false, type:null, id:null};
 let lastTime = 0;
 let hudTimer = 0;
+
+// ═══════════════════════════════════════
+// SECTION: Memory Management / Cleanup Functions
+// ═══════════════════════════════════════
+let rafId = null; // Track requestAnimationFrame ID
+
+function cleanup() {
+  if (rafId) {
+    cancelAnimationFrame(rafId);
+    rafId = null;
+  }
+}
+
+window.addEventListener('beforeunload', cleanup);
 
 // ═══════════════════════════════════════
 // SECTION: Layout Calculator
@@ -1001,8 +1016,6 @@ function resize() {
    }
 }
 
-// Mobile/Touch handling - adds tap support for small screens
-const isMobile = () => window.innerWidth <= 768;
 
 window.addEventListener('resize', resize);
 resize();
@@ -1035,28 +1048,4 @@ function frame(ts) {
   hudTimer += dt;
   if(hudTimer >= 1) { updateHUD(); hudTimer = 0; }
 
-  // Draw
-  ctx.clearRect(0, 0, layout.W, layout.H);
-
-  // Building bg
-  ctx.fillStyle = COLORS.bgBuilding;
-  roundRect(ctx, layout.margin-4, layout.margin-4, layout.W-layout.margin*2+8, layout.H-layout.margin*2+8, 6);
-  ctx.fill();
-
-  // Corridor
-  drawCorridor();
-
-  // Rooms
-  rooms.forEach(drawRoom);
-
-  // Bots
-  bots.forEach(drawBot);
-
-  // Orbs
-  drawOrbs();
-
-  requestAnimationFrame(frame);
-}
-
-requestAnimationFrame(frame);
-updateHUD();
+  // Draw\n  ctx.clearRect(0, 0, layout.W, layout.H);\n\n  // Building bg\n  ctx.fillStyle = COLORS.bgBuilding;\n  roundRect(ctx, layout.margin-4, layout.margin-4, layout.W-layout.margin*2+8, layout.H-layout.margin*2+8, 6);\n  ctx.fill();\n\n  // Corridor\n  drawCorridor();\n\n  // Rooms\n  rooms.forEach(drawRoom);\n\n  // Bots\n  bots.forEach(drawBot);\n\n  // Orbs\n  drawOrbs();\n}\n\n// Start the animation frame loop and track ID\nrafId = requestAnimationFrame(frame);\nupdateHUD();

@@ -773,7 +773,7 @@ function mainLoop(t) {
 requestAnimationFrame(mainLoop);
 
 /* ─── SPARKLINE UPDATER ─── */
-setInterval(() => {
+let sparklineIntervalId = setInterval(() => {
   sparkData.push(sparkData[sparkData.length - 1]);
   sparkData.shift();
   sparkData[sparkData.length - 1] = 0;
@@ -784,15 +784,16 @@ drawSparkline();
 /* ─── UPDATE BOT STATUS PANEL ─── */
 function updateBotStatusPanel() {
   const container = $('#bot-status-list');
+  if (!container) return; // Guard against missing element
   container.innerHTML = bots.map(b => `
-    <div class="bot-status-row">
-      <div class="bot-status-dot" style="background:${b.color};box-shadow:0 0 6px ${b.color}"></div>
-      <span class="bot-status-name" style="color:${b.color}">${b.name}</span>
-      <span class="bot-status-task">${b.task || 'Idle'}</span>
-    </div>
-  `).join('');
+     <div class="bot-status-row">
+       <div class="bot-status-dot" style="background:${b.color};box-shadow:0 0 6px ${b.color}"></div>
+       <span class="bot-status-name" style="color:${b.color}">${b.name}</span>
+       <span class="bot-status-task">${b.task || 'Idle'}</span>
+     </div>
+   `).join('');
 }
-setInterval(updateBotStatusPanel, 1000);
+let statusPanelIntervalId = setInterval(updateBotStatusPanel, 1000);
 updateBotStatusPanel();
 
 /* ─── CONTACT FORM ─── */
@@ -918,15 +919,24 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
     });
   });
 
-  	// Close on Escape key
+	// Close on Escape key
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && menu.classList.contains('open')) {
       btn.classList.remove('open');
       menu.classList.remove('open');
       document.body.style.overflow = '';
-     }\n   });
+    }
+  });
 })();
 
 window.__moliam_cleanup_main__ = function() {
   if (typeof updateUptimeIntervalId !== 'undefined' && updateUptimeIntervalId) {
-    clearInterval(updateUptimeIntervalId);\n  }\n};
+    clearInterval(updateUptimeIntervalId);
+  }
+  if (typeof sparklineIntervalId !== 'undefined' && sparklineIntervalId) {
+    clearInterval(sparklineIntervalId);
+  }
+  if (typeof statusPanelIntervalId !== 'undefined' && statusPanelIntervalId) {
+    clearInterval(statusPanelIntervalId);
+  }
+};
