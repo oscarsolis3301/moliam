@@ -31,9 +31,12 @@ async function authenticate(request, db) {
   const match = cookies.match(/moliam_session=([a-f0-9]+)/);
   if (!match) return null;
 
-  const tokenFromUrl=url.searchParams.get('token') || '';
+  const url = new URL(request.url);
+  const tokenFromUrl = url.searchParams.get("token") || "";
   const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-  const token = tokenFromUrl || (cookieMatch ? cookieMatch[1] : null);
+  const token = cookieMatch ? cookieMatch[1] : tokenFromUrl;
+
+  if (!token) return null;
 
   try {
     // Validate session with parameterized query - uses ? binding and bind(token) to prevent SQL injection

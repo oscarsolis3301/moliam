@@ -16,12 +16,16 @@ export async function onRequestGet(context) {
       return jsonResp(503, { success: false, error: true, message: 'Database service unavailable.' }, request);
     }
 
-     // --- Parse token from query params or cookies ---
+      // --- Parse token from query params or cookies ---
     const url = new URL(request.url);
-    const tokenFromUrl=url.searchParams.get('token') || '';
+    const tokenFromUrl = url.searchParams.get("token") || '';
     const cookies = request.headers.get('Cookie') || '';
     const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-    const token = tokenFromUrl || (cookieMatch ? cookieMatch[1] : null);
+    const token = cookieMatch ? cookieMatch[1] : tokenFromUrl;
+
+    if (!token) {
+      return jsonResp(401, { success: false, error: true, message: 'Authentication token required.' }, request);
+    }
 
     if (!token) {
       return jsonResp(401, { success: false, error: true, message: 'Authentication token required.' }, request);

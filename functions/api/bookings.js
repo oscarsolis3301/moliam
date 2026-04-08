@@ -7,6 +7,11 @@
 
 import { jsonResp, balanceSuccessError, sanitizeText } from './api-helpers.js';
 
+/**
+ * Handle GET requests to Booking API - list all appointments or get single by ID
+ * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
+ * @returns {Response} JSON response: 200 OK (list/data), 400 Bad Request (invalid format), 500 Server Error (DB failure)
+ */
 export async function onRequestGet(context) {
   try {
     const { request, env } = context;
@@ -73,7 +78,6 @@ return jsonResp(400, { error: true, success: false, message: 'Invalid request. U
    }
 }
 
-// CORS preflight for all booking endpoints
 /**
  * Handle CORS preflight requests for Booking API
  * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
@@ -83,7 +87,7 @@ export async function onRequestOptions(context) {
   return new Response(null, {
     status: 204,
     headers: {
-      "Access-Control-Allow-Origin": "https://moliam.pages.dev",
+        "Access-Control-Allow-Origin": "https://moliam.pages.dev",
       "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type"
     }
