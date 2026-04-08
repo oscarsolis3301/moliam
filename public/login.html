@@ -417,8 +417,6 @@ body.form-focused .logo p {
      <p>Client Portal - Secure access to your account dashboard and management tools</p>
 
 <!-- Added Task 4 accessibility: language attributes + proper document title + heading hierarchy -->
-<meta name="language" content="en"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"/>
 <link rel="canonical" href="https://moliam.com/login.html"/>
 
 <!-- Accessibility Enhancements per Task 4 -->
@@ -540,10 +538,10 @@ form.addEventListener('submit', async (e) => {
   alertEl.style.display = 'none';
   alertEl.textContent = '';
 
-  const email = document.getElementById('email').value.trim();
+const email = document.getElementById('email').value.trim();
   const password = passwordInput.value;
 
-  if (!email || !password) {
+if (!email || !password) {
     showAlert('Please fill in all fields.', 'error');
     if (!email) document.getElementById('email').focus();
     else passwordInput.focus();
