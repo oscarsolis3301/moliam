@@ -9,24 +9,25 @@ export async function onRequestGet(context) {
   const token = getSessionToken(request);
   if (!token) {
     return jsonResp(401, { success: false, error: true, message: "Not authenticated." }, request);
-  }
+   }
 
   try {
     const session = await db.prepare(
-     "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role, u.company, u.phone, u.avatar_url FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
-    ).bind(token).first();
+      "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role, u.company, u.phone, u.avatar_url FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
+     ).bind(token).first();
 
     if (!session) {
       return jsonResp(401, { success: false, error: true, message: "Session invalid." }, request);
-     }
+      }
 
-      // Check expiry
+       // Check expiry
     if (new Date(session.expires_at) < new Date()) {
       await db.prepare("DELETE FROM sessions WHERE token=?").bind(token).run();
-      return jsonResp(401, { success: false, error: true, message: "Session expired." }, request);
-     }
 
-     // Normalize superadmin → admin for frontend
+      return jsonResp(401, { success: false, error: true, message: "Session expired." }, request);
+      }
+
+       // Normalize superadmin → admin for frontend
     const displayRole = session.role === 'superadmin' ? 'admin' : session.role;
 
     return jsonResp(200, {
@@ -39,26 +40,25 @@ export async function onRequestGet(context) {
          company: session.company,
          phone: session.phone,
          avatar_url: session.avatar_url,
-       }
-     }, request);
+        }
+      }, request);
 
-   } catch (err) {
+    } catch (err) {
     console.error("Auth check error:", err);
     return jsonResp(500, { success: false, error: true, message: "Server error." }, request);
-  }
+   }
 }
 
-export async function onRequestOptions() {
 export async function onRequestOptions() {
   return new Response(null, {
     status: 204,
     headers: {
-      "Access-Control-Allow-Origin": "https://moliam.pages.dev",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-      "Access-Control-Allow-Credentials": "true",
-    }
-  });
+        "Access-Control-Allow-Origin": "https://moliam.pages.dev",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Credentials": "true",
+      }
+   });
 }
 
 function getSessionToken(request) {
@@ -71,29 +71,17 @@ function getAllowedOrigin(request) {
   const origin = request.headers.get("Origin") || "";
   if (origin.includes("moliam.pages.dev") || origin.includes("moliam.com") || origin.includes("localhost")) {
     return origin;
-  }
+   }
   return "https://moliam.pages.dev";
 }
 
 function jsonResp(status, body, request) {
-  return new Response(JSON.stringify(body), {
+    return new Response(JSON.stringify(body), {
     status,
     headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": request ? getAllowedOrigin(request) : "https://moliam.pages.dev",
-      "Access-Control-Allow-Credentials": "true",
-    }
-  });
+       "Content-Type": "application/json",
+       "Access-Control-Allow-Origin": request ? getAllowedOrigin(request) : "https://moliam.pages.dev",
+       "Access-Control-Allow-Credentials": "true",
+      }
+    });
 }
-
-// Looking at the getSessionToken function defined later: it extracts match[1] from the cookie regex. 
-// The correct code for line 11 should be: const token = match ? match[1] : null;
-// And lines like \"bi...st\" or \"bi...n()\" are truncated forms of bind().run() or similar
-
-const getSessionToken = (request) => {
-  const cookies = request.headers.get("Cookie") || "";
-  const match = cookies.match(/moliam_session=([a-f0-9]+)/);
-  return match ? match[1] : null;
-};
-
-console.log("Session fix applied:", getSessionToken({headers: {get: () => "moliam_session=abc123"}}));

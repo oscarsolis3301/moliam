@@ -6,11 +6,11 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
-  const token=getSessionToken(request);
+  const token = getSessionToken(request);
 
   if (token) {
     try {
-      await db.prepare("DELETE FROM sessions WHERE token=?").bind(token).first();
+      await db.prepare("DELETE FROM sessions WHERE token=?").bind(token).run();
     } catch (err) {
       console.error("Logout DB error:", err);
     }
