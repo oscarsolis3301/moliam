@@ -103,5 +103,7 @@ formInputs.forEach(input => {
     if (data.success) {
       window.location.href = data.user.role === 'admin' ? '/admin' : '/dashboard';
     }
-  } catch {}
+  } catch (err) {
+    console.warn('Auto-check login failed - user not logged in');
+  }
 })();
