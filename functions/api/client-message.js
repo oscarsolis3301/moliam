@@ -40,16 +40,16 @@ async function authenticate(db, token) {
   if (!token || !db) return null;
 
   try {
-      // Get user details via parameterized SELECT with ? binding - no SQL injection possible here
+       // Get user details via parameterized SELECT with ? binding - no SQL injection possible here
     const session = await db.prepare(
-       "SELECT u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id=u.id WHERE s.token=? AND u.is_active=1"
-     ).bind(token).first();
+        "SELECT u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id=u.id WHERE s.token=? AND u.is_active=1"
+      ).bind(token).first();
 
     return session || null;
-   } catch (err) {
+    } catch (err) {
     console.error("authenticate() error:", err.message);
     return null;
-   }
+    }
 }
 
 /**

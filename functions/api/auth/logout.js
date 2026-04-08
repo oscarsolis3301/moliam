@@ -10,25 +10,25 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
-         // Get token from session cookie for deletion
+          // Get token from session cookie for deletion
   const cookies = request.headers.get('Cookie') || '';
   const match = cookies.match(/moliam_session=([a-f0-9]+)/);
-  const token = match ? match[1] : null;
+  const token=match ? match[1] : null;
 
   if (token) {
     try {
-      // Delete session from database using parameterized query with ? binding - no SQL injection
+       // Delete session from database using parameterized query with ? binding - no SQL injection
       await db.prepare('DELETE FROM sessions WHERE token=?').bind(token).run();
-      } catch (err) {
+       } catch (err) {
       console.error('Logout DB error:', err);
-      }
-  }
+       }
+   }
 
-         // Clear cookie by expiring it with HttpOnly attribute
+          // Clear cookie by expiring it with HttpOnly attribute
   const headers = new Headers({
-    "Set-Cookie": `moliam_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`,
-    "Content-Type": "application/json"
-  });
+     "Set-Cookie": `moliam_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`,
+     "Content-Type": "application/json"
+   });
 
   return jsonResp(200, { success: true }, headers);
 }

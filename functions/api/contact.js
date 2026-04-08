@@ -15,7 +15,7 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
-   // Parse request body with try/catch for malformed JSON
+  // Parse request body with try/catch for malformed JSON
   let data;
   try {
     data = await request.json();
@@ -36,33 +36,33 @@ export async function onRequestPost(context) {
   const company = sanitizeText(String(data.company || ""), 100);
   const message = sanitizeText(String(data.message || ""), 2000);
 
-   // --- Field Length Validation (after sanitization) ---
+     // --- Field Length Validation (after sanitization) ---
   const errors = [];
   if (name.length < 2) errors.push("Name must be at least 2 characters.");
   if (message.length < 10) errors.push("Message must be at least 10 characters long.");
 
   if (errors.length) return jsonResp(400, { success: false, error: true, message: errors.join(" ") }, undefined, request);
 
-   // --- Check D1 availability ---
+    // --- Check D1 availability ---
   if (!db) {
-    // D1 not bound — still send webhook and return success
+      // D1 not bound — still send webhook and return success
     await sendWebhook(env, { name, email, phone, company, message, service: data.service, score: 0, category: "cold", subId: 0 });
     return jsonResp(200, { success: true, message: "Thanks! We'll be in touch within 1 business day.", submissionId: 0 }, undefined, request);
   }
 
   try {
-     // --- Rate limiting (best effort) ---
-    try {
-      const rawIP = request.headers.get("CF-Connecting-IP") || "unknown";
-      const ipHash = await hashSHA256(rawIP);
-      const endpoint = "/api/contact";
+       // --- Rate limiting (best effort) ---
+     try {
+       const rawIP = request.headers.get("CF-Connecting-IP") || "unknown";
+       const ipHash = await hashSHA256(rawIP);
+       const endpoint = "/api/contact";
 
-        // Cleanup old rate limit rows (older than 1 hour before checking/inserting)
-      try {
-         await db.prepare(
-             "DELETE FROM rate_limits WHERE timestamp < datetime('now', '-1 hour')"
-         ).run();
-       } catch {}
+          // Cleanup old rate limit rows (older than 1 hour before checking/inserting)
+        try {
+           await db.prepare(
+                "DELETE FROM rate_limits WHERE timestamp < datetime('now', '-1 hour')"
+            ).run();
+          } catch {}
 
       const countResult = await db.prepare(
          "SELECT COUNT(*) as cnt FROM rate_limits WHERE ip = ? AND endpoint = ? AND timestamp > datetime('now', '-1 hour')"
@@ -248,3 +248,4 @@ async function hashSHA256(str) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
+
