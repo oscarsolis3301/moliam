@@ -114,8 +114,20 @@ export async function onRequestPost(context) {
   } catch (err) {
     console.error("Calendly webhook error:", err.message);
     // Graceful fallback — always return 200 so Calendly doesn't retry
-    return jsonResp(200, { received: true });
-  }
+return jsonResp(200, { received: true });
+   }
+}
+
+// CORS preflight handler for webhook endpoint
+export async function onRequestOptions() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Calendly-Webhook-Signature"
+      }
+    });
 }
 
 // --- HMAC-SHA256 signature verification (Web Crypto API) ---

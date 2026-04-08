@@ -261,17 +261,29 @@ async function sendBookingConfirmationEmail(context, prequal, calendarLink) {
           value: `<p>New booking from qualified lead.<br>Score: <b>${prequal.qualification_score}/100</b><br>Calendar link sent to client.</p>`}]});
 
     } catch (e) {
-    console.error("Email error:", e);
-   }
+console.error("Email error:", e);
+    }
+}
+
+// CORS preflight handler for all endpoints
+export async function onRequestOptions() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type"
+     }
+   });
 }
 
 /**
- * Retrieve lead email from submissions by ID for personalized emails  
- * Returns email address from submissions table or null if not found
- * @param {D1Database} db - Database binding to MOLIAM_DB
- * @param {number} submissionId - Submission ID to look up  
- * @returns {Promise<string|null>} Email or null if submission does not exist
- */
+* Retrieve lead email from submissions by ID for personalized emails   
+* Returns email address from submissions table or null if not found
+* @param {D1Database} db - Database binding to MOLIAM_DB
+* @param {number} submissionId - Submission ID to look up   
+* @returns {Promise<string|null>} Email or null if submission does not exist
+*/
 async function getSubEmail(db, submissionId) {
   if (!submissionId) return null;
   const sub = await db.prepare("SELECT email FROM submissions WHERE id = ?").bind(submissionId).first();
@@ -279,12 +291,12 @@ async function getSubEmail(db, submissionId) {
 }
 
 /**
- * Retrieve lead name from submissions by ID for personalized emails  
- * Returns client name or "Valued Client" default string if submission not found  
- * @param {D1Database} db - Database binding to MOLIAM_DB
- * @param {number} submissionId - Submission ID to look up 
- * @returns {Promise<string>} Name from submissions or default "Valued Client" fallback
- */
+* Retrieve lead name from submissions by ID for personalized emails   
+* Returns client name or "Valued Client" default string if submission not found   
+* @param {D1Database} db - Database binding to MOLIAM_DB
+* @param {number} submissionId - Submission ID to look up 
+* @returns {Promise<string>} Name from submissions or default "Valued Client" fallback
+*/
 async function getSubName(db, submissionId) {
   if (!submissionId) return "Valued Client";
   const sub = await db.prepare("SELECT name FROM submissions WHERE id = ?").bind(submissionId).first();
