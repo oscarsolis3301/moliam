@@ -1,5 +1,5 @@
 function drawError(x,y,w,h) {
-  // Error cone (exclamation mark)
+   // Error cone (exclamation mark)
   ctx.beginPath();
   ctx.moveTo(x+w/2, y+10);
   ctx.lineTo(x+w/2+10, y+28);
@@ -11,20 +11,20 @@ function drawError(x,y,w,h) {
     ctx.textAlign = 'center';
     ctx.fillText('!', x+w/2, y+25);
     ctx.globalAlpha = 1;
-  }
 
-  // Stack trace lines
+   // Stack trace lines
   ctx.save();
   ctx.beginPath();
   ctx.rect(x,y+30,w,h-46);
   ctx.clip();
-  for(let i=0;i<6;i++){
+  for(let i=0;i<6;i++) {
     const ly = y+34+((i*8+errorScrollY)%(h-46));
     ctx.fillStyle = 'rgba(239,68,68,0.2)';
     ctx.fillRect(x+4, ly, 10+(i*13%50), 1);
   }
   ctx.restore();
 }
+
 
 function drawRateLimit(x,y,w,h,room) {
   // Couch
@@ -434,20 +434,15 @@ function resize() {
           bot.y = room.seats[seatIdx].y;
           bot.targetX = bot.x;
           bot.targetY = bot.y;
-            }
-         }
-      });
-   }
+             }
+          }
+       });
+    }
 }
-
-// Mobile/Touch handling - adds tap support for small screens
-const isMobile = () => window.innerWidth <= 768;
-
-window.addEventListener('resize', resize);
 resize();
 initBots();
 
-// ═══════════════════════════════════════
+// ══════════════════════
 // SECTION: Main Loop
 // ═══════════════════════════════════════
 function frame(ts) {

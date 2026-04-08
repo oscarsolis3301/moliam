@@ -1,3 +1,8 @@
+:root {
+    --accent-blue: #3B82F6;
+    --text-dim: #6B7280;
+}
+
 /* Mobile HUD responsive styles */
 @media (max-width: 768px) {
   #hud { 
