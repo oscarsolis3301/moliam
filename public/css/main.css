@@ -129,3 +129,43 @@ html, body {
   max-width: 100vw;
   width: 100%;
 }
+
+/* ═══════════════════════ INLINED STYLE EXTRACTS ═══════════════════════ */
+/* Common text styles extracted from inline HTML */
+/* Common text styles extracted from inline HTML */
+.moliam-text-muted {
+  margin-bottom: 32px;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.moliam-text-small-center {
+  font-size: 12px;
+  color: var(--text-dim, #6B7280);
+  text-align: center;
+  margin-top: 16px;
+}
+
+/* Links */
+.moliam-link-accent {
+  color: var(--accent-blue, #3B82F6);
+  text-decoration: underline;
+}
+
+/* Utility classes for inline styles moved to CSS */
+.sr-absolute {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  display: none;
+}
+
+.btn-flex-inline {
+  display: inline-flex;
+}
+
+/* ═══════════════════════ END EXTRACTS ════════════════════════ */
