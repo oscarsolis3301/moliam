@@ -1,8 +1,9 @@
 
-
+const COLORS = {
   bgDeep:'#0B0E14', bgBuilding:'#111827', bgRoom:'#1F2937', borderRoom:'#374151',
   blue:'#3B82F6', purple:'#8B5CF6', green:'#10B981', amber:'#F59E0B',
   red:'#EF4444', cyan:'#06B6D4', textPri:'#F9FAFB', textSec:'#9CA3AF', textDim:'#6B7280'
+
 };
 
 const ROOM_DEFS = [
@@ -238,3 +239,55 @@ function processEvent(evt) {
       bot.state = 'active';
       bot.task = evt.payload.task_name || 'Unknown task';
       bot.dimmed = false;
+
+      bot.dimmed = false;
+      break;
+
+    case 'thinking':
+      bot.state = 'thinking';
+      break;
+
+    case 'message_send':
+      bot.state = 'messaging';
+      break;
+
+    case 'code_write':
+      bot.state = 'coding';
+      break;
+
+    case 'db_operation':
+      bot.state = 'database';
+      break;
+
+    case 'api_call':
+      bot.state = 'api';
+      break;
+
+    case 'error':
+      bot.state = 'error';
+      bot.dimmed = true;
+      break;
+
+    case 'rate_limit_start':
+      bot.state = 'ratelimited';
+      break;
+
+    case 'rate_limit_end':
+      bot.state = 'idle';
+      bot.rateLimitTimer = 0;
+      break;
+
+    case 'task_complete':
+      bot.state = 'completed';
+      break;
+
+    case 'idle':
+      bot.state = 'idle';
+      break;
+
+    default:
+      break;
+  }
+}
+function describeEvent(evt) { return evt.payload?.task_name || evt.payload?.message || evt.type; }
+
