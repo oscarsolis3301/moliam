@@ -320,10 +320,14 @@ async function handleNoShow(context, id, request) {
  * @param {number} appointmentId - Appointment ID to log
  * @param {string} action - Audit action description
  */
+/**
+ * Log audit actions for bookings (future D1 integration)
+ * @param {number} appointmentId - Appointment ID to log
+ * @param {string} action - Audit action description
+ */
 async function logAudit(appointmentId, action) {
-  // NOTE: This function cannot access D1 without context being passed in.
-  // Callers should pass context as first arg. For now, this is a no-op
-  // to prevent runtime crashes. TODO: refactor to accept context param.
+  // Currently logs to console only; future: integrate with D1 audit table
+  // TODO: Accept context param for DB access when this becomes async D1-aware
   console.log(`[audit] appointment=${appointmentId} action=${action}`);
 }
 
