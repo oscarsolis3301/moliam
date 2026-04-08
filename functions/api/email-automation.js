@@ -82,7 +82,7 @@ async function sendEmail(emailService, to, from, subject, htmlBody, env, templat
         if (!env || Object.keys(env).length === 0) {
             return jsonResp(200, { success: true, message: "Email queued (mocked)", template: template_name });}
 
-      const authKey = emailService === 'postmark' ? env.POSTMARK_API_KEY :
+const authKey = emailService === 'postmark' ? env.POSTMARK_API_KEY :
          emailService === 'mailersend' ? env.MAILERSEND_API_KEY :
          env.SENDGRID_API_KEY;
 
@@ -97,30 +97,46 @@ async function sendEmail(emailService, to, from, subject, htmlBody, env, templat
 
        if (!endpoint) return jsonResp(400, { success: false, error: "Invalid email service" });
 
-      const response = await fetch(endpoint, {
+const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
-              'Content-Type': 'application/json',
-            ...(emailService === 'postmark' ? { 'X-Postmark-Server-Token': authKey } : {}),
-            ...(emailService === 'sendgrid' ? { 'Authorization': `Bearer ${authKey}` } : {})
-            },
+               'Content-Type': 'application/json',
+             ...(emailService === 'postmark' ? { 'X-Postmark-Server-Token': authKey } : {}),
+             ...(emailService === 'sendgrid' ? { 'Authorization': `Bearer ${authKey}` } : {})
+             },
           body: JSON.stringify({
               From: from,
               To: to,
               Subject: subject,
               Html: renderTemplate(htmlBody, { name: getFirstName(to), lead_score: 75 })
-                  }),
+                   }),
           signal: AbortSignal.timeout(10000) // 10s timeout for email service
-            });
+             });
 
-        return jsonResp(200, { success: response.ok || response.status === 201, message: "Email sent" });} catch (err) {
+        return jsonResp(200, { success: response.ok || response.status === 201, message: "Email sent" }, request); } catch (err) {
          console.warn("Email send failed:", err.message);
-       return jsonResp(500, { success: false, error: "Email delivery failed", template: template_name });
-      }
+       return jsonResp(500, { success: false, error: "Email delivery failed", template: template_name }, request);
+       }
+     }
+
+/**
+* Cron-triggered Automation - Fires daily to send queued emails
+*/
+
+// CORS preflight handler for cron endpoints
+export async function onRequestOptions() {
+  return new Response(null, {
+    status: 204,
+      headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+       "Access-Control-Allow-Headers": "Content-Type"
+         }
+       });
 }
 
 /**
- * Cron-triggered Automation - Fires daily to send queued emails
+
  */
 export async function onCron(event) {
   const db = event.env.MOLIAM_DB;
