@@ -1,7 +1,9 @@
-    ctx.beginPath();
-    ctx.moveTo(x+w/2, y+10);
-    ctx.lineTo(x+w/2+10, y+28);
-    ctx.lineTo(x+w/2-10, y+28);
+function drawError(x,y,w,h) {
+  // Error cone (exclamation mark)
+  ctx.beginPath();
+  ctx.moveTo(x+w/2, y+10);
+  ctx.lineTo(x+w/2+10, y+28);
+  ctx.lineTo(x+w/2-10, y+28);
     ctx.closePath();
     ctx.fill();
     ctx.fillStyle = '#000';

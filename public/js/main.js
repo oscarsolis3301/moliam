@@ -140,9 +140,10 @@ function updateUptime() {
   const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
   const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
   const s = String(elapsed % 60).padStart(2, '0');
-  $('#uptime').textContent = `${h}:${m}:${s}`;
+  	$('#uptime').textContent = `${h}:${m}:${s}`;
 }
-setInterval(updateUptime, 1000);
+let updateUptimeIntervalId;
+updateUptimeIntervalId = setInterval(updateUptime, 1000);
 
 /* ─── ACTIVITY FEED ─── */
 const feedEl = $('#activity-feed');
@@ -810,20 +811,44 @@ form.addEventListener('submit', async (e) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
-    });
-    if (res.ok) {
+     });
+    
+    // Check for HTTP errors before parsing
+    if (!res.ok) {
+      const statusText = res.statusText || 'Unknown error';
+      console.error('Contact form submission failed:', res.status, statusText);
+      throw new Error(`HTTP ${res.status}: ${statusText}`);
+     }
+    
+    // Validate JSON response before parsing
+    const text = await res.text();
+    if (!text) {
+      console.error('Contact form received empty response');
+      throw new Error('Empty response from server');
+     }
+      
+    const parsed = JSON.parse(text);
+    if (parsed.success) {
       status.style.color = '#10B981';
       status.textContent = '✓ Message sent! We\'ll be in touch.';
       form.reset();
-    } else {
-      throw new Error('Failed');
-    }
-  } catch (err) {
+      console.log('Contact form submission successful');
+     } else {
+      console.error('Contact form backend error:', parsed.message || parsed);
+      throw new Error(parsed.message || 'Form submission failed');
+     }
+   } catch (err) {
+    console.error('Contact form client error:', err);
     status.style.color = '#EF4444';
     status.textContent = 'Something went wrong. Please try again.';
-  }
-  btn.disabled = false;
-  btn.textContent = 'Send Message';
+    // Log error for monitoring if we have a tracking endpoint
+    if (window.__MOLIUM_ERROR_TRACKER) {
+      window.__MOLIUM_ERROR_TRACKER({ type: 'contact-form', error: err.message, timestamp: Date.now() });
+     }
+   } finally {
+    btn.disabled = false;
+    btn.textContent = 'Send Message';
+   }
 });
 
 /* ─── INITIAL FEED ─── */
@@ -893,12 +918,15 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
     });
   });
 
-  // Close on Escape key
+  	// Close on Escape key
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && menu.classList.contains('open')) {
       btn.classList.remove('open');
       menu.classList.remove('open');
       document.body.style.overflow = '';
-    }
-  });
+     }\n   });
 })();
+
+window.__moliam_cleanup_main__ = function() {
+  if (typeof updateUptimeIntervalId !== 'undefined' && updateUptimeIntervalId) {
+    clearInterval(updateUptimeIntervalId);\n  }\n};

@@ -256,26 +256,50 @@
       screenResolution: window.screen.width + 'x' + window.screen.height
      };
 
-    fetch('/api/contact', {
+fetch('/api/contact', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
-     })
-       .then(function (res) { return res.json(); })
-       .then(function (data) {
-         if (data.success) {
-           showSuccess(data.message || 'Message sent! We\'ll be in touch soon.');
-          } else {
-           showError(data.message || 'Something went wrong. Please try again.');
+      })
+        .then(function (res) {
+          // Check HTTP status before parsing JSON
+          if (!res.ok) {
+            throw new Error(`HTTP error ${res.status}: ${res.statusText}`);
+            }
+          return res.text();
+          })
+        .then(function (text) {
+          // Validate response is not empty
+          if (!text || text.trim() === '') {
+            console.error('Contact form received empty response');
+            throw new Error('Empty response from server');
+            }
+          
+          // Parse JSON with error handling
+          let parsed;
+          try {
+            parsed = JSON.parse(text);
+            } catch (parseErr) {
+              console.error('Contact form invalid JSON response:', text.substring(0, 200));
+              throw new Error('Invalid server response format');
+              }
+          
+          if (parsed.success) {
+           showSuccess(data.message || 'Message sent! We\'ll be in touch.');
+            console.log('Contact form submission successful');
+           } else {
+            console.error('Contact form backend error:', parsed.message || parsed);
+           showError(parsed.message || data.message || 'Something went wrong. Please try again.');
            btn.disabled = false;
            btn.textContent = 'Submit →';
-          }
-        })
-       .catch(function () {
-         showError('Connection error. Please try again.');
+           }
+         })
+        .catch(function (err) {
+         console.error('Contact form submission error:', err);
+         showError(err.message || 'Connection error. Please try again.');
          btn.disabled = false;
          btn.textContent = 'Submit →';
-         });
+          });
      }
 
   function showSuccess(msg) {

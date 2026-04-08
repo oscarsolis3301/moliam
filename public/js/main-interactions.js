@@ -87,10 +87,11 @@
     const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
     const s = String(elapsed % 60).padStart(2, '0');
     $('#uptime').textContent = `${h}:${m}:${s}`;
-  }
-  setInterval(updateUptime, 1000);
+  	}
+  let updateUptimeIntervalId;
+  updateUptimeIntervalId = setInterval(updateUptime, 1000);
 
-  /* ─── ACTIVITY FEED LOGIC ─── */
+   /* ─── ACTIVITY FEED LOGIC ─── */
   const feedEl = $('#activity-feed');
   const feedItems = [];
 
@@ -224,3 +225,10 @@
 
   let totalTasks = 0;
   let totalErrors = 0;
+
+  window.__moliam_cleanup_main_interactions__ = function() {
+    if (typeof updateUptimeIntervalId !== 'undefined' && updateUptimeIntervalId) {
+      clearInterval(updateUptimeIntervalId);
+    }
+  };
+

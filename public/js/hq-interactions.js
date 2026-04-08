@@ -90,14 +90,15 @@ function drawSparkline() {
 
 /* ─── UPTIME ─── */
 const startTime = Date.now();
+let uptimeIntervalId = null;
 function updateUptime() {
   const elapsed = Math.floor((Date.now() - startTime) / 1000);
   const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
   const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
   const s = String(elapsed % 60).padStart(2, '0');
-  $('#uptime').textContent = `${h}:${m}:${s}`;
+   $('#uptime').textContent = `${h}:${m}:${s}`;
 }
-setInterval(updateUptime, 1000);
+uptimeIntervalId = setInterval(updateUptime, 1000);
 
 /* ─── ACTIVITY FEED ─── */
 const feedEl = $('#activity-feed');
@@ -613,7 +614,7 @@ function drawBot(bot, t) {
 }
 
 /* ─── HOVER DETECTION ─── */
-canvas.addEventListener('mousemove', (e) => {
+canvas.addEventListener('mousemove', function(e) {
   const rect = canvas.getBoundingClientRect();
   mouseX = e.clientX - rect.left;
   mouseY = e.clientY - rect.top;
@@ -625,33 +626,34 @@ canvas.addEventListener('mousemove', (e) => {
     if (dx * dx + dy * dy < (24) ** 2) {
       hoveredBot = bot;
       break;
+      }
     }
-  }
 
   const tooltip = $('#bot-tooltip');
   if (hoveredBot) {
     tooltip.classList.add('visible');
     tooltip.style.left = (e.clientX + 16) + 'px';
     tooltip.style.top = (e.clientY - 16) + 'px';
-    $('#tt-avatar').style.background = hoveredBot.color;
-    $('#tt-avatar').textContent = hoveredBot.initials;
-    $('#tt-name').textContent = hoveredBot.name;
-    $('#tt-role').textContent = hoveredBot.role;
-    $('#tt-task').textContent = hoveredBot.task || '—';
-    $('#tt-done').textContent = hoveredBot.tasksDone;
+      $('#tt-avatar').style.background = hoveredBot.color;
+      $('#tt-avatar').textContent = hoveredBot.initials;
+      $('#tt-name').textContent = hoveredBot.name;
+      $('#tt-role').textContent = hoveredBot.role;
+      $('#tt-task').textContent = hoveredBot.task || '—';
+      $('#tt-done').textContent = hoveredBot.tasksDone;
     const elapsed = Math.floor((Date.now() - startTime) / 1000);
     const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
     const s = String(elapsed % 60).padStart(2, '0');
-    $('#tt-uptime').textContent = `${m}:${s}`;
-  } else {
+      $('#tt-uptime').textContent = `${m}:${s}`;
+    } else {
     tooltip.classList.remove('visible');
-  }
+    }
 });
 
-canvas.addEventListener('mouseleave', () => {
+const _moliam_canvasMouseLeaveHandler = function() {
   hoveredBot = null;
   $('#bot-tooltip').classList.remove('visible');
-});
+};
+canvas.addEventListener('mouseleave', _moliam_canvasMouseLeaveHandler);
 
 /* ─── AMBIENT HQ PARTICLES ─── */
 let hqParticles = [];
@@ -753,27 +755,26 @@ function mainLoop(t) {
 requestAnimationFrame(mainLoop);
 
 /* ─── SPARKLINE UPDATER ─── */
-setInterval(() => {
-  sparkData.push(sparkData[sparkData.length - 1]);
-  sparkData.shift();
-  sparkData[sparkData.length - 1] = 0;
+let _moliam_sparkIntervalId = null;
+(function initSparkline() {
+  _moliam_sparkIntervalId = setInterval(() => {
+    sparkData.push(sparkData[sparkData.length - 1]);
+    sparkData.shift();
+    sparkData[sparkData.length - 1] = 0;
+    drawSparkline();
+  }, 5000);
   drawSparkline();
-}, 5000);
-drawSparkline();
+})();
+
+window.__moliam_sparkcleanup__ = function() { if (_moliam_sparkIntervalId) clearInterval(_moliam_sparkIntervalId); };
 
 /* ─── UPDATE BOT STATUS PANEL ─── */
-function updateBotStatusPanel() {
-  const container = $('#bot-status-list');
-  container.innerHTML = bots.map(b => `
-    <div class="bot-status-row">
-      <div class="bot-status-dot" style="background:${b.color};box-shadow:0 0 6px ${b.color}"></div>
-      <span class="bot-status-name" style="color:${b.color}">${b.name}</span>
-      <span class="bot-status-task">${b.task || 'Idle'}</span>
-    </div>
-  `).join('');
-}
-setInterval(updateBotStatusPanel, 1000);
-updateBotStatusPanel();
+let _moliam_statusPanelId = null;
+(function initBotStatusPanel() {
+  _moliam_statusPanelId = setInterval(updateBotStatusPanel, 1000);
+  updateBotStatusPanel();
+})();
+window.__moliam_statuscleanup__ = function() { if (_moliam_statusPanelId) clearInterval(_moliam_statusPanelId); };
 
 
 /* ─── INITIAL FEED ─── */
@@ -867,3 +868,16 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
     }
   });
 })();
+
+/* ─── CLEANUP REGISTRY & UNLOAD HANDLERS ───────────────── */
+
+// Cleanup function - store globally for access from other modules
+window.__moliamCleanup__ = window.__moliamCleanup__ || [];
+
+function __moliamRegisterCleanup__(fn) {
+  window.__moliamCleanup__.push(fn);
+}
+
+// Register all cleanup functions
+__moliamRegisterCleanup__(function() {
+   // Clear uptim
