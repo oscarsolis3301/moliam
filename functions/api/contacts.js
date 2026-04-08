@@ -325,9 +325,9 @@ export async function onRequestPut(context) {
           "SELECT id FROM contacts WHERE LOWER(email) = ? AND id != ?"
         ).bind(email, contactId).all();
 
-        if (duplicateCheck.results && duplicateCount > 0) {
+        if (duplicateCheck.results && duplicateCheck.results.length > 0) {
           return jsonResp(409, { success: false, message: `Email '${email}' already exists in another contact.` });
-        }
+}
       }
       partialFields.push(`email = ?`);
       bindValues.push(email);
@@ -383,21 +383,22 @@ ${cleanNotes}`
     // Bind contact ID last for the WHERE clause
     bindValues.push(contactId);
 
-             // SECURITY: partialFields only contains allowed field names from ALLOWED_FIELDS array validated above
-             // uses parameter binding (.bind(...bindValues)) for all user data
+    // SECURITY: partialFields only contains hardcoded field names from ALLOWED_FIELDS array validated above — no user input in the SQL
+              // uses parameter binding (.bind(...bindValues)) for all user data
     if (partialFields.length === 0) {
       return jsonResp(400, { success: false, message: "No valid fields to update." });
-      }
+       }
 
     const updateQuery = `UPDATE contacts SET ${partialFields.join(", ")}, updated_at = datetime('now') WHERE id = ?`;
     
-    const result = await db.prepare(updateQuery).bind(...bindValues).run();
+    try {
+      const result = await db.prepare(updateQuery).bind(...bindValues).run();
 
     if (result.success && result.rowsChanged > 0) {
-      // Fetch updated record to return
+       // Fetch updated record to return
       const updated = await db.prepare(
         `SELECT * FROM contacts WHERE id = ?`
-      ).bind(contactId).first();
+       ).bind(contactId).first();
 
       return jsonResp(200, { 
         success: true, 
@@ -415,14 +416,18 @@ ${cleanNotes}`
           notes: updated.notes, 
           created_at: updated.created_at, 
           updated_at: updated.updated_at 
-        }
-      });
-    }
+         }
+       });
+     }
 
     return jsonResp(404, { success: false, message: "Contact not found.", contactId });
 
-  } catch (err) {
-    return jsonResp(500, { success: false, message: err.message || "Database error" });
+    } catch (err) {
+      return jsonResp(500, { success: false, message: err.message || "Database error" });
+}
+
+   } catch (dbErr) {
+      return jsonResp(500, { success: false, message: dbErr.message || "Database error" });
   }
 }
 
@@ -526,29 +531,38 @@ export async function onRequestGetById(context) {
   }
 }
 
-function jsonResp(status, body) {
+/**
+ * Standard JSON response helper with CORS headers for contacts API
+ * @param {number} status - HTTP status code
+ * @param {object} body - Response body object
+ * @param {Request} [request] - Original request for extracting client origin (optional)
+ * @returns {Response} JSON response with proper headers
+ */
+function jsonResp(status, body, request) {
+  const origin = request ? new URL(request.url).hostname : "moliam.pages.dev";
   return new Response(JSON.stringify(body), {
     status,
-           headers: { 
-               "Content-Type": "application/json", 
-              "Access-Control-Allow-Origin": "https://moliam.pages.dev",
-              "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-              "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Auth-Token",
-             "X-Content-Type-Options": "nosniff",
-             "X-Frame-Options": "DENY",
-             "Cache-Control": "no-cache"
-           },
-         });
+    headers: { 
+            "Content-Type": "application/json", 
+           "Access-Control-Allow-Origin": `https://${origin}`,
+           "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+           "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Auth-Token",
+          "X-Content-Type-Options": "nosniff",
+          "X-Frame-Options": "DENY",
+          "Cache-Control": "no-cache"
+        },
+      });
 }
 
 // CORS preflight handler for all endpoints
-export async function onRequestOptions() {
+export async function onRequestOptions(request) {
+  const origin = request ? new URL(request.url).hostname : "moliam.pages.dev";
   return new Response(null, { 
       status: 204,
       headers: {
-           "Access-Control-Allow-Origin": "https://moliam.pages.dev",
-          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-           "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Auth-Token"
-         }
-     });
+            "Access-Control-Allow-Origin": `https://${origin}`,
+           "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Auth-Token"
+          }
+      });
 }

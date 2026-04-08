@@ -14,21 +14,21 @@ export async function onRequestGet(context) {
       return jsonResp(503, { success: false, error: true, message: "Database service unavailable." }, request);
     }
 
-     // --- Parse token from query params or cookies ---
+       // --- Parse token from query params or cookies ---
     const url = new URL(request.url);
-    const tokenParam = url.searchParams.get("token") || "";
+    const tokenFromQuery=url.searchParams.get("token") || "";
     const cookies = request.headers.get("Cookie") || "";
     const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-    const token = tokenParam || (cookieMatch ? cookieMatch[1] : null);
+    const token = tokenFromQuery || (cookieMatch ? cookieMatch[1] : null);
 
     if (!token) {
       return jsonResp(401, { success: false, error: true, message: "Authentication token required." }, request);
-    }
+     }
 
-      // --- Session validation with parameterized query ---
+       // --- Session validation with parameterized query ---
     const session = await db.prepare(
-         "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND u.is_active = 1 AND s.expires_at > datetime('now')"
-       ).bind(token).first();
+          "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1 AND s.expires_at > datetime('now')")
+        .bind(token).first();
 
     if (!session) {
       return jsonResp(401, { success: false, error: true, message: "Session invalid or expired." }, request);
