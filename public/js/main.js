@@ -945,4 +945,12 @@ window.__moliam_cleanup_main__ = function() {
   if (typeof statusPanelIntervalId !== 'undefined' && statusPanelIntervalId) {
     clearInterval(statusPanelIntervalId);
   }
+  // Clean up resize listener
+  if (typeof resizeHandler !== 'undefined') {
+    window.removeEventListener('resize', resizeHandler);
+   }
+  // Clean up media query listener  
+  if (typeof mediaQueryChangeHandler !== 'undefined' && typeof mediaQuery !== 'undefined') {
+    mediaQuery.removeEventListener('change', mediaQueryChangeHandler);
+   }
 };
