@@ -66,11 +66,23 @@ export async function onRequestGet(context) {
       }
     }
 
-    return jsonResp(400, { error: true, success: false, message: 'Invalid request. Use /list or /id endpoint.' }, request);
-  } catch (err) {
+return jsonResp(400, { error: true, success: false, message: 'Invalid request. Use /list or /id endpoint.' }, request);
+   } catch (err) {
        console.error('GET bookings error:', err);
        return jsonResp(500, { error: true, success: false, message: 'Database query failed.' }, request);
-  }
+   }
+}
+
+// CORS preflight for all booking endpoints
+export async function onRequestOptions() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type"
+    }
+  });
 }
 
 export async function onRequestPost(context) {
