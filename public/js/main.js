@@ -148,15 +148,17 @@ function updateUptime() {
   const elapsed = Math.floor((Date.now() - startTime) / 1000);
   const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
   const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
-  const s = String(elapsed % 60).padStart(2, '0');
-  	$('#uptime').textContent = `${h}:${m}:${s}`;
+  const s = String(Math.floor(elapsed % 60)).padStart(2, '0');
+   $('#uptime').textContent = `${h}:${m}:${s}`;
 }
 let updateUptimeIntervalId;
 updateUptimeIntervalId = setInterval(updateUptime, 1000);
 
-/* ─── ACTIVITY FEED ─── */
-const feedEl = $('#activity-feed');
-const feedItems = [];
+/*
+
+ACTIVITy FEED -- HQ CANVAS */
+
+
 
 function addFeedItem(msg, botColor) {
   const now = new Date();

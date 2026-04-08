@@ -8,7 +8,7 @@
         }
 
         init() {
-            console.log('[LeadCapture] Widget initialized');
+            ;
 
             // Auto-inject if not already present
             if (!document.getElementById('lead-capture-widget')) {
@@ -30,7 +30,7 @@
 
         insertIntoDOM(widget) {
             document.body.appendChild(widget);
-            console.log('[LeadCapture] Widget inserted into DOM');
+            ;
         }
 
         startPolling() {
@@ -40,7 +40,7 @@
                 tick++;
 
                 if (tick % 60 === 0) {
-                    console.log(`[LeadCapture] Pulse: ${tick}`);
+                    ;
                 }
 
                 this.checkForNewLeads();
@@ -49,7 +49,7 @@
             // Auto-cleanup every 15 minutes
             setTimeout(() => {
                 clearInterval(interval);
-                console.log('[LeadCapture] Widget auto-shutdown after 15min');
+                ;
             }, 15 * 60 * 1000);
         }
 
