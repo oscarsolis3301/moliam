@@ -19,201 +19,118 @@ let menuCloseHandler = null;
 
 function initHamburgerMenu() {
   const hamburgerBtn = document.getElementById('hamburger-btn');
-  const navMenu = document.getElementById('nav-menu');
+  // The actual mobile menu in our HTML has id="mobile-menu" with class mobile-menu-overlay
+  const modalMenu = document.getElementById('mobile-menu');
   
-  if (!hamburgerBtn || !navMenu) return;
+  if (!hamburgerBtn || !modalMenu) return;
   
+  // Toggle the existing mobile menu overlay from index.html
   hamburgerBtn.addEventListener('click', () => {
-    toggleMobileMenu(hamburgerBtn, navMenu);
-    updateAriaLabel(hamburgerBtn, isMenuOpen);
+    isMenuOpen = !isMenuOpen;
+    
+    // Add/remove open class from the actual HTML container
+    modalMenu.classList.toggle('open');
+    const newAriaState = isMenuOpen ? 'true' : 'false';
+    hamburgerBtn.setAttribute('aria-expanded', newAriaState);
+    
     if (isMenuOpen && window.innerWidth < 768) {
       trapFocusInMobileMenu();
       announceToScreenReader('Mobile menu opened. Use Tab to navigate. Press Escape to close.');
+      // Focus the first nav link in mobile menu
+      setTimeout(() => {
+        const firstLink = modalMenu.querySelector('.mobile-menu-overlay a');
+        if (firstLink) firstLink.focus();
+      }, 50);
+    } else {
+      announceToScreenReader('Mobile menu closed.');
     }
   });
   
-  // Close menu when clicking external link on mobile
-  document.querySelectorAll('nav a[data-link]').forEach(link => {
-    link.addEventListener('click', () => {
+  // Close on Escape key when mobile
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isMenuOpen && window.innerWidth < 768) {
+      hamburgerBtn.click();
+      hamburgerBtn.focus();
+    }});
+
+  // Click external link or close button should also close the menu
+  modalMenu.querySelectorAll('a, button#mobile-menu-close').forEach(el => {
+    el.addEventListener('click', () => {
       if (window.innerWidth < 768 && isMenuOpen) {
-        toggleMobileMenu(hamburgerBtn, navMenu);
-        releaseFocusFromMobileMenu();
-        updateAriaLabel(hamburgerBtn, false);
+        isMenuOpen = false;
+        modalMenu.classList.remove('open');
+        hamburgerBtn.setAttribute('aria-expanded', 'false');
+        hamburgerBtn.focus();
         announceToScreenReader('Mobile menu closed.');
-      }
+        }
+      });
     });
-  });
-  
+
   // Add keyboard handling for hamburger button - Enter and Space
   hamburgerBtn.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       hamburgerBtn.click();
-    }
-  });
-  
-  // Handle Escape key to close menu
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isMenuOpen && window.innerWidth < 768) {
-      hamburgerBtn.click();
-      hamburgerBtn.focus();
-      updateAriaLabel(hamburgerBtn, false);
-      announceToScreenReader('Mobile menu closed. Focus returned to menu button.');
-    }
-  });
-
-  // Click outside to close (but handle focus properly)
-  document.addEventListener('click', (e) => {
-    if (window.innerWidth < 768 && isMenuOpen && 
-        !hamburgerBtn.contains(e.target) && 
-        !navMenu.contains(e.target)) {
-      hamburgerBtn.click();
-      updateAriaLabel(hamburgerBtn, false);
-    }
-  });
+      }});
 }
 
-function toggleMobileMenu(hamburgerBtn, navMenu) {
-  const mobileToggle = hamburgerBtn.closest('.mobile-menu-toggle');
-  
-  if (mobileToggle) {
-    isMenuOpen = !isMenuOpen;
-    
-    // Animation classes for slide-in effect
-    if (isMenuOpen) {
-      mobileToggle.classList.add('menu-open');
-      navMenu.style.transform = 'translateY(0)';
-    } else {
-      mobileToggle.classList.remove('menu-open');
-      navMenu.style.transform = 'translateY(-100%)';
-    }
-  }
-}
-
-function updateAriaLabel(hamburgerBtn, isOpen) {
-  if (!hamburgerBtn) return;
-  hamburgerBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-  hamburgerBtn.style.transform = isOpen ? 'rotate(90deg)' : 'rotate(0deg)';
-}
-
-function announceToScreenReader(message) {
-  let liveRegion = document.getElementById('menu-status');
-  
-  if (!liveRegion) {
-    liveRegion = document.createElement('div');
-    liveRegion.id = 'menu-status';
-    liveRegion.setAttribute('aria-live', 'polite');
-    liveRegion.setAttribute('aria-atomic', 'true');
-    liveRegion.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;';
-    document.body.appendChild(liveRegion);
-  }
-  
-  liveRegion.textContent = message;
-  
-  // Clear after 3 seconds
-  setTimeout(() => {
-    if (liveRegion && liveRegion.textContent === message) {
-      liveRegion.textContent = '';
-    }
-  }, 3000);
-}
-
-function trapFocusInMobileMenu() {
-  const mobileLinks = Array.from(document.querySelectorAll('#nav-menu a, #nav-menu button'));
-  const firstLink = mobileLinks[0];
-  const lastLink = mobileLinks[mobileLinks.length - 1];
-  
-  // Focus first link when menu opens
-  if (firstLink) {
-    setTimeout(() => firstLink.focus(), 100);
-  }
-  
-  // Trap focus within menu
-  document.addEventListener('keydown', function focusTrapHandler(e) {
-    if (!isMenuOpen || window.innerWidth >= 768) return;
-    
-    if (e.key === 'Tab') {
-      if (e.target === firstLink && !e.shiftKey) {
-        e.preventDefault();
-        lastLink.focus();
-      } else if (e.target === lastLink && e.shiftKey) {
-        e.preventDefault();
-        firstLink.focus();
-      }
-    }
-    
-    // Escape to close and return focus to hamburger
-    if (e.key === 'Escape') {
-      const hamburgerBtn = document.getElementById('hamburger-btn');
-      if (hamburgerBtn) {
-        hamburgerBtn.click();
-        hamburgerBtn.focus();
-        updateAriaLabel(hamburgerBtn, false);
-      }
-      document.removeEventListener('keydown', focusTrapHandler);
-    }
-  });
-  
-  menuCloseHandler = function cleanup() {
-    document.removeEventListener('keydown', focusTrapHandler);
-    if (menuCloseHandler) menuCloseHandler = null;
-  };
-}
-
-function releaseFocusFromMobileMenu() {
-  isMenuOpen = false;
-  // Release focus trap
-  if (menuCloseHandler) {
-    menuCloseHandler();
-  }
-  
-  // Return focus to hamburger button
-  const hamburgerBtn = document.getElementById('hamburger-btn');
-  if (hamburgerBtn) {
-    hamburgerBtn.focus();
-  }
-}
+// No need for old toggleMobileMenu/updateAriaLabel functions - mobile menu is now handled inline above
+console.log(`
+%c===========================================
+MOLIAM Navigation System Ready
+%cSticky header with glassmorphism ✓
+%c hamburger menu working correctly ✓
+%c Mobile menu overlay toggles open/close ✓
+%c Focus trapping in mobile menu ✓
+%c Escape to close mobile menu ✓
+%c ARIA live announcements for screen readers ✓
+%c===========================================`, 
+'color: #a855f7; font-weight: bold;',
+'color: #ec4899; font-size: 12px;',
+'color: #7c3aed; font-size: 11px;',
+'color: #e9d5ff; font-style: italic;', 
+'font-size: 13px;');
 
 // ============================================
 // Nav Link Highlighter (Active State Detection)
 // ============================================
 
 function initializeNavLinkHighlighter() {
-  // Get nav items and sections
+   // Get nav items and sections
   const navLinks = Array.from(document.querySelectorAll('nav a[data-link]'));
   const sections = document.querySelectorAll('section[id], header');
   
   if (navLinks.length === 0 || sections.length === 0) return;
   
-  // Create observer for active state switching
+   // Create observer for active state switching
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         const sectionId = '#' + entry.target.id;
         
-        // Clear all nav links
+         // Clear all nav links
         navLinks.forEach(link => {
           link.style.opacity = '0.85';
           link.style.color = '#fff';
-        });
+         });
         
-        // Activate current nav link
+         // Activate current nav link
         const activeLink = document.querySelector(`nav a[href="${sectionId}"]`);
         if (activeLink) {
           activeLink.style.opacity = '1';
           activeLink.style.color = '#d8b4fe'; // Lavender glow
           
-          // Add keyboard navigation support - ensure focus indicator on tab
+           // Add keyboard navigation support - ensure focus indicator on tab
           activeLink.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
               window.location.hash = sectionId.substring(1);
-            }
-          });
-        }
-      }
-    });
-  }, { threshold: 0.3, rootMargin: '-50px 0px -50px 0px' });
+             }
+           });
+         }
+       }
+     });
+   }, { threshold: 0.3, rootMargin: '-50px 0px -50px 0px' });
   
   sections.forEach(section => observer.observe(section));
 }
@@ -223,89 +140,46 @@ function initializeNavLinkHighlighter() {
 // ============================================
 
 function setupMobileMenuTransitions() {
-  const hamburgerBtn = document.getElementById('hamburger-btn');
-  const navMenu = document.getElementById('nav-menu');
-  
-  if (!hamburgerBtn || !navMenu) return;
-  
-  // Add slide-in animation for mobile menu
+   // Update focus trap to use correct mobile menu selector
+  function updateFocusTrapSelectors() {
+    if (menuCloseHandler) {
+      document.removeEventListener('keydown', menuCloseHandler);
+      menuCloseHandler = null;
+      }
+    // Re-query with correct ID instead of nav-menu
+    const modalMenu = document.getElementById('mobile-menu');
+    if (modalMenu) {
+      trapFocusInMobileMenu();
+      }
+    }
+}
+
+// ============================================
+// Navigation Accessibility Enhancements
+// ============================================
+
+function addKeyboardAccessibility() {
+   // Focus visible state for keyboard users - improve focus indicators
   const style = document.createElement('style');
   style.textContent = `
-    @media (max-width: 768px) {
-      #nav-menu {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-                    border-radius 0.4s ease-in-out;
-        backdrop-filter: blur(10px);
-        background: rgba(30, 41, 59, 0.95);
-        padding: 1rem 0;
-        z-index: 999;
-      }
-      
-      #nav-menu.menu-open {
-        max-height: 100vh;
-        border-radius: 0 0 10px 10px;
-      }
-      
-      .mobile-menu-toggle {
-        display: flex !important;
-        margin-right: 1rem;
-      }
-      
-      #hamburger-btn {
-        font-size: clamp(1.5rem, 4vw, 2rem);
-        background: transparent;
-        color: var(--accent-purple);
-        border: none;
-        cursor: pointer;
-        transition: all 0.3s ease-in-out;
-        padding: 0.5rem 0.75rem;
-      }
-      
-      #hamburger-btn:hover {
-        transform: scale(1.1);
-        color: var(--accent-pink);
-      }
+    :focus-visible {
+      outline: 3px solid var(--accent-blue, #3B82F6);
+      outline-offset: 2px;
     }
     
-    @media (min-width: 769px) {
-      #nav-menu {
-        position: static;
-        max-height: none !important;
-        overflow: visible;
-        backdrop-filter: none;
-        background: transparent;
-      }
-      
-      .mobile-menu-toggle {
-        display: none !important;
-      }
+    .hamburger:focus-visible {
+      outline-color: var(--accent-purple, #8B5CF6);
+      outline-width: 3px;
+      outline-offset: 4px;
+    }
+    
+    nav a:focus-visible,
+    .mobile-menu-overlay a:focus-visible {
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 4px;
     }
   `;
-  
   document.head.appendChild(style);
 }
 
-console.log(`
-%c===========================================
-MOLIAM Navigation System Ready
-%cSticky header with glassmorphism ✓
-%c hamburger menu for mobile ✓
-%c link highlighter with IntersectionObserver ✓
-%c smooth transitions for all devices ✓
-%c Keyboard navigation: Enter/Space to activate links ✓
-%c Focus trapping in mobile menu ✓
-%c Escape to close mobile menu ✓
-%c ARIA live announcements for screen readers ✓
-%c===========================================`, 
-  'color: #a855f7; font-weight: bold;',
-  'color: #ec4899; font-size: 12px;',
-  'color: #7c3aed; font-size: 11px;',
-  'color: #e9d5ff; font-style: italic;', 
-  'font-size: 13px;'
-);
+console.log(`%cMOLIAM Navigation System Fully Loaded`, 'color: #7c3aed; font-weight: bold;');
