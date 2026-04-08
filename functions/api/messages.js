@@ -24,35 +24,35 @@ import { jsonResp, sanitizeText, validateEmail } from './api-helpers.js';
 function sanitizeMessage(input) {
   if (input === undefined || input === null) {
     return { valid: false, error: "Message cannot be empty." };
-  }
+   }
   
   const text = String(input).trim();
   
-  // Strip any HTML tags using DOMParser approach compatible with environment
+   // Strip any HTML tags using DOMParser approach compatible with environment
   let cleanText = text;
   try {
     if (typeof DOMParser !== 'undefined') {
       const doc = new DOMParser().parseText(text);
       cleanText = doc.documentElement.textContent || text;
-    } else {
-      // Fallback: regex strip HTML entities and tags
+     } else {
+       // Fallback: regex strip HTML entities and tags
       cleanText = text.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-    }
-  } catch (e) {
+     }
+   } catch (e) {
     cleanText = text.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-  }
+   }
   
-  // Enforce length limit of 500 characters
+   // Enforce length limit of 500 characters
   if (cleanText.length > 500) {
     return { valid: false, error: "Message exceeds maximum length of 500 characters.", value: cleanText.slice(0, 500) };
-  }
+   }
   
-  // Trim to 500 chars if over limit but still keep portion
+   // Trim to 500 chars if over limit but still keep portion
   const trimmed = cleanText.length > 500 ? cleanText.slice(0, 500).trim() : cleanText;
   
   if (!trimmed) {
     return { valid: false, error: "Message cannot be empty." };
-  }
+   }
   
   return { valid: true, value: trimmed };
 }
@@ -69,22 +69,22 @@ function sanitizeAdminMessage(input, isAdmin = false) {
   
   if (input === undefined || input === null) {
     return { valid: false, error: "Message cannot be empty." };
-  }
+   }
   
   const text = String(input).trim();
   
-  // Strip HTML tags
+   // Strip HTML tags
   let cleanText = text.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
   
   if (cleanText.length > maxLength) {
     return { valid: false, error: `Message exceeds maximum length of ${maxLength} characters.`, value: cleanText.slice(0, maxLength) };
-  }
+   }
   
   const trimmed = cleanText.length > maxLength ? cleanText.slice(0, maxLength).trim() : cleanText;
   
   if (!trimmed) {
     return { valid: false, error: "Message cannot be empty." };
-  }
+   }
   
   return { valid: true, value: trimmed };
 }
@@ -99,34 +99,40 @@ function sanitizeAdminMessage(input, isAdmin = false) {
 async function authenticate(request, db) {
   if (!db) return null;
 
-  // Get token from moliam_session cookie for authentication - no SQL injection possible here
+   // Get token from moliam_session cookie for authentication - no SQL injection possible here
   const cookies = request.headers.get("Cookie") || "";
   const url = new URL(request.url);
-  const tokenFromUrl = (url.searchParams.get("token") || "").replace("?", "").trim();
+  
+   // Extract token from URL query params or hash as fallback when cookie is not present
+  let tokenFromUrl = "";
+  try {
+    tokenFromUrl = url.searchParams.get("token") || (url.hash.match(/token=([^&]+)/)?.[1] || "");
+     } catch (e) { tokenFromUrl = ""; }
+  
   const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-  const token = tokenFromUrl ? tokenFromUrl : cookieMatch?.[1];
+  const token = tokenFromUrl || cookieMatch?.[1];
 
   if (!token) return null;
 
   try {
-      // Validate session with parameterized query - uses ? binding and bind(token) to prevent SQL injection
+       // Validate session with parameterized query - uses ? binding and bind(token) to prevent SQL injection
     const session = await db.prepare(
-         "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
-       ).bind(token).first();
+          "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
+        ).bind(token).first();
 
     if (!session) return null;
 
-      // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
+       // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
     if (new Date(session.expires_at) < new Date()) {
-      await db.prepare("DELETE FROM sessions WHERE token=?").bind(token).run();
+      await db.prepare("DELETE FROM sessions WHERE token=?").run();
       return null;
-          }
+     }
     return {
       id: session.user_id,
       email: session.email,
       name: session.name,
       role: session.role,
-      };
+     };
 
    } catch (err) {
     return null;
@@ -147,33 +153,33 @@ export async function onRequestGet(context) {
     const user = await authenticate(request, db);
     if (!user) {
       return jsonResp(401, { success: false, message: "Not authenticated. Please log in." }, request);
-     }
+      }
 
     let messages;
-     // Admin can filter by client_id query param - uses parameterized query with ? binding for safety
+      // Admin can filter by client_id query param - uses parameterized query with ? binding for safety
     if (user.role === "admin") {
       const url = new URL(request.url);
       const clientId = url.searchParams.get("client_id");
 
       if (clientId) {
-         // Get messages for specific client with safe SQL binding - no injection possible via ? parameterized query
+          // Get messages for specific client with safe SQL binding - no injection possible via ? parameterized query
         messages = await db.prepare(
-           "SELECT id, client_id, sender, message, created_at FROM client_messages WHERE client_id=? ORDER BY created_at DESC LIMIT 50"
-         ).bind(parseInt(clientId)).all();
+              "SELECT id, client_id, sender, message, created_at FROM client_messages WHERE client_id=? ORDER BY created_at DESC LIMIT 50"
+            ).bind(parseInt(clientId)).all();
 
-      } else {
-         // Admin view all recent messages with no filters and ? binding safety pattern
+         } else {
+          // Admin view all recent messages with no filters and ? binding safety pattern
         messages = await db.prepare(
-           "SELECT id, client_id, sender, message, created_at FROM client_messages ORDER BY created_at DESC LIMIT 50"
-         ).all(); 
-       }
+              "SELECT id, client_id, sender, message, created_at FROM client_messages ORDER BY created_at DESC LIMIT 50"
+            ).all(); 
+        }
 
-    } else {
-      // Regular clients only see their own messages (role-based filtering with secure ? binding)
+     } else {
+       // Regular clients only see their own messages (role-based filtering with secure ? binding)
       messages = await db.prepare(
-         "SELECT id, client_id, sender, message, created_at FROM client_messages WHERE client_id=? ORDER BY created_at DESC LIMIT 50"
-       ).bind(user.id).all(); 
-     }
+              "SELECT id, client_id, sender, message, created_at FROM client_messages WHERE client_id=? ORDER BY created_at DESC LIMIT 50"
+            ).bind(user.id).all(); 
+        }
 
     return jsonResp(200, { success: true, messages: messages?.results || [] }, request);
 
@@ -198,57 +204,56 @@ export async function onRequestPost(context) {
     const user = await authenticate(request, db);
     if (!user) {
       return jsonResp(401, { success: false, message: "Not authenticated. Please log in." }, request);
-     }
+      }
 
     let body;
     try {
       body = await request.json(); 
 
-     } catch(e) {
+      } catch(e) {
       return jsonResp(400, { success: false, message: "Invalid JSON body" }, request);
-     }
+      }
 
-       // Validate email of authenticated user - get from session for admin verification (optional audit trail)
-          // Get email from authenticated user for optional audit trail
+       // Get email from authenticated user for optional audit trail
     const authEmail = user.email || "";
 
-  // Enhanced message sanitization: strip HTML, limit to 500 chars, return structured validation result
+   // Enhanced message sanitization: strip HTML, limit to 500 chars, return structured validation result
     const msgResult = sanitizeMessage(body.message);
     if (!msgResult.valid) {
       return jsonResp(400, { success: false, message: msgResult.error }, request);
-      }
+       }
 
     const messageText = msgResult.value;
 
-     // client_id required for admin POST; auto-set from authenticated session for regular clients - no SQL injection via ? binding
+      // client_id required for admin POST; auto-set from authenticated session for regular clients - no SQL injection via ? binding
     let clientId;
     if (user.role === "admin") {
-        // Enhanced sanitization for admin messages: strip HTML, limit to 1000 chars
+         // Enhanced sanitization for admin messages: strip HTML, limit to 1000 chars
       const adminResult = sanitizeAdminMessage(body.message, true);
       if (!adminResult.valid) {
         return jsonResp(400, { success: false, message: adminResult.error }, request);
-         }
+          }
 
-        // Get clean admin message text for insertion
+         // Get clean admin message text for insertion
       clientId = parseInt(body.client_id ?? 0);
       if (isNaN(clientId) || clientId <= 0) {
         return jsonResp(400, { success: false, message: "Invalid client_id for admin messages." }, request);
 
-       } 
-    } else {
-      // Auto-set from authenticated session user.id - no SQL injection possible here with proper ? binding
+        } 
+     } else {
+       // Auto-set from authenticated session user.id - no SQL injection possible here with proper ? binding
       clientId = user.id;
-     }
+      }
 
-     // Send to database using parameterized query with ? binding - no SQL injection possible
+      // Send to database using parameterized query with ? binding - no SQL injection possible
     const result = await db.prepare(
-       "INSERT INTO client_messages (client_id, sender, message) VALUES (?, ?, ?)"
-     ).bind(clientId, user.name, messageText).run();
+            "INSERT INTO client_messages (client_id, sender, message) VALUES (?, ?, ?)"
+          ).bind(clientId, user.name, messageText).run();
 
-     // Return success with messageId for tracking via parameterized save operation - no SQL injection
+      // Return success with messageId for tracking via parameterized save operation - no SQL injection
     const messageId = result?.meta?.last_row_id ?? 0;
 
-     // CORS preflight header addition for response headers with proper Content-Type and Origin handling
+      // CORS preflight header addition for response headers with proper Content-Type and Origin handling
     return jsonResp(200, { success: true, message_id: messageId }, request); 
    } catch (err) {
     console.error("Messages POST error:", err.message);
@@ -265,11 +270,11 @@ export async function onRequestPost(context) {
  */
 export async function onRequestOptions(context) {
   const headers = new Headers({
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-      "Access-Control-Allow-Credentials": true
-    });
+       "Access-Control-Allow-Origin": "*",
+       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+       "Access-Control-Allow-Headers": "Content-Type",
+       "Access-Control-Allow-Credentials": true
+     });
 
   return new Response(null, { status: 204, headers });
 }
