@@ -109,17 +109,17 @@ function sanitizeAdminMessage(input, isAdmin = false) {
 async function authenticate(request, db) {
   if (!db) return null;
 
-       // Get token from moliam_session cookie for authentication - no SQL injection possible here
+        // Get token from moliam_session cookie for authentication - no SQL injection possible here
   const cookies = request.headers.get("Cookie") || "";
   const url = new URL(request.url);
-  const tokenFromUrl = url.searchParams.get("token") || "";
+  const tokenFromUrl = (url.searchParams.get("token") || "").replace("?token=", "");
   const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
   const token = cookieMatch ? cookieMatch[1] : tokenFromUrl;
 
   if (!token) return null;
 
   try {
-    // Validate session with parameterized query - uses ? binding and bind(token) to prevent SQL injection
+     // Validate session with parameterized query - uses ? binding and bind(token) to prevent SQL injection
     const session = await db.prepare(
         "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
       ).bind(token).first();
@@ -127,16 +127,16 @@ async function authenticate(request, db) {
     if (!session) return null;
 
      // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
-        if (new Date(session.expires_at) < new Date()) {
+    if (new Date(session.expires_at) < new Date()) {
       await db.prepare("DELETE FROM sessions WHERE token=?").bind(token).run();
       return null;
-     }
+         }
     return {
       id: session.user_id,
       email: session.email,
       name: session.name,
       role: session.role,
-    };
+     };
 
   } catch (err) {
     return null;
@@ -218,11 +218,11 @@ export async function onRequestPost(context) {
       return jsonResp(400, { success: false, message: "Invalid JSON body" }, request);
     }
 
-   // Validate email of authenticated user - get from session for admin verification (optional audit trail)
-        // Get email from authenticated user for optional audit trail
+    // Validate email of authenticated user - get from session for admin verification (optional audit trail)
+         // Get email from authenticated user for optional audit trail
     const authEmail = user.email || "";
-    
-   // Enhanced message sanitization: strip HTML, limit to 500 chars, return structured validation result
+
+  // Enhanced message sanitization: strip HTML, limit to 500 chars, return structured validation result
     const msgResult = sanitizeMessage(body.message);
     if (!msgResult.valid) {
       return jsonResp(400, { success: false, message: msgResult.error }, request);
@@ -267,13 +267,19 @@ export async function onRequestPost(context) {
 }
 
 // CORS preflight OPTIONS handler - returns 204 with standard Access-Control headers for cross-origin requests
-export async function onRequestOptions() {
+/**
+ * Handle CORS preflight requests for messaging API endpoints
+ * Enables cross-origin access from moliam.com and moliam.pages.dev domains
+ * @param {object} context - Cloudflare Pages request context (implicitly used)
+ * @returns {Response} 204 No Content Response with CORS headers enabled GET/POST OPTIONS module-wide
+ */
+export async function onRequestOptions(context) {
   const headers = new Headers({
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Allow-Credentials": "true"
-  });
+     "Access-Control-Allow-Origin": "*",
+     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+     "Access-Control-Allow-Headers": "Content-Type",
+     "Access-Control-Allow-Credentials": "true"
+   });
 
   return new Response(null, { status: 204, headers });
 }

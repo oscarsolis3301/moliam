@@ -51,7 +51,7 @@ export async function onRequestPost(context) {
     return jsonResp(400, { success: false, error: true, message: "Invalid JSON body." }, request);
      }
 
-    const {
+  const {
       submission_id,
     budget_range,
     max_budget, 
@@ -60,8 +60,14 @@ export async function onRequestPost(context) {
     primary_industry, 
     current_stack,
     pain_points 
-  } = data || {};
+   } = data || {};
 
+    // Sanitize and validate pain_points field (optional) - strip HTML, limit to 2000 chars if provided
+  let sanitizedPainPoints = '';
+  if (pain_points !== undefined && pain_points !== null) {
+        const cleanPt = String(pain_points).replace(/<[^>]*>/g, '').trim();
+    sanitizedPainPoints = cleanPt.length > 2000 ? cleanPt.slice(0, 2000) : cleanPt;
+  }
    const errors = [];
 
      // Budget validation - enforce $2k minimum requirement for lead qualification  
@@ -145,7 +151,7 @@ export async function onRequestPost(context) {
         project_start_date || null,
         primary_industry || 'unknown',
         current_stack || '',
-        pain_points || '',
+        pain_points: sanitizedPainPoints,
         score,
         calendarAccessGranted 
       ).run());
@@ -266,14 +272,21 @@ console.error("Email error:", e);
 }
 
 // CORS preflight handler for all endpoints
-export async function onRequestOptions() {
+/**
+ * Handle CORS preflight requests for prequalify API endpoints
+ * Enables cross-origin access from moliam.com and moliam.pages.dev domains to email validation and qualification endpoint
+ * @param {object} context - Cloudflare Pages request context (implicitly used)
+ * @returns {Response} 204 No Content Response with CORS headers Access-Control-Allow-Origin, Methods, Headers for all endpoints in prequalify module
+
+ */
+export async function onRequestOptions(context) {
   return new Response(null, {
     status: 204,
     headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type"
-     }
+       "Access-Control-Allow-Origin": "*",
+       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+       "Access-Control-Allow-Headers": "Content-Type"
+      }
    });
 }
 
