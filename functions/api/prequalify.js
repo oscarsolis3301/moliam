@@ -24,29 +24,12 @@ export async function onRequestGet(context) {
   const { env } = context;
   const db = env.MOLIAM_DB;
 
-   // Return form metadata with proper CORS headers for moliam domains
+    // Return form metadata with proper CORS headers for moliam domains
   if (!db) {
-   return new Response(JSON.stringify({ 
-        success: true,
-     form_url: "/booking/prequalify.html",
-     criteria: {
-       min_budget: 2000,
-       preferred_timeline: ["immediate", "within_week", "next_month"],
-       support_industries: ["real_estate", "financial_services", "healthcare", "retail"]
-      }
-    }), 
-     status: 200, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+     return jsonResp(200, { success: true, error: false, form_url: "/booking/prequalify.html", criteria: { min_budget: 2000, preferred_timeline: ["immediate", "within_week", "next_month"], support_industries: ["real_estate", "financial_services", "healthcare", "retail"] } }, request);
   }
 
-   return new Response(JSON.stringify({ 
-        success: true,
-     form_url: "/booking/prequalify.html",
-     criteria: {
-       min_budget: 2000,
-       preferred_timeline: ["immediate", "within_week", "next_month"],
-       support_industries: ["real_estate", "financial_services", "healthcare", "retail"] 
-      }
-    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  return jsonResp(200, { success: true, error: false, form_url: "/booking/prequalify.html", criteria: { min_budget: 2000, preferred_timeline: ["immediate", "within_week", "next_month"], support_industries: ["real_estate", "financial_services", "healthcare", "retail"] } }, request);
 }
 
 /**
@@ -64,15 +47,11 @@ export async function onRequestPost(context) {
   let data;
   try {
     data = await request.json();
-   } catch (e) {
-    return new Response(JSON.stringify({ 
-         success: false,
-        error: true,
-        message: "Invalid JSON body.",
-     }), { status: 400, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } });
-   }
+    } catch (e) {
+    return jsonResp(400, { success: false, error: true, message: "Invalid JSON body." }, request);
+    }
 
-  const { 
+  const {{
       submission_id,
     budget_range,
     max_budget, 
@@ -98,13 +77,8 @@ export async function onRequestPost(context) {
    }
 
   if (errors.length) {
-    return new Response(JSON.stringify({ 
-         success: false,
-        error: true,
-        message: "Validation failed.",
-        errors
-     }), { status: 400, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } });
-   }
+    return jsonResp(400, { success: false, error: true, message: "Validation failed.", errors }, request);
+    }
 
      // Calculate qualification score (0-100) with weighted scoring algorithm
    // Factors: budget(50) + urgency(30) + industry(20) = max 100 points
@@ -183,30 +157,12 @@ export async function onRequestPost(context) {
      await generateBooking(context, prequalId);
        }
 
-    return new Response(JSON.stringify({ 
-         success: true,
-        message: calendarAccessGranted ? "You're qualified! Click the link below to book." : "Thanks for your response. We'll review and get back to you.",
-        score,
-        calendar_access_granted: calendarAccessGranted,
-        next_step: calendarAccessGranted ? 'booking' : 'review', 
-     }), { 
-        status: 200,
-        headers: {   
-           "Content-Type": "application/json",
-           "Access-Control-Allow-Origin": "*",
-           "Access-Control-Allow-Methods": "POST, OPTIONS",
-           "Access-Control-Allow-Headers": "Content-Type" 
-      }
-    });
+    return jsonResp(200, { success: true, error: false, message: calendarAccessGranted ? "You're qualified! Click the link below to book." : "Thanks for your response. We'll review and get back to you.", score, calendar_access_granted: calendarAccessGranted, next_step: calendarAccessGranted ? 'booking' : 'review', submission_id: submission_id || null }, request);
 
-   } catch (err) {
+    } catch (err) {
     console.error("Pre-qualify error:", err);
-    return new Response(JSON.stringify({ 
-         success: false,
-        error: true,
-        message: "Something went wrong. Please try again later." 
-     }), { status: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } });
-   }
+    return jsonResp(500, { success: false, error: true, message: "Something went wrong. Please try again later." }, request);
+    }
 }
 
 /**

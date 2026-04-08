@@ -162,7 +162,7 @@ async function authenticate(request, db) {
   const match = cookies.match(/moliam_session=([a-f0-9]+)/);
   if (!match) return null;
   
-  const token = match ? match[1] : null;
+
   if (!token) return null;
 
   try {

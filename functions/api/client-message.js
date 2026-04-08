@@ -5,6 +5,8 @@
 ** @returns {Response} JSON response with status or authentication error
  */
 
+import { jsonResp, sliceText } from './api-helpers.js';  {/* Import helpers */}
+
 /* Extract session token from cookies for authentication */
 function getSessionToken(request) {
   const cookies = request.headers.get("Cookie") || "";
@@ -23,8 +25,8 @@ function getSessionToken(request) {
 async function authenticate(db, token) {
   if (!token || !db) return null;
   
-  const session = await db.prepare(
-          "SELECT u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND u.is_active=1")
+const session = await db.prepare(
+"SELECT u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1")
        .bind(token).first();
   
   return session || null;
