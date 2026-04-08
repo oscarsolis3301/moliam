@@ -4,6 +4,10 @@
  * Pure JS QR code generation using bit matrix algorithm, no npm deps
  */
 
+/**\n * MOLIAM QR Code Generator — CloudFlare Pages Function   * GET /api/qr?url=...&size=...&color=... * Pure JS QR code generation using bit matrix algorithm, no npm deps\n */
+
+import { jsonResp } from '../lib/api-helpers.js';
+
 export async function onRequestGet(context) {
   const { request, env } = context;
   const urlObj = new URL(request.url);
@@ -16,30 +20,30 @@ export async function onRequestGet(context) {
 
   // Validate URL is present and not empty
   if (!inputUrl) {
-    return sendError(400, "Missing 'url' query parameter");
+    return jsonResp(400, { error: true, message: "Missing 'url' query parameter" }, request);
   }
 
-  inputUrl = inputUrl.trim();
+   inputUrl = inputUrl.trim();
   if (inputUrl.length < 1 || inputUrl.length > 2000) {
-    return sendError(400, "URL must be between 1 and 2000 characters");
-  }
+    return jsonResp(400, { error: true, message: "URL must be between 1 and 2000 characters" }, request);
+   }
 
-  // Validate size
+   // Validate size
   let modulesPerSide;
   if (!/^\d+$/.test(sizeStr)) {
-    return sendError(400, "Invalid 'size' parameter — must be a positive integer");
-  }
+    return jsonResp(400, { error: true, message: "Invalid 'size' parameter — must be a positive integer" }, request);
+   }
   const size = parseInt(sizeStr, 10);
   if (size < 128 || size > 2048) {
-    return sendError(400, "Size must be between 128 and 2048 pixels");
-  }
+    return jsonResp(400, { error: true, message: "Size must be between 128 and 2048 pixels" }, request);
+   }
 
-  // Parse and validate color - convert hex to proper format
+   // Parse and validate color - convert hex to proper format
   if (!/^[#]?[0-9a-fA-F]{6}$/.test(colorHex)) {
-    return sendError(400, "Invalid 'color' parameter — must be 6-digit hex like #3B82F6");
-  }
+    return jsonResp(400, { error: true, message: "Invalid 'color' parameter — must be 6-digit hex like #3B82F6" }, request);
+   }
 
-  // --- Rate limiting (D1) ---
+   // --- Rate limiting (D1) ---
   if (db) {
     try {
       const ip = request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for") || "unknown";
