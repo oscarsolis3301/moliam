@@ -39,8 +39,8 @@ export async function onRequestGet(context) {
          // --- Check role for admin access ---
     const isAdmin = session.role === 'admin' || session.role === 'superadmin';
 
-  Get action from query parameters (v3 feature)
-    const action = url.searchParams.get('action');    
+      // Get action from query parameters (v3 feature)
+    const action = url.searchParams.get('action');
     /******  ADDITIONAL: Leads Pipeline Data (v3 requirement) ******/
       if (action === 'leads') {
              // Return all submissions with lead_score, category, follow_up_status
