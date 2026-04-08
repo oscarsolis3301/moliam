@@ -695,12 +695,18 @@ function resize() {
 }
 
 // Mobile/Touch handling - adds tap support for small screens
+    // Mobile/Touch handling - adds tap support for small screens
+    
+    // Expose cleanup function for event listeners
+    __cleanupHandlers__ = () => {
+      window.removeEventListener('resize', resize);
+    }
+    
+    window.addEventListener('resize', resize);
+    resize();
+    initBots();
 
-window.addEventListener('resize', resize);
-resize();
-initBots();
-
-// ═══════════════════════════════════════
+// ======================================================
 // SECTION: Main Loop
 // ═══════════════════════════════════════
 function frame(ts) {

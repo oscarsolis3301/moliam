@@ -77,6 +77,7 @@ if (!isMobile && !prefersReducedMotion) {
 // Store listeners for cleanup
 let resizeHandler;
 let mediaQueryChangeHandler;
+let canvasResizeHandler;
 
 // Listen for mobile viewport changes and reduce-motion changes
 let currentMobile = isMobile;
@@ -174,28 +175,14 @@ function addFeedItem(msg, botColor) {
 }
 
 /* ─── HQ CANVAS ─── */
-const canvas = $('#hq-canvas');
-const ctx = canvas.getContext('2d');
-let W, H;
-let mouseX = -1000, mouseY = -1000;
-let hoveredBot = null;
-
-function resizeCanvas() {
-  const wrap = $('#hq-canvas-wrap');
-  W = canvas.width = wrap.clientWidth;
-  H = canvas.height = wrap.clientHeight;
-}
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
-
-/* ─── ROOMS ─── */
+/* ─── ROOMS — */
 const ROOM_DEFS = [
-  { id: 'engineering', label: 'Engineering', icon: '🛠', color: '#3B82F6' },
-  { id: 'planning',    label: 'Planning',    icon: '📋', color: '#8B5CF6' },
-  { id: 'comms',       label: 'Comms',       icon: '📡', color: '#10B981' },
-  { id: 'dataops',     label: 'Data Ops',    icon: '📊', color: '#06B6D4' },
-  { id: 'error',       label: 'Error Room',  icon: '⚠️', color: '#EF4444' },
-  { id: 'ratelimit',   label: 'Rate Limit',  icon: '⏳', color: '#F59E0B' },
+    { id: 'engineering', label: 'Engineering', icon: '🛠', color: '#3B82F6' },
+    { id: 'planning',    label: 'Planning',    icon: '📋', color: '#8B5CF6' },
+    { id: 'comms',       label: 'Comms',       icon: '📡', color: '#10B981' },
+    { id: 'dataops',     label: 'Data Ops',    icon: '📊', color: '#06B6D4' },
+    { id: 'error',       label: 'Error Room',  icon: '⚠️', color: '#EF4444' },
+    { id: 'ratelimit',   label: 'Rate Limit',  icon: '⏳', color: '#F59E0B' },
 ];
 
 let rooms = [];
@@ -232,11 +219,14 @@ function layoutRooms() {
   });
 }
 layoutRooms();
-window.addEventListener('resize', layoutRooms);
+
+/* ─── ROOMS LAYOUT RESIZE LISTENER */
+let layoutRoomsResizeHandler = () => layoutRooms();
+window.addEventListener('resize', layoutRoomsResizeHandler);
 
 /* ─── BOTS ─── */
 const TASKS = [
-  'Building contractor website for Oscar', 'Optimizing Google Business Profile',
+   'Building contractor website for Oscar', 'Optimizing Google Business Profile',
   'Managing LSA campaign for PlumbRight', 'Analyzing competitor rankings',
   'Writing blog: "5 Signs You Need a New Roof"', 'Generating GBP posts for Mike\'s HVAC',
   'Setting up Google Guaranteed badge', 'Auditing local SEO for OC Plumbing',
@@ -655,7 +645,9 @@ function drawBot(bot, t) {
 }
 
 /* ─── HOVER DETECTION ─── */
-canvas.addEventListener('mousemove', (e) => {
+let canvasMouseMoveHandler, canvasMouseLeaveHandler;
+
+canvasMouseMoveHandler = (e) => {
   const rect = canvas.getBoundingClientRect();
   mouseX = e.clientX - rect.left;
   mouseY = e.clientY - rect.top;
@@ -667,35 +659,39 @@ canvas.addEventListener('mousemove', (e) => {
     if (dx * dx + dy * dy < (24) ** 2) {
       hoveredBot = bot;
       break;
-    }
-  }
+     }
+   }
 
   const tooltip = $('#bot-tooltip');
   if (hoveredBot) {
     tooltip.classList.add('visible');
     tooltip.style.left = (e.clientX + 16) + 'px';
     tooltip.style.top = (e.clientY - 16) + 'px';
-    $('#tt-avatar').style.background = hoveredBot.color;
-    $('#tt-avatar').textContent = hoveredBot.initials;
-    $('#tt-name').textContent = hoveredBot.name;
-    $('#tt-role').textContent = hoveredBot.role;
-    $('#tt-task').textContent = hoveredBot.task || '—';
-    $('#tt-done').textContent = hoveredBot.tasksDone;
+     $('#tt-avatar').style.background = hoveredBot.color;
+     $('#tt-avatar').textContent = hoveredBot.initials;
+     $('#tt-name').textContent = hoveredBot.name;
+     $('#tt-role').textContent = hoveredBot.role;
+     $('#tt-task').textContent = hoveredBot.task || '—';
+     $('#tt-done').textContent = hoveredBot.tasksDone;
     const elapsed = Math.floor((Date.now() - startTime) / 1000);
     const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
     const s = String(elapsed % 60).padStart(2, '0');
-    $('#tt-uptime').textContent = `${m}:${s}`;
-  } else {
+     $('#tt-uptime').textContent = `${m}:${s}`;
+   } else {
     tooltip.classList.remove('visible');
-  }
-});
+   }
+};
 
-canvas.addEventListener('mouseleave', () => {
+canvas.addEventListener('mousemove', canvasMouseMoveHandler);
+
+canvasMouseLeaveHandler = () => {
   hoveredBot = null;
-  $('#bot-tooltip').classList.remove('visible');
-});
+   $('#bot-tooltip').classList.remove('visible');
+};
 
-/* ─── AMBIENT HQ PARTICLES ─── */
+canvas.addEventListener('mouseleave', canvasMouseLeaveHandler);
+
+/* ─── AMBIENT HQ PARTICLES */
 let hqParticles = [];
 function initHQParticles() {
   hqParticles = [];
@@ -913,7 +909,7 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
     menu.classList.toggle('open');
     document.body.style.overflow = isOpen ? 'hidden' : '';
     btn.setAttribute('aria-expanded', isOpen.toString());
-  }
+   }
 
   btn.addEventListener('click', toggleMenu);
 
@@ -922,17 +918,23 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
       btn.classList.remove('open');
       menu.classList.remove('open');
       document.body.style.overflow = '';
-    });
-  });
+     });
+   });
 
-	// Close on Escape key
-  document.addEventListener('keydown', function(e) {
+	// Close on Escape key - add handler ref for cleanup
+  var escapeHandler = function(e) {
     if (e.key === 'Escape' && menu.classList.contains('open')) {
       btn.classList.remove('open');
       menu.classList.remove('open');
       document.body.style.overflow = '';
-    }
-  });
+     }
+   };
+  document.addEventListener('keydown', escapeHandler);
+
+  // Expose cleanup for this block
+  window.__moliam_cleanup_hamburger__ = function() {
+    document.removeEventListener('keydown', escapeHandler);
+  };
 })();
 
 window.__moliam_cleanup_main__ = function() {
@@ -945,12 +947,17 @@ window.__moliam_cleanup_main__ = function() {
   if (typeof statusPanelIntervalId !== 'undefined' && statusPanelIntervalId) {
     clearInterval(statusPanelIntervalId);
   }
-  // Clean up resize listener
+  // Clean up resize listeners (two separate ones registered)
   if (typeof resizeHandler !== 'undefined') {
     window.removeEventListener('resize', resizeHandler);
-   }
-  // Clean up media query listener  
+    }
+  // Clean up canvas resize listener (separate from above)
+  if (typeof canvasResizeHandler !== 'undefined') {
+    window.removeEventListener('resize', canvasResizeHandler);
+  }
+   // Clean up media query listener  
   if (typeof mediaQueryChangeHandler !== 'undefined' && typeof mediaQuery !== 'undefined') {
     mediaQuery.removeEventListener('change', mediaQueryChangeHandler);
-   }
+    }
 };
+
