@@ -27,18 +27,19 @@ if (hasCanvas) {
     pbg.width = window.innerWidth;
     pbg.height = document.documentElement.scrollHeight;
     particles = [];
-  const count = Math.floor((pbg.width * pbg.height) / 12000);
-  for (let i = 0; i < count; i++) {
-    particles.push({
-      x: rand(0, pbg.width),
-      y: rand(0, pbg.height),
-      r: rand(0.3, 1.5),
-      a: rand(0.1, 0.5),
-      dx: rand(-0.15, 0.15),
-      dy: rand(-0.1, 0.1),
-      pulse: rand(0, PI2)
-        });
+    const count = Math.floor((pbg.width * pbg.height) / 12000);
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x: rand(0, pbg.width),
+        y: rand(0, pbg.height),
+        r: rand(0.3, 1.5),
+        a: rand(0.1, 0.5),
+        dx: rand(-0.15, 0.15),
+        dy: rand(-0.1, 0.1),
+        pulse: rand(0, PI2)
+      });
     }
+  }
 }
 
 function drawParticles(t) {
@@ -689,7 +690,7 @@ canvas.addEventListener('mousemove', canvasMouseMoveHandler);
 
 canvasMouseLeaveHandler = () => {
   hoveredBot = null;
-   $('#bot-tooltip').classList.remove('visible');
+    $('#bot-tooltip').classList.remove('visible');
 };
 
 canvas.addEventListener('mouseleave', canvasMouseLeaveHandler);
@@ -707,11 +708,12 @@ function initHQParticles() {
       dx: rand(-0.2, 0.2),
       dy: rand(-0.15, 0.15),
       phase: rand(0, PI2),
-    });
-  }
+     });
+   }
 }
-initHQParticles();
-window.addEventListener('resize', initHQParticles);
+
+let resizeHandlerHQ = () => initHQParticles();
+window.addEventListener('resize', resizeHandlerHQ);
 
 function drawHQParticles(t) {
   for (const p of hqParticles) {
@@ -943,10 +945,16 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
     clearInterval(updateUptimeIntervalId || 0);
     clearInterval(sparklineIntervalId || 0);
     clearInterval(statusPanelIntervalId || 0);
+    window.removeEventListener('resize', resizeHandlerHQ);
     window.removeEventListener('resize', resizeHandler);
     window.removeEventListener('resize', canvasResizeHandler);
     mediaQuery.removeEventListener('change', mediaQueryChangeHandler);
-  };
+     // Add missing mouse event cleanup here:
+       canvas.removeEventListener('mousemove', canvasMouseMoveHandler);
+      canvas.removeEventListener('mouseleave', canvasMouseLeaveHandler);
+        // And hamburger menu cleanup:   
+    if (typeof window.__moliam_cleanup_hamburger__ === 'function') {   window.__moliam_cleanup_hamburger__();}
+    };
 
 })();
 

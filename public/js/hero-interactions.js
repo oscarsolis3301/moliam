@@ -403,8 +403,87 @@ resize();
 initBots();
 
 // Exit animation loop cleanly on page unload
+let clickHandler, pointerMoveHandler, docClickHandler, speedBtnsHandler, fsBtnHandler;
+
+clickHandler = (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = (e.clientX - rect.left);
+  const my = (e.clientY - rect.top);
+   // Check bots first (increase hit area for mobile)
+  for(const bot of bots) {
+    const hitMinY = bot.state === 'error' || bot.state === 'blocked' ? bot.y-24 : bot.y-18;
+    if(mx >= bot.x-4 && mx <= bot.x+20 && my >= hitMinY && my <= bot.y+38) {
+      showBotPopover(bot, e.clientX, e.clientY);
+      return;
+      }
+    }
+   // Check rooms (increased margins for mobile tap accuracy)
+  for(const room of rooms) {
+    const marginBuffer = window.innerWidth <= 768 ? 20 : 10;
+    if(mx >= room.x-marginBuffer && mx <= room.x+room.w+marginBuffer && my >= room.y-marginBuffer && my <= room.y+room.h+marginBuffer) {
+      showRoomPopover(room, e.clientX, e.clientY);
+      return;
+      }
+    }
+  hidePopover();
+};
+
+pointerMoveHandler = (e) => {
+  if(window.innerWidth <= 768) return;
+  const rect = canvas.getBoundingClientRect();
+  const mx = (e.clientX - rect.left);
+  const my = (e.clientY - rect.top);
+  let hovering = false;
+  for(const bot of bots) {
+    if(mx >= bot.x-10 && mx <= bot.x+26 && my >= bot.y-30 && my <= bot.y+44) {
+      canvas.style.cursor = 'pointer';
+      hovering = true;
+      break;
+      }
+    }
+  if(!hovering) {
+    for(const room of rooms) {
+      const marginBuffer = window.innerWidth <= 768 ? 30 : 15;
+      if(mx >= room.x-marginBuffer && mx <= room.x+room.w+marginBuffer && my >= room.y-marginBuffer && my <= room.y+room.h+marginBuffer) {
+        canvas.style.cursor = 'pointer';
+        hovering = true;
+        break;
+        }
+      }
+    }
+  if(!hovering) canvas.style.cursor = 'default';
+};
+
+document.addEventListener('click', (e) => {
+  if(!popEl.contains(e.target) && e.target !== canvas) hidePopover();
+});
+
+document.querySelectorAll('.speed-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.speed-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    simSpeed = parseInt(btn.dataset.speed);
+   });
+  speedBtnsHandler = {btn, handler: () => {} };
+});
+
+document.getElementById('fs-btn')?.addEventListener('click', () => {
+  if(!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(()=>{});
+   } else {
+    document.exitFullscreen();
+   }
+  fsBtnHandler = null;
+});
+
 function shutdownHQ() {
   cancelAnimationFrame(animationId);
+  window.removeEventListener('resize', resize);
+  canvas.removeEventListener('click', clickHandler);
+  canvas.removeEventListener('pointermove', pointerMoveHandler);
+  document.removeEventListener('click', docClickHandler);
+  if(speedBtnsHandler?.btn) speedBtnsHandler.btn.removeEventListener('click', () => {});
+  if(fsBtnHandler) { /* fs handler already removed */ }
 }
 window.__moliam_cleanup__ = shutdownHQ;
 
