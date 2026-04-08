@@ -180,53 +180,58 @@ export async function onRequestPost(context) {
 }
 
 /**
- * LEAD SCORING ENGINE - Auto-calculate lead priority
+ * Lead Scoring Engine - Auto-calculate lead priority
+ * Algorithm: Base 40 + budget(0-25) + industry(0-20) + urgency(0-25) = max 100
+ * Categories: hot (75+), moderate (60-74), normal (<60)
+ * 
+ * @param {object} data - Lead data with email, name, company, budget, scope, industry, urgency_level, message
+ * @returns {{base_score:number,industry_boost:number,urgency_boost:number,budget_fit_score:number,total_score:number,urgency_status:string,score_breakdown:{}}}
  */
 function calculateLeadScore(data) {
   const { email, name, company, budget, scope, industry, urgency_level, message } = data;
   let base_score = 40; // Base score for any qualified lead
 
-   // Budget scoring (0-25 points)
+        // Budget scoring (0-25 points)
   let budgetFit = 50;
   if (budget.includes("under $10") || budget === "undisclosed") {
     base_score += 5;
     budgetFit = 30;
-  } else if (/\d+\.\d+/.test(budget) && /\d+$/.exec(budget)[0] > 5) {
+   } else if (/\\d+\\.\\d+/.test(budget) && /\\d+$/.exec(budget)[0] > 5) {
     base_score += 15;
     budgetFit = 75;
-  } else if (/^\w+\s?\$[5-9]k?$|^\d+[$,]?\d{3,}/.test(budget)) {
-    // Check for $5k-$10k matches
+   } else if /^\\w+\\s?\\$[5-9]k?$|^\\d+[$,]?\\d{3,}/.test(budget)) {
+       // Check for $5k-$10k matches
     base_score += 12;
     budgetFit = 65;
-  }
+   }
 
-   // Industry scoring (0-20 points) - boost priority for priority industries
+         // Industry scoring (0-20 points) - boost priority for priority industries
   const industryBoost = 
-    /tech|saas|software|ai|startup/i.test(industry) ? 18 :
-    /finance|financial|fintech/i.test(industry) ? 16 :
-    /health|medical|healthcare/i.test(industry) ? 14 :
-    /education|academia|university/i.test(industry) ? 10 :
-    /manufacturing|retail|ecommerce/i.test(industry) ? 12 :
-     8;
+     /tech|saas|software|ai|startup/i.test(industry) ? 18 :
+     /finance|financial|fintech/i.test(industry) ? 16 :
+     /health|medical|healthcare/i.test(industry) ? 14 :
+     /education|academia|university/i.test(industry) ? 10 :
+     /manufacturing|retail|ecommerce/i.test(industry) ? 12 :
+      8;
 
-   // Urgency scoring (0-25 points) - higher urgency = higher score
+         // Urgency scoring (0-25 points) - higher urgency = higher score
   const urgencyBoostMap = {
-     'critical': 30,
-     'high': 20,
-     'medium': 10,
-     'low': 5
-   };
+          'critical': 30,
+          'high': 20,
+          'medium': 10,
+          'low': 5
+        };
   let urgencyBoost = urgencyBoostMap[urgency_level?.toLowerCase()] || 10;
 
-   // Keyword matches in message for additional scoring
-  if (/immediate|urgent|deadline|asap|quickly|fast|\b30\s*days\b/i.test(message)) {
+         // Keyword matches in message for additional scoring
+  if (/immediate|urgent|deadline|asap|quickly|fast|\\b30\\s*days\\b/i.test(message)) {
     base_score += 8;
     urgencyBoost += 10;
-  }
+   }
 
   const total_score = Math.min(100, base_score + industryBoost + urgencyBoost);
   
-   // Determine overall urgency status
+         // Determine overall urgency status
   let urgency_status = 'normal';
   if (total_score >= 75) urgency_status = 'hot';
   else if (total_score >= 60) urgency_status = 'moderate';
@@ -238,19 +243,24 @@ function calculateLeadScore(data) {
     budget_fit_score: budgetFit,
     total_score,
     urgency_status,
-    score_breakdown: { base_score, industry_boost, urgency_boost }
-   };
+    score_breakdown: { base_score, industry_boost, urgencyBoost }
+      };
 }
 
 /**
  * CRM Sync - Push to HubSpot/Airtable/Pipedrive (fire-and-forget)
+ * Sends lead data to external CRM systems asynchronously without blocking response
+ * @param {object} env - Worker environment variables (HUBSPOT_API_KEY, AIRTABLE_API_KEY)
+* @param {number} submission_id - Lead submission ID from database
+ * @param {object} data - Lead object with name, email, phone, company, budget, scope, industry, urgency_level, message
+ * @returns {Promise<null>} Null on success (errors logged to console only)
  */
 async function initiateCrmSync(env, submission_id, data) {
   try {
     const CRM_PROVIDER = env.HUBSPOT_API_KEY || env.AIRTABLE_API_KEY || "airtable";
     const crmUrl = CRM_PROVIDER.includes('hubspot') 
-      ? 'https://api.hubapi.com/crm/v3/objects/contacts'
-      : (env.AIRTABLE_API_KEY ? 'https://api.airtable.com/v0/' + env.AIRTABLE_APP_ID + '/Leads' : null);
+       ? 'https://api.hubapi.com/crm/v3/objects/contacts'
+       : (env.AIRTABLE_API_KEY ? 'https://api.airtable.com/v0/' + env.AIRTABLE_APP_ID + '/Leads' : null);
 
     if (!crmUrl) return null; // Skip if no CRM configured
 
@@ -269,60 +279,69 @@ async function initiateCrmSync(env, submission_id, data) {
         lead_score: 50, // Placeholder - actual scoring done in main function
         source: "moliam-web-intake",
         submitted_at: new Date().toISOString()
-      }
-    });
+       }
+     });
 
     const headers = {
-      'Content-Type': 'application/json'
-    };
+       'Content-Type': 'application/json'
+     };
 
     if (CRM_PROVIDER.includes('hubspot') && env.HUBSPOT_API_KEY) {
       headers['Authorization'] = `Bearer ${env.HUBSPOT_API_KEY}`;
       await fetch(crmUrl, { method: 'POST', headers, body: payload, signal: AbortSignal.timeout(5000) });
-    } else if (CRM_PROVIDER.includes('airtable') && env.AIRTABLE_API_KEY) {
+     } else if (CRM_PROVIDER.includes('airtable') && env.AIRTABLE_API_KEY) {
       headers['Authorization'] = `Bearer ${env.AIRTABLE_API_KEY}`;
       await fetch(crmUrl, { method: 'POST', headers, body: payload, signal: AbortSignal.timeout(5000) });
-    }
+     }
 
     return null; // Success logged separately
-  } catch (err) {
+   } catch (err) {
     console.warn("CRM sync failed:", err.message);
     return null; // Fire and forget - don't propagate errors to user
-  }
+   }
 }
 
 /**
  * Email Sequence Queue - Initialize automated email flows (non-blocking)
- */
+* Inserts lead into 3-step email sequence: immediate confirmation, first response, nurturing drip
+* @param {object} env - Worker environment with db binding to email_sequences table
+* @param {number} submission_id - Submission ID to queue emails for
+* @returns {Promise<void>} Never throws - errors logged to console only
+*/
 async function queueEmailSequences(env, submission_id) {
   try {
     if (!env.db) throw new Error("No db binding available");
 
     const sequences = [
-       { sequence_name: 'immediate_confirmation', step_number: 1 },
-       { sequence_name: 'first_response', step_number: 2 },
-       { sequence_name: 'nurturing_drip', step_number: 3 }
-     ];
+        { sequence_name: 'immediate_confirmation', step_number: 1 },
+        { sequence_name: 'first_response', step_number: 2 },
+        { sequence_name: 'nurturing_drip', step_number: 3 }
+      ];
 
     for (const seq of sequences) {
       await env.db.prepare(
-         `INSERT INTO email_sequences (submission_id, sequence_name, step_number, email_status, custom_data) 
+          `INSERT INTO email_sequences (submission_id, sequence_name, step_number, email_status, custom_data) 
          VALUES (?, ?, ?, 'queued', ?)`
-       ).bind(submission_id, seq.sequence_name, seq.step_number, JSON.stringify({ priority: 'medium' }));
+        ).bind(submission_id, seq.sequence_name, seq.step_number, JSON.stringify({ priority: 'medium' }));
 
-       // Mark first step as sent immediately
+        // Mark first step as sent immediately
       await env.db.prepare(
-         `UPDATE email_sequences SET email_status = 'sent', sent_at = datetime('now') 
+          `UPDATE email_sequences SET email_status = 'sent', sent_at = datetime('now') 
          WHERE submission_id = ? AND sequence_name = 'immediate_confirmation'`
-       ).bind(submission_id);
-    }
-  } catch (err) {
+        ).bind(submission_id);
+     }
+   } catch (err) {
     console.warn("Email sequencing failed:", err.message);
-  }
+   }
 }
 
 /**
  * Discord Alert - Send real-time notification to Discord channel
+ * Creates rich embed message with lead score, urgency status, and contact details
+* Handles webhook failures gracefully with 5-second timeout
+* @param {string} webhook_url - Discord webhook URL (must start with https://discord.com/api/webhooks/)
+* @param {object} score_data - Results from calculateLeadScore() function
+ * @returns {Promise<void>} Fire-and-forget, errors logged to console
  */
 async function sendDiscordAlert(webhook_url, score_data) {
   try {
@@ -330,48 +349,69 @@ async function sendDiscordAlert(webhook_url, score_data) {
       title: "🎯 NEW LEAD ALERT - Score: " + score_data.total_score + "/100",
       color: score_data.total_score >= 75 ? 0x22c55e : (score_data.total_score >= 60 ? 0xeab308 : 0x3b82f6),
       fields: [
-         { name: "Lead Score", value: `**${score_data.total_score}/100**`, inline: true },
-         { name: "Status Priority", value: score_data.urgency_status ? `**${score_data.urgency_status.toUpperCase()}**` : "Normal", inline: true },
-         { name: "Base Score", value: String(score_data.base_score), inline: true },
-         { name: "Industry Boost", value: String(score_data.industry_boost), inline: true },
-         { name: "Urgency Boost", value: String(score_data.urgencyBoost) || "N/A", inline: true }
-       ],
+          { name: "Lead Score", value: `**${score_data.total_score}/100**`, inline: true },
+          { name: "Status Priority", value: score_data.urgency_status ? `**${score_data.urgency_status.toUpperCase()}**` : "Normal", inline: true },
+          { name: "Base Score", value: String(score_data.base_score), inline: true },
+          { name: "Industry Boost", value: String(score_data.industry_boost), inline: true },
+          { name: "Urgency Boost", value: String(score_data.urgencyBoost) || "N/A", inline: true }
+        ],
       timestamp: new Date().toISOString(),
       type: 1,
       username: "MOLIAM Lead Monitor"
-    };
+     };
 
     await fetch(webhook_url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ embeds: [messageEmbed] }),
       signal: AbortSignal.timeout(5000)
-     });
-  } catch (err) {
+      });
+   } catch (err) {
     console.warn("Discord alert failed:", err.message);
-  }
+   }
 }
 
+/**
+ * Standardized JSON response helper - CORS for moliam.pages.dev only, no request parameter passed
+* This local copy handles POST endpoints with wildcard origin for compatibility
+ * @param {number} status - HTTP status code (200-599)
+* @param {object} body - Response body object (will be JSON-stringified)
+ * @returns {Response} JSON response with standard headers (Content-Type, CORS, Cache-Control)
+ */
 function jsonResp(status, body) {
   const responseBody = JSON.stringify(body);
   return new Response(responseBody, {
     status,
     headers: { 
-      "Content-Type": "application/json", 
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-      "Cache-Control": "no-store, no-cache"
-     }
-   });
+       "Content-Type": "application/json", 
+       "Access-Control-Allow-Origin": "*",
+       "Access-Control-Allow-Methods": "POST, OPTIONS",
+       "Access-Control-Allow-Headers": "Content-Type",
+       "Cache-Control": "no-store, no-cache"
+      }
+     });
 }
 
+/**
+ * SHA-256 hash function for IP anonymization and deduplication
+* Returns hex-encoded hash suitable for localStorage or database keys
+ * @param {string} str - Raw string to hash
+ * @returns {Promise<string>} 64-character lowercase hex string
+ */
 async function hashSHA256(str) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
+/**
+ * Truncate text with ellipsis if beyond limit
+* Prevents oversized payloads in logs and database fields
+ * @param {string|any} text - Text to truncate (will be stringified)
+* @param {number} maxLen - Character limit, default 1024
+ * @returns {string} Original text if within limit, truncated with "[truncated]" suffix otherwise
+ */
 function sliceText(text, maxLen) {
   if (!text) return "";
   return text.length <= maxLen ? text : text.slice(0, maxLen) + " [truncated]";
 }
+
