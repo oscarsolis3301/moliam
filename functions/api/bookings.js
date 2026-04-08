@@ -5,7 +5,7 @@
  * PUT /api/appointments/:id - Update/confirm/reschedule/cancel
  */
 
-import { jsonResp, balanceSuccessError } from './api-helpers.js';
+import { jsonResp, balanceSuccessError, sanitizeText } from './api-helpers.js';
 
 export async function onRequestGet(context) {
   try {
