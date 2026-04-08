@@ -104,6 +104,23 @@ setInterval(updateUptime, 1000);
 const feedEl = $('#activity-feed');
 const feedItems = [];
 
+// ARIA live region for screen reader announcements (already in HTML, just need to announce content)
+function updateARIAFeed() {
+  const liveRegion = document.getElementById('feed-status-update');
+  if (liveRegion && feedItems.length > 0) {
+    const latestItem = feedItems[0];
+    const textContent = latestItem.querySelector('.feed-msg')?.textContent || '';
+    // Announce with timestamp and message content
+    liveRegion.textContent = 'Live activity updated: ' + textContent;
+    // Clear after 3 seconds to allow re-announcements for new items
+    setTimeout(function() {
+      if (liveRegion && liveRegion.textContent && !feedItems[0].querySelector('.feed-msg')?.textContent.includes(liveRegion.textContent)) {
+        liveRegion.textContent = '';
+      }
+    }, 3000);
+  }
+}
+
 function addFeedItem(msg, botColor) {
   const now = new Date();
   const time = now.toLocaleTimeString('en-US', { hour12: false });
@@ -118,6 +135,8 @@ function addFeedItem(msg, botColor) {
     const old = feedItems.pop();
     old.remove();
   }
+  // Announce to screen readers via ARIA live region
+  updateARIAFeed();
 }
 
 /* ─── HQ CANVAS ─── */
@@ -837,17 +856,66 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
 
 })();
 
-/* ─── HAMBURGER MENU ─── */
+/* ─── HAMBURGER MENU (with Focus Trap for Accessibility) ─── */
 (function() {
   const btn = document.getElementById('hamburger-btn');
   const menu = document.getElementById('mobile-menu');
   if (!btn || !menu) return;
 
+  let previouslyFocused = null;
+  const menuLinks = Array.from(menu.querySelectorAll('a, button'));
+  const firstLink = menuLinks[0];
+  let lastFocusableIndex = -1;
+
   function toggleMenu() {
     const isOpen = btn.classList.toggle('open');
     menu.classList.toggle('open');
     document.body.style.overflow = isOpen ? 'hidden' : '';
-  }
+
+     // Focus trap: save and restore focus context
+    if (isOpen) {
+      previouslyFocused = document.activeElement;
+      lastFocusableIndex = menuLinks.length - 1;
+       // Set initial focus to first link or hamburger button if menu is empty
+      if (menuLinks.length > 0) {
+        menuLinks[0].focus();
+      } else {
+        btn.focus();
+      }
+    } else {
+      previouslyFocused?.focus();
+      previouslyFocused = null;
+     }
+   }
+
+  function handleMenuFocusTrap(e) {
+    if (!menu.classList.contains('open')) return;
+
+    const currentIndex = menuLinks.indexOf(document.activeElement);
+
+    // Enter key navigation within menu
+    if (e.key === 'Enter' && currentIndex >= 0) {
+      if (currentIndex < lastFocusableIndex) {
+        setTimeout(() => {
+          const nextLink = menuLinks[currentIndex + 1];
+          nextLink?.focus();
+        }, 50);
+       }
+     }
+
+    // Focus trap: handle Tab/Shift+Tab at boundaries
+    if (e.key === 'Tab') {
+      if (document.activeElement === firstLink && !e.shiftKey) {
+         // On first item, Tab goes to last link
+        e.preventDefault();
+        lastFocusableIndex > -1 ? menuLinks[lastFocusableIndex].focus() : btn.focus();
+       } else if (document.activeElement === menuLinks[lastFocusableIndex] && e.shiftKey) {
+         // On last item, Shift+Tab goes to first link
+        e.preventDefault();
+        firstLink?.focus();
+       }
+     }
+   }
 
   btn.addEventListener('click', toggleMenu);
 
@@ -856,16 +924,22 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
       btn.classList.remove('open');
       menu.classList.remove('open');
       document.body.style.overflow = '';
-    });
-  });
+       // Focus back on hamburger button after closing
+      btn.focus();
+     });
+   });
 
-  // Close on Escape key
+   // Close on Escape key and restore focus
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && menu.classList.contains('open')) {
       btn.classList.remove('open');
       menu.classList.remove('open');
       document.body.style.overflow = '';
-    }
-  });
+      previouslyFocused?.focus();
+     }
+   }, true); // capture phase to intercept
+
+  // Add focus trap listener to menu
+  menu.addEventListener('keydown', handleMenuFocusTrap, true);
 })();
 
