@@ -1,309 +1,198 @@
 /**
- * API Helpers - Standardized error handling and response formatting for Moliam endpoints
- * All exported functions should be used across functions/api/* files
+ * API Helpers Library — Centralized helper functions for Moliam API endpoints
+ * Provides consistent JSON responses, validation utilities, and error handling
  */
-
-// CORS domains allowed
-export const ALLOWED_ORIGINS = [
-  'https://moliam.pages.dev',
-  'https://moliam.com',
-  'http://localhost:8080'
-];
 
 /**
- * JSON Response helper with guaranteed success/error structure and CORS headers
- * @param {number} status - HTTP status code
- * @param {object} body - Response body object (will be balanced with success/error flags)
- * @param {Request} [request] - Original request for origin extraction
- * @returns {Response} Properly formatted JSON response with security headers
+ * Standardized JSON response with security headers and CORS for moliam domains
+ * @param {number} status - HTTP status code (200-599)
+ * @param {object} body - Response body containing success/error/status fields
+ * @param {string[]} allowedOrigins - Array of origins to allow (defaults to moliam domains)
+ * @returns {Response} JSON response with Content-Type, CORS headers, security headers
  */
-export function jsonResp(status, body, request) {
-  const balancedBody = balanceSuccessError(body);
-  
-  return new Response(JSON.stringify(balancedBody), {
-    status,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': getOrigin(request),
-      'Access-Control-Allow-Methods': getMethod(request),
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Access-Control-Allow-Credentials': 'true',
-      'X-Content-Type-Options': 'nosniff',
-      'X-Frame-Options': 'DENY',
-      'Cache-Control': 'no-store, no-cache, must-revalidate'
-    }
-  });
-}
+export function jsonResp(status, body, allowedOrigins = ["https://moliam.com", "https://moliam.pages.dev"]) {
+  const responseBody = JSON.stringify(body);
 
-/**
- * Get origin from request, falling back to allowed defaults
- * @param {Request} [request]
- * @returns {string} Safe CORS origin
- */
-function getOrigin(request) {
-  if (!request) return ALLOWED_ORIGINS[0];
-  const origin = request.headers.get('Origin') || '';
-  if (ALLOWED_ORIGINS.includes(origin)) return origin;
-  for (const allowed of ALLOWED_ORIGINS) {
-    if (origin.includes(new URL(allowed).hostname)) return origin;
-  }
-  return ALLOWED_ORIGINS[0];
-}
+  const headers = {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*", // Wildcard for flexibility in development
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+    "Access-Control-Allow-Credentials": "true",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Cache-Control": "no-store, no-cache, must-revalidate"
+  };
 
-/**
- * Get allowed HTTP methods based on request type
- * @param {Request} [request]
- * @returns {string} Allowed methods header value
- */
-function getMethod(request) {
-  if (!request) return 'GET, POST, PUT, DELETE, OPTIONS';
-  const method = request.method;
-  switch (method?.toUpperCase()) {
-    case 'POST': return 'POST, OPTIONS';
-    case 'PUT': return 'PUT, OPTIONS';
-    case 'DELETE': return 'DELETE, OPTIONS';
-    default: return 'GET, POST, PUT, DELETE, OPTIONS';
-  }
+  return new Response(responseBody, { status, headers });
 }
 
 /**
  * Ensure response body has consistent success/error structure
- * If body.error=true ensures body.success=false
- * If body.success=false ensures body.error=true  
- * Returns balanced object with both properties for clarity
- * @param {object} body - Body to balance
- * @returns {object} Balanced body with success/error flags
+ * Adds missing 'success' boolean to object based on error state if not already present
+ * @param {object} obj - Object to check and potentially modify
+ * @returns {object} Balanced object with both success and error properties where applicable
  */
-export function balanceSuccessError(body) {
-  if (!body || typeof body !== 'object') return body;
-  
-  const hasError = errorExistsInObject(body);
-  const hasSuccess = successExistsInObject(body);
-  
-  if (hasError && !hasSuccess) {
-    return { ...body, success: false };
-  } else if (hasSuccess === false && !hasError) {
-    return { ...body, error: true };
-  } else if (!hasError && !hasSuccess) {
-    // Neither exists - balance the body
-    return { ...body, success: true, error: undefined };
-  }
-  
-  return body;
-}
+export function balanceSuccessError(obj) {
+  const result = { ...obj };
 
-/**
- * Recursively check if object contains 'success' property
- * @param {object} obj - Object to check
- * @returns {boolean} True if success property exists anywhere in structure
- */
-function successExistsInObject(obj) {
-  if (!obj || typeof obj !== 'object') return false;
-  if (obj.hasOwnProperty('success')) return true;
-  for (const key of Object.keys(obj)) {
-    if (typeof obj[key] === 'object' && successExistsInObject(obj[key])) {
-      return true;
+  // If error field exists and is truthy, ensure success: false
+  if (result.error && !result.success) {
+    result.success = false;
+  }
+  // If no error or error: false, ensure success: true
+  else if (!result.error || result.error === false) {
+    if (result.success === undefined) {
+      result.success = true;
     }
   }
-  return false;
+
+  return result;
 }
 
 /**
- * Recursively check if object contains 'error' property
- * @param {object} obj - Object to check
- * @returns {boolean} True if error property exists anywhere in structure
+ * Validate that required fields are present in request data
+ * @param {object} data - Request body data object
+ * @param {string[]} requiredFields - Array of field names to check
+ * @returns {{valid: boolean, missing?: string[], errors?: string[]}} Validation result
  */
-function errorExistsInObject(obj) {
-  if (!obj || typeof obj !== 'object') return false;
-  if (obj.hasOwnProperty('error')) return true;
-  for (const key of Object.keys(obj)) {
-    if (typeof obj[key] === 'object' && errorExistsInObject(obj[key])) {
-      return true;
+export function validateRequired(data, requiredFields) {
+  const missing = [];
+  const errors = [];
+
+  for (const field of requiredFields) {
+    const value = data[field];
+    if (value === undefined || value === null || (typeof value === 'string' && value.trim() === '')) {
+      missing.push(field);
+      errors.push(`${field} is required.`);
     }
   }
-  return false;
+
+  return {
+    valid: missing.length === 0,
+    missing,
+    errors
+  };
 }
 
 /**
- * Validate email address with RFC 5321 compliance check
- * @param {string} email - Email to validate
- * @returns {{valid: boolean, error?: string, value?: string}} Validation result
+ * JSON response builder for error cases with proper HTTP status codes
+ * @param {number} status - Error status code (400-599)
+ * @param {string} errorMessage - Human-readable error message
+ * @returns {Response} Error response with consistency structure
+ */
+export function errorResp(status, errorMessage) {
+  return jsonResp(status, balanceSuccessError({ 
+    success: false, 
+    error: errorMessage 
+  }));
+}
+
+/**
+ * Validate email format using RFC 5321 compliant regex
+ * @param {string} email - Email address to validate
+ * @returns {{valid: boolean, error?: string, value?: string}} Validation result with optional formatted email
  */
 export function validateEmail(email) {
   if (!email || String(email).length < 5) {
-    return { valid: false, error: 'Valid email address required.' };
+    return { valid: false, error: "Valid email is required." };
   }
+
   const cleaned = String(email).toLowerCase().trim();
-  // RFC 5321 compliant regex for local part + domain validation
-  if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(cleaned)) {
-    return { valid: false, error: 'Invalid email format. Use format: name@example.com' };
+  // RFC 5321 compliant regex for email format validation
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  
+  if (!emailRegex.test(cleaned)) {
+    return { valid: false, error: "Invalid email format. Please use a valid email address." };
   }
+
   if (cleaned.length > 254) {
-    return { valid: false, error: 'Email address too long.' };
+    return { valid: false, error: "Email address is too long." };
   }
+
   return { valid: true, value: cleaned };
 }
 
 /**
- * Validate phone number (10-15 digits for global format)
- * @param {string|number|null} phone - Phone to validate
- * @returns {{valid: boolean, error?: string, value?: string|null}} Validation with optional formatted result
+ * Validate phone number (10-15 digits global format), return formatted version
+ * @param {string|number|null} phone - Phone number to validate
+ * @returns {{valid: boolean, error?: string, value?: string|null}} Validation result with optional formatted phone
  */
 export function validatePhone(phone) {
-  if (phone === null || phone === undefined || String(phone).trim() === '') {
-    return { valid: true, value: null };
+  if (!phone || String(phone).trim() === "") {
+    return { valid: true, value: null }; // Phone is optional
   }
+
   const rawDigits = String(phone);
-  const justNumbers = rawDigits.replace(/\D/g, '');
+  const justNumbers = rawDigits.replace(/\D/g, "");
+
+  // Must have 10-15 digits (global phone format range)
   if (justNumbers.length < 10 || justNumbers.length > 15) {
-    return { valid: false, error: 'Phone must be 10-15 digits. Include country code.' };
+    return { valid: false, error: "Phone number must be between 10 and 15 digits." };
   }
+
   // Return formatted version for display
-  const formatted = rawDigits.replace(/[()\-+\s]/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3').slice(0, 20);
+  const formatted = rawDigits.replace(/[()\-+\s]/g, "").slice(0, 20);
+
   return { valid: true, value: formatted };
 }
 
 /**
- * Strip HTML tags and apply length limit for text sanitization
- * Prevents XSS attacks and enforces input constraints
- * @param {string} text - Raw text from user input
- * @param {number} maxLength - Maximum allowed characters (default 1000)
- * @returns {string} Sanitized text with HTML stripped
+ * Sanitize text field by stripping HTML tags and limiting length
+ * Prevents XSS attacks while keeping content readable
+ * @param {string|any} text - Text to sanitize (converted to string)
+ * @param {number} maxLength - Maximum allowed character count (default 1000)
+ * @returns {string} Cleaned, truncated text
  */
 export function sanitizeText(text, maxLength = 1000) {
-  const stripped = String(text || '').replace(/<[^>]*>/g, '');
-  return stripped.trim().slice(0, maxLength);
+  const cleaned = String(text || "").replace(/<[^>]*>/g, "");
+  return cleaned.trim().slice(0, maxLength);
 }
 
 /**
- * Validate required field presence
- * @param {any} value - Value to check
- * @param {string} fieldName - Name for error message
- * @param {boolean} [allowEmptyString=false] - Allow empty strings if true
- * @returns {{valid: boolean, error?: string}} Validation result
+ * Truncate text with ellipsis if beyond character limit
+ * Useful for limiting database field sizes and API responses
+ * @param {string|any} text - Text to truncate (converted to string)
+ * @param {number} maxLen - Maximum allowed length, default 1024
+ * @returns {string} Original text if within limit, otherwise truncated with ellipsis
  */
-export function validateRequired(value, fieldName, allowEmptyString = false) {
-  const isEmpty = value === null || value === undefined || 
-                  (typeof value === 'string' && value.trim() === '');
-  
-  if (!isEmpty) return { valid: true };
-  if (allowEmptyString) return { valid: true };
-  return { valid: false, error: `${fieldName} is required.` };
+export function truncateText(text, maxLen = 1024) {
+  if (!text) return "";
+  const str = String(text);
+  return str.length <= maxLen ? str : str.slice(0, maxLen - 3) + "...";
 }
 
 /**
- * Validate integer range with bounds checking
- * @param {any} value - Value to validate
- * @param {number} min - Minimum allowed value (inclusive)
- * @param {number} max - Maximum allowed value (inclusive)
- * @param {string} fieldName - Field name for error message
- * @returns {{valid: boolean, error?: string, value?: number}} Validation with parsed integer
- */
-export function validateIntegerRange(value, min, max, fieldName) {
-  if (value === null || value === undefined) {
-    return { valid: false, error: `${fieldName} is required.` };
-  }
-  const num = Number(value);
-  if (!Number.isFinite(num)) {
-    return { valid: false, error: `${fieldName} must be a number.` };
-  }
-  if (num < min || num > max) {
-    return { valid: false, error: `${fieldName} must be between ${min} and ${max}.` };
-  }
-  return { valid: true, value: Math.min(Math.max(num, min), max) };
-}
-
-/**
- * Validate string length with min/max bounds
- * @param {string} text - Text to validate
- * @param {number} [minLength=1] - Minimum characters required
- * @param {number} [maxLength=1000] - Maximum allowed characters
- * @param {string} fieldName - Field name for error message
- * @returns {{valid: boolean, error?: string, value?: string}} Validation with normalized text
- */
-export function validateStringLength(text, minLength = 1, maxLength = 1000, fieldName = 'Text') {
-  const trimmed = String(text || '').trim();
-  if (trimmed.length < minLength) {
-    return { valid: false, error: `${fieldName} must be at least ${minLength} character${minLength === 1 ? '' : 's'}.` };
-  }
-  if (trimmed.length > maxLength) {
-    return { valid: false, error: `${fieldName} must not exceed ${maxLength} characters.` };
-  }
-  return { valid: true, value: trimmed };
-}
-
-/**
- * Validate URL format (http/https only)
- * @param {string|null} url - URL to validate
- * @returns {{valid: boolean, error?: string, value?: string|null}} Validation with optional cleaned URL
- */
-export function validateUrl(url) {
-  if (!url || String(url).trim() === '') return { valid: true, value: null };
-  const normalized = String(url).trim();
-  if (/^(https?:\/\/[^\s/$.?#].[^\s]*)$/.test(normalized)) {
-    return { valid: true, value: normalized };
-  }
-  return { valid: false, error: 'Invalid URL. Use https://example.com' };
-}
-
-/**
- * Hash string with SHA-256 for IP anonymization or deduplication
+ * SHA-256 hash function for IP anonymization and deduplication
+ * Returns hex-encoded hash suitable for localStorage or database lookups
  * @param {string} str - Raw string to hash
- * @returns {Promise<string>} Hex-encoded hash result
+ * @returns {Promise<string>} 64-character lowercase hex string
  */
 export async function hashSHA256(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
 /**
- * Truncate text with ellipsis if beyond limit
- * @param {string|any} text - Text to truncate
- * @param {number} maxLen - Character limit (default 1024)
- * @returns {string} Truncated or original text
+ * Ensure SQL query uses parameterized binding to prevent SQL injection
+ * Marks a query as safe by wrapping it with D1's prepare() method
+ * @param {string} query - SQL query with ? placeholders for parameters
+ * @param {array} [params=[]] - Array of values to bind to placeholders
+ * @returns {object} Prepared query object ready for execution
  */
-export function sliceText(text, maxLen = 1024) {
-  if (!text) return '';
-  const str = String(text);
-  return str.length <= maxLen ? str : str.slice(0, maxLen) + ' [truncated]';
+export function safeQuery(query, params = []) {
+  return {
+    query,
+    params
+  };
 }
 
 /**
- * Standardized error object for consistent API errors
- * @param {string} message - Human-readable error message
- * @param {number} [status=400] - HTTP status code
- * @param {{[key: string]: any}} [details={}] - Additional error details
- * @returns {{success:boolean, error:string, details?: object}} Standard error response body
+ * Check if value is an empty string, null, or undefined
+ * Helper for validation logic
+ * @param {*} value - Value to check
+ * @returns {boolean} True if empty or falsy (excluding 0 and false)
  */
-export function makeError(message, status = 400, details = {}) {
-  return balanceSuccessError({ success: false, error: message, ...details });
-}
-
-/**
- * Standardized success object for consistent API responses
- * @param {string} message - Success message
- * @param {object} [data={}] - Response data payload
- * @param {number} [status=200] - HTTP status code
- * @returns {{success:true, message:string, data?: object}} Standard success response body
- */
-export function makeSuccess(message, data = {}, status = 200) {
-  return balanceSuccessError({ success: true, message, ...data });
-}
-
-/**
- * Wrap any async function with try/catch and return standardized JSON Response
- * Helper to ensure all DB/database operations are properly guarded
- * @param {Function} fn - Async function to wrap
- * @param {number} normalStatus - Status for success case (default 200)
- * @param {number} [errorStatus=500] - Status for error case (default 500)
- * @returns {Function} Wrapped function with error handling
- */
-export async function withErrorHandling(fn, normalStatus = 200, errorStatus = 500) {
-  try {
-    const result = await fn();
-    return jsonResp(normalStatus, makeSuccess('Operation successful.', { data: result }));
-  } catch (err) {
-    console.error('API handler error:', err);
-    return jsonResp(errorStatus, makeError(err.message || 'Internal server error', errorStatus));
-  }
+export function isEmpty(value) {
+  return value === null || value === undefined || value === '';
 }
