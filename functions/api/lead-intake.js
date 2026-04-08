@@ -1,349 +1,348 @@
-1|/**
-2| * MOLIAM Lead Capture → CRM Pipeline
-3| * Enhanced contact form with scoring and automation triggers
-4| * POST /api/lead-intake — Uses api-helpers for consistent validation and JSON responses
-5| */
-6|
-7|import { jsonResp, calculateLeadScore, sanitizeText, validateEmail, validatePhone } from './api-helpers.js';
-8|
-9|/**
-10| * Handle POST requests to lead intake endpoint with email validation, phone validation, HTML stripping, and lead scoring
-11| * @param {object} context - Cloudflare Pages function context with request and env
-12| * @returns {Response} JSON response with success/error status and proper CORS headers
-13| */
-14|export async function onRequestPost(context) {
-15|  const { request, env } = context;
-16|  const db = env.MOLIAM_DB;
-17|
-18|  // Return consistent JSON error with CORS headers when DB unavailable
-19|  if (!db) {
-20|    return jsonResp(503, { success: false, error: true, message: "Database not available. Please try again later." }, request);
-21|  }
-22|
-23|  // --- Parse body with try/catch for malformed JSON ---
-24|  let data;
-25|  try {
-26|    data = await request.json();
-27|  } catch {
-28|    return jsonResp(400, { success: false, error: true, message: "Invalid JSON body." }, request);
-29|  }
-30|
-31|  // --- Sanitize all text fields (strip HTML, apply length limits) ---
-32|  const name = sanitizeText(String(data.name || ""), 200);
-33|  const emailResult = validateEmail(String(data.email || ""));
-34|  if (!emailResult.valid) return jsonResp(400, { success: false, error: true, message: emailResult.error }, request);
-35|  const email = emailResult.value;
-36|
-37|  const phoneResult = validatePhone(data.phone);
-38|  if (!phoneResult.valid) return jsonResp(400, { success: false, error: true, message: phoneResult.error }, request);
-39|  const phone = phoneResult.value;
-40|
-41|  const company = sanitizeText(String(data.company || ""), 100);
-42|  const message = sanitizeText(String(data.message || ""), 2000);
-43|
-44|  // Enhanced fields for scoring (sanitized)
-45|  const budget = sanitizeText(String(data.budget || "undisclosed"), 50);
-46|  const scope = sanitizeText(String(data.scope || data.inquiry_type || "General inquiry").trim(), 200);
-47|  const industry = sanitizeText(String(data.industry || "general").trim(), 100);
-48|  const urgency_level = String(data.urgency_level || 'medium').toLowerCase();
-49|
-50|  // Sanitized pain_points array (limit item length to 500 chars)
-51|  const pain_points = Array.isArray(data.pain_points) 
-52|      ? data.pain_points.filter(p => p && typeof p.trim === "function" && p.trim().length > 0).slice(0, 5).map((p, i) => sanitizeText(String(p), 500))
-53|       : [];
-54|
-55|  // Field length validation after sanitization
-56|  const errors = [];
-57|  if (name.length < 2) errors.push("Name must be at least 2 characters.");
-58|  if (message.length < 10) errors.push("Message must be at least 10 characters.");
-59|
-60|  if (errors.length) {
-61|    return jsonResp(400, { success: false, error: true, message: errors.join(" ") }, request);
-62|  }
-63|
-64|  // Parse additional optional fields with length limits
-65|  const screenRes = data.screenResolution ? String(data.screenResolution).trim() : "";
-66|  const ip = request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for") || "unknown";
-67|  const ua = request.headers.get("user-agent") || "";
-68|
-69|  try {
-70|    // --- Rate limiting check (5 per 6 min window per IP) ---
-71|    const ipHash = await hashSHA256(ip);
-72|    const rl = await db.prepare(
-73|          "SELECT request_count, window_start FROM rate_limits WHERE ip_address_hash = ?"
-74|       ).bind(ipHash).first();
-75|
-76|    if (rl) {
-77|      const windowAge = Date.now() - new Date(rl.window_start).getTime();
-78|      if (windowAge < 360000 && rl.request_count >= 5) {
-79|        return jsonResp(429, { 
-80|            success: false, error: true,
-81|            message: "Too many submissions. Please wait a few minutes.",
-82|            retryAfter: Math.ceil((360000 - windowAge) / 1000)
-83|           }, request);
-84|      }
-85|    }
-86|
-87|     // --- Insert submission with parameterized queries to prevent SQL injection ---
-88|    const sub = await db.prepare(
-89|      `INSERT INTO submissions 
-90|       (name, email, phone, company, message, user_agent, screen_resolution, budget, scope, industry, urgency_level, pain_points) 
-91|       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-92|      ).bind(name, email, phone, company, message, ua, screenRes, budget, scope, industry, urgency_level, JSON.stringify(pain_points)).run();
-93|
-94|    const subId = sub.meta?.last_row_id;
-95|
-96|    if (!subId) {
-97|      console.error("Failed to get last_row_id:", JSON.stringify(sub));
-98|      return jsonResp(500, { success: false, error: true, message: "Failed to save submission. Please try again." }, request);
-99|     }
-100|
-101|     // --- Calculate Lead Score using api-helpers ---
-102|    const scoreResult = calculateLeadScore({
-103|      email, name, company, budget, scope, industry, urgency_level, message
-104|     });
-105|
-106|    await db.prepare(
-107|       `UPDATE submissions SET lead_score = ? WHERE id = ?`
-108|      ).run(scoreResult.total_score, subId);
-109|
-110|     // --- Insert detailed scoring ---
-111|    const painPointsJson = JSON.stringify(pain_points);
-112|    await db.prepare(
-113|       `INSERT INTO lead_scores 
-114|       (submission_id, base_score, industry_boost, urgency_boost, budget_fit_score, total_score) 
-115|       VALUES (?, ?, ?, ?, ?, ?)`
-116|      ).bind(subId, scoreResult.base_score, scoreResult.industry_boost, scoreResult.urgency_boost, scoreResult.budget_fit_score, scoreResult.total_score).run();
-117|
-118|// --- Initiate CRM Sync (non-blocking) ---
-119|  initiateCrmSync(context.env, subId, { name, email, phone, company, budget, scope, industry, urgency_level }).catch(err => {
-120|      console.warn("CRM sync failed:", err.message);
-121|    });
-122|
-123|    // --- Queue Email Sequences (background task) ---
-124|    queueEmailSequences(env, subId).catch(err => {
-125|            console.warn("Email sequencing failed:", err.message);
-126|            });
-127|
-128|    // --- Send Real-time Discord Notification (non-blocking) ---
-129|    const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
-130|    if (webhookUrl && webhookUrl.startsWith("https://discord.com/api/webhooks/") && !webhookUrl.includes("YOUR_") && !webhookUrl.includes("PLACEHOLDER")) {
-131|      sendDiscordAlert(webhookUrl, scoreResult).catch(err => {
-132|        console.warn("Discord alert failed:", err.message);
-133|          });
-134|      }
-135|
-136|    // --- Log to audit tables ---
-137|    await db.prepare(
-138|       `INSERT INTO notification_logs (submission_id, channel_type, status, payload_preview) 
-139|         VALUES (?, 'discord', 'success', ?)`
-140|       ).bind(subId, JSON.stringify({ name, email, score: scoreResult.total_score })).run();
-141|
-142|return jsonResp(200, {
-143|      success: true,
-144|      message: `Thank you ${name}! Your inquiry has been prioritized with a lead score of ${scoreResult.total_score}/100. We'll be in contact within 5 minutes of your submission.`,
-145|      submissionId: subId,
-146|      leadScore: scoreResult.total_score,
-147|      urgency: scoreResult.urgency_status
-148|      }, request);
-149|
-150|} catch (err) {
-151|    console.error("Lead intake error:", err);
-152|    return jsonResp(500, { 
-153|        success: false, error: true,
-154|        message: "Something went wrong. Please email us directly at hello@moliam.com.",
-155|        requestId: crypto.randomUUID ? crypto.randomUUID() : undefined
-156|      }, request);
-157|}
-158|}
-159|
-160|/**
-161| * Lead Scoring Engine — Auto-calculate lead priority
-162| * Algorithm: Base 40 + budget(0-25) + industry(0-20) + urgency(0-25) = max 100
-163| * Categories: hot (75+), moderate (60-74), normal (<60)
-164| * @param {object} data - Lead data with email, name, company, budget, scope, industry, urgency_level, message
-165| * @returns {{base_score:number,intustry_boost:int,urgency_boost:int,budget_fit_score:int,total_score:int,urgency_status:string,score_breakdown:object}} Scoring result object with components and final total
-166| */
-167|function calculateLeadScore(data) {
-168|  const { email, name, company, budget, scope, industry, urgency_level, message } = data;
-169|  let base_score = 40; // Base score for any qualified lead
-170|
-171|    // Budget scoring (0-25 points)
-172|  let budgetFit = 50;
-173|  if (budget.includes("under $10") || budget === "undisclosed") {
-174|    base_score += 5;
-175|    budgetFit = 30;
-176|    } else if (/\\d+\\.\\d+/.test(budget) && /\\d+$/.exec(budget)[0] > 5) {
-177|    base_score += 15;
-178|    budgetFit = 75;
-179|    } else if /^\\w+\\s?\\$[5-9k]?|^\\d+[$,]?\\d{3,}/.test(budget)) {
-180|        // Check for $5k-$10k matches
-181|    base_score += 12;
-182|    budgetFit = 65;
-183|    }
-184|
-185|      // Industry scoring (0-20 points) - boost priority for priority industries
-186|  const industryBoost = 
-187|       /tech|saas|software|ai|startup/i.test(industry) ? 18 :
-188|       /finance|financial|fintech/i.test(industry) ? 16 :
-189|       /health|medical|healthcare/i.test(industry) ? 14 :
-190|       /education|academia|university/i.test(industry) ? 10 :
-191|       /manufacturing|retail|ecommerce/i.test(industry) ? 12 :
-192|       8;
-193|
-194|      // Urgency scoring (0-25 points) - higher urgency = higher score
-195|  const urgencyBoostMap = {
-196|        'critical': 30,
-197|        'high': 20,
-198|        'medium': 10,
-199|        'low': 5
-200|      };
-201|  let urgencyBoost = urgencyBoostMap[urgency_level?.toLowerCase()] || 10;
-202|
-203|      // Keyword matches in message for additional scoring
-204|  if (/immediate|urgent|deadline|asap|quickly|fast|\\b30\\s*days\\b/i.test(message)) {
-205|    base_score += 8;
-206|    urgencyBoost += 10;
-207|    }
-208|
-209|  const total_score = Math.min(100, base_score + industryBoost + urgencyBoost);
-210|  
-211|      // Determine overall urgency status
-212|  let urgency_status = 'normal';
-213|  if (total_score >= 75) urgency_status = 'hot';
-214|  else if (total_score >= 60) urgency_status = 'moderate';
-215|
-216|  return {
-217|    base_score,
-218|    industry_boost: industryBoost,
-219|    urgency_boost: urgencyBoost,
-220|    budget_fit_score: budgetFit,
-221|    total_score,
-222|    urgency_status,
-223|    score_breakdown: { base_score, industry_boost, urgencyBoost }
-224|      };
-225|}
-226|
-227|/**
-228| * CRM Sync - Push to HubSpot/Airtable/Pipedrive (fire-and-forget)
-229| * Sends lead data to external CRM systems asynchronously without blocking response
-230| * Uses error handling with console.warn only - non-blocking to user
-231| * @param {object} env - Worker environment variables with HUBSPOT_API_KEY, AIRTABLE_API_KEY
-232| * @param {number} submission_id - Lead submission ID from database   
-233| * @param {object} data - Lead object with name, email, phone, company, budget, scope, industry, urgency_level, message
-234| * @returns {Promise<null>} Null on success (errors logged to console only)
-235| */
-236|async function initiateCrmSync(env, submission_id, data) {
-237|  try {
-238|    const CRM_PROVIDER = env.HUBSPOT_API_KEY || env.AIRTABLE_API_KEY;
-239|    
-240|    // Skip if no CRM configured
-241|    if (!CRM_PROVIDER) return null;
-242|
-243|    const crmUrl = CRM_PROVIDER.includes('hubspot') 
-244|         ? 'https://api.hubapi.com/crm/v3/objects/contacts'
-245|         : (env.AIRTABLE_API_KEY ? 'https://api.airtable.com/v0/' + env.AIRTABLE_APP_ID + '/Leads' : null);
-246|
-247|    if (!crmUrl) return null;
-248|
-249|    const payload = JSON.stringify({
-250|      properties: {
-251|        name: data.name,
-252|        email: data.email,
-253|        phone: data.phone,
-254|        company: data.company || "Freelance",
-255|        budget_range: data.budget,
-256|        project_scope: data.scope,
-257|        industry_type: data.industry,
-258|        urgency: data.urgency_level,
-259|        pain_points: data.pain_points?.length ? data.pain_points.join(", ") : null,
-260|        inquiry_message: sliceText(data.message, 1024),
-261|        lead_score: 50, // Placeholder - actual scoring done in main function
-262|        source: "moliam-web-intake",
-263|        submitted_at: new Date().toISOString()
-264|      }
-265|    });
-266|
-267|    const headers = { 'Content-Type': 'application/json' };
-268|
-269|    if (CRM_PROVIDER.includes('hubspot') && env.HUBSPOT_API_KEY) {
-270|      headers['Authorization'] = `Bearer ${env.HUBSPOT_API_KEY}`;
-271|      await fetch(crmUrl, { method: 'POST', headers, body: payload, signal: AbortSignal.timeout(5000) });
-272|      } else if (CRM_PROVIDER.includes('airtable') && env.AIRTABLE_API_KEY) {
-273|      headers['Authorization'] = `Bearer ${env.AIRTABLE_API_KEY}`;
-274|      await fetch(crmUrl, { method: 'POST', headers, body: payload, signal: AbortSignal.timeout(5000) });
-275|      }
-276|
-277|    return null; // Success logged separately
-278|   } catch (err) {
-279|     console.warn("CRM sync failed:", err.message);
-280|     return null; // Fire and forget - don't propagate errors to user
-281|   }
-282|}
-283|
-284|/**
-285| * Send Discord alert webhook with lead score embedding (fire-and-forget)
-286| * Non-blocking call that logs errors to console without affecting user response
-287| * Uses error handling - never throws to caller
-288| * @param {string} webhookUrl - Discord webhook URL from env.DISCORD_WEBHOOK_URL
-289| * @param {object} scoreResult - calculatedLeadScore result object with total_score, urgency_status
-290| * @returns {Promise<null>} Null always (errors logged only)
-291| */
-292|async function sendDiscordAlert(webhookUrl, scoreResult) {
-293|  try {
-294|    const priorityTag = scoreResult.total_score >= 75 ? "<@1466244456088080569>" : "";
-295|
-296|    await fetch(webhookUrl, {
-297|      method: "POST",
-298|      headers: { "Content-Type": "application/json" },
-299|      body: JSON.stringify({
-300|        username: "Moliam Lead Score Alert",
-301|        avatar_url: "https://moliam.com/logo.png",
-302|        content: priorityTag + `Lead scored ${scoreResult.total_score}/100 (${scoreResult.urgency_status})`,
-303|        embeds: [{
-304|          title: "🔔 New Lead — High Priority",
-305|          color: scoreResult.total_score >= 75 ? 0x10B981 : 0xF59E0B,
-306|          fields: [
-307|              { name: "Lead Score", value: `${scoreResult.total_score}/100`, inline: true },
-308|              { name: "Status", value: scoreResult.urgency_status.charAt(0).toUpperCase() + scoreResult.urgency_status.slice(1), inline: true }
-309|             ],
-310|          footer: { text: `moliam.com/lead-score` },
-311|          timestamp: new Date().toISOString()
-312|         }]
-313|        })
-314|     });
-315|
-316|    return null; // Success logged separately
-317|  } catch (err) {
-318|     console.warn("Discord alert failed:", err.message);
-319|     return null;
-320|   }
-321|}
-322|
-323|/**
-324| * Queue email sequences for new lead submissions (fire-and-forget background task)
-325| * Non-blocking call that logs errors to console without affecting user response
-326| * @param {object} env - Worker environment with EMAIL_API_KEY if configured
-327| * @param {number} submission_id - Lead submission ID from database
-328| * @returns {Promise<null>} Null always (errors logged only)
-329| */
-330|async function queueEmailSequences(env, submission_id) {
-331|  try {
-332|    // Background job to send welcome emails and sequence triggers
-333|    const hasEmailProvider = env.EMAIL_API_KEY || env.MAILGUN_API_KEY || env.SENDGRID_API_KEY;
-334|    if (!hasEmailProvider) return null;
-335|
-336|// Check if DB is available before attempting queue operations
-337|if (env.MOLIAM_DB) {
-338|  await env.MOLIAM_DB.prepare(
-339|        `INSERT INTO email_queue (submission_id, queued_at, status) VALUES (?, datetime('now'), 'pending')`
-340|      ).bind(submission_id).run();
-341|}
-342|
-343|return null;
-344|   } catch (err) {
-345|    console.warn("Email queue failed:", err.message);
-346|    return null;
-347|   }
-348|}
-349|
+/**
+ * MOLIAM Lead Capture → CRM Pipeline
+ * Enhanced contact form with scoring and automation triggers
+ * POST /api/lead-intake — Uses api-helpers for consistent validation and JSON responses
+ */
+
+import { jsonResp, calculateLeadScore, sanitizeText, validateEmail, validatePhone } from './api-helpers.js';
+
+/**
+ * Handle POST requests to lead intake endpoint with email validation, phone validation, HTML stripping, and lead scoring
+ * @param {object} context - Cloudflare Pages function context with request and env
+ * @returns {Response} JSON response with success/error status and proper CORS headers
+ */
+export async function onRequestPost(context) {
+  const { request, env } = context;
+  const db = env.MOLIAM_DB;
+
+  // Return consistent JSON error with CORS headers when DB unavailable
+  if (!db) {
+    return jsonResp(503, { success: false, error: true, message: "Database not available. Please try again later." }, request);
+  }
+
+  // --- Parse body with try/catch for malformed JSON ---
+  let data;
+  try {
+    data = await request.json();
+  } catch {
+    return jsonResp(400, { success: false, error: true, message: "Invalid JSON body." }, request);
+  }
+
+  // --- Sanitize all text fields (strip HTML, apply length limits) ---
+  const name = sanitizeText(String(data.name || ""), 200);
+  const emailResult = validateEmail(String(data.email || ""));
+  if (!emailResult.valid) return jsonResp(400, { success: false, error: true, message: emailResult.error }, request);
+  const email = emailResult.value;
+
+  const phoneResult = validatePhone(data.phone);
+  if (!phoneResult.valid) return jsonResp(400, { success: false, error: true, message: phoneResult.error }, request);
+  const phone = phoneResult.value;
+
+  const company = sanitizeText(String(data.company || ""), 100);
+  const message = sanitizeText(String(data.message || ""), 2000);
+
+  // Enhanced fields for scoring (sanitized)
+  const budget = sanitizeText(String(data.budget || "undisclosed"), 50);
+  const scope = sanitizeText(String(data.scope || data.inquiry_type || "General inquiry").trim(), 200);
+  const industry = sanitizeText(String(data.industry || "general").trim(), 100);
+  const urgency_level = String(data.urgency_level || 'medium').toLowerCase();
+
+  // Sanitized pain_points array (limit item length to 500 chars)
+  const pain_points = Array.isArray(data.pain_points) 
+      ? data.pain_points.filter(p => p && typeof p.trim === "function" && p.trim().length > 0).slice(0, 5).map((p, i) => sanitizeText(String(p), 500))
+       : [];
+
+  // Field length validation after sanitization
+  const errors = [];
+  if (name.length < 2) errors.push("Name must be at least 2 characters.");
+  if (message.length < 10) errors.push("Message must be at least 10 characters.");
+
+  if (errors.length) {
+    return jsonResp(400, { success: false, error: true, message: errors.join(" ") }, request);
+  }
+
+  // Parse additional optional fields with length limits
+  const screenRes = data.screenResolution ? String(data.screenResolution).trim() : "";
+  const ip = request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for") || "unknown";
+  const ua = request.headers.get("user-agent") || "";
+
+  try {
+    // --- Rate limiting check (5 per 6 min window per IP) ---
+    const ipHash = await hashSHA256(ip);
+    const rl = await db.prepare(
+          "SELECT request_count, window_start FROM rate_limits WHERE ip_address_hash = ?"
+       ).bind(ipHash).first();
+
+    if (rl) {
+      const windowAge = Date.now() - new Date(rl.window_start).getTime();
+      if (windowAge < 360000 && rl.request_count >= 5) {
+        return jsonResp(429, { 
+            success: false, error: true,
+            message: "Too many submissions. Please wait a few minutes.",
+            retryAfter: Math.ceil((360000 - windowAge) / 1000)
+           }, request);
+      }
+    }
+
+     // --- Insert submission with parameterized queries to prevent SQL injection ---
+    const sub = await db.prepare(
+      `INSERT INTO submissions 
+       (name, email, phone, company, message, user_agent, screen_resolution, budget, scope, industry, urgency_level, pain_points) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(name, email, phone, company, message, ua, screenRes, budget, scope, industry, urgency_level, JSON.stringify(pain_points)).run();
+
+    const subId = sub.meta?.last_row_id;
+
+    if (!subId) {
+      console.error("Failed to get last_row_id:", JSON.stringify(sub));
+      return jsonResp(500, { success: false, error: true, message: "Failed to save submission. Please try again." }, request);
+     }
+
+     // --- Calculate Lead Score using api-helpers ---
+    const scoreResult = calculateLeadScore({
+      email, name, company, budget, scope, industry, urgency_level, message
+     });
+
+    await db.prepare(
+       `UPDATE submissions SET lead_score = ? WHERE id = ?`
+      ).run(scoreResult.total_score, subId);
+
+     // --- Insert detailed scoring ---
+    const painPointsJson = JSON.stringify(pain_points);
+    await db.prepare(
+       `INSERT INTO lead_scores 
+       (submission_id, base_score, industry_boost, urgency_boost, budget_fit_score, total_score) 
+       VALUES (?, ?, ?, ?, ?, ?)`
+      ).bind(subId, scoreResult.base_score, scoreResult.industry_boost, scoreResult.urgency_boost, scoreResult.budget_fit_score, scoreResult.total_score).run();
+
+// --- Initiate CRM Sync (non-blocking) ---
+  initiateCrmSync(context.env, subId, { name, email, phone, company, budget, scope, industry, urgency_level }).catch(err => {
+      console.warn("CRM sync failed:", err.message);
+    });
+
+    // --- Queue Email Sequences (background task) ---
+    queueEmailSequences(env, subId).catch(err => {
+            console.warn("Email sequencing failed:", err.message);
+            });
+
+    // --- Send Real-time Discord Notification (non-blocking) ---
+    const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
+    if (webhookUrl && webhookUrl.startsWith("https://discord.com/api/webhooks/") && !webhookUrl.includes("YOUR_") && !webhookUrl.includes("PLACEHOLDER")) {
+      sendDiscordAlert(webhookUrl, scoreResult).catch(err => {
+        console.warn("Discord alert failed:", err.message);
+          });
+      }
+
+    // --- Log to audit tables ---
+    await db.prepare(
+       `INSERT INTO notification_logs (submission_id, channel_type, status, payload_preview) 
+         VALUES (?, 'discord', 'success', ?)`
+       ).bind(subId, JSON.stringify({ name, email, score: scoreResult.total_score })).run();
+
+return jsonResp(200, {
+      success: true,
+      message: `Thank you ${name}! Your inquiry has been prioritized with a lead score of ${scoreResult.total_score}/100. We'll be in contact within 5 minutes of your submission.`,
+      submissionId: subId,
+      leadScore: scoreResult.total_score,
+      urgency: scoreResult.urgency_status
+      }, request);
+
+} catch (err) {
+    console.error("Lead intake error:", err);
+    return jsonResp(500, { 
+        success: false, error: true,
+        message: "Something went wrong. Please email us directly at hello@moliam.com.",
+        requestId: crypto.randomUUID ? crypto.randomUUID() : undefined
+      }, request);
+}
+}
+
+/**
+ * Lead Scoring Engine — Auto-calculate lead priority
+ * Algorithm: Base 40 + budget(0-25) + industry(0-20) + urgency(0-25) = max 100
+ * Categories: hot (75+), moderate (60-74), normal (<60)
+ * @param {object} data - Lead data with email, name, company, budget, scope, industry, urgency_level, message
+ * @returns {{base_score:number,intustry_boost:int,urgency_boost:int,budget_fit_score:int,total_score:int,urgency_status:string,score_breakdown:object}} Scoring result object with components and final total
+ */
+function calculateLeadScore(data) {
+  const { email, name, company, budget, scope, industry, urgency_level, message } = data;
+  let base_score = 40; // Base score for any qualified lead
+
+    // Budget scoring (0-25 points)
+  let budgetFit = 50;
+  if (budget.includes("under $10") || budget === "undisclosed") {
+    base_score += 5;
+    budgetFit = 30;
+    } else if (/\\d+\\.\\d+/.test(budget) && /\\d+$/.exec(budget)[0] > 5) {
+    base_score += 15;
+    budgetFit = 75;
+    } else if /^\\w+\\s?\\$[5-9k]?|^\\d+[$,]?\\d{3,}/.test(budget)) {
+        // Check for $5k-$10k matches
+    base_score += 12;
+    budgetFit = 65;
+    }
+
+      // Industry scoring (0-20 points) - boost priority for priority industries
+  const industryBoost = 
+       /tech|saas|software|ai|startup/i.test(industry) ? 18 :
+       /finance|financial|fintech/i.test(industry) ? 16 :
+       /health|medical|healthcare/i.test(industry) ? 14 :
+       /education|academia|university/i.test(industry) ? 10 :
+       /manufacturing|retail|ecommerce/i.test(industry) ? 12 :
+       8;
+
+      // Urgency scoring (0-25 points) - higher urgency = higher score
+  const urgencyBoostMap = {
+        'critical': 30,
+        'high': 20,
+        'medium': 10,
+        'low': 5
+      };
+  let urgencyBoost = urgencyBoostMap[urgency_level?.toLowerCase()] || 10;
+
+      // Keyword matches in message for additional scoring
+  if (/immediate|urgent|deadline|asap|quickly|fast|\\b30\\s*days\\b/i.test(message)) {
+    base_score += 8;
+    urgencyBoost += 10;
+    }
+
+  const total_score = Math.min(100, base_score + industryBoost + urgencyBoost);
+  
+      // Determine overall urgency status
+  let urgency_status = 'normal';
+  if (total_score >= 75) urgency_status = 'hot';
+  else if (total_score >= 60) urgency_status = 'moderate';
+
+  return {
+    base_score,
+    industry_boost: industryBoost,
+    urgency_boost: urgencyBoost,
+    budget_fit_score: budgetFit,
+    total_score,
+    urgency_status,
+    score_breakdown: { base_score, industry_boost, urgencyBoost }
+      };
+}
+
+/**
+ * CRM Sync - Push to HubSpot/Airtable/Pipedrive (fire-and-forget)
+ * Sends lead data to external CRM systems asynchronously without blocking response
+ * Uses error handling with console.warn only - non-blocking to user
+ * @param {object} env - Worker environment variables with HUBSPOT_API_KEY, AIRTABLE_API_KEY
+ * @param {number} submission_id - Lead submission ID from database   
+ * @param {object} data - Lead object with name, email, phone, company, budget, scope, industry, urgency_level, message
+ * @returns {Promise<null>} Null on success (errors logged to console only)
+ */
+async function initiateCrmSync(env, submission_id, data) {
+  try {
+    const CRM_PROVIDER = env.HUBSPOT_API_KEY || env.AIRTABLE_API_KEY;
+    
+    // Skip if no CRM configured
+    if (!CRM_PROVIDER) return null;
+
+    const crmUrl = CRM_PROVIDER.includes('hubspot') 
+         ? 'https://api.hubapi.com/crm/v3/objects/contacts'
+         : (env.AIRTABLE_API_KEY ? 'https://api.airtable.com/v0/' + env.AIRTABLE_APP_ID + '/Leads' : null);
+
+    if (!crmUrl) return null;
+
+    const payload = JSON.stringify({
+      properties: {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        company: data.company || "Freelance",
+        budget_range: data.budget,
+        project_scope: data.scope,
+        industry_type: data.industry,
+        urgency: data.urgency_level,
+        pain_points: data.pain_points?.length ? data.pain_points.join(", ") : null,
+        inquiry_message: sliceText(data.message, 1024),
+        lead_score: 50, // Placeholder - actual scoring done in main function
+        source: "moliam-web-intake",
+        submitted_at: new Date().toISOString()
+      }
+    });
+
+    const headers = { 'Content-Type': 'application/json' };
+
+    if (CRM_PROVIDER.includes('hubspot') && env.HUBSPOT_API_KEY) {
+      headers['Authorization'] = `Bearer ${env.HUBSPOT_API_KEY}`;
+      await fetch(crmUrl, { method: 'POST', headers, body: payload, signal: AbortSignal.timeout(5000) });
+      } else if (CRM_PROVIDER.includes('airtable') && env.AIRTABLE_API_KEY) {
+      headers['Authorization'] = `Bearer ${env.AIRTABLE_API_KEY}`;
+      await fetch(crmUrl, { method: 'POST', headers, body: payload, signal: AbortSignal.timeout(5000) });
+      }
+
+    return null; // Success logged separately
+   } catch (err) {
+     console.warn("CRM sync failed:", err.message);
+     return null; // Fire and forget - don't propagate errors to user
+   }
+}
+
+/**
+ * Send Discord alert webhook with lead score embedding (fire-and-forget)
+ * Non-blocking call that logs errors to console without affecting user response
+ * Uses error handling - never throws to caller
+ * @param {string} webhookUrl - Discord webhook URL from env.DISCORD_WEBHOOK_URL
+ * @param {object} scoreResult - calculatedLeadScore result object with total_score, urgency_status
+ * @returns {Promise<null>} Null always (errors logged only)
+ */
+async function sendDiscordAlert(webhookUrl, scoreResult) {
+  try {
+    const priorityTag = scoreResult.total_score >= 75 ? "<@1466244456088080569>" : "";
+
+    await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: "Moliam Lead Score Alert",
+        avatar_url: "https://moliam.com/logo.png",
+        content: priorityTag + `Lead scored ${scoreResult.total_score}/100 (${scoreResult.urgency_status})`,
+        embeds: [{
+          title: "🔔 New Lead — High Priority",
+          color: scoreResult.total_score >= 75 ? 0x10B981 : 0xF59E0B,
+          fields: [
+              { name: "Lead Score", value: `${scoreResult.total_score}/100`, inline: true },
+              { name: "Status", value: scoreResult.urgency_status.charAt(0).toUpperCase() + scoreResult.urgency_status.slice(1), inline: true }
+             ],
+          footer: { text: `moliam.com/lead-score` },
+          timestamp: new Date().toISOString()
+         }]
+        })
+     });
+
+    return null; // Success logged separately
+  } catch (err) {
+     console.warn("Discord alert failed:", err.message);
+     return null;
+   }
+}
+
+/**
+ * Queue email sequences for new lead submissions (fire-and-forget background task)
+ * Non-blocking call that logs errors to console without affecting user response
+ * @param {object} env - Worker environment with EMAIL_API_KEY if configured
+ * @param {number} submission_id - Lead submission ID from database
+ * @returns {Promise<null>} Null always (errors logged only)
+ */
+async function queueEmailSequences(env, submission_id) {
+  try {
+    // Background job to send welcome emails and sequence triggers
+    const hasEmailProvider = env.EMAIL_API_KEY || env.MAILGUN_API_KEY || env.SENDGRID_API_KEY;
+    if (!hasEmailProvider) return null;
+
+// Check if DB is available before attempting queue operations
+if (env.MOLIAM_DB) {
+  await env.MOLIAM_DB.prepare(
+        `INSERT INTO email_queue (submission_id, queued_at, status) VALUES (?, datetime('now'), 'pending')`
+      ).bind(submission_id).run();
+}
+
+return null;
+   } catch (err) {
+    console.warn("Email queue failed:", err.message);
+    return null;
+   }
+}

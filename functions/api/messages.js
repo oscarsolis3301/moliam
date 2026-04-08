@@ -12,14 +12,97 @@
  * @returns {Response} JSON object with messages array or authentication/error responses
  */
 
-// Centralized JSON response helper with consistent error handling and CORS headers
+// Import sanitization helpers from api-helpers
+import { jsonResp as baseJsonResp, sanitizeText, validateEmail } from './api-helpers.js';
+
+/**
+ * Centralized JSON response helper with consistent error handling and CORS headers
+ * @param {number} status - HTTP status code
+ * @param {object} body - Response body object
+ * @param {Request|null} request - Original request for Origin header extraction
+ * @returns {Response} JSON response with appropriate status and CORS headers
+ */
 function jsonResp(status, body, request) {
   const headers = new Headers({
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": request ? (new URL(request.url).origin || "*") : "*"
+     "Content-Type": "application/json",
+     "Access-Control-Allow-Origin": request ? (new URL(request.url).origin || "*") : "*"
   });
 
   return new Response(JSON.stringify(body), { status, headers });
+}
+
+// Enhanced message sanitization helper - strips HTML, enforces length limits (500 chars max), returns sanitized text
+/**
+ * Sanitize and validate message text: strip HTML, limit to 500 characters, trim whitespace
+ * @param {string} input - Raw message text from request body
+ * @returns {object} Object with {valid: boolean, error?: string, value?: string} for structured validation results
+ */
+function sanitizeMessage(input) {
+  if (input === undefined || input === null) {
+    return { valid: false, error: "Message cannot be empty." };
+  }
+  
+  const text = String(input).trim();
+  
+  // Strip any HTML tags using DOMParser approach compatible with environment
+  let cleanText = text;
+  try {
+    if (typeof DOMParser !== 'undefined') {
+      const doc = new DOMParser().parseText(text);
+      cleanText = doc.documentElement.textContent || text;
+    } else {
+      // Fallback: regex strip HTML entities and tags
+      cleanText = text.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    }
+  } catch (e) {
+    cleanText = text.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  }
+  
+  // Enforce length limit of 500 characters
+  if (cleanText.length > 500) {
+    return { valid: false, error: "Message exceeds maximum length of 500 characters.", value: cleanText.slice(0, 500) };
+  }
+  
+  // Trim to 500 chars if over limit but still keep portion
+  const trimmed = cleanText.length > 500 ? cleanText.slice(0, 500).trim() : cleanText;
+  
+  if (!trimmed) {
+    return { valid: false, error: "Message cannot be empty." };
+  }
+  
+  return { valid: true, value: trimmed };
+}
+
+/**
+ * Sanitize message with length limit extended for admin messages - strip HTML, enforce 1000 char limit, trim whitespace
+ * Admins can send longer messages up to 1000 characters
+ * @param {string} input - Raw message text from request body
+ * @param {boolean} isAdmin - Whether sender is admin (determines length limit)
+ * @returns {object} Object with {valid: boolean, error?: string, value?: string} for structured validation results
+ */
+function sanitizeAdminMessage(input, isAdmin = false) {
+  const maxLength = isAdmin ? 1000 : 500;
+  
+  if (input === undefined || input === null) {
+    return { valid: false, error: "Message cannot be empty." };
+  }
+  
+  const text = String(input).trim();
+  
+  // Strip HTML tags
+  let cleanText = text.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  
+  if (cleanText.length > maxLength) {
+    return { valid: false, error: `Message exceeds maximum length of ${maxLength} characters.`, value: cleanText.slice(0, maxLength) };
+  }
+  
+  const trimmed = cleanText.length > maxLength ? cleanText.slice(0, maxLength).trim() : cleanText;
+  
+  if (!trimmed) {
+    return { valid: false, error: "Message cannot be empty." };
+  }
+  
+  return { valid: true, value: trimmed };
 }
 
 // Session authentication helper - extracts token from cookie and validates via parameterized query with ? binding
@@ -136,18 +219,30 @@ export async function onRequestPost(context) {
       return jsonResp(400, { success: false, message: "Invalid JSON body" }, request);
     }
 
-    // Validate required message field from request body - no user input in SQL parameters directly
-    const messageText = (body.message || "").trim();
-    if (!messageText) {
-      return jsonResp(400, { success: false, message: "Message text is required and cannot be empty." }, request);
-    }
+   // Validate email of authenticated user - get from session for admin verification (optional audit trail)
+    const authEmail = user.email || "";
+    
+   // Enhanced message sanitization: strip HTML, limit to 500 chars, return structured validation result
+    const msgResult = sanitizeMessage(body.message);
+    if (!msgResult.valid) {
+      return jsonResp(400, { success: false, message: msgResult.error }, request);
+     }
+
+    const messageText = msgResult.value;
 
     // client_id required for admin POST; auto-set from authenticated session for regular clients - no SQL injection via ? binding
     let clientId;
     if (user.role === "admin") {
-      clientId = body.client_id ?? null;
-      if (!clientId) {
-        return jsonResp(400, { success: false, message: "client_id is required for admin messages" }, request);
+       // Enhanced sanitization for admin messages: strip HTML, limit to 1000 chars
+      const adminResult = sanitizeAdminMessage(body.message, true);
+      if (!adminResult.valid) {
+        return jsonResp(400, { success: false, message: adminResult.error }, request);
+        }
+
+      // Get clean admin message text for insertion
+      clientId = parseInt(body.client_id ?? 0);
+      if (isNaN(clientId) || clientId <= 0) {
+        return jsonResp(400, { success: false, message: "Invalid client_id for admin messages." }, request);
 
       } 
     } else {
