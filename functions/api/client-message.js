@@ -27,8 +27,7 @@ async function authenticate(db, token) {
   
 const session = await db.prepare(
 "SELECT u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1")
-        .bind(token).first();
-  
+         .bind(token).first();
   return session || null;
 }
 
@@ -48,7 +47,6 @@ const match = cookies.match(/moliam_session=([a-f0-9]+)/);
   const token = match ? match[1] : null;
   if (!token) {
     return jsonResp(401, { success: false, error: true, message: "Authentication required. Please log in." }, request);
-  }
 
     // -- Validate session exists and fetch user data from database
   if (db) {
