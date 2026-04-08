@@ -464,9 +464,6 @@ h1,h2,h3,h4,h5,h6{ font-family:'Inter',system-ui,-apple-system, sans-serif ;} h1
 <!-- ARIA live region for dynamic alerts -->
 <div id="aria-live-region" aria-live="polite" aria-atomic="true" class="sr-only"></div>
 
-<!-- Add ARIA live region for dynamic alerts -->
-<div id="aria-live-region" aria-live="polite" aria-atomic="true" class="sr-only"></div>
-
 <div class="logo" aria-hidden="false">
 
     <h2 id="login-heading">Welcome back</h2>
@@ -512,32 +509,9 @@ h1,h2,h3,h4,h5,h6{ font-family:'Inter',system-ui,-apple-system, sans-serif ;} h1
 
   <div class="back-link">
     <a href="/" tabindex="6">← Back to Moliam.com</a>
-  </div>
-</main>
+</div>
 
-<script>
-// Mobile: collapse branding when form is focused (keyboard pushes content up)
-const formInputs = document.querySelectorAll('#loginForm input');
-let focusTimeout;
-formInputs.forEach(input => {
-  input.addEventListener('focus', () => {
-    clearTimeout(focusTimeout);
-    document.body.classList.add('form-focused');
-// Scroll form into view on mobile
-    setTimeout(() => {
-      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 300);
-      });
-  input.addEventListener('blur', () => {
-    focusTimeout = setTimeout(() => {
-         // Only remove if no other input is focused
-      if (!document.activeElement || !document.activeElement.closest('#loginForm input')) {
-        document.body.classList.remove('form-focused');
-          }
-       }, 200);
-     });
-});
-</script>
-
+<!-- Mobile focus behavior extracted to login-mobile-focus.js -->
+<script src="/js/login-mobile-focus.js"></script>
 <script src="/js/login.js"></script>
 </body></html>
