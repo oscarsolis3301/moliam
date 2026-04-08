@@ -74,17 +74,33 @@ return jsonResp(400, { error: true, success: false, message: 'Invalid request. U
 }
 
 // CORS preflight for all booking endpoints
-export async function onRequestOptions() {
+/**
+ * Handle CORS preflight requests for Booking API
+ * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
+ * @returns {Response} 204 No Content with proper Access-Control headers for moliam.com and moliam.pages.dev domains
+ */
+export async function onRequestOptions(context) {
   return new Response(null, {
     status: 204,
     headers: {
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": "https://moliam.pages.dev",
       "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type"
     }
   });
 }
 
+/**
+ * Handle POST requests to Booking API endpoints - create/confirm/cancel/reschedule bookings
+ * POST /api/appointments?action=create - Create new appointment from prequalification
+ * POST /api/appointments?action=confirm&appointment_id=X - Mark confirmed
+ * POST /api/appointments?action=cancel&appointment_id=X - Cancel appointment (reschedule or deny)
+ * POST /api/appointments?action=reschedule&appointment_id=X&reschedule_date=newDate - Reschedule to new time
+ * POST /api/appointments?action=completed&appointment_id=X - Mark as completed  
+ * POST /api/appointments?action=no_show&appointment_id=X - Record no-show, add retry queue
+ * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
+ * @returns {Response} JSON response: 201 Created (new), 200 OK (updates), 400 Bad Request (validation errors), 500 Server Error (DB failure)
+ */
 export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
@@ -126,6 +142,12 @@ export async function onRequestPost(context) {
   }
 }
 
+/**
+ * Handle PUT requests to Booking API - reschedule appointment date/time
+ * PUT /api/appointments/:id - Update scheduled_at with parameterized query for SQL injection protection
+ * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
+ * @returns {Response} JSON response: 200 OK (success), 400 Bad Request (missing ID, invalid JSON), 500 Server Error (DB failure)
+ */
 export async function onRequestPut(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
@@ -139,23 +161,23 @@ export async function onRequestPut(context) {
     updateBody = await context.request.json();
    catch (err) {
      return jsonResp(400, { error: true, success: false, message: "Invalid JSON body." }, request);
-     }
+      }
   }
 
   const { scheduled_at, client_timezone } = updateBody;
 
   const res = await db.prepare(
-       "UPDATE appointments SET scheduled_at = ?, updated_at = datetime('now') WHERE id = ?"
-     ).bind(scheduled_at, appointmentId).run();
+        "UPDATE appointments SET scheduled_at = ?, updated_at = datetime('now') WHERE id = ?"
+      ).bind(scheduled_at, appointmentId).run();
 
   if (!res.success) {
     console.error("Update failed:", res);
     return jsonResp(500, { error: true, success: false, message: "Update database failed." }, request);
-   }
+    }
 
   if (res.success) {
     return jsonResp(200, { error: true, success: true, updated: true }, request);
-   }
+    }
 
   return jsonResp(400, { error: true, success: false, message: "Update failed." }, request);
 }

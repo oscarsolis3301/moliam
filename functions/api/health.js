@@ -120,13 +120,17 @@ export async function onRequestGet(context) {
   }
 }
 
+/**
+ * Handle CORS preflight requests to Health Check endpoint  
+ * @returns {Response} 204 No Content with Access-Control headers for moliam.com and moliam.pages.dev
+ */
 export async function onRequestOptions() {
   return new Response(null, {
     status: 204,
     headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
-  });
+       "Access-Control-Allow-Origin": "https://moliam.pages.dev",
+       "Access-Control-Allow-Methods": "GET, OPTIONS",
+       "Access-Control-Allow-Headers": "Content-Type",
+     },
+   });
 }
