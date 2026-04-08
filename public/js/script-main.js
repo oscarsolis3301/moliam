@@ -527,7 +527,8 @@ const popEl = document.getElementById('popover');
 const isMobile = () => window.innerWidth <= 768;
 const minTargetSize = 44; // Accessibility touch target minimum
 
-canvas.addEventListener('click', (e) => {
+// Click handler with cleanup reference
+const canvasClickHandler = (e) => {
   const rect = canvas.getBoundingClientRect();
   const mx = (e.clientX - rect.left);
   const my = (e.clientY - rect.top);
@@ -538,8 +539,8 @@ canvas.addEventListener('click', (e) => {
     if(mx >= bot.x-4 && mx <= bot.x+20 && my >= hitMinY && my <= bot.y+38) {
       showBotPopover(bot, e.clientX, e.clientY);
       return;
-     }
-   }
+      }
+    }
 
   // Check rooms (increased margins for mobile tap accuracy)
   for(const room of rooms) {
@@ -547,13 +548,16 @@ canvas.addEventListener('click', (e) => {
     if(mx >= room.x-marginBuffer && mx <= room.x+room.w+marginBuffer && my >= room.y-marginBuffer && my <= room.y+room.h+marginBuffer) {
       showRoomPopover(room, e.clientX, e.clientY);
       return;
-     }
-   }
+      }
+    }
 
   hidePopover();
-});
+};
 
-canvas.addEventListener('pointermove', (e) => {
+canvas.addEventListener('click', canvasClickHandler);
+
+// Pointermove handler with cleanup reference
+const canvasPointerMoveHandler = (e) => {
   if(!isMobile()) return;
   const rect = canvas.getBoundingClientRect();
   const mx = (e.clientX - rect.left);
@@ -565,8 +569,8 @@ canvas.addEventListener('pointermove', (e) => {
       canvas.style.cursor = 'pointer';
       hovering = true;
       break;
-     }
-   }
+      }
+    }
   if(!hovering) {
     for(const room of rooms) {
       const marginBuffer = isMobile() ? 30 : 15;
@@ -574,15 +578,20 @@ canvas.addEventListener('pointermove', (e) => {
         canvas.style.cursor = 'pointer';
         hovering = true;
         break;
-       }
-     }
-   }
+        }
+      }
+    }
   if(!hovering) canvas.style.cursor = 'default';
-});
+};
 
-document.addEventListener('click', (e) => {
+canvas.addEventListener('pointermove', canvasPointerMoveHandler);
+
+// Document click handler with cleanup reference
+const documentClickHandler = (e) => {
   if(!popEl.contains(e.target) && e.target !== canvas) hidePopover();
-});
+};
+
+document.addEventListener('click', documentClickHandler);
 
 function formatTime(ts) {
   const d = new Date(ts);
@@ -656,10 +665,20 @@ document.querySelectorAll('.speed-btn').forEach(btn => {
 
 document.getElementById('fs-btn').addEventListener('click', () => {
   if(!document.fullscreenElement) {
-    document.documentElement.requestFullscreen().catch(()=>{});
+    document.documentElement.requestFullscreen().catch((err) => {
+      console.error('Fullscreen API error:', err);
+      if (window.__MOLIUM_ERROR_TRACKER) {
+        window.__MOLIUM_ERROR_TRACKER({ type: 'fullscreen-error', error: err.message, timestamp: Date.now() });
+       }
+     });
   } else {
-    document.exitFullscreen();
-  }
+    document.exitFullscreen().catch((err) => {
+      console.error('Exit fullscreen API error:', err);
+      if (window.__MOLIUM_ERROR_TRACKER) {
+        window.__MOLIUM_ERROR_TRACKER({ type: 'exit-fullscreen-error', error: err.message, timestamp: Date.now() });
+       }
+     });
+   }
 });
 
 // ═══════════════════════════════════════
@@ -697,11 +716,14 @@ function resize() {
 // Mobile/Touch handling - adds tap support for small screens
     // Mobile/Touch handling - adds tap support for small screens
     
-    // Expose cleanup function for event listeners
-    __cleanupHandlers__ = () => {
-      window.removeEventListener('resize', resize);
-    }
-    
+// Expose cleanup function for event listeners
+      __cleanupHandlers__ = () => {
+       window.removeEventListener('resize', resize);
+       canvas.removeEventListener('click', canvasClickHandler);
+       canvas.removeEventListener('pointermove', canvasPointerMoveHandler);
+       document.removeEventListener('click', documentClickHandler);
+      }
+
     window.addEventListener('resize', resize);
     resize();
     initBots();
