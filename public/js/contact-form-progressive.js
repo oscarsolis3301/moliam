@@ -412,20 +412,21 @@ function bindEvents() {
   form.addEventListener('keydown', handleFormKeydown);
 
   // Tab key: ensure focus management for navigation buttons
-  document.addEventListener('keydown', function tabKeyHandler(e) {
-    if (e.key === 'Tab') {
-      var activeEl = document.activeElement;
-      if (activeEl && activeEl.classList.contains('pf-nav-btn')) {
-        e.preventDefault();
-        if (e.shiftKey) {
-          btnBack.focus();
+    document.addEventListener('keydown', function tabKeyHandler(e) {
+      if (e.key === 'Tab') {
+        var activeEl = document.activeElement;
+        if (activeEl && activeEl.classList.contains('pf-nav-btn')) {
+          e.preventDefault();
+          if (e.shiftKey) {
+            btnBack.focus();
           } else {
-          btnNext.focus();
+            btnNext.focus();
           }
         }
-      });
+      }
+    });
 
-  // Phone formatting
+    // Phone formatting
   var phoneInput = document.getElementById('pf-phone');
   if (phoneInput) {
     phoneInput.addEventListener('input', function () {
