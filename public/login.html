@@ -416,11 +416,6 @@ body.form-focused .logo p {
      </div>
      <p>Client Portal - Secure access to your account dashboard and management tools</p>
 
-<!-- Added Task 4 accessibility: language attributes + proper document title + heading hierarchy -->
-<meta name="language" content="en"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"/>
-<link rel="canonical" href="https://moliam.com/login.html"/>
-
 <!-- Accessibility Enhancements per Task 4 -->
 <style>
 /* Skip link enhancements for keyboard navigation */
@@ -465,6 +460,9 @@ main[role="main"]{ position:relative;} footer[role="contentinfo"]{ font-size:cla
 /* Heading hierarchy and ARIA labels for screen readers */
 h1,h2,h3,h4,h5,h6{ font-family:'Inter',system-ui,-apple-system, sans-serif ;} h1{font-size:clamp(1.8rem,6vw,2.5rem );margin-bottom: 0.75em;} h2{font-size:clamp(1.4rem,5vw,2rem);} h3 { font-size: clamp(1.1rem, 4vw, 1.5rem) }
 </style>
+
+<!-- ARIA live region for dynamic alerts -->
+<div id="aria-live-region" aria-live="polite" aria-atomic="true" class="sr-only"></div>
 
 <!-- Add ARIA live region for dynamic alerts -->
 <div id="aria-live-region" aria-live="polite" aria-atomic="true" class="sr-only"></div>
@@ -518,12 +516,28 @@ h1,h2,h3,h4,h5,h6{ font-family:'Inter',system-ui,-apple-system, sans-serif ;} h1
 </main>
 
 <script>
-const form = document.getElementById('loginForm');
-const btn = document.getElementById('loginBtn');
-const alertEl = document.getElementById('alert');
-const passwordInput = document.getElementById('password');
-</body>\n<!-- Mobile: collapse branding when form is focused (keyboard pushes content up) -->\n<script>\nconst formInputs = document.querySelectorAll('#loginForm input');\nlet focusTimeout;\nformInputs.forEach(input => {\n  input.addEventListener('focus', () => {\n    clearTimeout(focusTimeout);\n    document.body.classList.add('form-focused');
-     // Scroll form into view on mobile
-    setTimeout(() => {\n      input.scrollIntoView({ behavior: 'smooth', block: 'center' });\n     }, 300);\n   });\n  input.addEventListener('blur', () => {\n    focusTimeout = setTimeout(() => {\n       // Only remove if no other input is focused\n      if (!document.activeElement || !document.activeElement.closest('#loginForm input')) {\n        document.body.classList.remove('form-focused');
-       }\n     }, 200);\n   });\n});</script>\n<script src="/js/login.js"></script>\n</body>\n</html>
-</html>
+// Mobile: collapse branding when form is focused (keyboard pushes content up)
+const formInputs = document.querySelectorAll('#loginForm input');
+let focusTimeout;
+formInputs.forEach(input => {
+  input.addEventListener('focus', () => {
+    clearTimeout(focusTimeout);
+    document.body.classList.add('form-focused');
+// Scroll form into view on mobile
+    setTimeout(() => {
+      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 300);
+      });
+  input.addEventListener('blur', () => {
+    focusTimeout = setTimeout(() => {
+         // Only remove if no other input is focused
+      if (!document.activeElement || !document.activeElement.closest('#loginForm input')) {
+        document.body.classList.remove('form-focused');
+          }
+       }, 200);
+     });
+});
+</script>
+
+<script src="/js/login.js"></script>
+</body></html>
