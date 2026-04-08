@@ -338,17 +338,11 @@ async function handleNoShow(context, id, request) {
 }
 
 /**
- * Log audit to appointments table - no-op placeholder until context is passed
+ * Log audit actions for bookings to console (no D1 integration yet)
  * @param {number} appointmentId - Appointment ID to log
- * @param {string} action - Audit action description
- */
-/**
- * Log audit actions for bookings (future D1 integration)
- * @param {number} appointmentId - Appointment ID to log
- * @param {string} action - Audit action description
+ * @param {string} action - Audit action description ('booked', 'rescheduled', etc.)
  */
 async function logAudit(appointmentId, action) {
-  // Currently logs to console only; future: integrate with D1 audit table
   // TODO: Accept context param for DB access when this becomes async D1-aware
   console.log(`[audit] appointment=${appointmentId} action=${action}`);
 }

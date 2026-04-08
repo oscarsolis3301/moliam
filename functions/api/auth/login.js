@@ -124,7 +124,8 @@ async function hashPassword(password) {
 
 /**
  * Generate cryptographically secure random session token (32-byte UUID)
- * @returns {string} Hex string of 64 characters suitable for cookie/session use
+ * Uses WebCrypto API getRandomValues for CSPRNG output
+ * @returns {Promise<string>} Hex string of 64 characters suitable for cookie/session use
  */
 async function generateToken() {
   const arr = new Uint8Array(32);
