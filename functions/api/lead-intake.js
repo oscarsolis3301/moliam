@@ -4,7 +4,7 @@
      4|     4| * POST /api/lead-intake — Uses api-helpers for consistent validation and JSON responses
      5|     5| */
      6|     6|
-     7|     7|import { jsonResp, validateEmail, validatePhone, sanitizeText, hashSHA256, calculateLeadScore, sliceText } from './api-helpers.js';
+     7|     7|import { jsonResp, calculateLeadScore, sanitizeText, validateEmail, validatePhone } from './api-helpers.js';
      8|     8|
      9|     9|/**
     10|    10| * Handle POST requests to lead intake endpoint with email validation, phone validation, HTML stripping, and lead scoring
