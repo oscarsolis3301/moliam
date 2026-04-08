@@ -146,20 +146,27 @@ function drawSparkline() {
 
 /* ─── UPTIME ─── */
 const startTime = Date.now();
-function updateUptime() {
-  const elapsed = Math.floor((Date.now() - startTime) / 1000);
-  const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
-  const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
-  const s = String(Math.floor(elapsed % 60)).padStart(2, '0');
-   $('#uptime').textContent = `${h}:${m}:${s}`;
-}
 let updateUptimeIntervalId;
-updateUptimeIntervalId = setInterval(updateUptime, 1000);
+try {
+    function updateUptime() {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
+        const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
+        const s = String(Math.floor(elapsed % 60)).padStart(2, '0');
+             $('#uptime').textContent = `${h}:${m}:${s}`;
+         }
+    updateUptimeIntervalId = setInterval(updateUptime, 1000);
+} catch (e) { console.error('Uptime interval error:', e); }
 
-/*
+/* cleanup handler for uptime interval */
+window.moliamMainCleanup = window.moliamMainCleanup || (() => {});
+const originalCleanup = window.moliamMainCleanup;
+window.moliamMainCleanup = function() {
+    if (updateUptimeIntervalId) clearInterval(updateUptimeIntervalId);
+    if (originalCleanup) originalCleanup();
+};
 
-ACTIVITy FEED -- HQ CANVAS */
-
+/* ACTIVITY FEED -- HQ CANVAS */
 
 
 function addFeedItem(msg, botColor) {
