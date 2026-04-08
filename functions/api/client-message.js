@@ -95,9 +95,9 @@ async function authenticate(request, db) {
   // Get token from moliam_session cookie for authentication - no SQL injection possible here
   const cookies = request.headers.get("Cookie") || "";
   const url = new URL(request.url);
-  const tokenFromUrl = (url.searchParams.get("token") || "").replace("?token=", "");
+  const tokenFromUrl = (url.searchParams.get("token") || "").replace("?", "").trim();
   const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-  const token = cookieMatch ? cookieMatch[1] : tokenFromUrl;
+  const token = tokenFromUrl ? tokenFromUrl : cookieMatch?.[1];
 
   if (!token) return null;
 

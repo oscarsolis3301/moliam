@@ -16,9 +16,9 @@ export async function onRequestGet(context) {
       return jsonResp(503, { success: false, error: true, message: 'Database service unavailable.' }, request);
      }
 
-     // --- Parse token from query params or cookies ---
+    // --- Parse token from query params or cookies ---
     const url = new URL(request.url);
-    const tokenFromUrl = (url.searchParams.get("token") || "").replace("?. token=", "");
+    const tokenFromUrl = (url.searchParams.get("token") || "").replace("?", "").trim();
     const cookies = request.headers.get('Cookie') || '';
     const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
     const token = tokenFromUrl ? tokenFromUrl : cookieMatch?.[1];
