@@ -12,24 +12,8 @@
  * @returns {Response} JSON object with messages array or authentication/error responses
  */
   
-// Import sanitization helpers from api-helpers
-import { jsonResp as baseJsonResp, sanitizeText, validateEmail } from './api-helpers.js';
-
-/**
- * Centralized JSON response helper with consistent error handling and CORS headers
- * @param {number} status - HTTP status code
- * @param {object} body - Response body object
- * @param {Request|null} request - Original request for Origin header extraction
- * @returns {Response} JSON response with appropriate status and CORS headers
- */
-function jsonResp(status, body, request) {
-  const headers = new Headers({
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": request ? (new URL(request.url).origin || "*") : "*"
-  });
-  
-  return new Response(JSON.stringify(body), { status, headers });
-}
+// Import all utilities from api-helpers to ensure consistent response format
+import { jsonResp, sanitizeText, validateEmail } from './api-helpers.js';
 
 // Enhanced message sanitization helper - strips HTML, enforces length limits (500 chars max), returns sanitized text
 /**
