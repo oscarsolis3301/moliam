@@ -947,7 +947,8 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
     clearInterval(statusPanelIntervalId || 0);
     window.removeEventListener('resize', resizeHandlerHQ);
     window.removeEventListener('resize', resizeHandler);
-    window.removeEventListener('resize', canvasResizeHandler);
+    // canvasResizeHandler was declared but never assigned - no listener to remove
+    
     mediaQuery.removeEventListener('change', mediaQueryChangeHandler);
      // Add missing mouse event cleanup here:
        canvas.removeEventListener('mousemove', canvasMouseMoveHandler);

@@ -286,9 +286,11 @@ canvas.addEventListener('pointermove', (e) => {
   if(!hovering) canvas.style.cursor = 'default';
 });
 
-document.addEventListener('click', (e) => {
+// Store ref for cleanup
+const docClickHandler2 = (e) => {
   if(!popEl.contains(e.target) && e.target !== canvas) hidePopover();
-});
+};
+document.addEventListener('click', docClickHandler2);
 
 function formatTime(ts) {
   const d = new Date(ts);
@@ -482,6 +484,7 @@ function shutdownHQ() {
   canvas.removeEventListener('click', clickHandler);
   canvas.removeEventListener('pointermove', pointerMoveHandler);
   document.removeEventListener('click', docClickHandler);
+document.removeEventListener('click', docClickHandler2);
   if(speedBtnsHandler?.btn) speedBtnsHandler.btn.removeEventListener('click', () => {});
   if(fsBtnHandler) { /* fs handler already removed */ }
 }
