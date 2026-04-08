@@ -6,7 +6,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   initFAQKeyboardNav();
   initMobileMenuAriaAnnouncements();
-  console.log(`%cMOLIAM a11y Enhancements Loaded`, 'color: #22c55e; font-weight: bold;');
 });
 
 // ============================================
@@ -58,8 +57,6 @@ function initFAQKeyboardNav() {
       }
     }, true);
   });
-
-  console.log(`%c[a11y] FAQ keyboard nav attached to ${faqs.length} items`, 'color: #22c55e;');
 }
 
 // ============================================
@@ -112,10 +109,8 @@ function initMobileMenuAriaAnnouncements() {
       mobileMenuBtn.setAttribute('aria-expanded', 'false');
       announceToScreenReader('Mobile menu closed');
       mobileMenuBtn.focus();
-    }
-  }, true);
-
-  console.log(`%c[a11y] Mobile menu ARIA & keyboard nav attached`, 'color: #22c55e;');
+      }
+    }, true);
 }
 
 // ============================================
@@ -181,25 +176,8 @@ window.moliamA11yCleanup = function() {
   if (errorHandler) {
     document.removeEventListener('error', errorHandler, true);
   }
-  
-  console.log(`%c[a11y] Cleanup complete`, 'color: #22c55e;');
 }
 
 window.addEventListener('beforeunload', () => {
   window.moliamA11yCleanup();
 });
-
-// ============================================
-// Global Error Handler - ARIA Feedback
-// ============================================
-
-window.moliamA11yErrorHandle = function(e) {
-  if (e.target.tagName.toLowerCase() === 'img') {
-    const msg = `Image failed to load: ${e.target.src || 'unknown'}`;
-    announceToScreenReader(msg);
-  }
-}
-
-document.addEventListener('error', window.moliamA11yErrorHandle, true);
-
-announceToScreenReader('Accessibility enhancements active');

@@ -839,15 +839,13 @@ form.addEventListener('submit', async (e) => {
     const parsed = JSON.parse(text);
     if (parsed.success) {
       status.style.color = '#10B981';
-      status.textContent = '✓ Message sent! We\'ll be in touch.';
+      status.textContent = '✓ Message sent! We\\&#39;ll be in touch.';
       form.reset();
-      console.log('Contact form submission successful');
-     } else {
+    } else {
       console.error('Contact form backend error:', parsed.message || parsed);
-      throw new Error(parsed.message || 'Form submission failed');
-     }
-   } catch (err) {
-    console.error('Contact form client error:', err);
+    }
+  } catch (err) {
+    console.error('Form submission error:', err);
     status.style.color = '#EF4444';
     status.textContent = 'Something went wrong. Please try again.';
     // Log error for monitoring if we have a tracking endpoint
