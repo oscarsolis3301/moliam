@@ -21,8 +21,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   passwordToggle.addEventListener('click', handlePasswordToggle);
+  
+  // Keyboard handler for Enter/Space key support - accessibility requirement
+  passwordToggle.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handlePasswordToggle();
+      passwordToggle.focus();
+      announceToScreenReader(isPassword === 'password' ? 'Password visible. Press again to hide.' : 'Password hidden.');
+    }
+  });
 
-  // Alert helper function
+   // Alert helper function
   function showAlert(msg, type) {
     alertEl.textContent = msg;
     alertEl.className = `alert ${type}`;

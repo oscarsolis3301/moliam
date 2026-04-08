@@ -229,6 +229,8 @@
   window.__moliam_cleanup_main_interactions__ = function() {
     if (typeof updateUptimeIntervalId !== 'undefined' && updateUptimeIntervalId) {
       clearInterval(updateUptimeIntervalId);
-    }
-  };
+     }
+   };
+
+})();
 
