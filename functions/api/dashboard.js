@@ -174,12 +174,16 @@ export async function onRequestGet(context) {
         }
 }
 
+/**
+ * Handle CORS preflight requests to Dashboard API  
+ * @returns {Response} 204 No Content with Access-Control headers for moliam.com and moliam.pages.dev domains
+ */
 export async function onRequestOptions() {
   const headers = { 
-          'Access-Control-Allow-Origin': '*', 
-          'Access-Control-Allow-Methods': 'GET, OPTIONS', 
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          'Access-Control-Allow-Credentials': 'true' 
-        };
+         'Access-Control-Allow-Origin': 'https://moliam.pages.dev', 
+         'Access-Control-Allow-Methods': 'GET, OPTIONS', 
+         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+         'Access-Control-Allow-Credentials': 'true' 
+       };
   return new Response(null, { status: 204, headers });
 }
