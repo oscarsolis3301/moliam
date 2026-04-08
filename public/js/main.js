@@ -17,15 +17,16 @@ const isMobile = window.innerWidth < 768;
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const pbg = $('#particle-bg');
-const pctx = pbg.getContext('2d');
-let particles = [];
-
-function initParticles() {
-  if (isMobile) return; // Skip particle animation on mobile for performance
+let hasCanvas = !!pbg;
+if (hasCanvas) {
+  const pctx = pbg.getContext('2d');
   
-  pbg.width = window.innerWidth;
-  pbg.height = document.documentElement.scrollHeight;
-  particles = [];
+  function initParticles() {
+    if (isMobile) return; // Skip particle animation on mobile for performance
+    
+    pbg.width = window.innerWidth;
+    pbg.height = document.documentElement.scrollHeight;
+    particles = [];
   const count = Math.floor((pbg.width * pbg.height) / 12000);
   for (let i = 0; i < count; i++) {
     particles.push({
@@ -891,12 +892,11 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
         }
       }
     });
-  }, { threshold: 0.1 });
+   }, { threshold: 0.1 });
 
   revealEls.forEach(function(el) {
     observer.observe(el);
   });
-})();
 
 })();
 
@@ -911,7 +911,7 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
     menu.classList.toggle('open');
     document.body.style.overflow = isOpen ? 'hidden' : '';
     btn.setAttribute('aria-expanded', isOpen.toString());
-   }
+  }
 
   btn.addEventListener('click', toggleMenu);
 
@@ -939,12 +939,14 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
   };
 })();
 
-window.__moliam_cleanup_main__ = function() {
-  clearInterval(updateUptimeIntervalId || 0);
-  clearInterval(sparklineIntervalId || 0);
-  clearInterval(statusPanelIntervalId || 0);
-  window.removeEventListener('resize', resizeHandler);
-  window.removeEventListener('resize', canvasResizeHandler);
-  mediaQuery.removeEventListener('change', mediaQueryChangeHandler);
-};
+  window.__moliam_cleanup_main__ = function() {
+    clearInterval(updateUptimeIntervalId || 0);
+    clearInterval(sparklineIntervalId || 0);
+    clearInterval(statusPanelIntervalId || 0);
+    window.removeEventListener('resize', resizeHandler);
+    window.removeEventListener('resize', canvasResizeHandler);
+    mediaQuery.removeEventListener('change', mediaQueryChangeHandler);
+  };
+
+})();
 
