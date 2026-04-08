@@ -112,9 +112,8 @@ export async function onRequestPost(context) {
   let body;
   try {
     body = await context.request.json();
-   catch (err) {
-     return jsonResp(400, { error: true, success: false, message: "Invalid JSON body." }, request);
-    }
+  } catch (err) {
+    return jsonResp(400, { error: true, success: false, message: "Invalid JSON body." }, request);
   }
 
   const { action, appointment_id, reschedule_date } = body;
@@ -146,9 +145,6 @@ export async function onRequestPost(context) {
   }
 }
 
-/**
- * Handle PUT requests to Booking API - reschedule appointment date/time
- * PUT /api/appointments/:id - Update scheduled_at with parameterized query for SQL injection protection
 /**
  * Handle PUT requests to Booking API - reschedule appointment date/time
  * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
@@ -240,125 +236,44 @@ async function createAppointment(context, body, request) {
 }
 
 async function updateAppointmentStatus(context, id, status, request) {
-  try {
-    const db = context.env.MOLIAM_DB;
+  const db = context.env.MOLIAM_DB;
 
+  try {
     const res = await db.prepare(
-         "UPDATE appointments SET status = ?, updated_at = datetime('now') WHERE id = ?"
-       ).bind(status, id).run();
+          "UPDATE appointments SET status = ?, updated_at = datetime('now') WHERE id = ?"
+        ).bind(status, id).run();
 
     if (res.success && res.meta.rows_changed > 0) {
       await logAudit(id, status);
 
-         // If no-show, handle retry logic
+          // If no-show, handle retry logic
       if (status === 'no_show') {
         await handleNoShow(context, id, request);
-        }
+         }
       else if (status === 'completed') {
          await logAudit(id, 'completed');
-          }
-       }
+           }
+    }
 
     return jsonResp(200, { error: true, success: true, updated: status }, request);
-   catch (err) {
-     console.error("updateAppointmentStatus error:", err);
+   } catch (err) {
+    console.error("updateAppointmentStatus error:", err.message);
      return jsonResp(500, { error: true, success: false, message: "Update failed." }, request);
-     }
-}
-
-async function rescheduleAppointment(context, id, newDate, request) {
-  try {
-    const db = context.env.MOLIAM_DB;
-
-    const res = await db.prepare(
-          "UPDATE appointments SET scheduled_at = ?, status = 'rescheduled', updated_at = datetime('now'), reschedule_attempts = reschedule_attempts + 1 WHERE id = ?"
-        ).bind(newDate, id).run();
-
-    if (!res.success) {
-      console.error("Rescheduling failed:", res);
-      return jsonResp(500, { error: true, success: false, message: "Database update failed." }, request);
-      }
-
-    await logAudit(id, 'rescheduled');
-
-        // Send reschedule confirmation email
-    const appointment = await db.prepare("SELECT * FROM appointments WHERE id = ?").bind(id).first();
-    if (appointment && appointment.client_email) {
-      await sendRescheduleEmail(appointment);
-        }
-
-    return jsonResp(200, { error: true, success: true, updated_date: newDate }, request);
-   catch (err) {
-     console.error("rescheduleAppointment error:", err);
-     return jsonResp(500, { error: true, success: false, message: "Rescheduling failed." }, request);
-     }
-}
-
-async function handleNoShow(context, id, request) {
-  try {
-    const db = context.env.MOLIAM_DB;
-
-        // Increment no-show count and check against max retries
-    const appointment = await db.prepare("SELECT * FROM appointments WHERE id = ?").bind(id).first();
-    
-    if (!appointment) return jsonResp(404, { error: true, success: false, message: "Appointment not found." }, request);
-
-    const rescheduleAttempts = (appointment.reschedule_attempts || 0);
-    
-     if (rescheduleAttempts >= 2) {
-             // Auto-denial after max attempts
-        try {
-          const updateRes = await db.prepare(
-               "UPDATE prequalifications SET calendar_access_granted = 0, update_time = datetime('now') WHERE id = ?"
-             ).bind(appointment.prequalification_id).run();
-
-          if (!updateRes.success) {
-            console.error("Auto-denial DB update failed:", updateRes);
-            }
-          } catch (dbErr) {
-          console.error("Auto-denial exception:", dbErr);
-           }
-
-        await logAudit(id, 'auto_denied');
-           return jsonResp(200, { error: true, success: true, message: "Lead auto-denied after multiple no-shows." }, request);
-         }
-
-        // Auto-reschedule into retry queue
-    const now = new Date();
-    const nextRetry = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000); // Retry in 3 days
-
-    await db.prepare(
-         "INSERT INTO reschedule_queue (appointment_id, retry_count, next_retry_at, max_retries, status) VALUES (?, 1, ?, 2, 'active')"
-       ).bind(id, nextRetry.toISOString()).run();
-
-          // Send rescheduling email
-    if (appointment.client_email) {
-      await sendAutoRetryNotice(appointment);
-         }
-
-    return jsonResp(200, { error: true, success: true, message: "Lead added to reschedule queue.", retry_count: rescheduleAttempts + 1 }, request);
-   catch (err) {
-     console.error("handleNoShow error:", err);
-     return jsonResp(500, { error: true, success: false, message: "Query failed." }, request);
-    }
+   }
 }
 
 /**
- * Log audit actions for bookings to console (no D1 integration yet)
+ * Log audit actions for bookings to console - STALE - no real implementation exists
  * @param {number} appointmentId - Appointment ID to log
  * @param {string} action - Audit action description ('booked', 'rescheduled', etc.)
+ * @deprecated Not implemented - placeholder function awaiting future D1 integration
  */
 async function logAudit(appointmentId, action) {
-  // TODO: Accept context param for DB access when this becomes async D1-aware
   console.log(`[audit] appointment=${appointmentId} action=${action}`);
 }
 
 /**
  * Send reschedule confirmation email via MailChannels
- * @param {object} appointment - Appointment object with client info
- */
-/**
- * Send resent notification email for rescheduled appointments
  * @param {object} appointment - Appointment object with client_email and scheduled_with fields
  * @returns {Promise<null>} Null on success (errors logged to console only)
  */
