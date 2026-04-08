@@ -5,7 +5,7 @@
 ** @returns {Response} JSON response with status or authentication error
  */
 
-import { jsonResp, sliceText } from './api-helpers.js';  {/* Import helpers */}
+import { jsonResp, sliceText } from './api-helpers.js';
 
 /* Extract session token from cookies for authentication */
 function getSessionToken(request) {
@@ -27,7 +27,7 @@ async function authenticate(db, token) {
   
 const session = await db.prepare(
 "SELECT u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1")
-       .bind(token).first();
+        .bind(token).first();
   
   return session || null;
 }
@@ -44,36 +44,27 @@ export async function onRequestPost(context) {
 
       // -- GET token from cookies for authentication
   const cookies = request.headers.get("Cookie") || "";
-  const match = cookies.match(/moliam_session=([a-f0-9]+)/);
+const match = cookies.match(/moliam_session=([a-f0-9]+)/);
   const token = match ? match[1] : null;
   if (!token) {
-    return new Response(JSON.stringify({ success: false, error: "Authentication required. Please log in." }), {
-      status: 401,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-        });
-     }
+    return jsonResp(401, { success: false, error: true, message: "Authentication required. Please log in." }, request);
+  }
 
     // -- Validate session exists and fetch user data from database
   if (db) {
     const user = await authenticate(db, token);
     if (!user) {
-      return new Response(JSON.stringify({ success: false, error: "Invalid or expired session. Please log in again." }), {
-        status: 401,
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-       });
-       }
-   }
+      return jsonResp(401, { success: false, error: true, message: "Invalid or expired session. Please log in again." }, request);
+     }
+    }
   
   try {
     const req = await request.json();
     const { clientId, clientName, message } = req;
 
     if (!message || !message.trim()) {
-      return new Response(JSON.stringify({ success: false, error: "Message is required and cannot be empty." }), {
-        status: 400,
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-       });
-     }
+      return jsonResp(400, { success: false, error: true, message: "Message is required and cannot be empty." }, request);
+       }
 
     const payload = {
       content: "<@251822830574895104>",
@@ -119,15 +110,10 @@ export async function onRequestPost(context) {
          console.warn("Discord webhook exception:", webhookError.message);
         }
 
-    return new Response(JSON.stringify({ success: true, message: "Message sent to support channel." }), {
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-       });
+    return jsonResp(200, { success: true, message: "Message sent to support channel." }, request);
      } catch (e) {
-       return new Response(JSON.stringify({ success: false, error: "Internal server error. Please try again." }), {
-         status: 500,
-         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-         });
-   }
+       return jsonResp(500, { success: false, error: true, message: "Internal server error. Please try again." }, request);
+     }
 }
 
 /**
