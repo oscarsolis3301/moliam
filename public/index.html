@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moliam — AI-Powered Growth for Contractors</title>
+<meta name="description" content="Moliam: elite digital marketing for Orange County contractors. Website builds, GBP optimization, and LSA management — measurable results driving growth.">
+<meta name="keywords" content="web design, google business profile, lsa ads, contractor marketing, orange county, ai website builder, local seo, gmb optimization">
+<meta name="author" content="Moliam"><meta name="robots" content="index, follow">
+<meta name="theme-color" content="#0B0E14">
+<link rel="canonical" href="https://moliam.com">
+<!-- Open Graph -->
+<meta property="og:title" content="Moliam — AI-Powered Growth for Contractors">
+<meta property="og:description" content="AI-Powered Operations for Modern Agencies. Website builds, GBP optimization, Google LSA management for Orange County contractors.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://moliam.com">
+<meta property="og:image" content="https://moliam.com/og-image.png">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Moliam — AI-Powered Growth for Contractors">
+<meta name="twitter:description" content="AI-Powered Operations for Modern Agencies. Website builds, GBP optimization, Google LSA management for Orange County contractors.">
+<!-- JSON-LD Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "Moliam",
+  "description": "AI-Powered Operations for Modern Agencies. Website builds, GBP optimization, Google LSA management for Orange County contractors.",
+  "url": "https://moliam.com",
+  "image": "https://moliam.com/og-image.png",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Orange County",
+    "addressRegion": "CA",
+    "addressCountry": "US"
+  },
+  "areaServed": {
+    "@type": "Place",
+    "name": "Orange County, CA"
+  },
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Services",
+    "itemListElement": [
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Website Development", "description": "AI-powered custom website builds in under 72 hours" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Google Business Profile Optimization", "description": "GBP optimization for local search visibility" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Google Local Service Ads Management", "description": "LSA setup, verification, and ongoing optimization" } }
+    ]
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Moliam",
+  "url": "https://moliam.com",
+  "logo": "https://moliam.com/logo.png",
+  "description": "AI-powered digital marketing agency for local contractors in Orange County, CA.",
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "sales",
+    "url": "https://moliam.com/book",
+    "availableLanguage": [
+      "English",
+      "Spanish"
+    ]
+  },
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Orange County",
+    "addressRegion": "CA",
+    "addressCountry": "US"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Moliam",
+  "url": "https://moliam.com",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://moliam.com/?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<!-- CSS loaded from /css/main.css -->
+</head>
+<body class="no-js">
+
+<!-- Skip to Main Content Link - Accessibility -->
+<a href="#main" class="skip-to-content" aria-label="Skip to main content">Skip to content</a>
+
+<!-- CSS loaded from /css/main.css -->
+
+<!-- Skip link toggle - simple JS feature detection -->
+<script src="/js/skip-link-toggle.js"></script>
+
+<!-- Particle Background -->
+<canvas id="particle-bg"></canvas>
+
+<!-- ═══════════════════════ HUD NAV ═══════════════════════ -->
+<header id="hud">
+    <div class="left">
+      <a href="/" class="logo" aria-label="Moliam home"><img src="/logo.png" alt="Moliam" class="logo-icon" width="200" height="197" loading="lazy">Moliam</a>
+      <!-- status pill removed for cleaner production look -->
+    </div>
+</header>
+
+<!-- Skip to main target after header -->
+<main id="main" tabindex="-1"></main>
+     <div class="stat-block">
+       <div class="label">Active Agents</div>
+       <div class="value" id="stat-agents">5</div>
+     </div>
+    <div class="stat-block">
+      <div class="label">Tasks Done</div>
+      <div class="value success" id="stat-tasks">0</div>
+    </div>
+    <div class="stat-block">
+      <div class="label">Errors</div>
+      <div class="value error" id="stat-errors">0</div>
+    </div>
+    <div id="sparkline-container">
+      <canvas id="sparkline"></canvas>
+    </div>
+    <div class="uptime-display" id="uptime">00:00:00</div>
+  </div>
+  <div class="right">
+    <nav class="nav-links">
+      <a href="#hq-section" aria-label="AI Operations section">HQ</a>
+      <a href="#services" aria-label="Services section">Services</a>
+      <a href="#contact" aria-label="Contact form">Contact</a>
+      <a href="/login" style="color:var(--accent-blue)">Client Portal</a>
+    </nav>
+     <button class="hamburger" id="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobile-menu">
+       <span></span><span></span><span></span>
+     </button>
+   </div>
+</header>
+
+<!-- Mobile Menu Overlay with role and aria attributes -->
+<div class="mobile-menu-overlay" id="mobile-menu" role="dialog" aria-labelledby="menu-heading" aria-modal="true" style="display:none;">
+  <h2 id="menu-heading" style="position:absolute;left:-9999px;">Mobile Navigation Menu</h2>
+  <a href="#hq-canvas-wrap">Watch AI Work</a>
+  <a href="#services" aria-label="Services section">Services</a>
+  <a href="#portfolio" onclick="window.location.href='/portfolio.html'">Portfolio</a>
+  <a href="#how-it-works" aria-label="How it works section">How It Works</a>
+  <a href="/login" style="color:var(--accent-blue)">Client Portal</a>
+  <a href="#contact" aria-label="Contact form">Contact</a>
+  <button id="mobile-menu-close" aria-label="Close menu" class="mobile-menu-close-btn">×</button>
+</div>
+
+<!-- ARIA live region for mobile menu announcements -->
+<div id="menu-status" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;" aria-live="polite" aria-atomic="true" role="status"></div>
+
+<!-- ═══════════════════════ HERO ═══════════════════════ -->
+<section id="hero">
+  <div class="badge"><span class="emoji">⚡</span> AI-Powered Growth for Contractors</div>
+  <h1>
+    <span class="gradient">Your Business.</span><br>
+    <span class="gradient">Our AI.</span><br>
+    Unstoppable Growth.
+  </h1>
+  <p class="tagline">
+    Moliam builds websites, manages your Google presence, and runs your ads — 
+    all powered by AI agents that work 24/7. Built for Orange County contractors 
+    who want to dominate local search.
+  </p>
+  <div class="cta-group">
+    <a href="https://calendly.com/visualark/demo" target="_blank" rel="noopener" class="btn-primary">
+      <span>Book a Free Demo</span>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a href="#services" class="btn-secondary">See Our Work</a>
+  </div>
+  <div class="scroll-indicator">
+    <span>Scroll to explore</span>
+    <div class="chevron"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ STATS BAR ═══════════════════════ -->
+<div class="reveal" style="display:flex; justify-content:center; gap:48px; flex-wrap:wrap; padding:32px 24px; background:rgba(17,24,39,0.5); border-top:1px solid rgba(255,255,255,0.05); border-bottom:1px solid rgba(255,255,255,0.05);">
+  <div style="text-align:center;"><div style="font-size:2rem; font-weight:800; color:#3B82F6;">50+</div><div style="font-size:0.7rem; color:#6B7280; text-transform:uppercase; letter-spacing:0.08em; margin-top:4px;">Clients Served</div></div>
+  <div style="text-align:center;"><div style="font-size:2rem; font-weight:800; color:#10B981;">5.0★</div><div style="font-size:0.7rem; color:#6B7280; text-transform:uppercase; letter-spacing:0.08em; margin-top:4px;">Google Rating</div></div>
+  <div style="text-align:center;"><div style="font-size:2rem; font-weight:800; color:#8B5CF6;">72hr</div><div style="font-size:0.7rem; color:#6B7280; text-transform:uppercase; letter-spacing:0.08em; margin-top:4px;">Avg Delivery</div></div>
+  <div style="text-align:center;"><div style="font-size:2rem; font-weight:800; color:#F59E0B;">24/7</div><div style="font-size:0.7rem; color:#6B7280; text-transform:uppercase; letter-spacing:0.08em; margin-top:4px;">AI Operations</div></div>
+</div>
+
+<!-- ═══════════════════════ HQ VISUALIZATION ═══════════════════════ -->
+<section id="hq-section">
+   <canvas id="hq-canvas" tabindex="0" aria-label="Real-time AI agent visualization showing live activity and status"></canvas>
+   </div>
+   <p class="hq-mobile-note">📱 Rotate to landscape or use desktop for the best AI visualization experience</p>
+   <aside id="activity-sidebar" role="complementary" aria-label="Live activity feed">
+     <div class="sidebar-header">
+       <span class="live-dot" aria-hidden="true"></span> <span aria-hidden="false" role="heading" aria-level="3">Live Activity</span>
+     </div>
+     <div id="activity-feed" role="log" aria-label="Live activity feed" aria-live="polite" aria-relevant="additions text"></div>
+     <div id="bot-status-panel" role="region" aria-label="Agent status panel">
+       <div class="panel-title" role="heading" aria-level="4">Agent Status</div>
+       <div id="bot-status-list" role="list" aria-label="Bot status list"></div>
+     </div>
+     
+     <!-- ARIA live region for activity feed updates -->
+     <div class="feed-status-update" style="position:absolute;left:-9999px;" aria-live="polite" aria-atomic="true" role="status">Activity updated</div>
+   </aside>
+</section>
+
+<!-- Bot Tooltip with proper ARIA attributes -->
+<div id="bot-tooltip" role="tooltip" aria-hidden="true" tabindex="-1">
+  <div class="tt-header">
+    <div class="tt-avatar" id="tt-avatar"></div>
+    <div>
+      <div class="tt-name" id="tt-name"></div>
+      <div class="tt-role" id="tt-role"></div>
+    </div>
+  </div>
+  <div class="tt-stat"><span class="tt-label">Current Task</span><span class="tt-val" id="tt-task">—</span></div>
+  <div class="tt-stat"><span class="tt-label">Tasks Done</span><span class="tt-val" id="tt-done">0</span></div>
+  <div class="tt-stat"><span class="tt-label">Uptime</span><span class="tt-val" id="tt-uptime">00:00</span></div>
+</div>
+
+<!-- ═══════════════════════ SERVICES ═══════════════════════ -->
+<section id="services" class="reveal">
+  <div class="section-label">What We Build</div>
+  <h2 class="section-title">AI-Driven Services</h2>
+  <p class="section-subtitle">
+    From high-converting contractor websites to fully managed Google campaigns — 
+    our AI agents handle the heavy lifting so you can focus on your craft.
+  </p>
+  <div class="services-grid">
+    <div class="service-card">
+      <div class="card-icon" style="background:rgba(59,130,246,0.1)">🌐</div>
+      <h3>Website Builds</h3>
+      <p class="card-desc">Lightning-fast, SEO-optimized contractor websites built by AI and polished by humans. Mobile-first, conversion-focused.</p>
+      <ul class="card-features">
+        <li>Custom responsive design</li>
+        <li>SEO-optimized from day one</li>
+        <li>Built in under 72 hours</li>
+        <li>Mobile-first approach</li>
+      </ul>
+      <div class="card-price">$300 <span class="starts">setup</span> + $100<span class="period">/mo</span></div>
+    </div>
+    <div class="service-card">
+      <div class="card-icon" style="background:rgba(16,185,129,0.1)">📍</div>
+      <h3>GBP Optimization</h3>
+      <p class="card-desc">Dominate the Google Maps 3-pack. AI-managed posts, reviews, Q&A, and category optimization for your Google Business Profile.</p>
+      <ul class="card-features">
+        <li>Weekly post scheduling</li>
+        <li>Review response management</li>
+        <li>Photo optimization</li>
+        <li>Local ranking tracking</li>
+      </ul>
+      <div class="card-price">$200<span class="period">/mo</span></div>
+    </div>
+    <div class="service-card">
+      <div class="card-icon" style="background:rgba(245,158,11,0.1)">⚡</div>
+      <h3>Google LSA</h3>
+      <p class="card-desc">Google Local Services Ads setup & management. Get the Google Guaranteed badge and start receiving verified leads.</p>
+      <ul class="card-features">
+        <li>Google Guaranteed badge setup</li>
+        <li>Lead verification & tracking</li>
+        <li>Budget optimization</li>
+        <li>Monthly ROI reporting</li>
+      </ul>
+      <div class="card-price">$300 <span class="starts">setup</span> + $250<span class="period">/mo</span></div>
+    </div>
+    <div class="service-card">
+      <div class="card-icon" style="background:rgba(139,92,246,0.1)">🚀</div>
+      <h3>Full Retainer</h3>
+      <p class="card-desc">The full stack — website, GBP, LSA, SEO, content, and ongoing AI-powered campaign management. Your entire digital presence, handled.</p>
+      <ul class="card-features">
+        <li>All services included</li>
+        <li>Priority AI agent access</li>
+        <li>Weekly strategy calls</li>
+        <li>Dedicated account manager</li>
+      </ul>
+      <div class="card-price">$800<span class="period">/mo</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ WHY AI ═══════════════════════ -->
+<section id="why-ai" class="reveal">
+  <div class="section-label">Why Us</div>
+  <h2 class="section-title">Why AI Changes Everything</h2>
+  <p class="section-subtitle">Traditional agencies work 9-5. Our AI agents work 24/7.</p>
+  <div class="steps-grid">
+    <div class="step-card">
+      <span class="step-icon">🕐</span>
+      <h3>24/7 Operations</h3>
+      <p>Our AI agents never sleep. Your campaigns are monitored, optimized, and updated around the clock — not just during business hours.</p>
+    </div>
+    <div class="step-card">
+      <span class="step-icon">⚡</span>
+      <h3>72-Hour Delivery</h3>
+      <p>What takes traditional agencies weeks, we deliver in days. AI-powered workflows cut turnaround time by 80%.</p>
+    </div>
+    <div class="step-card">
+      <span class="step-icon">💰</span>
+      <h3>Transparent Pricing</h3>
+      <p>No hidden fees. No surprise invoices. Know exactly what you pay from day one — and see exactly what you get.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ HOW IT WORKS ═══════════════════════ -->
+<section id="how-it-works" class="reveal">
+  <div class="section-label">Process</div>
+  <h2 class="section-title">How It Works</h2>
+  <p class="section-subtitle">From first contact to full automation in 3 simple steps</p>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-number">1</div>
+      <span class="step-icon">🔍</span>
+      <h3>Discovery Call</h3>
+      <p>We analyze your current online presence, competitors, and local market. 15-minute Zoom call via Calendly.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-number">2</div>
+      <span class="step-icon">🚀</span>
+      <h3>AI Deployment</h3>
+      <p>Our autonomous agents build your website, optimize your Google Business Profile, and set up Local Service Ads.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-number">3</div>
+      <span class="step-icon">📈</span>
+      <h3>Growth &amp; Reporting</h3>
+      <p>Monthly performance reports, continuous optimization, and dedicated AI support for your business.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ TESTIMONIALS ═══════════════════════ -->
+<section id="testimonials" class="reveal">
+  <div class="section-label">RESULTS</div>
+  <h2 class="section-title">What Contractors Say</h2>
+  <div class="testimonials-grid">
+    <div class="testimonial-card accent-blue">
+      <div class="stars">★★★★★</div>
+      <p class="quote">"Moliam built our entire online presence in days. Our Google Business Profile went from invisible to the top 3 in Orange County. The AI agents work around the clock — it is like having a full marketing team for a fraction of the cost."</p>
+      <div class="author-row">
+        <div class="avatar-initials">OS</div>
+        <div>
+          <div class="author">Oscar S.</div>
+          <div class="company">OnePlus Electric</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card accent-purple">
+      <div class="stars">★★★★★</div>
+      <p class="quote">"The Local Service Ads setup was seamless. We went from zero leads to 15+ qualified calls per week. The monthly reports show exactly where every dollar goes."</p>
+      <div class="author-row">
+        <div class="avatar-initials">MR</div>
+        <div>
+          <div class="author">Mike R.</div>
+          <div class="company">RoofPro Solutions</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card accent-green">
+      <div class="stars">★★★★★</div>
+      <p class="quote">"I was skeptical about AI managing our online presence, but the results speak for themselves. 40% increase in website traffic and our Google reviews doubled in 3 months."</p>
+      <div class="author-row">
+        <div class="avatar-initials">ST</div>
+        <div>
+          <div class="author">Sarah T.</div>
+          <div class="company">CleanAir HVAC</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ FAQ ═══════════════════════ -->
+<section id="faq" class="reveal">
+  <div class="section-label">FAQ</div>
+  <h2 class="section-title">Frequently Asked Questions</h2>
+  <div class="faq-accordion">
+    <div class="faq-item">
+      <button class="faq-question" aria-expanded="false">
+        <span>How long does it take to build a website?</span>
+        <span class="faq-chevron">▸</span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">Our AI agents can build a fully custom, responsive website in under 72 hours. We handle design, development, SEO optimization, and deployment — all included in a $300 setup fee with $100/mo ongoing support.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" aria-expanded="false">
+        <span>What is Google Business Profile optimization?</span>
+        <span class="faq-chevron">▸</span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">GBP (formerly Google My Business) is your free business listing on Google. We optimize your profile with professional photos, regular posts, review management, and local SEO strategies to get you into the top 3 local results — the Local Pack.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" aria-expanded="false">
+        <span>How do Local Service Ads work?</span>
+        <span class="faq-chevron">▸</span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">LSAs appear at the very top of Google search results with a Google Guaranteed badge. You only pay per lead (not per click). We handle the entire setup, verification, and ongoing optimization to maximize your return.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" aria-expanded="false">
+        <span>Can I cancel anytime?</span>
+        <span class="faq-chevron">▸</span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">Yes. All our monthly services are month-to-month with no long-term contracts. We earn your business every month through results, not lock-in agreements.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" aria-expanded="false">
+        <span>What makes Moliam different from other agencies?</span>
+        <span class="faq-chevron">▸</span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">We use autonomous AI agents that work 24/7 on your campaigns. This means faster execution, lower costs, and continuous optimization — not a team that checks in once a week.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" aria-expanded="false">
+        <span>Do you work with contractors outside Orange County?</span>
+        <span class="faq-chevron">▸</span>
+      </button>
+      <div class="faq-answer"><div class="faq-answer-inner">Currently we specialize in Orange County, CA contractors to provide the most focused local expertise. We are expanding to other SoCal markets soon.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ PORTFOLIO ═══════════════════════ -->
+<section id="portfolio" class="reveal">
+  <div class="section-label">PORTFOLIO</div>
+  <h2 class="section-title">Recent Projects</h2>
+  <p class="section-subtitle">Real results for real contractors. Here is what our AI agents built this quarter.</p>
+
+  <div class="portfolio-grid">
+    <!-- Card 1: OnePlus Electric -->
+    <div class="case-card case-card--blue reveal">
+      <div class="case-card-inner">
+        <span class="case-badge">Electrical Contractor</span>
+        <div class="case-client">OnePlus Electric</div>
+        <div class="case-title">Complete Digital Transformation</div>
+        <div class="case-stats">
+          <div class="case-stat">5.0★<br>Google Rating</div>
+          <div class="case-stat">24+<br>Reviews</div>
+          <div class="case-stat">Top 3<br>Local Pack</div>
+        </div>
+        <p class="case-desc">Built a conversion-optimized website, managed Google Business Profile from scratch, and launched Local Service Ads generating 20+ qualified leads per month.</p>
+      </div>
+    </div>
+
+    <!-- Card 2: RoofPro Solutions -->
+    <div class="case-card case-card--amber reveal">
+      <div class="case-card-inner">
+        <span class="case-badge">Roofing</span>
+        <div class="case-client">RoofPro Solutions</div>
+        <div class="case-title">From Zero to 15 Leads/Week</div>
+        <div class="case-stats">
+          <div class="case-stat">4.9★<br>Google Rating</div>
+          <div class="case-stat">45+<br>Reviews</div>
+          <div class="case-stat">#1<br>LSA Position</div>
+        </div>
+        <p class="case-desc">Full Google LSA campaign management with automated review collection. Website built in 48 hours with real-time lead tracking dashboard.</p>
+      </div>
+    </div>
+
+    <!-- Card 3: CleanAir HVAC -->
+    <div class="case-card case-card--green reveal">
+      <div class="case-card-inner">
+        <span class="case-badge">HVAC</span>
+        <div class="case-client">CleanAir HVAC</div>
+        <div class="case-title">40% Traffic Increase in 90 Days</div>
+        <div class="case-stats">
+          <div class="case-stat">4.8★<br>Google Rating</div>
+          <div class="case-stat">38+<br>Reviews</div>
+          <div class="case-stat">40%<br>Traffic Growth</div>
+        </div>
+        <p class="case-desc">GBP optimization, weekly content posting, review response management, and SEO-optimized service pages driving organic growth.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ CONTACT ═══════════════════════ -->
+<section id="contact">
+  <div class="section-label">Get Started</div>
+  <h2 class="section-title">Let's Build Something</h2>
+  <p class="section-subtitle">
+    Tell us about your business and we'll show you exactly how our AI can help you grow.
+  </p>
+
+  <div class="progressive-form-card">
+    <form id="contact-form" class="progressive-form" novalidate>
+      <!-- Progress -->
+      <div class="pf-progress">
+        <div class="pf-progress-bar">
+          <div class="pf-progress-fill" id="pf-progress-fill"></div>
+        </div>
+        <div class="pf-step-indicator">
+          <span class="pf-step-current" id="pf-step-current">1</span>
+          <span class="pf-step-sep">/</span>
+          <span class="pf-step-total">8</span>
+        </div>
+      </div>
+
+      <!-- Steps container -->
+      <div class="pf-steps" id="pf-steps">
+
+        <!-- Step 1: Name -->
+        <div class="pf-step pf-step--active" data-step="1">
+          <h3 class="pf-step-title">What's your name?</h3>
+          <p class="pf-step-desc">Let's start with the basics</p>
+          <div class="pf-step-content">
+            <label for="pf-name" class="sr-only">Full name</label><input type="text" id="pf-name" class="pf-input" placeholder="Your name" autocomplete="name" required>
+          </div>
+        </div>
+
+        <!-- Step 2: Email -->
+        <div class="pf-step pf-step--future" data-step="2">
+          <h3 class="pf-step-title">What's your email?</h3>
+          <p class="pf-step-desc">We'll use this to get in touch</p>
+          <div class="pf-step-content">
+            <label for="pf-email" class="sr-only">Email address</label><input type="email" id="pf-email" class="pf-input" placeholder="you@company.com" autocomplete="email" required>
+          </div>
+        </div>
+
+        <!-- Step 3: Phone -->
+        <div class="pf-step pf-step--future" data-step="3">
+          <h3 class="pf-step-title">What's your phone number?</h3>
+          <p class="pf-step-desc">So we can reach you directly</p>
+          <div class="pf-step-content">
+            <label for="pf-phone" class="sr-only">Phone number</label><input type="tel" id="pf-phone" class="pf-input" placeholder="(949) 555-0100" autocomplete="tel" maxlength="14">
+          </div>
+        </div>
+
+        <!-- Step 4: Business Name -->
+        <div class="pf-step pf-step--future" data-step="4">
+          <h3 class="pf-step-title">What's your business name?</h3>
+          <p class="pf-step-desc">Optional, but helps us prepare</p>
+          <div class="pf-step-content">
+            <label for="pf-company" class="sr-only">Company name</label><input type="text" id="pf-company" class="pf-input" placeholder="Your company or brand name" autocomplete="organization">
+          </div>
+        </div>
+
+        <!-- Step 5: Website & Social Media -->
+        <div class="pf-step pf-step--future" data-step="5">
+          <h3 class="pf-step-title">Got a website or socials?</h3>
+          <p class="pf-step-desc">Helps us tailor the call to your needs</p>
+          <div class="pf-step-content">
+            <label for="pf-website" class="sr-only">Website URL</label><input type="url" id="pf-website" class="pf-input" placeholder="https://yourbusiness.com" autocomplete="url" style="margin-bottom:12px">
+            <label for="pf-social-google" class="sr-only">Google Business Profile URL</label><input type="text" id="pf-social-google" class="pf-input" placeholder="Google Business Profile URL" style="margin-bottom:12px">
+            <label for="pf-social-facebook" class="sr-only">Facebook page URL</label><input type="text" id="pf-social-facebook" class="pf-input" placeholder="Facebook page URL" style="margin-bottom:12px">
+            <label for="pf-social-instagram" class="sr-only">Instagram handle or URL</label><input type="text" id="pf-social-instagram" class="pf-input" placeholder="Instagram @handle or URL" style="margin-bottom:12px">
+            <label for="pf-social-yelp" class="sr-only">Yelp business page URL</label><input type="text" id="pf-social-yelp" class="pf-input" placeholder="Yelp business page URL">
+          </div>
+        </div>
+
+        <!-- Step 6: Service Interest -->
+        <div class="pf-step pf-step--future" data-step="6">
+          <h3 class="pf-step-title">What service are you interested in?</h3>
+          <p class="pf-step-desc">Select what fits your needs</p>
+          <div class="pf-step-content">
+            <div class="pf-pills" id="pf-pills">
+              <label class="pf-pill">
+                <input type="radio" name="pf-service" value="website" class="pf-pill-radio">
+                <span class="pf-pill-label">
+                  <span class="pf-pill-name">Website Build</span>
+                  <span class="pf-pill-price">$300 + $100/mo</span>
+                </span>
+              </label>
+              <label class="pf-pill">
+                <input type="radio" name="pf-service" value="gbp" class="pf-pill-radio">
+                <span class="pf-pill-label">
+                  <span class="pf-pill-name">GBP Optimization</span>
+                  <span class="pf-pill-price">$200/mo</span>
+                </span>
+              </label>
+              <label class="pf-pill">
+                <input type="radio" name="pf-service" value="lsa" class="pf-pill-radio">
+                <span class="pf-pill-label">
+                  <span class="pf-pill-name">Google LSA</span>
+                  <span class="pf-pill-price">$300 + $250/mo</span>
+                </span>
+              </label>
+              <label class="pf-pill">
+                <input type="radio" name="pf-service" value="retainer" class="pf-pill-radio">
+                <span class="pf-pill-label">
+                  <span class="pf-pill-name">Full Retainer</span>
+                  <span class="pf-pill-price">$800/mo</span>
+                </span>
+              </label>
+              <label class="pf-pill">
+                <input type="radio" name="pf-service" value="other" class="pf-pill-radio">
+                <span class="pf-pill-label">
+                  <span class="pf-pill-name">Not Sure Yet</span>
+                  <span class="pf-pill-price">Let's talk</span>
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 7: Project Details -->
+        <div class="pf-step pf-step--future" data-step="7">
+          <h3 class="pf-step-title">Tell us about your project</h3>
+          <p class="pf-step-desc">Share your goals or challenges</p>
+          <div class="pf-step-content">
+            <textarea id="pf-message" class="pf-input pf-textarea" placeholder="What are you looking to achieve? Any specific goals or pain points..." rows="5"></textarea>
+          </div>
+        </div>
+
+        <!-- Step 8: Review & Submit -->
+        <div class="pf-step pf-step--future" data-step="8">
+          <h3 class="pf-step-title">Almost there!</h3>
+          <p class="pf-step-desc">Review your info</p>
+          <div class="pf-step-content">
+            <div class="pf-review" id="pf-review">
+              <div class="pf-review-row">
+                <span class="pf-review-label">Name</span>
+                <span class="pf-review-value" id="pf-review-name"></span>
+              </div>
+              <div class="pf-review-row">
+                <span class="pf-review-label">Email</span>
+                <span class="pf-review-value" id="pf-review-email"></span>
+              </div>
+              <div class="pf-review-row">
+                <span class="pf-review-label">Phone</span>
+                <span class="pf-review-value" id="pf-review-phone"></span>
+              </div>
+              <div class="pf-review-row">
+                <span class="pf-review-label">Business</span>
+                <span class="pf-review-value" id="pf-review-company"></span>
+              </div>
+              <div class="pf-review-row">
+                <span class="pf-review-label">Website</span>
+                <span class="pf-review-value" id="pf-review-website"></span>
+              </div>
+              <div class="pf-review-row">
+                <span class="pf-review-label">Socials</span>
+                <span class="pf-review-value" id="pf-review-socials"></span>
+              </div>
+              <div class="pf-review-row">
+                <span class="pf-review-label">Service</span>
+                <span class="pf-review-value" id="pf-review-service"></span>
+              </div>
+              <div class="pf-review-row pf-review-row--message">
+                <span class="pf-review-label">Message</span>
+                <span class="pf-review-value" id="pf-review-message"></span>
+              </div>
+            </div>
+    <div class="pf-form-status" id="pf-form-status" role="status" aria-live="polite" aria-atomic="true"></div>
+           </div>
+         </div>
+
+       </div>
+
+       <!-- Navigation -->
+       <div class="pf-nav">
+         <button type="button" id="pf-back" class="pf-nav-btn pf-nav-back" aria-label="Go back">← Back</button>
+         <button type="button" id="pf-next" class="pf-nav-btn pf-nav-next" aria-label="Continue">Continue →</button>
+         <button type="submit" id="pf-submit" class="pf-nav-btn pf-nav-submit" aria-label="Submit form">Submit →</button>
+       </div>
+     </form>
+     
+     <!-- ARIA live region for accessibility announcements -->
+     <div id="pf-status-a11y" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;" aria-live="assertive" aria-atomic="true" role="status"></div>
+     
+     <p style="font-size:12px; color:var(--text-dim, #6B7280); margin-top:16px; text-align:center;">
+      Or skip the form — <a href="https://calendly.com/visualark/demo" target="_blank" rel="noopener" style="color:var(--accent-blue, #3B82F6); text-decoration:underline;">book a free 15-min demo call</a>
+     </p>
+   </div>
+</section>
+
+<!-- ═══════════════════════ CTA BANNER ═══════════════════════ -->
+  <h2 style="font-size:clamp(1.8rem, 3vw, 2.4rem); font-weight:800; margin-bottom:12px;">Ready to Grow Your Business?</h2>
+  <p style="color:#9CA3AF; margin-bottom:32px; max-width:520px; margin-left:auto; margin-right:auto; line-height:1.6;">Join 50+ Orange County contractors already using Moliam to dominate local search. Book a free demo — no commitment, no pressure.</p>
+  <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+    <a href="https://calendly.com/visualark/demo" target="_blank" rel="noopener" class="btn-primary" style="display:inline-flex;">
+      <span>Book Your Free Demo</span>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a href="#contact" class="btn-secondary" style="display:inline-flex;">Or Send a Message</a>
+  </div>
+</section>
+
+<!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+<footer id="footer">
+  <div class="footer-inner">
+    <span class="footer-brand"><img src="/logo.png" alt="Moliam" class="logo-icon" width="200" height="197" loading="lazy">Moliam</span>
+    <span class="footer-copy">&copy; 2026 Moliam. All rights reserved. Orange County, CA.</span>
+    <span class="footer-ai">Powered by AI</span>
+    <div class="footer-links">
+      <a href="#services" aria-label="Services section">Services</a>
+      <a href="#contact" aria-label="Contact form">Contact</a>
+      <a href="/book">Book a Demo</a>
+      <a href="/login">Client Portal</a>
+      <a href="/privacy">Privacy</a>
+      <a href="/terms">Terms</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT — All logic in one file
+     ═══════════════════════════════════════════════════════════ -->
+<!-- External JS for HQ visualizer -->
+<script src="/js/hq-main-interactive.js"></script>
+<script src="/js/contact-form-progressive.js"></script>
+</body>
+</html>

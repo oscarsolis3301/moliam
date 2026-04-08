@@ -1,0 +1,37 @@
+name = "moliam"
+compatibility_date = "2024-12-01"
+pages_build_output_dir = "./public"
+
+[[d1_databases]]
+binding = "MOLIAM_DB"
+database_name = "moliam-db"
+database_id = "c0f36156-312c-47c0-846f-249fd56ab8b6"
+
+[vars]
+# Discord webhook URL - configure after creating webhook in your Discord server
+DISCORD_WEBHOOK_URL = ""
+
+# CRM Provider: "airtable" (default) or "hubspot"
+CRM_PROVIDER = "airtable"
+
+# Email service selection (Postmark recommended for lead emails)
+EMAIL_SERVICE = "postmark"  # Options: postmark, mailersend, sendgrid
+
+[[secrets]]
+POSTMARK_API_KEY = ""           # Add in Cloudflare Dashboard → Settings → Secrets
+AIRTABLE_API_KEY = ""           # For Airtable CRM sync (no-code option)
+HUBSPOT_API_KEY = ""            # If using HubSpot instead of Airtable  
+MAILERSEND_API_KEY = ""         # Alternative email service
+
+# Production flags (set to "true" after testing)
+DEBUG_MODE = "false"
+
+# Lead scoring thresholds for urgency alerts
+HOT_LEAD_SCORE = 75             # Leads scoring ≥75 trigger urgent escalation
+URGENT_FOLLOWUP_MINUTES = 60    # Time threshold before hot lead auto-escalation
+
+[build]
+command = "echo 'No build step - static HTML + Cloudflare Functions deployed directly'"
+
+# Cron-based email automation triggers (daily nurturing at 9am EST)
+# Configure this later via wrangler cron:add -f functions/api/email-automation.js "0 9 * * *"
