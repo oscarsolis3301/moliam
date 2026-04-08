@@ -940,26 +940,11 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
 })();
 
 window.__moliam_cleanup_main__ = function() {
-  if (typeof updateUptimeIntervalId !== 'undefined' && updateUptimeIntervalId) {
-    clearInterval(updateUptimeIntervalId);
-  }
-  if (typeof sparklineIntervalId !== 'undefined' && sparklineIntervalId) {
-    clearInterval(sparklineIntervalId);
-  }
-  if (typeof statusPanelIntervalId !== 'undefined' && statusPanelIntervalId) {
-    clearInterval(statusPanelIntervalId);
-  }
-  // Clean up resize listeners (two separate ones registered)
-  if (typeof resizeHandler !== 'undefined') {
-    window.removeEventListener('resize', resizeHandler);
-    }
-  // Clean up canvas resize listener (separate from above)
-  if (typeof canvasResizeHandler !== 'undefined') {
-    window.removeEventListener('resize', canvasResizeHandler);
-  }
-   // Clean up media query listener  
-  if (typeof mediaQueryChangeHandler !== 'undefined' && typeof mediaQuery !== 'undefined') {
-    mediaQuery.removeEventListener('change', mediaQueryChangeHandler);
-    }
+  clearInterval(updateUptimeIntervalId || 0);
+  clearInterval(sparklineIntervalId || 0);
+  clearInterval(statusPanelIntervalId || 0);
+  window.removeEventListener('resize', resizeHandler);
+  window.removeEventListener('resize', canvasResizeHandler);
+  mediaQuery.removeEventListener('change', mediaQueryChangeHandler);
 };
 
