@@ -28,6 +28,13 @@
  */
 
 
+/**
+ * Handle GET requests to /api/contacts endpoint
+ * Returns paginated contacts list with optional status and search filters
+ * Supports parameterized queries to prevent SQL injection in LIKE clauses
+ * @param {object} context - Cloudflare Pages function context with request and env
+ * @returns {Response} JSON response with success/error status, contact list, and metadata
+ */
 export async function onRequestGet(context) {
   const url = new URL(context.request.url);
   const { env } = context;
@@ -37,17 +44,17 @@ export async function onRequestGet(context) {
   const searchQuery = params.get("search");
 
    if (!db) {
-       // Return CORS headers for all responses including errors when DB unavailable
+        // Return CORS headers for all responses including errors when DB unavailable
        const noDbResponse = new Response(JSON.stringify({ error: true, message: "Database not available", contacts: [] }), { 
             status: 200,
            headers: { 
-              "Content-Type": "application/json",
-             "Access-Control-Allow-Origin": "https://moliam.pages.dev",
-             "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-             "Access-Control-Allow-Headers": "Content-Type, Authorization",
-             "Cache-Control": "no-store"
-            }
-          });
+               "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "https://moliam.pages.dev",
+              "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+              "Access-Control-Allow-Headers": "Content-Type, Authorization",
+              "Cache-Control": "no-store"
+             }
+           });
        return noDbResponse;
      }
 
