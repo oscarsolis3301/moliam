@@ -41,9 +41,9 @@ async function authenticate(request, db) {
 
     if (!session) return null;
 
-        // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
+// Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
     if (new Date(session.expires_at) < new Date()) {
-      await db.prepare("DELETE FROM sessions WHERE token=?").bi...n();
+      await db.prepare("DELETE FROM sessions WHERE token=?").bind(token).run();
       return null;
      }
 
