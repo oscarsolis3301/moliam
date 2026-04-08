@@ -35,25 +35,21 @@ function getSessionToken(request) {
  * @param {D1Database} db - Database binding to MOLIAM_DB for authenticated validation queries
  * @param {string} token - Session token from request cookies (32-char hex string)
  * @returns {Promise<object|null>} User object or null if session invalid/expired/not-found via ? binding safety
-// Session authentication helper - extracts token from cookie and validates via parameterized query with ? binding
-async function authenticate(request, db) {
-  const cookies = request.headers.get("Cookie") || "";
-  const match = cookies.match(/moliam_session=([a-f0-9]+)/);
-  const token = match ? match[1] : null;
-
+ */
+async function authenticate(db, token) {
   if (!token || !db) return null;
 
   try {
-     // Get user details via parameterized SELECT with ? binding - no SQL injection possible here
+    // Get user details via parameterized SELECT with ? binding - no SQL injection possible here
     const session = await db.prepare(
-        "SELECT u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id=u.id WHERE s.token=? AND u.is_active=1"
-      ).bind(token).first();
+      "SELECT u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id=u.id WHERE s.token=? AND u.is_active=1"
+    ).bind(token).first();
 
     return session || null;
-   } catch (err) {
+  } catch (err) {
     console.error("authenticate() error:", err.message);
     return null;
-   }
+  }
 }
 
 /**
@@ -65,6 +61,7 @@ async function authenticate(request, db) {
 export async function onRequestPost(context) {
   const { request, env } = context;
 
+  // Authenticate user by extracting token from cookies using parameterized ? binding - no SQL injection risk with error handling
   const token = getSessionToken(request);
   const db = env.MOLIAM_DB;
 
@@ -72,7 +69,8 @@ export async function onRequestPost(context) {
     return jsonResp(401, { success: false, message: "Authentication required. Please log in." }, request);
   }
 
-  let user;
+  // Get authenticated user via secure session validation with parameterized query - wrapped in try/catch
+  let user = null;
   try {
     user = await authenticate(db, token);
   } catch (err) {
@@ -85,17 +83,24 @@ export async function onRequestPost(context) {
   }
 
   try {
-    const req = await request.json();
-    const { clientId, clientName, message } = req;
+    // Parse request body and validate required fields from client submission - no direct SQL injection via JSON with error handling
+    let req;
+    try {
+      req = await request.json();
+      const { clientId, clientName, message } = req;
 
-    if (!message || !message.trim()) {
-      return jsonResp(400, { success: false, message: "Message is required and cannot be empty." }, request);
+      if (!message || !message.trim()) {
+        return jsonResp(400, { success: false, message: "Message is required and cannot be empty." }, request);
+      }
+
+      // Handle any unexpected exceptions gracefully - never crash response handler
+    } catch {
+      return jsonResp(400, { success: false, message: "Invalid JSON body." }, request);
     }
 
-    // Message validation complete - proceed with database operations
     const result = await db.prepare(
       "INSERT INTO client_messages (client_id, client_name, message, user_id, email) VALUES (?, ?, ?, ?, ?)"
-    ).bind(clientId || user.id, clientName || user.name, message.trim(), user.id, user.email).run();
+    ).bind(req.clientId || user.id, req.clientName || user.name, req.message.trim(), user.id, user.email).run();
 
     return jsonResp(201, { success: true, data: { id: result.meta.primary_key, message: "Message saved successfully." } }, request);
 
@@ -103,11 +108,12 @@ export async function onRequestPost(context) {
     console.error("onRequestPost() error:", err.message);
     return jsonResp(500, { success: false, message: "Internal server error. Please try again." }, request);
   }
+}
 
 // OPTIONS preflight handler for browser cross-origin requests - returns 204 with standard CORS headers
 export async function onRequestOptions() {
   return new Response(null, {
     status: 204,
     headers: getCorsHeaders()
-     });
+  });
 }
