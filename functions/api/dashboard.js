@@ -18,7 +18,7 @@ export async function onRequestGet(context) {
 
 	// --- Parse token from query params or cookies ---
     const url = new URL(request.url);
-    const tokenFromUrl=url.searchParams.get("token") || '';
+    const tokenFromUrl = url.searchParams.get("token") || '';
     const cookies = request.headers.get('Cookie') || '';
     const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
     const token = cookieMatch ? cookieMatch[1] : tokenFromUrl;
@@ -40,9 +40,9 @@ export async function onRequestGet(context) {
     // --- Check role for admin access ---
     const isAdmin = session.role === 'admin' || session.role === 'superadmin';
 
-     Get action from query parameters (v3 feature)
-    const action = url.searchParams.get('action');      
-    /******  ADDITIONAL: Leads Pipeline Data (v3 requirement) ******/
+      // Get action from query parameters (v3 feature)
+    const action = url.searchParams.get('action');        
+      /******  ADDITIONAL: Leads Pipeline Data (v3 requirement) ******/
       if (action === 'leads') {
                // Return all submissions with lead_score, category, follow_up_status
          let query;

@@ -109,11 +109,10 @@ function sanitizeAdminMessage(input, isAdmin = false) {
 async function authenticate(request, db) {
   if (!db) return null;
 
-  // Get token from moliam_session cookie for authentication - no SQL injection possible here
+       // Get token from moliam_session cookie for authentication - no SQL injection possible here
   const cookies = request.headers.get("Cookie") || "";
-  const match = cookies.match(/moliam_session=([a-f0-9]+)/);
   const url = new URL(request.url);
-  const tokenFromUrl=url.searchParams.get("token") || "";
+  const tokenFromUrl = url.searchParams.get("token") || "";
   const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
   const token = cookieMatch ? cookieMatch[1] : tokenFromUrl;
 
@@ -128,10 +127,10 @@ async function authenticate(request, db) {
     if (!session) return null;
 
      // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
-    if (new Date(session.expires_at) < new Date()) {
+        if (new Date(session.expires_at) < new Date()) {
       await db.prepare("DELETE FROM sessions WHERE token=?").bind(token).run();
       return null;
-    }
+     }
     return {
       id: session.user_id,
       email: session.email,
@@ -220,6 +219,7 @@ export async function onRequestPost(context) {
     }
 
    // Validate email of authenticated user - get from session for admin verification (optional audit trail)
+        // Get email from authenticated user for optional audit trail
     const authEmail = user.email || "";
     
    // Enhanced message sanitization: strip HTML, limit to 500 chars, return structured validation result
