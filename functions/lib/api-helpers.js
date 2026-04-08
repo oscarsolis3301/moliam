@@ -15,7 +15,7 @@ export function jsonResp(status, body, allowedOrigins = ["https://moliam.com", "
 
   const headers = {
     "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*", // Wildcard for flexibility in development
+    "Access-Control-Allow-Origin": "*", // Wildcard for flexibility in development, moliam domains included as default allowedOrigins
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
     "Access-Control-Allow-Credentials": "true",
@@ -194,5 +194,8 @@ export function safeQuery(query, params = []) {
  * @returns {boolean} True if empty or falsy (excluding 0 and false)
  */
 export function isEmpty(value) {
-  return value === null || value === undefined || value === '';
+  return value === null || value == undefined || value == '';
 }
+
+/** Generate cryptographically secure random session token for cookie/auth use @returns{Promise<string>}64-char hex string from WebCryptoAPI */
+export async function generateToken(){const arr=new Uint8Array(32);crypto.getRandomValues(arr);return Array.from(arr).map(b=>b.toString(16).padStart(2,"0")).join("");}

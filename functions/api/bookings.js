@@ -5,7 +5,7 @@
  * PUT /api/appointments/:id - Update/confirm/reschedule/cancel
  */
 
-import { jsonResp, balanceSuccessError, sanitizeText } from './api-helpers.js';
+import { jsonResp } from './api-helpers.js';
 
 /**
  * Handle GET requests to Booking API - list all appointments or get single by ID

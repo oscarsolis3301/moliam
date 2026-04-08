@@ -23,11 +23,11 @@ export async function onRequestPost(context) {
          }
 
   const email = (data.email || "").toLowerCase().trim();
-  const password = (data.password || "").trim();
+  const password = (String(data.password || "")).trim();
 
   if (!email || !password) {
     return jsonResp(400, { success: false, error: true, message: "Email and password required." }, request);
-   }
+    }
 
      // Input validation - sanitize email and password
   if (email.length > 254) {
@@ -58,7 +58,7 @@ export async function onRequestPost(context) {
       return jsonResp(401, { success: false, error: true, message: "Invalid email or password." }, request);
    }
 
-         // Create session token with expiration (7 days)
+      // Create session token with expiration (7 days)
     const token = await generateToken();
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
     const ip = request.headers.get("cf-connecting-ip") || "unknown";

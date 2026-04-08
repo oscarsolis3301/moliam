@@ -16,25 +16,25 @@ export async function onRequestGet(context) {
       return jsonResp(503, { success: false, error: true, message: 'Database service unavailable.' }, request);
      }
 
-    // --- Parse token from query params or cookies ---
+     // --- Parse token from query params or cookies ---
     const url = new URL(request.url);
-    const tokenFromUrl = url.searchParams.get("token") || '';
+    const tokenFromUrl = (url.searchParams.get("token") || "").replace("?. token=", "");
     const cookies = request.headers.get('Cookie') || '';
     const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-    const token = cookieMatch ? cookieMatch[1] : tokenFromUrl;
+    const token = tokenFromUrl ? tokenFromUrl : cookieMatch?.[1];
 
     if (!token) {
       return jsonResp(401, { success: false, error: true, message: 'Authentication token required.' }, request);
-         }
+        }
 
-    // --- Session validation with parameterized query ---
+     // --- Session validation with parameterized query ---
     const session = await db.prepare(
-      'SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1 AND s.expires_at > datetime(\'now\')'
-    ).bind(token).first();
+           "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1 AND s.expires_at > datetime(\'now\')"
+         ).bind(token).first();
 
     if (!session) {
       return jsonResp(401, { success: false, error: true, message: 'Session invalid or expired.' }, request);
-         }
+        }
 
     // --- Check role for admin access ---
     const isAdmin = session.role === 'admin' || session.role === 'superadmin';
@@ -144,7 +144,7 @@ export async function onRequestGet(context) {
       const totalMonthly = projects.reduce((sum, p) => sum + (p.monthly_rate || 0), 0);
 
       let stats;
-      if (admins) {
+      if (isAdmin) {
         const clientCount = await db.prepare("SELECT COUNT(*) as c FROM users WHERE role = 'client'").first();
         const leadCount = await db.prepare("SELECT COUNT(*) as c FROM leads WHERE status = 'new'").first();
         stats = {
@@ -152,8 +152,8 @@ export async function onRequestGet(context) {
               active_projects: activeProjects,
               monthly_revenue: totalMonthly,
                new_leads: leadCount.c,
-                };
-              } else {
+                  };
+                } else {
           stats = {
                  active_projects: activeProjects,
              total_projects: projects.length,
