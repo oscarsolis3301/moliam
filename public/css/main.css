@@ -174,3 +174,12 @@ html, body {
 }
 
 /* ═══════════════════════ END EXTRACTS ════════════════════════ */
+
+/* Accessible Live Region - moved from inline HTML */
+#a11y-live-region {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}

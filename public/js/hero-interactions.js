@@ -1,34 +1,10 @@
-function drawError(x,y,w,h) {
-   // Error cone (exclamation mark)
-  ctx.beginPath();
-  ctx.moveTo(x+w/2, y+10);
-  ctx.lineTo(x+w/2+10, y+28);
-  ctx.lineTo(x+w/2-10, y+28);
-    ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = '#000';
-    ctx.font = 'bold 10px Inter';
-    ctx.textAlign = 'center';
-    ctx.fillText('!', x+w/2, y+25);
-    ctx.globalAlpha = 1;
+/**
+ * Note: Import visual-utils.js before this file for shared drawing utilities
+ */
 
-   // Stack trace lines
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(x,y+30,w,h-46);
-  ctx.clip();
-  for(let i=0;i<6;i++) {
-    const ly = y+34+((i*8+errorScrollY)%(h-46));
-    ctx.fillStyle = 'rgba(239,68,68,0.2)';
-    ctx.fillRect(x+4, ly, 10+(i*13%50), 1);
-  }
-  ctx.restore();
-}
-
-
-function drawRateLimit(x,y,w,h,room) {
-  // Couch
-  ctx.fillStyle = '#2d2040';
+function drawRateLimit(ctx, x, y, w, h, room) {
+   // Couch implementation here - using local copy due to complexity of refactoring
+   ctx.fillStyle = '#2d2040';
   const couchY = y+h-28;
   roundRect(ctx, x+8, couchY, w*0.6, 18, 4);
   ctx.fill();
@@ -36,14 +12,14 @@ function drawRateLimit(x,y,w,h,room) {
   roundRect(ctx, x+8, couchY-6, w*0.6, 8, 3);
   ctx.fill();
 
-  // Bookshelf
+   // Bookshelf
   const bx = x+w-24;
   for(let i=0;i<4;i++){
     ctx.fillStyle = ['#4a3728','#2d4a35','#3d2d55','#4a3728'][i];
     ctx.fillRect(bx, y+8+i*10, 16, 8);
   }
 
-  // Coffee cup
+   // Coffee cup
   ctx.fillStyle = '#6B7280';
   ctx.fillRect(x+w*0.7, couchY+2, 8, 10);
   ctx.strokeStyle = '#6B7280';
@@ -52,22 +28,6 @@ function drawRateLimit(x,y,w,h,room) {
   ctx.arc(x+w*0.7+10, couchY+6, 3, -Math.PI/2, Math.PI/2);
   ctx.stroke();
 }
-
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x+r,y);
-  ctx.lineTo(x+w-r,y);
-  ctx.quadraticCurveTo(x+w,y,x+w,y+r);
-  ctx.lineTo(x+w,y+h-r);
-  ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-  ctx.lineTo(x+r,y+h);
-  ctx.quadraticCurveTo(x,y+h,x,y+h-r);
-  ctx.lineTo(x,y+r);
-  ctx.quadraticCurveTo(x,y,x+r,y);
-  ctx.closePath();
-}
-
-// ═══════════════════════════════════════
 // SECTION: Corridor Renderer
 // ═══════════════════════════════════════
 function drawCorridor() {
