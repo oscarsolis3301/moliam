@@ -179,9 +179,18 @@
     });
   }
   layoutRooms();
-  window.addEventListener('resize', layoutRooms);
+let roomsResizeHandler = () => layoutRooms();
+window.addEventListener('resize', roomsResizeHandler);
 
-  /* ─── BOTS INITIALIZATION ─── */
+// Cleanup function - memory leak prevention
+window.__moliam_cleanup_main_interactions__ = function() {
+  if (typeof updateUptimeIntervalId !== 'undefined' && updateUptimeIntervalId) {
+    clearInterval(updateUptimeIntervalId);
+  }
+  window.removeEventListener('resize', roomsResizeHandler);
+};
+
+/* ─── BOTS INITIALIZATION ─── */
   const TASKS = [
     'Building contractor website for Oscar', 'Optimizing Google Business Profile',
     'Managing LSA campaign for PlumbRight', 'Analyzing competitor rankings',

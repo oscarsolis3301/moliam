@@ -350,15 +350,7 @@
       }
      }
 
-    function focusCurrentInput() {
-       var activeStep = steps[currentStep - 1];
-      if (!activeStep) return;
-     
-       var input = activeStep.querySelector('.pf-input, .pf-pill-radio');
-      if (input && typeof input.focus === 'function') {
-         setTimeout(function() { input.focus(); }, 100);
-       }
-     }
+  // NOTE: Duplicate focusCurrentInput() removed - kept the original version at line 123
 
   function escapeHtml(str) {
     var div = document.createElement('div');
