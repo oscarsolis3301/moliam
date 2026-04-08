@@ -175,24 +175,6 @@ export async function onRequestGet(context) {
 }
 
 export async function onRequestOptions() {
-  return new Response(null, { status: 204, headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Allow-Credentials": "true",
-      "X-Content-Type-Options": "nosniff",
-  }});
-}
-
-function jsonResp(status, body, request) {
-  const headers = {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Allow-Credentials": "true",
-      "X-Content-Type-Options": "nosniff",
-      "X-Frame-Options": "DENY",
-  };
-  return new Response(JSON.stringify(body), { status, headers });
+  const headers = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, Authorization", "Access-Control-Allow-Credentials": "true" };
+  return new Response(null, { status: 204, headers });
 }

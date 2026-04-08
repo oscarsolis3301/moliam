@@ -11,7 +11,7 @@
  */
 
 // --- Centralized API helpers for consistent error handling and response formatting ---
-import { jsonResp } from '../lib/api-helpers.js';
+import { jsonResp, authenticate } from './auth.js';
 
 // --- GET: list messages with pagination and role-based filtering ---
 /**
