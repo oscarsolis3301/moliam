@@ -86,19 +86,18 @@ function validateMessage(messageRaw) {
 export async function onRequestPost(context) {
   const { request, env } = context;
 
-    // Authenticate user by extracting token from cookies using parameterized ? binding - no SQL injection risk
-  const token = getSessionToken(request);
+      // Authenticate user by extracting token from cookies using parameterized ? binding - no SQL injection risk
   const db = env.MOLIAM_DB;
 
-  /**
-   * Extract session token from cookies safely for authentication
-   * @returns {string|null} Hex token from moliam_session cookie or null if not found
-   */
-  function getSessionToken() {
-    const cookies = request.headers.get("Cookie") || "";
+  // Extract session token from cookies safely for authentication
+  function getSessionToken(req) {
+    const cookies = req.headers.get("Cookie") || "";
     const match = cookies.match(/moliam_session=([a-f0-9]+)/);
     return match ? match[1] : null;
   }
+
+  // Get session token from request
+  const token = getSessionToken(request);
 
   if (!token || !db) {
     return jsonResp(401, { success: false, message: "Authentication required. Please log in." }, request);
