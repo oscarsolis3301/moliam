@@ -12,29 +12,23 @@
 </head>
 <body>
 <p>This is HQ Visualization page - requires JavaScript enabled.</p>
-<canvas id="c"></canvas><style>@import url('/css/hq.css');</style><div id="hud"><div class="left"><div class="status-dot"></div><div class="title">MOLIAM HQ<div class="right"><button class="speed-btn active" data-speed="1">1x</button><button class="speed-btn" data-speed="2">2x</button><button class="speed-btn" data-speed="5">5x</button><button class="fs-btn" onclick="document.documentElement.requestFullscreen?.()">⛶</button></div></div></div>
-<div id="demo-badge">⚡ DEMO MODE</div></canvas></body></html>
-    --bg-building: #111827;
-    --bg-room: #1F2937;
-    --border-room: #374151;
-    --accent-blue: #3B82F6;
-    --accent-purple: #8B5CF6;
-    --accent-green: #10B981;
-    --accent-amber: #F59E0B;
-    --accent-red: #EF4444;
-    --accent-cyan: #06B6D4;
-    --text-primary: #F9FAFB;
-    --text-secondary: #9CA3AF;
-    --text-dim: #6B7280;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: var(--bg-deep);
-    font-family: 'Inter', system-ui, sans-serif;
-    overflow: hidden;
-    color: var(--text-primary);
-    width: 100vw; height: 100vh;
-  }
+<canvas id="c"></canvas>
+<div id="hud">
+  <div class="left">
+    <div class="status-dot"></div>
+    <div class="title">MOLIAM HQ</div>
+    <div class="right">
+      <button class="speed-btn active" data-speed="1">1x</button>
+      <button class="speed-btn" data-speed="2">2x</button>
+      <button class="speed-btn" data-speed="5">5x</button>
+      <button class="fs-btn" onclick="document.documentElement.requestFullscreen?.()">⛶</button>
+    </div>
+  </div>
+</div>
+<div id="demo-badge">⚡ DEMO MODE</div>
+</canvas>
+</body>
+</html>
   #hud {
     position: fixed; top: 0; left: 0; right: 0; height: 48px; z-index: 100;
     background: rgba(11,14,20,0.92); border-bottom: 1px solid var(--border-room);
@@ -87,10 +81,8 @@
     color: var(--accent-amber); background: rgba(245,158,11,0.1);
     border: 1px solid rgba(245,158,11,0.3); border-radius: 4px; padding: 4px 8px;
   }
-  </div>
+   </div>
 </div>
-
-</style>
 
 <!-- Mobile Responsive Styles Added for Task 3 -->
 <style>
