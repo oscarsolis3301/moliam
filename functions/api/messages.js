@@ -134,21 +134,21 @@ async function authenticate(request, db) {
   const match = cookies.match(/moliam_session=([a-f0-9]+)/);
   if (!match) return null;
 
-  const token = getSessionToken(request);
-  if (!token) { return jsonResp(401, { error: true, message: "Not authenticated" }); }
+  const token = match[1];
+  if (!token) return null;
 
   try {
     const session = await db.prepare(
-       "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1"
-    ).bind(token).first();
+        "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1"
+      ).bind(token).first();
 
     if (!session) return null;
 
-    // Check expiry
+     // Check expiry
     if (new Date(session.expires_at) < new Date()) {
-      await db.prepare("DELETE FROM sessions WHERE token = ?").bind(token).run();
+      await db.prepare("DELETE FROM sessions WHERE token=?").bind(null, token).run();
       return null;
-    }
+     }
 
     return {
       id: session.user_id,

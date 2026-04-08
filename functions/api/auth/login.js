@@ -18,78 +18,73 @@ export async function onRequestPost(context) {
   }
 
   const email = (data.email || "").toLowerCase().trim();
-  const password = (data.password || "").trim();
+  const password = data.password || "";
 
   if (!email || !password) {
     return jsonResp(400, { success: false, error: true, message: "Email and password required." });
-   }
+  }
 
-   // Input validation - sanitize email and password
+  // Input validation - sanitize email and password
   if (email.length > 254) {
     return jsonResp(400, { success: false, error: true, message: "Email address too long." });
-   }
+  }
   if (password.length < 6 || password.length > 128) {
     return jsonResp(400, { success: false, error: true, message: "Password must be 6-128 characters." });
-   }
+  }
 
   try {
-     
-     // Find user with parameterized query (no SQL injection risk)
+    // Find user with parameterized query (no SQL injection risk)
     const user = await db.prepare(
        "SELECT id, email, name, role, company, password_hash, is_active FROM users WHERE email = ?"
      ).bind(email).first();
 
-    if (!user) {
-      return jsonResp(401, { success: false, error: true, message: "Invalid email or password." });
-    }
+  if (!user) {
+    return jsonResp(401, { success: false, error: true, message: "Invalid email or password." });
+  }
 
-    if (user.is_active === 0 || user.is_active === false) {
-      return jsonResp(403, { success: false, error: true, message: "Account disabled. Contact support." });
-     }
+  if (user.is_active === 0 || user.is_active === false) {
+    return jsonResp(403, { success: false, error: true, message: "Account disabled. Contact support." });
+  }
 
-     
      // Verify password (SHA-256 based)
-    const hash = await hashPassword(password);
-    if (hash !== user.password_hash) {
-      return jsonResp(401, { success: false, error: true, message: "Invalid email or password." });
-     }
+  const hash = await hashPassword(password);
+  if (hash !== user.password_hash) {
+    return jsonResp(401, { success: false, error: true, message: "Invalid email or password." });
+  }
 
-     
      // Create session token with expiration (7 days)
-    const token = generateToken();
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-    const ip = request.headers.get("cf-connecting-ip") || "unknown";
-    const ua = request.headers.get("user-agent") || "";
+  const token = generateToken();
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  const ip = request.headers.get("cf-connecting-ip") || "unknown";
+  const ua = request.headers.get("user-agent") || "";
 
-    await db.prepare(
-       "INSERT INTO sessions (user_id, token, expires_at, ip_address, user_agent) VALUES (?, ?, ?, ?, ?)"
-     ).bind(user.id, token, expiresAt, ip, ua).run();
+  await db.prepare(
+    "INSERT INTO sessions (user_id, token, expires_at, ip_address, user_agent) VALUES (?, ?, ?, ?, ?)"
+  ).bind(user.id, token, expiresAt, ip, ua).run();
 
-     
      // Update last login timestamp
-    await db.prepare(
-       "UPDATE users SET last_login = datetime('now') WHERE id = ?"
-     ).bind(user.id).run();
+  await db.prepare(
+    "UPDATE users SET last_login = datetime('now') WHERE id = ?"
+  ).bind(user.id).run();
 
-     
      // Set cookie + return user data with consistent success structure
-    const headers = new Headers({
-       "Content-Type": "application/json",
-       "Access-Control-Allow-Origin": getAllowedOrigin(request),
-       "Access-Control-Allow-Credentials": "true",
-       "X-Content-Type-Options": "nosniff",
-       "X-Frame-Options": "DENY"
+     // Set cookie + return user data with consistent success structure
+     const headers = new Headers({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": getAllowedOrigin(request),
+        "Access-Control-Allow-Credentials": "true",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY"
      });
 
-    headers.append("Set-Cookie",
-       `moliam_session=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`
-     );
+  headers.append("Set-Cookie",
+    `moliam_session=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`
+  );
 
-     
-     // Normalize superadmin → admin for frontend routing
-    const displayRole = user.role === 'superadmin' ? 'admin' : user.role;
+      // Normalize superadmin → admin for frontend routing
+  const displayRole = user.role === 'superadmin' ? 'admin' : user.role;
 
-    return new Response(JSON.stringify({
+  return new Response(JSON.stringify({
       success: true,
       data: {
         id: user.id,
@@ -100,12 +95,13 @@ export async function onRequestPost(context) {
        }
      }), { status: 200, headers });
 
-   } catch (err) {
+  } catch (err) {
     console.error("Login error:", err);
     return jsonResp(500, { success: false, error: true, message: "Server error. Try again." });
-    }
-  }
+   }
+}
 
+  
 
 // Handle CORS preflight
 export async function onRequestOptions() {
