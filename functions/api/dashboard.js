@@ -1,33 +1,46 @@
 /**
  * GET /api/dashboard — Enhanced v3
  * Returns current user's projects + recent updates
- * NEW: action=leads returns submissions with lead_score, category, follow_up_status
+ * NEW: action=leads returns submissions with lead_score, category, follow_up_status  
  * NEW: action=pipeline returns pipeline summary (hot/warm/cold counts and follow-up stats)
  */
 
 export async function onRequestGet(context) {
-  const { request, env } = context;
-  const db = env.MOLIAM_DB;
-
-  const cookies = request.headers.get("Cookie") || "";
-  const match = cookies.match(/moliam_session=([a-f0-9]+)/);
-  const token = match ? match[1] : null;
-  if (!token) return jsonResp(401, { error: true, message: "Not authenticated." }, request);
-
   try {
-    const session = await db.prepare(
-            "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1 AND s.expires_at > datetime('now')"
-          ).bind(token).first();
+    const { request, env } = context;
+    const db = env.MOLIAM_DB;
 
-    if (!session) return jsonResp(401, { error: true, message: "Session invalid." }, request);
+    if (!db) {
+      return jsonResp(503, { success: false, error: true, message: "Database service unavailable." }, request);
+    }
 
-    const isAdmin = session.role === "admin" || session.role === "superadmin";
-    
-      // Get action from query parameters (NEW v3 feature)
+    // --- Parse token from query params or cookies ---
     const url = new URL(request.url);
-    const action = url.searchParams.get("action"); // 'leads' or 'pipeline'
+    const tokenParam = url.searchParams.get("token");
+    const cookies = request.headers.get("Cookie") || "";
+    const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
+    const token = tokenParam || (cookieMatch ? cookieMatch[1] : null);
 
-     /******  ADDITIONAL: Leads Pipeline Data (v3 requirement) ******/
+    if (!token) {
+      return jsonResp(401, { success: false, error: true, message: "Authentication token required." }, request);
+    }
+
+    // --- Session validation with parameterized query ---
+    const session = await db.prepare(
+        "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND u.is_active = 1 AND s.expires_at > datetime('now')"
+      ).bind(token).first();
+
+    if (!session) {
+      return jsonResp(401, { success: false, error: true, message: "Session invalid or expired." }, request);
+    }
+
+    // --- Check role for admin access ---
+    const isAdmin = session.role === "admin" || session.role === "superadmin";
+
+    // Get action from query parameters (v3 feature)
+    const action = url.searchParams.get("action");  
+
+      /******  ADDITIONAL: Leads Pipeline Data (v3 requirement) ******/
     if (action === "leads") {
       // Return all submissions with lead_score, category, follow_up_status
       let query;
@@ -44,8 +57,8 @@ export async function onRequestGet(context) {
       }
       
       const result = isAdmin 
-         ? await db.prepare(query).all()
-         : await db.prepare(query).bind(session.email).all();
+          ? await db.prepare(query).all()
+          : await db.prepare(query).bind(session.email).all();
 
       return jsonResp(200, {
         success: true,
@@ -53,30 +66,30 @@ export async function onRequestGet(context) {
         data: result.results || [],
         fetchAt: new Date().toISOString()
       }, request);
-     }
+    }
 
     if (action === "pipeline") {
-       // Return pipeline summary: count by hot/warm/cold, follow-up stats
+      // Return pipeline summary: count by hot/warm/cold, follow-up stats
       const coldCount = await db.prepare(isAdmin 
-            ? "SELECT COUNT(*) as c FROM submissions WHERE category='cold'"
-            : "SELECT COUNT(*) as c FROM submissions WHERE email=? AND category='cold'")
-         .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
+             ? "SELECT COUNT(*) as c FROM submissions WHERE category='cold'"
+             : "SELECT COUNT(*) as c FROM submissions WHERE email=? AND category='cold'")
+          .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
       const warmCount = await db.prepare(isAdmin 
-            ? "SELECT COUNT(*) as c FROM submissions WHERE category='warm'"
-            : "SELECT COUNT(*) as c FROM submissions WHERE email=? AND category='warm'")
-         .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
+             ? "SELECT COUNT(*) as c FROM submissions WHERE category='warm'"
+             : "SELECT COUNT(*) as c FROM submissions WHERE email=? AND category='warm'")
+          .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
       const hotCount = await db.prepare(isAdmin 
-            ? "SELECT COUNT(*) as c FROM submissions WHERE category='hot'"
-            : "SELECT COUNT(*) as c FROM submissions WHERE email=? AND category='hot'")
-         .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
+             ? "SELECT COUNT(*) as c FROM submissions WHERE category='hot'"
+             : "SELECT COUNT(*) as c FROM submissions WHERE email=? AND category='hot'")
+          .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
       const followedCount = await db.prepare(isAdmin 
-            ? "SELECT COUNT(*) as c FROM submissions WHERE follow_up_status='completed'"
-            : "SELECT COUNT(*) as c FROM submissions WHERE email=? AND follow_up_status='completed'")
-         .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
+             ? "SELECT COUNT(*) as c FROM submissions WHERE follow_up_status='completed'"
+             : "SELECT COUNT(*) as c FROM submissions WHERE email=? AND follow_up_status='completed'")
+          .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
       const pendingCount = await db.prepare(isAdmin 
-            ? "SELECT COUNT(*) as c FROM submissions WHERE follow_up_status='pending'"
-            : "SELECT COUNT(*) as c FROM submissions WHERE email=? AND follow_up_status='pending'")
-         .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
+             ? "SELECT COUNT(*) as c FROM submissions WHERE follow_up_status='pending'"
+             : "SELECT COUNT(*) as c FROM submissions WHERE email=? AND follow_up_status='pending'")
+          .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
 
       return jsonResp(200, {
         success: true,
@@ -91,25 +104,25 @@ export async function onRequestGet(context) {
         },
         fetchAt: new Date().toISOString()
       }, request);
-     }
+    }
 
-    /******  ORIGINAL DASHBOARD CONTENTS ******/
+      /******  ORIGINAL DASHBOARD CONTENTS ******/
     
     // Get projects
     let projects;
     if (isAdmin) {
       const result = await db.prepare(
-           `SELECT p.*, u.name as client_name, u.company as client_company
+            `SELECT p.*, u.name as client_name, u.company as client_company
             FROM projects p JOIN users u ON p.user_id = u.id
             ORDER BY p.updated_at DESC`
-         ).all();
+          ).all();
       projects = result.results;
-     } else {
+    } else {
       const result = await db.prepare(
-           "SELECT * FROM projects WHERE user_id = ? ORDER BY updated_at DESC"
-         ).bind(session.id).all();
+            "SELECT * FROM projects WHERE user_id = ? ORDER BY updated_at DESC"
+          ).bind(session.id).all();
       projects = result.results;
-     }
+    }
 
     // Get recent updates for user's projects
     const projectIds = projects.map(p => p.id);
@@ -117,13 +130,13 @@ export async function onRequestGet(context) {
     if (projectIds.length > 0) {
       const placeholders = projectIds.map(() => "?").join(",");
       const result = await db.prepare(
-           `SELECT pu.*, p.name as project_name FROM project_updates pu
+            `SELECT pu.*, p.name as project_name FROM project_updates pu
             JOIN projects p ON pu.project_id = p.id
             WHERE pu.project_id IN (${placeholders})
             ORDER BY pu.created_at DESC LIMIT 20`
-         ).bind(...projectIds).all();
+          ).bind(...projectIds).all();
       updates = result.results;
-     }
+    }
 
     // Stats
     const activeProjects = projects.filter(p => ["active", "in_progress"].includes(p.status)).length;
@@ -139,17 +152,17 @@ export async function onRequestGet(context) {
         monthly_revenue: totalMonthly,
         new_leads: leadCount.c,
       };
-     } else {
+    } else {
       stats = {
         active_projects: activeProjects,
         total_projects: projects.length,
         monthly_total: totalMonthly,
-       };
-     }
+      };
+    }
 
     return jsonResp(200, {
       success: true,
-      user: { id: session.id, name: session.name, email: session.email, role: session.role, company: session.company },
+      data: { id: session.id, name: session.name, email: session.email, role: session.role, company: session.company },
       projects,
       updates,
       stats,
@@ -157,35 +170,29 @@ export async function onRequestGet(context) {
 
   } catch (err) {
     console.error("Dashboard error:", err);
-    return jsonResp(500, { error: true, message: "Server error." }, request);
-   }
+    return jsonResp(500, { success: false, error: true, message: "Server error." }, request);
+  }
 }
 
 export async function onRequestOptions() {
   return new Response(null, { status: 204, headers: {
-      "Access-Control-Allow-Origin": "https://moliam.pages.dev",
+      "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
       "Access-Control-Allow-Credentials": "true",
-   }});
+      "X-Content-Type-Options": "nosniff",
+  }});
 }
 
 function jsonResp(status, body, request) {
-  return new Response(JSON.stringify(body), { status, headers: {
+  const headers = {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": request ? getAllowedOrigin(request) : "https://moliam.pages.dev",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
       "Access-Control-Allow-Credentials": "true",
-    }});
-}
-
-function getSessionToken(request) {
-  const cookies = request.headers.get("Cookie") || "";
-  const match = cookies.match(/moliam_session=([a-f0-9]+)/);
-  return match ? match[1] : null;
-}
-
-function getAllowedOrigin(request) {
-  const origin = request.headers.get("Origin") || "";
-  if (origin.includes("moliam.pages.dev") || origin.includes("moliam.com") || origin.includes("localhost")) return origin;
-  return "https://moliam.pages.dev";
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY",
+  };
+  return new Response(JSON.stringify(body), { status, headers });
 }

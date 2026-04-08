@@ -21,74 +21,91 @@ export async function onRequestPost(context) {
   const password = (data.password || "").trim();
 
   if (!email || !password) {
-    return jsonResp(400, { error: true, message: "Email and password required." });
-  }
+    return jsonResp(400, { success: false, error: true, message: "Email and password required." });
+   }
+
+   // Input validation - sanitize email and password
+  if (email.length > 254) {
+    return jsonResp(400, { success: false, error: true, message: "Email address too long." });
+   }
+  if (password.length < 6 || password.length > 128) {
+    return jsonResp(400, { success: false, error: true, message: "Password must be 6-128 characters." });
+   }
 
   try {
-    // Find user
+     
+     // Find user with parameterized query (no SQL injection risk)
     const user = await db.prepare(
-      "SELECT id, email, name, role, company, password_hash, is_active FROM users WHERE email = ?"
-    ).bind(email).first();
+       "SELECT id, email, name, role, company, password_hash, is_active FROM users WHERE email = ?"
+     ).bind(email).first();
 
     if (!user) {
-      return jsonResp(401, { error: true, message: "Invalid email or password." });
+      return jsonResp(401, { success: false, error: true, message: "Invalid email or password." });
     }
 
-    if (!user.is_active) {
-      return jsonResp(403, { error: true, message: "Account disabled. Contact support." });
-    }
+    if (user.is_active === 0 || user.is_active === false) {
+      return jsonResp(403, { success: false, error: true, message: "Account disabled. Contact support." });
+     }
 
-    // Verify password (SHA-256 based — simple but effective for CF Workers)
+     
+     // Verify password (SHA-256 based)
     const hash = await hashPassword(password);
     if (hash !== user.password_hash) {
-      return jsonResp(401, { error: true, message: "Invalid email or password." });
-    }
+      return jsonResp(401, { success: false, error: true, message: "Invalid email or password." });
+     }
 
-    // Create session token
-    const token = await generateToken();
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days
+     
+     // Create session token with expiration (7 days)
+    const token = generateToken();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
     const ip = request.headers.get("cf-connecting-ip") || "unknown";
     const ua = request.headers.get("user-agent") || "";
 
     await db.prepare(
-      "INSERT INTO sessions (user_id, token, expires_at, ip_address, user_agent) VALUES (?, ?, ?, ?, ?)"
-    ).bind(user.id, token, expiresAt, ip, ua).run();
+       "INSERT INTO sessions (user_id, token, expires_at, ip_address, user_agent) VALUES (?, ?, ?, ?, ?)"
+     ).bind(user.id, token, expiresAt, ip, ua).run();
 
-    // Update last login
+     
+     // Update last login timestamp
     await db.prepare(
-      "UPDATE users SET last_login = datetime('now') WHERE id = ?"
-    ).bind(user.id).run();
+       "UPDATE users SET last_login = datetime('now') WHERE id = ?"
+     ).bind(user.id).run();
 
-    // Set cookie + return user data
+     
+     // Set cookie + return user data with consistent success structure
     const headers = new Headers({
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": getAllowedOrigin(request),
-      "Access-Control-Allow-Credentials": "true",
-    });
+       "Content-Type": "application/json",
+       "Access-Control-Allow-Origin": getAllowedOrigin(request),
+       "Access-Control-Allow-Credentials": "true",
+       "X-Content-Type-Options": "nosniff",
+       "X-Frame-Options": "DENY"
+     });
 
     headers.append("Set-Cookie",
-      `moliam_session=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`
-    );
+       `moliam_session=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`
+     );
 
-    // Normalize superadmin → admin for frontend routing
+     
+     // Normalize superadmin → admin for frontend routing
     const displayRole = user.role === 'superadmin' ? 'admin' : user.role;
 
     return new Response(JSON.stringify({
       success: true,
-      user: {
+      data: {
         id: user.id,
         email: user.email,
         name: user.name,
         role: displayRole,
         company: user.company,
-      }
-    }), { status: 200, headers });
+       }
+     }), { status: 200, headers });
 
-  } catch (err) {
+   } catch (err) {
     console.error("Login error:", err);
-    return jsonResp(500, { error: true, message: "Server error. Try again." });
+    return jsonResp(500, { success: false, error: true, message: "Server error. Try again." });
+    }
   }
-}
+
 
 // Handle CORS preflight
 export async function onRequestOptions() {

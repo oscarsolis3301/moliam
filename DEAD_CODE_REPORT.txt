@@ -1,0 +1,18 @@
+=== functions/api/bookings.js ===
+  // NOTE: This function cannot access D1 without context being passed in.
+  // to prevent runtime crashes. TODO: refactor to accept context param.
+=== functions/api/calendly-webhook.js ===
+=== functions/api/calendly.js ===
+=== functions/api/client-message.js ===
+=== functions/api/contact.js ===
+=== functions/api/contacts.js ===
+=== functions/api/crm-webhook.js ===
+=== functions/api/dashboard.js ===
+=== functions/api/email-automation.js ===
+=== functions/api/followup.js ===
+=== functions/api/health.js ===
+=== functions/api/lead-intake.js ===
+=== functions/api/messages.js ===
+ * NOTE: client_messages FK references client_profiles(id) but we treat
+=== functions/api/prequalify.js ===
+=== functions/api/qr.js ===
