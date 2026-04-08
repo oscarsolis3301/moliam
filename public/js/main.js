@@ -74,10 +74,15 @@ if (!isMobile && !prefersReducedMotion) {
   requestAnimationFrame(drawParticles);
 }
 
+// Store listeners for cleanup
+let resizeHandler;
+let mediaQueryChangeHandler;
+
 // Listen for mobile viewport changes and reduce-motion changes
 let currentMobile = isMobile;
 let currentReducedMotion = prefersReducedMotion;
-window.addEventListener('resize', () => {
+
+resizeHandler = () => {
   const newMobile = window.innerWidth < 768;
   if (newMobile !== currentMobile) {
     currentMobile = newMobile;
@@ -88,10 +93,12 @@ window.addEventListener('resize', () => {
       requestAnimationFrame(drawParticles); // Restart on desktop
     }
   }
-});
+};
+window.addEventListener('resize', resizeHandler);
 
 const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-mediaQuery.addEventListener('change', (e) => {
+
+mediaQueryChangeHandler = (e) => {
   const newReducedMotion = e.matches;
   if (newReducedMotion !== currentReducedMotion) {
     currentReducedMotion = newReducedMotion;
@@ -102,7 +109,8 @@ mediaQuery.addEventListener('change', (e) => {
       requestAnimationFrame(drawParticles); // Restart when not mobile and not reduced motion
     }
   }
-});
+};
+mediaQuery.addEventListener('change', mediaQueryChangeHandler);
 
 /* ─── SPARKLINE ─── */
 const sparkCanvas = $('#sparkline');

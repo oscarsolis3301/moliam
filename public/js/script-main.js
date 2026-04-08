@@ -1,71 +1,3 @@
-      break;
-    case 'task_complete':
-      bot.state = 'active';
-      bot.task = null;
-      bot.completeMark = 1.0;
-      break;
-    case 'code_write':
-      bot.state = 'active';
-      bot.task = 'Writing ' + (evt.payload.file_name||'code');
-      bot.dimmed = false;
-      moveBot(bot, evt.target_room);
-      break;
-    case 'api_call':
-      bot.state = 'active';
-      bot.task = 'Calling ' + (evt.payload.endpoint||'API');
-      moveBot(bot, evt.target_room);
-      // fire packet visual
-      if(room) room._apiPacket = 1.0;
-      break;
-    case 'db_operation':
-      bot.state = 'active';
-      bot.task = 'DB operation';
-      moveBot(bot, evt.target_room);
-      break;
-    case 'message_send':
-      bot.state = 'active';
-      moveBot(bot, evt.target_room);
-      // spawn orb after slight delay
-      const recipient = bots.find(b=>b.id===evt.payload.recipient);
-      if(recipient) {
-        setTimeout(()=>{
-          spawnOrb(bot, recipient);
-        }, 400);
-      }
-      break;
-    case 'error':
-      bot.state = 'error';
-      bot.task = evt.payload.error_message || 'Error';
-      bot.blockShake = 2.0;
-      moveBot(bot, 'error');
-      break;
-    case 'rate_limit_start':
-      bot.state = 'rate_limited';
-      bot.dimmed = true;
-      bot.rateLimitDuration = (evt.payload.duration_ms||15000) / 1000;
-      bot.rateLimitTimer = bot.rateLimitDuration;
-      bot.task = 'Rate limited';
-      moveBot(bot, 'ratelimit');
-      break;
-    case 'rate_limit_end':
-      bot.state = 'active';
-      bot.dimmed = false;
-      bot.rateLimitTimer = 0;
-      bot.task = null;
-      moveBot(bot, evt.target_room);
-      break;
-    case 'thinking':
-      bot.state = 'thinking';
-      bot.thinkGlow = 1.0;
-      break;
-    case 'idle':
-      bot.state = 'idle';
-      bot.task = null;
-      bot.dimmed = false;
-      moveBot(bot, evt.target_room);
-      break;
-  }
-}
 
 function describeEvent(evt) {
   switch(evt.type) {
@@ -763,7 +695,6 @@ function resize() {
 }
 
 // Mobile/Touch handling - adds tap support for small screens
-const isMobile = () => window.innerWidth <= 768;
 
 window.addEventListener('resize', resize);
 resize();

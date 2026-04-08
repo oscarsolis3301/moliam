@@ -442,12 +442,22 @@ function resize() {
 resize();
 initBots();
 
+// Exit animation loop cleanly on page unload
+function shutdownHQ() {
+  cancelAnimationFrame(animationId);
+}
+window.__moliam_cleanup__ = shutdownHQ;
+
 // ══════════════════════
 // SECTION: Main Loop
 // ═══════════════════════════════════════
-function frame(ts) {
-  const dt = lastTime ? Math.min((ts-lastTime)/1000, 0.1) : 0.016;
-  lastTime = ts;
+let animationId;
+let frameTs = 0; // track timestamp between loops
+
+function frame() {
+  const newTime = performance.now();
+  const dt = frameTs > 0 ? Math.min((newTime-frameTs)/1000, 0.1) : 0.016;
+  frameTs = newTime;
   globalTime += dt * simSpeed;
   errorScrollY += dt * 8 * simSpeed;
 
@@ -489,8 +499,12 @@ function frame(ts) {
   // Orbs
   drawOrbs();
 
-  requestAnimationFrame(frame);
+  animationId = requestAnimationFrame(frame);
 }
 
-requestAnimationFrame(frame);
+// Start loop once on init
+if (typeof finalInit === 'undefined') {
+  frameTs = performance.now();
+  requestAnimationFrame(frame);
+}
 updateHUD();
