@@ -2,7 +2,16 @@
  * MOLIAM Follow-Up Sequence — CloudFlare Pages Functions v3
  * GET /api/followup — returns all leads needing follow-up (submitted > 5min ago, no follow-up sent)
  * POST /api/followup — marks a lead as followed-up, stores timestamp
+ * 
+ * Task 4 Fix: Uses central api-helpers.jsonResp() for consistent {success, data/error} format across all endpoints
  */
+
+import { jsonResp } from './api-helpers.js';
+
+/** Helper: Ensure consistent error response format - wraps errors with success:false and proper error string */
+function ensureErrorResponse(status, message, request = null) {
+  return jsonResp(status, { success: false, error: message }, request);
+}
 
 /**
  * Handle GET requests to retrieve follow-up queue - list submissions pending follow-up (>5min old, no follow_up_at set)
@@ -13,7 +22,7 @@ export async function onRequestGet(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
   
-  if (!db) return jsonResp(500, { error: true, message: "Database not bound" });
+  if (!db) return ensureErrorResponse(500, "Database not bound", request);
 
   try {
     // --- Ensure submissions table has follow_up columns ---
@@ -55,7 +64,7 @@ export async function onRequestGet(context) {
 
   } catch (err) {
     console.error("GET /api/followup error:", err);
-    return jsonResp(500, { error: true, message: "Database query failed", details: err.message });
+    return ensureErrorResponse(500, "Database query failed", request);
   }
 }
 
@@ -65,20 +74,24 @@ export async function onRequestGet(context) {
  * @returns {Response} JSON response with success/status and lead ID that was marked followed-up, or 400/500 errors for validation/DB issues
  */
 export async function onRequestPost(context) {
+  const { request, env } = context;
   let data;
   try {
     data = await request.json();
-  } catch {
-    return jsonResp(400, { error: true, message: "Invalid JSON body" });
+   } catch {
+    return ensureErrorResponse(400, "Invalid JSON body", request);
   }
+
+  const db = env.MOLIAM_DB;
+  if (!db) return ensureErrorResponse(500, "Database not bound", request);
 
   const leadId = data.lead_id;
   if (!leadId || typeof leadId !== 'number') {
-    return jsonResp(400, { error: true, message: "Valid lead_id (integer) required" });
-   }
+    return ensureErrorResponse(400, "Valid lead_id (integer) required", request);
+    }
 
   try {
-    // --- Ensure submissions table has follow_up columns ---
+     // --- Ensure submissions table has follow_up columns ---
     await db.prepare("ALTER TABLE submissions ADD COLUMN IF NOT EXISTS follow_up_status TEXT DEFAULT 'pending'").run();
     await db.prepare("ALTER TABLE submissions ADD COLUMN IF NOT EXISTS follow_up_at TEXT").run();
 
@@ -86,48 +99,33 @@ export async function onRequestPost(context) {
     
     // Mark this lead as followed up with timestamp
     const result = await db.prepare(
-        "UPDATE submissions SET follow_up_status = 'completed', follow_up_at = ? WHERE id = ?"
-      ).bind(now, leadId).run();
+         "UPDATE submissions SET follow_up_status = 'completed', follow_up_at = ? WHERE id = ?"
+       ).bind(now, leadId).run();
 
     if (result.changes.length === 0 || result.meta.last_row_id !== leadId) {
-      return jsonResp(404, { error: true, message: "Lead not found or already followed up" });
-     }
+      return ensureErrorResponse(404, "Lead not found or already followed up", request);
+      }
 
     // Optional: Update related leads table
     try {
       await db.prepare("UPDATE leads SET follow_up_at = ?, status = 'followed' WHERE submission_id = ?")
-         .bind(now, leadId).run();
-     } catch {}
+          .bind(now, leadId).run();
+      } catch {}
 
-    return jsonResp(200, {
-      success: true,
-      message: "Lead marked as followed up",
-      leadId: leadId,
-      followUpAt: now,
-    });
+    return jsonResp(200, { success: true, data: { message: "Lead marked as followed up", leadId, followUpAt: now } }, request);
 
-  } catch (err) {
+   } catch (err) {
     console.error("POST /api/followup error:", err);
-    return jsonResp(500, { error: true, message: "Database update failed", details: err.message });
+    return ensureErrorResponse(500, "Database update failed", request);
   }
-}
-
-function jsonResp(status, body, request) {
-  const headers = new Headers({
-    	"Content-Type": "application/json",
-        "Access-Control-Allow-Origin": request ? (new URL(request.url).origin || "*") : "*",
-        "Access-Control-Allow-Methods": request ? "GET, POST, OPTIONS" : "*",
-        "Access-Control-Allow-Headers": request ? "Content-Type" : "*"
-      });
-  return new Response(JSON.stringify(body), { status, headers });
 }
 
 // CORS preflight handler for all endpoints
 export async function onRequestOptions() {
   const headers = new Headers({
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type"
-  });
+     "Access-Control-Allow-Origin": "*",
+     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+     "Access-Control-Allow-Headers": "Content-Type"
+   });
   return new Response(null, { status: 204, headers });
 }
