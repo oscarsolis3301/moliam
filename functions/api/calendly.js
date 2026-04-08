@@ -7,6 +7,11 @@
 
 import { jsonResp } from '../lib/api-helpers.js';
 
+/**
+ * Handle GET requests to Calendly API - returns Calendly demo URL and embed status for VisualArk booking system
+ * @param {object} context - Cloudflare Pages function context with request
+ * @returns {Response} JSON response with success/data structure containing Calendly URL, or error 500 if exception occurred
+ */
 export async function onRequestGet(context) { 
   try {
     const result = { 

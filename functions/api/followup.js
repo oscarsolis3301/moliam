@@ -10,6 +10,8 @@
  * @returns {Response} JSON response with array of leads needing follow-up or error message about DB/connection issues
  */
 export async function onRequestGet(context) {
+  const { request, env } = context;
+  const db = env.MOLIAM_DB;
   
   if (!db) return jsonResp(500, { error: true, message: "Database not bound" });
 
@@ -110,12 +112,22 @@ export async function onRequestPost(context) {
   }
 }
 
-function jsonResp(status, body) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-    },
+function jsonResp(status, body, request) {
+  const headers = new Headers({
+    	"Content-Type": "application/json",
+        "Access-Control-Allow-Origin": request ? (new URL(request.url).origin || "*") : "*",
+        "Access-Control-Allow-Methods": request ? "GET, POST, OPTIONS" : "*",
+        "Access-Control-Allow-Headers": request ? "Content-Type" : "*"
+      });
+  return new Response(JSON.stringify(body), { status, headers });
+}
+
+// CORS preflight handler for all endpoints
+export async function onRequestOptions() {
+  const headers = new Headers({
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
   });
+  return new Response(null, { status: 204, headers });
 }

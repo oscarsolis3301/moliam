@@ -149,6 +149,8 @@ export async function onRequestPost(context) {
 /**
  * Handle PUT requests to Booking API - reschedule appointment date/time
  * PUT /api/appointments/:id - Update scheduled_at with parameterized query for SQL injection protection
+/**
+ * Handle PUT requests to Booking API - reschedule appointment date/time
  * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
  * @returns {Response} JSON response: 200 OK (success), 400 Bad Request (missing ID, invalid JSON), 500 Server Error (DB failure)
  */
@@ -159,7 +161,7 @@ export async function onRequestPut(context) {
   const path = context.request.url.split('/api/appointments/')[1];
   if (!path) return jsonResp(400, { error: true, success: false, message: "Appointment ID required" }, request);
 
-  const appointmentId = parseInt(path);
+      const appointmentId = parseInt(path);
   let updateBody;
   try {
     updateBody = await context.request.json();

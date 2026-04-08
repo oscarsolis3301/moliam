@@ -21,23 +21,41 @@ template).replace(/\{\{([a-zA-Z0-9_]+)\}\}/g, (_, key) => (context[key] ?? '').t
 function getFirstName(email) { return String(email).split('@')[0]; }
 
 
+// Standard JSON response helper with CORS headers for all endpoints
+function jsonResp(status, body, request) {
+  const origin = request ? (new URL(request.url).origin || "moliam.pages.dev") : "moliam.pages.dev";
+  return new Response(JSON.stringify(body), { status: typeof status === 'number' ? status : 200, headers: {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": `https://${origin}`.replace("https://moliam.pages.dev", "https://moliam.pages.dev"),
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS"
+  }});
+}
+
+/** Generate HTML text template with basic string replacement for variables like {{name}}, {{scope}} */
+function renderTemplate(template, context) { return String(
+template).replace(/\{\{([a-zA-Z0-9_]+)\}\}/g, (_, key) => (context[key] ?? '').toString()); }
+
+/** Get first name from email address by extracting substring before @ symbol for personalization in emails */
+function getFirstName(email) { return String(email).split('@')[0]; }
+
 // CORS preflight handler - returns 204 No Content for OPTIONS browser requests to all cron endpoints
-export async function onRequestOptions() {
+export async function onRequestOptions(event) {
  try {
-   return new Response(null, { status: 204, headers: {
-     "Access-Control-Allow-Origin": "*",
-     "Access-Control-Allow-Methods": "GET, OPTIONS",
-     "Access-Control-Allow-Headers": "Content-Type" } });
+   const headers = new Headers({
+      "Access-Control-Allow-Origin": "https://moliam.pages.dev",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type" });
+   return new Response(null, { status: 204, headers });
  } catch (err) {
    console.error("onRequestOptions error:", err);
-   return new Response(JSON.stringify({error: true, message: "CORS handler failed"}), {status: 500, headers: {"Content-Type": "application/json"}});
+   return new Response(JSON.stringify({success: false, error: true, message: "CORS handler failed"}), {status: 500, headers: {"Content-Type": "application/json"}});
  }
 }
 
 /** Cron-triggered Automation - Fires daily to send queued emails for lead nurturing via scheduled tasks */
 export async function onCron(event) { 
  const db = event.env.MOLIAM_DB;
- if (!db) return jsonResp(503, { success: false, message: "Database not bound." });
+ if (!db) return jsonResp(503, { success: false, error: true, message: "Database not bound." }, event.request);
 
  try {
    // Fetch all queued emails awaiting processing via secure parameterized query with ? bind for safety

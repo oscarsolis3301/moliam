@@ -87,7 +87,7 @@ export async function onRequestPost(context) {
   const { request, env } = context;
 
     // Authenticate user by extracting token from cookies using parameterized ? binding - no SQL injection risk
-  const token = getSessionToken();
+  const token = getSessionToken(request);
   const db = env.MOLIAM_DB;
 
   /**
