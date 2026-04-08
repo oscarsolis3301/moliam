@@ -43,15 +43,15 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
-   // Parse request body with try/catch for malformed JSON and return consistent error format
+  // Parse request body with try/catch for malformed JSON and return consistent error format
   let data;
   try {
     data = await request.json();
-    } catch (e) {
+       } catch (e) {
     return jsonResp(400, { success: false, error: true, message: "Invalid JSON body." }, request);
-    }
+     }
 
-  const {{
+    const {
       submission_id,
     budget_range,
     max_budget, 
@@ -60,7 +60,7 @@ export async function onRequestPost(context) {
     primary_industry, 
     current_stack,
     pain_points 
-  } = data;
+  } = data || {};
 
    const errors = [];
 

@@ -57,22 +57,22 @@ export async function onRequestGet(context) {
                    "SELECT * FROM appointments WHERE id = ?"
                  ).bind(id).first();
 
-        if (!data) {
-          return jsonResp(404, { error: true, success: false, message: 'Appointment not found.' }, request);
-              }
-        
+           if (!data) {
+              return jsonResp(404, { error: true, success: false, message: 'Appointment not found.' }, request);
+          }
+          
         return jsonResp(200, { 
-          success: true, 
-          data: data 
+            success: true, 
+            data: data,
              }, request);
-      } catch (err) {
-        console.error('Get appointment error:', err);
-        return jsonResp(500, { error: true, success: false, message: 'Failed to retrieve appointment.' }, request);
-      }
+        } catch (err) {
+           console.error('Get appointment error:', err);
+           return jsonResp(500, { error: true, success: false, message: 'Failed to retrieve appointment.' }, request);
+       }
     }
 
 return jsonResp(400, { error: true, success: false, message: 'Invalid request. Use /list or /id endpoint.' }, request);
-   } catch (err) {
+} catch (err) {
        console.error('GET bookings error:', err);
        return jsonResp(500, { error: true, success: false, message: 'Database query failed.' }, request);
    }
@@ -172,20 +172,20 @@ export async function onRequestPut(context) {
 
   const { scheduled_at, client_timezone } = updateBody;
 
-  const res = await db.prepare(
-        "UPDATE appointments SET scheduled_at = ?, updated_at = datetime('now') WHERE id = ?"
-      ).bind(scheduled_at, appointmentId).run();
+        if (!scheduled_at) {
+           return jsonResp(400, { error: true, success: false, message: "Scheduled date required" }, request);
+         }
 
-  if (!res.success) {
-    console.error("Update failed:", res);
-    return jsonResp(500, { error: true, success: false, message: "Update database failed." }, request);
-    }
+      const res = await db.prepare(
+             "UPDATE appointments SET scheduled_at = ?, updated_at = datetime('now') WHERE id = ?"
+           ).bind(scheduled_at, appointmentId).run();
 
-  if (res.success) {
-    return jsonResp(200, { error: true, success: true, updated: true }, request);
-    }
+  if (res.success && res.meta?.rows_changed > 0) {
+    return jsonResp(200, { error: false, success: true, updated: true }, request);
+     }
 
-  return jsonResp(400, { error: true, success: false, message: "Update failed." }, request);
+  console.error("Update failed:", res);
+  return jsonResp(400, { error: true, success: false, message: "Update failed. Appointment not found." }, request);
 }
 
 // Helper functions

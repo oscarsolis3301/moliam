@@ -94,9 +94,9 @@ export async function onRequestPost(context) {
     const cookies = req.headers.get("Cookie") || "";
     const match = cookies.match(/moliam_session=([a-f0-9]+)/);
     return match ? match[1] : null;
-  }
+   }
 
-  // Get session token from request
+     // Get session token from request
   const token = getSessionToken(request);
 
   if (!token || !db) {
