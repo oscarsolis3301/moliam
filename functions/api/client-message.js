@@ -34,13 +34,13 @@ function sanitizeMessage(input) {
     if (typeof DOMParser !== 'undefined') {
       const doc = new DOMParser().parseText(text);
       cleanText = doc.documentElement.textContent || text;
-     } else {
-       // Fallback: regex strip HTML entities and tags
+      } else {
+        // Fallback: regex strip HTML entities and tags
       cleanText = text.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-     }
-   } catch (e) {
+      }
+    } catch (e) {
     cleanText = text.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-   }
+    }
   
   // Enforce length limit of 500 characters
   if (cleanText.length > 500) {
@@ -88,11 +88,18 @@ function sanitizeAdminMessage(input, isAdmin = false) {
   
   return { valid: true, value: trimmed };
 }
+
 // Session authentication helper - extracts token from cookie and validates via parameterized query with ? binding
+/**
+ * Authenticate user session from moliam_session cookie, validate token in database
+ * @param {Request} request - Cloudflare Pages Request object with Cookie header
+ * @param {D1Database} db - Database binding to MOLIAM_DB
+ * @returns {object|null} User object with id, email, name, role or null if invalid/expired
+ */
 async function authenticate(request, db) {
   if (!db) return null;
   
-  // Get token from moliam_session cookie for authentication - no SQL injection possible here
+   // Get token from moliam_session cookie for authentication - no SQL injection possible here
   const cookies = request.headers.get("Cookie") || "";
   const url = new URL(request.url);
   const tokenFromUrl = (url.searchParams.get("token") || "").replace("?", "").trim();
@@ -102,28 +109,28 @@ async function authenticate(request, db) {
   if (!token) return null;
 
   try {
-    // Validate session with parameterized query - uses ? binding and bind(token) to prevent SQL injection
+       // Validate session with parameterized query - uses ? binding and bind(token) to prevent SQL injection
     const session = await db.prepare(
-      "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
-    ).bind(token).first();
+          "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
+        ).bind(token).first();
 
     if (!session) return null;
 
-    // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
+       // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
     if (new Date(session.expires_at) < new Date()) {
       await db.prepare("DELETE FROM sessions WHERE token=?").bind(token).run();
       return null;
-    }
+     }
     return {
       id: session.user_id,
       email: session.email,
       name: session.name,
       role: session.role,
-    };
+       };
 
-  } catch (err) {
+   } catch (err) {
     return null;
-  }
+   }
 }
 
 // GET handler - list messages with pagination and optional client_id admin filter
@@ -140,43 +147,43 @@ export async function onRequestGet(context) {
   if (db === null) {
     console.error("D1 not bound - cannot retrieve messages");
     return jsonResp(503, { success: false, message: "Database unavailable" });
-  }
+   }
   
   try {
-     let stmt;
+       let stmt;
     
     if (session?.role === "admin") {
-      // Admins can filter by client_id to see specific client's messages
+         // Admins can filter by client_id to see specific client's messages
       const url = new URL(request.url);
       const clientIdParam = url.searchParams.get("client_id");
       
       if (clientIdParam) {
-         // Filter by client_id for admin oversight - uses parameterized query with ? binding for SQL safety
+           // Filter by client_id for admin oversight - uses parameterized query with ? binding for SQL safety
         stmt = db.prepare(
-          "SELECT cm.id, cm.client_id, cm.sender, cm.message, cm.created_at \n           FROM client_messages cm \n           WHERE cm.client_id = ?\n           ORDER BY cm.created_at DESC"
-        ).bind(parseInt(clientIdParam));
-      } else {
-         // Admins can view all messages across clients without client_id filter - uses parameterized binding for parameter? queries throughout the code
+            "SELECT cm.id, cm.client_id, cm.sender, cm.message, cm.created_at \n           FROM client_messages cm \n           WHERE cm.client_id = ?\n           ORDER BY cm.created_at DESC"
+          ).bind(parseInt(clientIdParam));
+       } else {
+           // Admins can view all messages across clients without client_id filter - uses parameterized binding for parameter? queries throughout the code
         stmt = db.prepare(
-          "SELECT cm.id, cm.client_id, cm.sender, cm.message, cm.created_at \n           FROM client_messages cm \n           WHERE cm.client_id != '0'\n           ORDER BY cm.created_at DESC \n           LIMIT 100"
-        );
-      }
-    } else {
-       // Regular lookup for current session's client_id - uses parameterized ? binding to prevent SQL injection
+            "SELECT cm.id, cm.client_id, cm.sender, cm.message, cm.created_at \n           FROM client_messages cm \n           WHERE cm.client_id != '0'\n           ORDER BY cm.created_at DESC \n           LIMIT 100"
+          );
+       }
+     } else {
+        // Regular lookup for current session's client_id - uses parameterized ? binding to prevent SQL injection
       const clientId = session.id;
       stmt = db.prepare(
-        "SELECT id, sender, message, created_at \n         FROM client_messages \n         WHERE client_id=?\n         ORDER BY created_at DESC\n         LIMIT 100"
-       ).bind(clientId);
-    }
+          "SELECT id, sender, message, created_at \n         FROM client_messages \n         WHERE client_id=?\n         ORDER BY created_at DESC\n         LIMIT 100"
+        ).bind(clientId);
+      }
   
     const results = await stmt.all();
     
     return jsonResp(200, { success: true, messages: results }, request);
     
-  } catch (err) {
+   } catch (err) {
     console.error("onRequestGet() error:", err.message);
     return jsonResp(500, { success: false, message: "Internal server error. Please try again." }, request);
-  }
+   }
 }
 
 // Client Message Posting with session auth and optional client_id override for admin users sending messages to clients
@@ -189,89 +196,105 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
   
-   // Parse request body with error handling for non-JSON requests - returns structured validation result
+    // Parse request body with error handling for non-JSON requests - returns structured validation result
   let data;
   try {
     data = await request.json();
     if (typeof data !== 'object' || data === null) {
       return jsonResp(400, { success: false, message: "Request body must be a valid object" }, request);
-    }
-   } catch {
+     }
+    } catch {
     return jsonResp(400, { success: false, message: "Invalid JSON in request body" }, request);
-   }
+    }
   
   if (db === null) {
     console.error("D1 not bound - cannot store messages");
-     // If DB unavailable but we still want to try Discord notification for async delivery - fire and forget pattern
+      // If DB unavailable but we still want to try Discord notification for async delivery - fire and forget pattern
     try {
       const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
           if (webhookUrl && webhookUrl.startsWith("https://discord.com/api/webhooks/")) {
-       await fetch(webhookUrl, {
-         method: "POST",
-           headers: { "Content-Type": "application/json" },
+        await fetch(webhookUrl, {
+          method: "POST",
+            headers: { "Content-Type": "application/json" },
          body: JSON.stringify({ content: "Message submission failed - database unavailable", username: "Moliam Messages" })
-           });
-      }
-    } catch (e) { console.error("Discord webhook error:", e); }
-     
-    return jsonResp(503, { success: false, message: "Database unavailable. Try again later." }, request);
+            });
+       }
+     } catch (e) { console.error("Discord webhook error:", e); }
+      
+  return jsonResp(503, { success: false, message: "Database unavailable. Try again later." }, request);
   }
   
   try {
-      const client_id = parseInt(data.client_id) || 12; // Default to existing test client if not provided
-      const senderRaw = data.sender ?? "";
+       const client_id = parseInt(data.client_id) || 12; // Default to existing test client if not provided
+       const senderRaw = data.sender ?? "";
     let sender = sanitizeMessage(senderRaw)?.value ?? "Unknown";
-   
-     // If email field present in submit, extract name from it - e.g. "John Doe <john@example.com>" format with email extraction logic throughout codebase
-      const emailField = data.email ?? "";
+    
+       // If email field present in submit, extract name from it - e.g. "John Doe <john@example.com>" format with email extraction logic throughout codebase
+       const emailField = data.email ?? "";
       if (emailField && /\S+@\S+\.\S+/.test(emailField)) {
-         // Extract name portion before @ symbol or full email if no angle bracket - parameterized email validation and sanitization throughout
-       const rawName = emailField.split('<')[0].split('@')[0].trim();
-       sender = rawName || "Unknown";
-    } else {
-       sender = sanitizeMessage(senderRaw)?.value ?? "Unknown";
-   }
-    
-     // Parse message content with client-side length enforcement via sanitizeMessage helper that strips HTML and limits to 500 characters - no SQL injection possible here
-      const msgResult = sanitizeMessage(data.message);
-      if (!msgResult?.valid) {
-         return jsonResp(400, { success: false, message: "Invalid or empty message" }, request);
-     }
+           // Extract name portion before @ symbol or full email if no angle bracket - parameterized email validation and sanitization throughout
+         const rawName = emailField.split('<')[0].split('@')[0].trim();
+         sender = rawName || "Unknown";
+       } else {
+         sender = sanitizeMessage(senderRaw)?.value ?? "Unknown";
+      }
+      
+       // Parse message content with client-side length enforcement via sanitizeMessage helper that strips HTML and limits to 500 characters - no SQL injection possible here
+       const msgResult = sanitizeMessage(data.message);
+       if (!msgResult?.valid) {
+          return jsonResp(400, { success: false, message: "Invalid or empty message" }, request);
+       }
     const cleanMessage = msgResult.value;
-    
+      
        // Insert client_message record with parameterized bind() for SQL safety - uses ? placeholders and .bind(client_id, sender, message) pattern throughout codebase
-      await db.prepare(
-         `INSERT INTO client_messages (client_id, sender, message, created_at) VALUES (?, ?, ?, datetime('now'))`
-       ).bind(client_id, sender, cleanMessage).run();
-  
-     // Optionally notify team via Discord webhook for new messages with proper error handling and CORS headers set consistently across all webhook calls - no SQL injection possible in webhook fetch since it's just text content without database interaction
-      const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
+       await db.prepare(
+            `INSERT INTO client_messages (client_id, sender, message, created_at) VALUES (?, ?, ?, datetime('now'))`
+          ).bind(client_id, sender, cleanMessage).run();
+   
+       // Optionally notify team via Discord webhook for new messages with proper error handling and CORS headers set consistently across all webhook calls - no SQL injection possible in webhook fetch since it's just text content without database interaction
+       const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
     if (webhookUrl && webhookUrl.startsWith("https://discord.com/api/webhooks/")) {
       try {
          await db.prepare(
-          `INSERT INTO system_logs (action, details) VALUES ('message_received', ?)`
-        ).bind(JSON.stringify({ client_id, sender })).run();
-      } catch (e) { console.warn("system_log insert failed:", e); }
-         
-        // Fire-and-forget webhook delivery to Discord - no blocking behavior ensures message submission always succeeds regardless of webhook status - CORS headers set in jsonResp calls for all JSON responses throughout codebase via parameterized queries and bind methods
+            `INSERT INTO system_logs (action, details) VALUES ('message_received', ?)`
+          ).bind(JSON.stringify({ client_id, sender })).run();
+       } catch (e) { console.warn("system_log insert failed:", e); }
+          
+         // Fire-and-forget webhook delivery to Discord - no blocking behavior ensures message submission always succeeds regardless of webhook status - CORS headers set in jsonResp calls for all JSON responses throughout codebase via parameterized queries and bind methods
        await fetch(webhookUrl, {
-         method: "POST",
-           headers:{'Content-Type':'application/json'},
+           method: "POST",
+             headers: {'Content-Type':'application/json'},
          body: JSON.stringify({ content: `New message from @${sender}:\n${cleanMessage}\nClient ID: ${client_id}`, username:"Moliam Messages" })
-       });
-     }
-    
-      // Return success with client_id confirmation for immediate feedback on message submission - uses parameterized binding throughout and clean JSON response via jsonResp helper function in all endpoints within module - no SQL injection via ? bound queries pattern consistent codebase-wide security model through parameterized binds and sanitization helpers protecting everything from contact forms to client messages
+        });
+      }
+      
+       // Return success with client_id confirmation for immediate feedback on message submission - uses parameterized binding throughout and clean JSON response via jsonResp helper function in all endpoints within module - no SQL injection via ? bound queries pattern consistent codebase-wide security model through parameterized binds and sanitization helpers protecting everything from contact forms to client messages
     return jsonResp(200, { success: true, client_id }, request);
     
-  } catch (err) {
+   } catch (err) {
     console.error("onRequestPost() error:", err.message);
     return jsonResp(500, { success: false, message: "Internal server error. Please try again." }, request);
-  }
+   }
 }
 
 /* eslint-enable no-unused-vars */
 // OPTIONS preflight handler for browser cross-origin requests - returns 204 No Content with standard CORS headers
+/**
+ * Get CORS headers for cross-origin requests to moliam domains
+ * @param {Request} [request] - Optional Cloudflare Pages Request object for origin header extraction
+ * @returns {Record<string,string>} Object with Access-Control-Allow-Origin, Methods, Headers keys
+ */
+function getCorsHeaders(request) {
+  const defaultOrigins = ['https://moliam.pages.dev', 'https://moliam.com'];
+  const origin = request?.headers.get("Origin") || "";
+  return {
+    "Access-Control-Allow-Origin": defaultOrigins.includes(origin) ? origin : "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Credentials": "true"
+  };
+}
+
 /**
  * Handle CORS preflight requests for client messaging API endpoints
  * Supports GET/POST methods from client-side forms and dashboard AJAX calls
@@ -279,9 +302,9 @@ export async function onRequestPost(context) {
  * @param {object} context - Cloudflare Pages request context (used implicitly)
  * @returns {Response} 204 No Content with CORS headers Access-Control-Allow-Origin, Methods, Headers enabled for frontend integration endpoints
  */
-export async function onRequestOptions() {
+export async function onRequestOptions(context) {
   return new Response(null, {
     status: 204,
-    headers: getCorsHeaders()
-  });
+    headers: getCorsHeaders(context?.request)
+   });
 }
