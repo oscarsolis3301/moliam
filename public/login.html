@@ -417,6 +417,8 @@ body.form-focused .logo p {
      <p>Client Portal - Secure access to your account dashboard and management tools</p>
 
 <!-- Added Task 4 accessibility: language attributes + proper document title + heading hierarchy -->
+<meta name="language" content="en"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"/>
 <link rel="canonical" href="https://moliam.com/login.html"/>
 
 <!-- Accessibility Enhancements per Task 4 -->
@@ -503,7 +505,7 @@ h1,h2,h3,h4,h5,h6{ font-family:'Inter',system-ui,-apple-system, sans-serif ;} h1
           <a href="#" class="forgot-link" tabindex="4" onclick="event.preventDefault(); showAlert('Contact hello@moliam.com to reset your password.', 'error');">Forgot password?</a>
         </div>
       </div>
-      <button type="submit" class="btn-login" id="loginBtn" tabindex="5" aria-label="Sign in to your account">
+      <button type="submit" class="btn-login" id="loginBtn" tabindex="5">
         <span class="btn-text">Sign In</span>
         <div class="spinner" aria-hidden="true"></div>
       </button>
@@ -520,109 +522,8 @@ const form = document.getElementById('loginForm');
 const btn = document.getElementById('loginBtn');
 const alertEl = document.getElementById('alert');
 const passwordInput = document.getElementById('password');
-const passwordToggle = document.getElementById('passwordToggle');
-
-// Password show/hide toggle
-passwordToggle.addEventListener('click', () => {
-  const isPassword = passwordInput.type === 'password';
-  passwordInput.type = isPassword ? 'text' : 'password';
-  passwordToggle.classList.toggle('active', isPassword);
-  passwordToggle.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
-  passwordToggle.setAttribute('aria-pressed', isPassword ? 'true' : 'false');
-  passwordInput.focus();
-});
-
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  alertEl.className = 'alert';
-  alertEl.style.display = 'none';
-  alertEl.textContent = '';
-
-const email = document.getElementById('email').value.trim();
-  const password = passwordInput.value;
-
-if (!email || !password) {
-    showAlert('Please fill in all fields.', 'error');
-    if (!email) document.getElementById('email').focus();
-    else passwordInput.focus();
-    return;
-  }
-
-  btn.classList.add('loading');
-  btn.disabled = true;
-  btn.setAttribute('aria-busy', 'true');
-
-  try {
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      showAlert('Signing in...', 'success');
-      // Redirect based on role
-      if (data.user.role === 'admin') {
-        window.location.href = '/admin';
-      } else {
-        window.location.href = '/dashboard';
-      }
-    } else {
-      showAlert(data.message || 'Login failed.', 'error');
-      btn.classList.remove('loading');
-      btn.disabled = false;
-      btn.removeAttribute('aria-busy');
-      passwordInput.focus();
-    }
-  } catch (err) {
-    showAlert('Connection error. Please try again.', 'error');
-    btn.classList.remove('loading');
-    btn.disabled = false;
-    btn.removeAttribute('aria-busy');
-  }
-});
-
-function showAlert(msg, type) {
-  alertEl.textContent = msg;
-  alertEl.className = `alert ${type}`;
-  alertEl.style.display = 'block';
-}
-
-// Mobile: collapse branding when form is focused (keyboard pushes content up)
-const formInputs = document.querySelectorAll('#loginForm input');
-let focusTimeout;
-formInputs.forEach(input => {
-  input.addEventListener('focus', () => {
-    clearTimeout(focusTimeout);
-    document.body.classList.add('form-focused');
-    // Scroll form into view on mobile
-    setTimeout(() => {
-      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 300);
-  });
-  input.addEventListener('blur', () => {
-    focusTimeout = setTimeout(() => {
-      // Only remove if no other input is focused
-      if (!document.activeElement || !document.activeElement.closest('#loginForm input')) {
-        document.body.classList.remove('form-focused');
-      }
-    }, 200);
-  });
-});
-
-// If already logged in, redirect
-(async () => {
-  try {
-    const res = await fetch('/api/auth/me', { credentials: 'include' });
-    const data = await res.json();
-    if (data.success) {
-      window.location.href = data.user.role === 'admin' ? '/admin' : '/dashboard';
-    }
-  } catch {}
-})();
-</script>
-</body>
+</body>\n<!-- Mobile: collapse branding when form is focused (keyboard pushes content up) -->\n<script>\nconst formInputs = document.querySelectorAll('#loginForm input');\nlet focusTimeout;\nformInputs.forEach(input => {\n  input.addEventListener('focus', () => {\n    clearTimeout(focusTimeout);\n    document.body.classList.add('form-focused');
+     // Scroll form into view on mobile
+    setTimeout(() => {\n      input.scrollIntoView({ behavior: 'smooth', block: 'center' });\n     }, 300);\n   });\n  input.addEventListener('blur', () => {\n    focusTimeout = setTimeout(() => {\n       // Only remove if no other input is focused\n      if (!document.activeElement || !document.activeElement.closest('#loginForm input')) {\n        document.body.classList.remove('form-focused');
+       }\n     }, 200);\n   });\n});</script>\n<script src="/js/login.js"></script>\n</body>\n</html>
 </html>
