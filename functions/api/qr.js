@@ -90,15 +90,15 @@ export async function onRequestGet(context) {
 /**
  * Rate limited response - reset counter and return same QR
  */
-async function sendRateLimited(url, size, colorHex, db, ipHash) {
+export async function sendRateLimited(url, size, colorHex, db, ipHash) {
   try {
     await db.prepare("UPDATE rate_limits SET request_count = 1, window_start = datetime('now') WHERE hash_ip = ?").bind(ipHash).run();
-  } catch {}
+   } catch (err) {
+    console.error("sendRateLimited() update error:", err.message);
+   }
 
   return new Response(
     generateQRCodeSVG(url, size, colorHex),
-     {
-      status: 429,
       headers: {
         "Content-Type": "image/svg+xml",
         "Cache-Control": "public, max-age=86400",
