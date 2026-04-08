@@ -4,9 +4,12 @@
  * POST /api/followup — marks a lead as followed-up, stores timestamp
  */
 
+/**
+ * Handle GET requests to retrieve follow-up queue - list submissions pending follow-up (>5min old, no follow_up_at set)
+ * @param {object} context - Cloudflare Pages function context with request and env.MOLIAM_DB binding
+ * @returns {Response} JSON response with array of leads needing follow-up or error message about DB/connection issues
+ */
 export async function onRequestGet(context) {
-  const { request, env } = context;
-  const db = env.MOLIAM_DB;
   
   if (!db) return jsonResp(500, { error: true, message: "Database not bound" });
 
@@ -54,12 +57,12 @@ export async function onRequestGet(context) {
   }
 }
 
+/**
+ * Handle POST requests to mark leads as followed-up - stores follow-up timestamp and updates status to completed
+ * @param {object} context - Cloudflare Pages function context with request and env.MOLIAM_DB binding
+ * @returns {Response} JSON response with success/status and lead ID that was marked followed-up, or 400/500 errors for validation/DB issues
+ */
 export async function onRequestPost(context) {
-  const { request, env } = context;
-  const db = env.MOLIAM_DB;
-  
-  if (!db) return jsonResp(500, { error: true, message: "Database not bound" });
-
   let data;
   try {
     data = await request.json();
