@@ -154,21 +154,21 @@ export async function onRequestOptions() {
  * @param {D1Database} db - Database binding to MOLIAM_DB
 * @returns {Promise<object|null>} User object or null if invalid/inactive/expired token
  */
-  // --- Authenticate via session cookie (copied from auth/me.js pattern) ---
+   // --- Authenticate via session cookie (copied from auth/me.js pattern) ---
 async function authenticate(request, db) {
-  if (!db | return null;
+  if (!db) return null;
   
   const cookies = request.headers.get("Cookie") || "";
   const match = cookies.match(/moliam_session=([a-f0-9]+)/);
-  if (!match | return null;
+  if (!match) return null;
   
-  const token = match[1];
+  const token = match ? match[1] : null;
   if (!token) return null;
 
   try {
     const session = await db.prepare(
-            "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1")
-          .bind(token).first();
+             "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND u.is_active = 1")
+           .bind(token).first();
 
     if (!session) return null;
 

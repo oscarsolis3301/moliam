@@ -24,8 +24,8 @@ async function authenticate(db, token) {
   if (!token || !db) return null;
   
   const session = await db.prepare(
-         "SELECT u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1")
-      .bind(token).first();
+          "SELECT u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND u.is_active=1")
+       .bind(token).first();
   
   return session || null;
 }
@@ -40,7 +40,7 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
-     // -- GET token from cookies for authentication
+      // -- GET token from cookies for authentication
   const cookies = request.headers.get("Cookie") || "";
   const match = cookies.match(/moliam_session=([a-f0-9]+)/);
   const token = match ? match[1] : null;
