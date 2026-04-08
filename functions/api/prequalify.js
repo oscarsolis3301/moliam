@@ -199,6 +199,9 @@ async function generateBooking(context, prequalId) {
   return null;
 }
 
+/** API Helpers import */
+import { jsonResp, balanceSuccessError, validateRequired } from '../lib/api-helpers.js';
+
 // Send booking confirmation to qualified leads
 async function sendBookingConfirmationEmail(context, prequal, calendarLink) {
   try {
@@ -219,33 +222,33 @@ async function sendBookingConfirmationEmail(context, prequal, calendarLink) {
         content: [{
           type: "text/html",
           value: `
-            <div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;color:#1f2937">
-              <h2 style="color:#10B981;">✓ You're Qualified for Priority Access!</h2>
-              <p>Hi ${name},</p>
-              
-              <p>Thanks for being honest about your project needs. Based on what you shared, you meet our qualification criteria and we'd love to work with you.</p>
-              
-              <div style="background:#F0FDF4;border:2px solid #10B981;border-radius:12px;padding:24px;margin:24px 0">
-                <h3 style="color:#065F46;margin-top:0;">📅 Book Your Free Discovery Call</h3>
-                <p style="font-size:14px;color:#1f2937">This 30-minute call will cover:</p>
-                <ul style="margin:8px 0;padding-left:20px">
-                  <li>Your current challenges and pain points</li>
-                  <li>Our solution approach for your specific needs</li>
-                  <li>Timeline and budget alignment discussion</li>
-                  <li>No-obligation next steps</li>
-                </ul>
-                
-                <a href="${calendarLink}" style="display:inline-block;background:#10B981;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:600;margin-top:16px">
+             <div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;color:#1f2937">
+               <h2 style="color:#10B981;">✓ You're Qualified for Priority Access!</h2>
+               <p>Hi ${name},</p>
+               
+               <p>Thanks for being honest about your project needs. Based on what you shared, you meet our qualification criteria and we'd love to work with you.</p>
+               
+               <div style="background:#F0FDF4;border:2px solid #10B981;border-radius:12px;padding:24px;margin:24px 0">
+                 <h3 style="color:#065F46;margin-top:0;">📅 Book Your Free Discovery Call</h3>
+                 <p style="font-size:14px;color:#1f2937">This 30-minute call will cover:</p>
+                 <ul style="margin:8px 0;padding-left:20px">
+                   <li>Your current challenges and pain points</li>
+                   <li>Our solution approach for your specific needs</li>
+                   <li>Timeline and budget alignment discussion</li>
+                   <li>No-obligation next steps</li>
+                 </ul>
+                 
+                 <a href="${calendarLink}" style="display:inline-block;background:#10B981;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:600;margin-top:16px">
                   Select Your Time Slot →
-                </a>
-              </div>
-              
-              <p style="font-size:13px;color:#6B7280;margin-top:24px;">What happens if you're not available yet?</p>
-              <p style="font-size:13px;color:#6B7280">No worries! The link above will stay active for 14 days. After that, we'll reach out to reschedule or follow up.</p>
-              
-              <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
-              <p style="color:#9CA3AF;font-size:13px;text-align:center">Moliam — AI-Powered Operations for Modern Agencies<br>Santa Ana, CA</p>
-            </div>`
+                 </a>
+               </div>
+               
+               <p style="font-size:13px;color:#6B7280;margin-top:24px;">What happens if you're not available yet?</p>
+               <p style="font-size:13px;color:#6B7280">No worries! The link above will stay active for 14 days. After that, we'll reach out to reschedule or follow up.</p>
+               
+               <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
+               <p style="color:#9CA3AF;font-size:13px;text-align:center">Moliam — AI-Powered Operations for Modern Agencies<br>Santa Ana, CA</p>
+             </div>`
         }],
       }),
     });

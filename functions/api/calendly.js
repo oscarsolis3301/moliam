@@ -1,22 +1,22 @@
+/** API Helpers import */
+import { jsonResp, balanceSuccessError } from '../lib/api-helpers.js';
+
 export async function onRequestGet(context) { 
   try {
-    return new Response(JSON.stringify({ url: "https://calendly.com/visualark/demo", embed: true }), { 
-      headers: { 
-        "Content-Type": "application/json", 
-        "Access-Control-Allow-Origin": "https://moliam.pages.dev",
-        "Cache-Control": "no-cache" 
-      } 
-    });
-  } catch (error) {
+    const result = balanceSuccessError({ 
+      success: true, 
+      url: "https://calendly.com/visualark/demo", 
+      embed: true 
+     });
+    return jsonResp(200, result, context.request);
+   } catch (error) {
     console.error("ERROR [calendly.js GET]:", error.message);
-    return new Response(JSON.stringify({ error: "Internal server error", status: 500 }), {
-      status: 500,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "https://moliam.pages.dev"
-      }
-    });
-  }
+    const response = balanceSuccessError({ 
+      success: false, 
+      error: "Internal server error" 
+     });
+    return jsonResp(500, response, context.request);
+   }
 }
 
 export async function onRequestOptions() { 
@@ -27,16 +27,16 @@ export async function onRequestOptions() {
         "Access-Control-Allow-Origin": "https://moliam.pages.dev",
         "Access-Control-Allow-Methods": "GET, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type" 
-      } 
-    });
-  } catch (error) {
+       } 
+     });
+   } catch (error) {
     console.error("ERROR [calendly.js OPTIONS]:", error.message);
     return new Response(JSON.stringify({ error: "Internal server error", status: 500 }), {
       status: 500,
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "https://moliam.pages.dev"
-      }
-    });
-  }
+       }
+     });
+   }
 }

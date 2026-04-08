@@ -9,6 +9,9 @@
  *       client_id as users.id — FK won't enforce. Needs unification in Phase 3B.
  */
 
+// --- Centralized API helpers for consistent error handling and response formatting ---
+import { jsonResp } from '../lib/api-helpers.js';
+
 // --- GET: list messages ---
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -178,14 +181,4 @@ async function sendDiscordWebhook(env, senderName, messageText) {
   }
 }
 
-// --- JSON response helper ---
-function jsonResp(status, body) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Credentials": "true",
-    },
-  });
-}
+// --- No local jsonResp — using import from lib/api-helpers.js below
