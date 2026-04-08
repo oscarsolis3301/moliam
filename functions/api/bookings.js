@@ -357,6 +357,11 @@ async function logAudit(appointmentId, action) {
  * Send reschedule confirmation email via MailChannels
  * @param {object} appointment - Appointment object with client info
  */
+/**
+ * Send resent notification email for rescheduled appointments
+ * @param {object} appointment - Appointment object with client_email and scheduled_with fields
+ * @returns {Promise<null>} Null on success (errors logged to console only)
+ */
 async function sendRescheduleEmail(appointment) {
   try {
     const subject = "Your appointment has been rescheduled";
@@ -370,10 +375,10 @@ async function sendRescheduleEmail(appointment) {
         subject,
         content: [{ type: "text/html", value: `<h3>Your demo call has been rescheduled to a new time.</h3>` }]
       })
-      });
-    } catch (e) {
+       });
+     } catch (e) {
     console.error("Reschedule email error:", e);
-   }
+    }
 }
 
 /**

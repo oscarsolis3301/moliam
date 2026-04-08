@@ -168,19 +168,19 @@ function calculateLeadScore(data) {
   const { email, name, company, budget, scope, industry, urgency_level, message } = data;
   let base_score = 40; // Base score for any qualified lead
 
-    // Budget scoring (0-25 points)
+   // Budget scoring (0-25 points)
   let budgetFit = 50;
   if (budget.includes("under $10") || budget === "undisclosed") {
     base_score += 5;
     budgetFit = 30;
-    } else if (/\\d+\\.\\d+/.test(budget) && /\\d+$/.exec(budget)[0] > 5) {
+     } else if (/\\d+\\.\\d+/.test(budget) && /\\d+$/.exec(budget)[0] > 5) {
     base_score += 15;
     budgetFit = 75;
-    } else if /^\\w+\\s?\\$[5-9k]?|^\\d+[$,]?\\d{3,}/.test(budget)) {
-        // Check for $5k-$10k matches
+     } else if (/^\\w+\\s?\\$[5-9k]?|^\\d+[$,]?\\d{3,}/.test(budget)) {
+         // Check for $5k-$10k matches
     base_score += 12;
     budgetFit = 65;
-    }
+     }
 
       // Industry scoring (0-20 points) - boost priority for priority industries
   const industryBoost = 
