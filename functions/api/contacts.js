@@ -27,9 +27,10 @@
  * CREATE INDEX IF NOT EXISTS idx_contacts_source ON contacts(source);
  */
 
+import { jsonResp } from './api-helpers.js';
 
-/**
- * Handle GET requests to /api/contacts endpoint
+/** Handle GET requests to /api/contacts endpoint
+
  * Returns paginated contacts list with optional status and search filters
  * Supports parameterized queries to prevent SQL injection in LIKE clauses
  * @param {object} context - Cloudflare Pages function context with request and env

@@ -1,10 +1,14 @@
 /**
+/**
  * CRM Webhook Handler - Processes CRM callbacks and updates lead status
  * POST /api/webhooks/lead-updates
+ * 
  */
 
-export async function onRequestPost(context) {
-  const { request, env } = context;
+import { jsonResp } from './api-helpers.js';
+
+export async function onRequestPost(context) 
+
   const db = env.MOLIAM_DB;
 
   // --- Validate DB binding exists ---

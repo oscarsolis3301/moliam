@@ -32,14 +32,7 @@ export async function onRequestGet(context) {
     // Get all submissions pending follow-up (submitted > 5min, no follow_up_at timestamp)
     const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     
-    const results = await db.prepare(
-        "SELECT s.id, s.name, s.email, s.phone, s.company, s.message, s.lead_score, s.category, s.created_at, " +
-            "s.follow_up_status, s.follow_up_at, l.status as lead_status " +
-        "FROM submissions s " +
-        "LEFT JOIN leads l ON l.submission_id = s.id " +
-        "WHERE (julianday(?) - julianday(s.created_at)) * 86400 > 300 AND s.follow_up_at IS NULL " +
-        "ORDER BY s.created_at ASC"
-      ).bind(new Date().toISOString()).all();
+    const results = await db.prepare("SELECT s.id, s.name, s.email, s.phone, s.company, s.message, s.lead_score, s.category, s.created_at, s.follow_up_status, s.follow_up_at, l.status as lead_status FROM submissions s LEFT JOIN leads l ON l.submission_id = s.id WHERE (julianday(?) - julianday(s.created_at)) * 86400 > 300 AND s.follow_up_at IS NULL ORDER BY s.created_at ASC").bind(fiveMinsAgo).all();
 
     return jsonResp(200, {
       success: true,
@@ -120,12 +113,12 @@ export async function onRequestPost(context) {
   }
 }
 
-// CORS preflight handler for all endpoints
+// CORS preflight handler for all endpoints - supports moliam.com, moliam.pages.dev, and development URLs
 export async function onRequestOptions() {
   const headers = new Headers({
-     "Access-Control-Allow-Origin": "*",
-     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-     "Access-Control-Allow-Headers": "Content-Type"
-   });
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
+  });
   return new Response(null, { status: 204, headers });
 }

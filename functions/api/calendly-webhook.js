@@ -3,11 +3,13 @@
  * POST /api/calendly-webhook catches Calendly booking events, stores in D1, notifies Discord
  * Uses Web Crypto API (CF Workers runtime) for HMAC-SHA256 signature verification
  * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB and optional DISCORD_WEBHOOK_URL
- * @returns {Response} JSON response indicating success or error when webhook processing completes successfully or fails due to validation errors only
+ * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB and optional DISCORD_WEBHOOK_URL
  */
 
+import { jsonResp } from './api-helpers.js';
+
 /** Verify Calendly webhook signature using HMAC-SHA256 for security against replay attacks and unauthorized access attempts via webhook payloads */
-async function verifySignature(body, sigHeader, secret) {
+
 
 
        try { const parts= {};
