@@ -192,6 +192,15 @@ export async function onRequestPut(context) {
 }
 
 // Helper functions
+
+/**
+ * Create appointment record in database for prequalified leads
+ * Non-exported helper that executes DB insert with parameterized queries, logs to audit trail, and returns JSON response
+ * @param {object} context - Cloudflare Pages context with env.MOLIAM_DB and env.ADMIN_EMAIL
+ * @param {object} body - Request body with prequalification_id, client_name, client_email, scheduled_at, calendar_link, duration_minutes
+ * @param {Response} request - Original fetch request for CORS headers
+ * @returns {Response} JSON response with appointment_id on success or error message
+ */
 async function createAppointment(context, body, request) {
   try {
     const db = context.env.MOLIAM_DB;
@@ -242,6 +251,15 @@ async function createAppointment(context, body, request) {
     }
 }
 
+/**
+ * Update appointment status in database and trigger follow-up actions
+ * Non-exported helper that executes DB UPDATE with parameterized queries, handles no-show retry logic via handleNoShow(), logs to audit trail
+ * @param {object} context - Cloudflare Pages context with env.MOLIAM_DB
+ * @param {number} id - Appointment ID to update
+ * @param {string} status - Status value ('rescheduled', 'completed', 'cancelled', 'no_show')
+ * @param {Response} request - Original fetch request for CORS headers  
+ * @returns {Response} JSON response with updated status on success or error message
+ */
 async function updateAppointmentStatus(context, id, status, request) {
   const db = context.env.MOLIAM_DB;
 
