@@ -797,20 +797,15 @@ let sparklineIntervalId = setInterval(() => {
 }, 5000);
 drawSparkline();
 
+/* Expose cleanup for status panel interval */
+window.__moliam_cleanup_maintenance__ = function() {
+  if (sparklineIntervalId) clearInterval(sparklineIntervalId);
+  if (statusPanelIntervalId) clearInterval(statusPanelIntervalId);
+  if (typeof window.__moliam_cleanup_main__ === 'function') window.__moliam_cleanup_main__();
+  return true; // Successfully cleaned up maintenance-related intervals
+};
+
 /* ─── UPDATE BOT STATUS PANEL ─── */
-function updateBotStatusPanel() {
-  const container = $('#bot-status-list');
-  if (!container) return; // Guard against missing element
-  container.innerHTML = bots.map(b => `
-     <div class="bot-status-row">
-       <div class="bot-status-dot" style="background:${b.color};box-shadow:0 0 6px ${b.color}"></div>
-       <span class="bot-status-name" style="color:${b.color}">${b.name}</span>
-       <span class="bot-status-task">${b.task || 'Idle'}</span>
-     </div>
-   `).join('');
-}
-let statusPanelIntervalId = setInterval(updateBotStatusPanel, 1000);
-updateBotStatusPanel();
 
 /* ─── CONTACT FORM ─── */
 const form = $('#contact-form');
