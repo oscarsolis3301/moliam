@@ -7,12 +7,16 @@
 
 import { jsonResp } from './api-helpers.js';
 
-export async function onRequestPost(context) 
-
+/** Handle POST requests for CRM webhook callbacks and lead status updates
+ * @param {object} context - Cloudflare Pages function context with request and env
+ * @returns {Response} JSON response with success/error status and updated submission info
+ */
+export async function onRequestPost(context) {
+  const { request, env } = context;
   const db = env.MOLIAM_DB;
 
-  // --- Validate DB binding exists ---
-  if (!db) {
+// --- Validate DB binding exists ---
+if (!db) {
     return jsonResp(500, { 
       error: true, 
        message: "Database not available. Please check server configuration.",

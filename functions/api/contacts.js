@@ -109,6 +109,10 @@ if (searchQuery) {
   }
 }
 
+/** Handle POST requests to create/update contacts
+ * @param {object} context - Cloudflare Pages function context with request and env
+ * @returns {Response} JSON response with success/error status and contact ID
+ */
 export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
@@ -241,6 +245,10 @@ export async function onRequestPost(context) {
   }
 }
 
+/** Handle PUT requests for partial contact updates (merge strategy)
+ * @param {object} context - Cloudflare Pages function context with request and env
+ * @returns {Response} JSON response with success/error status and updated contact ID
+ */
 export async function onRequestPut(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
@@ -432,6 +440,10 @@ ${cleanNotes}`
   }
 }
 
+/** Handle DELETE requests for soft-contact deactivation by ID
+ * @param {object} context - Cloudflare Pages function context with request and env
+ * @returns {Response} JSON response with success/error status and contact ID
+ */
 export async function onRequestDelete(context) {
   const { env } = context;
   const url = new URL(context.request.url);
@@ -481,6 +493,10 @@ export async function onRequestDelete(context) {
   }
 }
 
+/** Handle GET requests to retrieve single contact by ID (/api/contacts/:id)
+ * @param {object} context - Cloudflare Pages function context with request and env
+ * @returns {Response} JSON response with success/error status and contact object
+ */
 export async function onRequestGetById(context) {
   const { env } = context;
   const url = new URL(context.request.url);
