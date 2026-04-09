@@ -5,18 +5,18 @@
     class AccessibilityEnhancements {
         constructor() {
             this.init();
-        }
+         }
 
         init() {
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', () => this.setupAccessibility());
-            } else {
+             } else {
                 this.setupAccessibility();
-            }
-        }
+             }
+         }
 
         setupAccessibility() {
-            // Add ARIA live region for dynamic content updates
+             // Add ARIA live region for dynamic content updates
             const liveRegion = document.createElement('div');
             liveRegion.setAttribute('aria-live', 'polite');
             liveRegion.setAttribute('aria-atomic', 'true');
@@ -24,17 +24,17 @@
             liveRegion.id = 'a11y-live-region';
             document.body.appendChild(liveRegion);
 
-            // Keyboard navigation for skip links
+              // Keyboard navigation for skip links
             this.setupSkipLinks();
 
-            // Focus trap for modals/pickers
+              // Focus trap for modals/pickers
             this.setupFocusTrap();
 
-            // Reduce motion preferencce
+              // Reduce motion preference
             this.setupReduceMotion();
 
             console.log('[a11y] Accessibility enhancements loaded');
-        }
+          }
 
         setupSkipLinks() {
             const skipLink = document.createElement('a');
