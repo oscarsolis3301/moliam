@@ -81,10 +81,20 @@
       });
    }
 
-   window.addEventListener('resize', resize);
-   resize();
+// Store resize handler for cleanup
+let windowResizeHandlerRef = () => resize();
 
-   // SECTION: State Management
+window.addEventListener('resize', windowResizeHandlerRef);
+resize();
+
+// Expose cleanup function
+window.__moliam_cleanup_hq_js__ = function() {
+  if (typeof windowResizeHandlerRef === 'function') {
+    window.removeEventListener('resize', windowResizeHandlerRef);
+  }
+};
+
+
    const state = {
       bots: {},
       orbs: [],
