@@ -990,7 +990,7 @@ let FAQAccordionIndex = 0; // Counter for unique listener tracking
      });
    });
 
-	// Close on Escape key - add handler ref for cleanup
+  // Close on Escape key - add handler ref for cleanup
   var escapeHandler = function(e) {
     if (e.key === 'Escape' && menu.classList.contains('open')) {
       btn.classList.remove('open');
@@ -1045,10 +1045,12 @@ let FAQAccordionIndex = 0; // Counter for unique listener tracking
     speedListeners.push([btn, 'keydown', handleKeydown]);
   });
 
+  // Track the actual speed multiplier for proper cleanup/referencing
+  window.simulationSpeedMultiplier = window.simulationSpeedMultiplier || 1;
+  
   function updateSimulationSpeed(speed) {
-     // Find tickBots call and set speed multiplier
-    simulationSpeedMultiplier = speed;
-  }
+    window.simulationSpeedMultiplier = speed;
+   }
 
   function getSpeedLabel(speed) {
     if (speed === 0) return 'Paused';
@@ -1173,8 +1175,7 @@ window.__moliam_cleanup_main__ = function() {
     } catch(e) {/* safe fail */}
   }
 
-// Call speed button cleanup
-// Call speed button cleanup
+// Call speed button cleanup - prevent memory leaks from untracked listeners
 if (typeof window.__moliam_cleanup_speed_buttons__ === 'function') {
   window.__moliam_cleanup_speed_buttons__();
 }
@@ -1184,7 +1185,25 @@ if (typeof window.__moliam_cleanup_faq__ === 'function') {
   window.__moliam_cleanup_faq__();
 }
 
-// Call fullscreen cleanup    
+// Ensure proper cleanup of all event listeners globally
+window.removeAllEventListeners = function() {
+  try {
+      if (typeof window.__moliam_cleanup_hamburger__ === 'function') window.__moliam_cleanup_hamburger__();
+      if (typeof window.__moliam_a11y_live_region__?.element) {
+        const liveRegion = window.__moliam_a11y_live_region__.element;
+        delete window.__moliam_a11y_live_region__;
+      }
+      if (window.frameId) cancelAnimationFrame(window.frameId);
+  } catch(e) {/* safe fail */}
+};
+
+// Call fullscreen cleanup - ensure button exists before trying to remove listener
+if (typeof window.__moliam_cleanup_fullscreen__ === 'function') {
+  const fsBtn = document.getElementById('fs-btn');
+  if (fsBtn) {
+    window.__moliam_cleanup_fullscreen__();
+  }
+}
 if (typeof window.__moliam_cleanup_fullscreen__ === 'function') {
   window.__moliam_cleanup_fullscreen__();
 }
