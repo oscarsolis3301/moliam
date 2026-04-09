@@ -700,17 +700,19 @@ function resize() {
 }
 
 // Mobile/Touch handling - adds tap support for small screens
-    // Mobile/Touch handling - adds tap support for small screens
+// Mobile/Touch handling - adds tap support for small screens
     
-// Expose cleanup function for event listeners
-      __cleanupHandlers__ = () => {
-       window.removeEventListener('resize', resize);
-       canvas.removeEventListener('click', canvasClickHandler);
-       canvas.removeEventListener('pointermove', canvasPointerMoveHandler);
-       document.removeEventListener('click', documentClickHandler);
-      }
-
-    window.addEventListener('resize', resize);
+// Expose cleanup function for event listeners - store refs for removal
+let resizeRef = null;
+__cleanupHandlers__ = () => {
+  if (resizeRef) window.removeEventListener('resize', resizeRef);
+  canvas.removeEventListener('click', canvasClickHandler);
+  canvas.removeEventListener('pointermove', canvasPointerMoveHandler);
+  document.removeEventListener('click', documentClickHandler);
+}
+// Store ref for resize listener removal
+resizeRef = resize;
+window.addEventListener('resize', resizeRef);
     resize();
     initBots();
 
