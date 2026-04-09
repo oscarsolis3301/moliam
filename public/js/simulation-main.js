@@ -1010,9 +1010,6 @@ function resize() {
    }
 }
 
-// Mobile/Touch handling - adds tap support for small screens
-const isMobile = () => window.innerWidth <= 768;
-
 window.addEventListener('resize', resize);
 resize();
 initBots();
