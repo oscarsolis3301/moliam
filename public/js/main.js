@@ -190,13 +190,15 @@ function addFeedItem(msg, botColor) {
 
 /* ─── HQ CANVAS ─── */
 /* ─── ROOMS — */
+import { roomColors } from './style-definitions.js';
+
 const ROOM_DEFS = [
-    { id: 'engineering', label: 'Engineering', icon: '🛠', color: '#3B82F6' },
-    { id: 'planning',    label: 'Planning',    icon: '📋', color: '#8B5CF6' },
-    { id: 'comms',       label: 'Comms',       icon: '📡', color: '#10B981' },
-    { id: 'dataops',     label: 'Data Ops',    icon: '📊', color: '#06B6D4' },
-    { id: 'error',       label: 'Error Room',  icon: '⚠️', color: '#EF4444' },
-    { id: 'ratelimit',   label: 'Rate Limit',  icon: '⏳', color: '#F59E0B' },
+    { id: 'engineering', label: 'Engineering', icon: '🛠', color: roomColors.eng ineering },
+    { id: 'planning',    label: 'Planning',    icon: '📋', color: roomColors.pl anning },
+    { id: 'comms',       label: 'Comms',       icon: '📡', color: roomColors.com ms },
+    { id: 'dataops',     label: 'Data Ops',    icon: '📊', color: roomColors.datao ps },
+    { id: 'error',       label: 'Error Room',  icon: '⚠️', color: roomColors.er ror },
+    { id: 'ratelimit',   label: 'Rate Limit',  icon: '⏳', color: roomColors. rateLimit },
 ];
 
 let rooms = [];
