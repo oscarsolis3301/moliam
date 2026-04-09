@@ -183,3 +183,104 @@ html, body {
   height: 1px;
   overflow: hidden;
 }
+""/* ═══════════════════════ MOBILE MENU OVERLAY UTILITY ═══════════════════════ */
+.mobile-menu-overlay {
+  display: none;
+}
+
+/* ═══════════════════════ CARD ICON BACKGROUNDS ═══════════════════════ */
+.card-icon-blue { background: rgba(59,130,246, 0.1); }   #3B82F6 - default blue
+.card-icon-green { background: rgba(16,185,129, 0.1); }  #10B981 - success green
+.card-icon-yellow { background: rgba(245,158,11, 0.1); } #F59E0B - warning orange/yellow
+.card-icon-purple { background: rgba(139,92,246, 0.1); } #8B5CF6 - purple
+
+/* ═══════════════════════ STATS GROUP UTILITY CLASSES ═══════════════════════ */
+.stat-section {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  flex-wrap: wrap;
+  padding: 32px 24px;
+  background: rgba(17,24,39, 0.5);
+  border-top: 1px solid rgba(255,255,255, 0.05);
+  border-bottom: 1px solid rgba(255,255,255, 0.05);
+}
+
+.stat-value-stat {
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.stat-value-blue { color: #3B82F6; }    #3B82F6 - Blue (50+ clients)
+.stat-value-green { color: #10B981; }   #10B981 - Green (5.0★ rating)
+.stat-value-purple { color: #8B5CF6; } #8B5CF6 - Purple (72hr delivery)
+.stat-value-orange { color: #F59E0B; } #F59E0B - Orange (24/7 ops)
+
+.stat-label-small {
+  font-size: 0.7rem;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 4px;
+}
+
+.stat-align-center {
+  text-align: center;
+}
+
+/* ═══════════════════════ SECTION HEADING STYLES (Line 683) ═══════════════════════ */
+.section-heading-large {
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+/* ═══════════════════════ FLEXBOX LAYOUTS ═══════════════════════ */
+.revealeable-section {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  flex-wrap: wrap;
+  padding: 32px 24px;
+}
+
+.cta-buttons-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ═══════════════════════ FORM INPUT STYLES (Line 558-561) ═══════════════════════ */
+.form-input-padded {
+  margin-bottom: 12px;
+}
+
+/* ═══════════════════════ BUTTON DISPLAYS (Line 686, 690) ═══════════════════════ */
+.btn-flex-inline {
+  display: inline-flex;
+}
+
+/* ═══════════════════════ MISCELLANEOUS INLINE UTILITIES (Line 676, 677, 684) ═══════════════════════ */
+.moliam-small-gray {
+  font-size: 12px;
+  color: var(--text-dim, #6B7280);
+  margin-top: 16px;
+  text-align: center;
+}
+
+.moliam-blue-link {
+  color: var(--accent-blue, #3B82F6);
+  text-decoration: underline;
+}
+
+.cta-plain-text {
+  color: #9CA3AF;
+  margin-bottom: 32px;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+/* ═══════════════════════ END CSS ADDITIONS ════════════════════════ */
