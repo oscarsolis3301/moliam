@@ -85,7 +85,7 @@
              });
         }
 
-        
+
     }
     const MoliamA11y = new AccessibilityEnhancements();
     window.a11y = MoliamA11y;
