@@ -21,6 +21,12 @@ function normalizeHealthResult(result) {
   return balanceSuccessError({ ...result, success: true });
 }
 
+/**
+ * Handle GET requests for health check endpoint
+ * Returns API version, D1 connection status, table counts, and integrity metrics
+ * @param {object} context - Cloudflare Pages function context with env.MOLIAM_DB
+ * @returns {Response} JSON response with health status (200 OK or 503 degraded)
+ */
 export async function onRequestGet(context) {
   try {
     const { env } = context;

@@ -2,8 +2,17 @@
  * MOLIAM Follow-Up Sequence — CloudFlare Pages Functions v3
  * GET /api/followup — returns all leads needing follow-up (submitted > 5min ago, no follow-up sent)
  * POST /api/followup — marks a lead as followed-up, stores timestamp
+ * 
+ * @param {object} context - Cloudflare Pages function context with request and env
+ * @returns {Response} JSON response with leads array for GET or success status for POST
  */
 
+/**
+ * Handle GET requests to retrieve pending follow-ups
+ * Returns list of submissions older than 5 minutes awaiting follow-up
+ * @param {object} context - Cloudflare Pages function context with env.MOLIAM_DB
+ * @returns {Response} JSON response with success, count, and leads array
+ */
 export async function onRequestGet(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
