@@ -12,6 +12,11 @@ import { jsonResp } from './api-helpers.js';
  * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
  * @returns {Response} JSON response: 200 OK (list/data), 400 Bad Request (invalid format), 500 Server Error (DB failure)
  */
+/**
+ * Handle GET requests to Booking API - list all appointments or get single by ID
+ * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
+ * @returns {Response} JSON response: 200 OK (list/data), 400 Bad Request (invalid format), 500 Server Error (DB failure)
+ */
 export async function onRequestGet(context) {
   try {
     const { request, env } = context;
@@ -78,12 +83,14 @@ return jsonResp(400, {success: false, message: 'Invalid request. Use /list or /i
    }
 }
 
+
 /**
- * Handle CORS preflight requests for Booking API
+ * Handle CORS preflight requests for Booking API  
  * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
  * @returns {Response} 204 No Content with proper Access-Control headers for moliam.com and moliam.pages.dev domains
  */
 export async function onRequestOptions(context) {
+
   return new Response(null, {
     status: 204,
     headers: {
