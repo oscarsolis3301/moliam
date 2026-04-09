@@ -241,10 +241,11 @@ function frame(ts) {
     processEvent(evt);
       }
 
-   // System updates - move all active bots and process orb communications
-  
-   bots.forEach(b => updateBotMovement(b, dt));
-  updateOrbs(dt);\n  
+    // System updates - move all active bots and process orb communications
+
+  bots.forEach(b => updateBotMovement(b, dt));
+  updateOrbs(dt);
+
   dataCounter += dt * simSpeed * 0.3;
 
    // HUD update throttled to 1Hz maximum for performance
