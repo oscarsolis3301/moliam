@@ -106,22 +106,22 @@ async function authenticate(request, db) {
   const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
   let tokenVal = cookieMatch ? cookieMatch[1] : null;
 
-    // Also check query string if not in cookie
+  // Also check query string if not in cookie
   if (!tokenVal) {
     const query = url.searchParams.get('token');
     if (query && query.length > 20) {
       tokenVal = query;
-      }
-    }
-  try {
-        // Validate session with parameterized query - uses ? binding to prevent SQL injection
+       }
+     }
+try {
+   // Validate session with parameterized query - uses ? binding to prevent SQL injection
     const session = await db.prepare(
-           "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
-         ).bind(tokenVal).first();
+            "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
+          ).bind(tokenVal).first();
 
     if (!session) return null;
 
-         // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
+// Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
     if (new Date(session.expires_at) < new Date()) {
       await db.prepare("DELETE FROM sessions WHERE token=?").bind(tokenVal).run();
       return null;
