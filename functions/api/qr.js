@@ -8,13 +8,20 @@
 
 import { jsonResp } from '../lib/api-helpers.js';
 
+/**
+ * GET /api/qr - QR Code generation handler
+ * Generates SVG QR codes from URL, size, and color parameters.
+ * Rate-limited by IP hash, uses D1 for rate limiting tracking.
+ * @param {Object} context - Cloudflare Pages request context with env.MOLIAM_DB
+ * @returns {Response} SVG image response or JSON error
+ */
 export async function onRequestGet(context) {
   try {
     const { request, env } = context;
     const urlObj = new URL(request.url);
     const db = env.MOLIAM_DB;
 
-      // --- Get and validate query params ---
+       // --- Get and validate query params ---
     let inputUrl = urlObj.searchParams.get("url");
     const sizeStr = urlObj.searchParams.get("size") || "256";
     let colorHex = urlObj.searchParams.get("color") || "#000000";
