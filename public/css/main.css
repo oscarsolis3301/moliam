@@ -1,6 +1,8 @@
 :root {
-    --accent-blue: #3B82F6;
-    --text-dim: #6B7280;
+	--accent-blue: #3B82F6;
+	--accent-green: #10B981;
+	--accent-amber: #F59E0B;
+	--text-dim: #6B7280;
 }
 
 /* Mobile HUD responsive styles */
@@ -212,9 +214,9 @@ html, body {
 }
 
 .stat-value-blue { color: var(--accent-blue, #3B82F6); }     /* Blue (50+ clients) */
-.stat-value-green { color: #10B981; }                       /* Green (5.0★ rating) */
+.stat-value-green { color: var(--accent-green, #10B981); }    /* Green (5.0★ rating) */
 .stat-value-purple { color: var(--accent-blue, #8B5CF6); }   /* Purple (72hr delivery) */
-.stat-value-orange { color: #F59E0B; }                      /* Orange (24/7 ops) */
+.stat-value-orange { color: var(--accent-amber, #F59E0B); }    /* Orange (24/7 ops) */
 
 .stat-label-small {
   font-size: 0.7rem;
