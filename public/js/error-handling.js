@@ -139,10 +139,11 @@ function updateErrorBell(errorInfo) {
     window.moliamErrorBell.appendChild(countIndicator);
   }
 
-  // Clear after 30 seconds if no new errors
+  // Clear the +1 indicator after 5 seconds (improved from 30s for better UX)
   setTimeout(() => {
-    clearErrorBell();
-  }, 30000);
+    const count = window.moliamErrorBell.querySelector('.error-count');
+    if (count) count.textContent = '0';
+  }, 5000);
 }
 
 /* Clear error bell */
