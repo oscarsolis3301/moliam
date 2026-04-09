@@ -821,30 +821,44 @@ form.addEventListener('submit', async (e) => {
     const res = await fetch('/api/contact', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-     });
+      body: JSON.stringify(data),
+      signal: AbortSignal.timeout(10000) // 10s timeout
+    });
     
     // Check for HTTP errors before parsing
     if (!res.ok) {
       const statusText = res.statusText || 'Unknown error';
       console.error('Contact form submission failed:', res.status, statusText);
       throw new Error(`HTTP ${res.status}: ${statusText}`);
-     }
+    }
     
     // Validate JSON response before parsing
     const text = await res.text();
     if (!text) {
       console.error('Contact form received empty response');
       throw new Error('Empty response from server');
-     }
+    }
       
-    const parsed = JSON.parse(text);
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch (parseErr) {
+      console.error('Failed to parse response:', text);
+      throw new Error(`Invalid response format: ${parseErr.message}`);
+    }
+      
+    if (!parsed || typeof parsed.success === 'undefined') {
+      console.warn('Response missing success field, treating as error');
+      throw new Error('Malformed response: missing success field');
+    }
+        
     if (parsed.success) {
       status.style.color = '#10B981';
       status.textContent = '✓ Message sent! We\\&#39;ll be in touch.';
       form.reset();
     } else {
       console.error('Contact form backend error:', parsed.message || parsed);
+      throw new Error(parsed.message || 'Unknown backend error'); // Show to user
     }
   } catch (err) {
     console.error('Form submission error:', err);
@@ -853,11 +867,11 @@ form.addEventListener('submit', async (e) => {
     // Log error for monitoring if we have a tracking endpoint
     if (window.__MOLIUM_ERROR_TRACKER) {
       window.__MOLIUM_ERROR_TRACKER({ type: 'contact-form', error: err.message, timestamp: Date.now() });
-     }
-   } finally {
+    }
+  } finally {
     btn.disabled = false;
     btn.textContent = 'Send Message';
-   }
+  }
 });
 
 /* ─── INITIAL FEED ─── */
