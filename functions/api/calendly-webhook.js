@@ -75,7 +75,8 @@ function jsonResp(status, body) {
       return new Response(JSON.stringify(body), { status: typeof status==='number'?status:200, headers:{'Content-Type':'application/json','Access-Control-Allow-Origin':'*'} }); }
 
 /** POST /api/calendly-webhook - Main handler for Calendly booking events from invitee.created to invitee.canceled transitions with Discord notifications */
-export async function onRequestPost(context) {
+let _onRequestPost; // declare first variable assignment for bundler
+_onRequestPost = async function (context) {
 
 
    const { request, env } = context;
