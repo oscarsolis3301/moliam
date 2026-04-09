@@ -97,17 +97,17 @@ function sanitizeAdminMessage(input, isAdmin = false) {
  */
 async function authenticate(request, db) {
   if (!db) return null;
-       // Get token from moliam_session cookie for authentication - no SQL injection possible here
+         // Get token from moliam_session cookie for authentication - no SQL injection possible here
     const cookies = request.headers.get("Cookie") || "";
     const url = new URL(request.url);
 
-      // Extract token from URL query params or hash as fallback when cookie is not present
+          // Extract token from URL query params or hash as fallback when cookie is not present
     let tokenFromUrl = "";
     try {
-      tokenFromUrl=(url.searchParams.get("token") || (url.hash.match(/token=([^&]*)/)?.[1] || "")).replace("?","").trim();
-       } catch (e) {
-      tokenFromUrl="";
-       }
+      tokenFromUrl = (url.searchParams.get("token") || (url.hash.match(/token=([^&]*)/i) || ["", ""])[1]).replace("?", "").trim();
+          } catch (e) {
+      tokenFromUrl = "";
+        }
 
     const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
   const token = tokenFromUrl || (cookieMatch ? cookieMatch[1] : null); // fixed parameterized binding
@@ -120,11 +120,11 @@ async function authenticate(request, db) {
              "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
            ).bind(token).first();
 
-      // Delete stale tokens and return null if session expired
-        if (new Date(session.expires_at) < new Date()) {
-          await db.prepare("DELETE FROM sessions WHERE token=?").bind(token).run();
-          return null;
-        }
+           // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
+     if (new Date(session.expires_at) < new Date()) {
+      await db.prepare("DELETE FROM sessions WHERE token=?").bind(token).run();
+      return null;
+     }
       return {
         id: session.user_id,
         email: session.email,

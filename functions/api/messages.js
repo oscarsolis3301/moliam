@@ -103,13 +103,13 @@ async function authenticate(request, db) {
     const cookies = request.headers.get("Cookie") || "";
     const url = new URL(request.url);
 
-      // Extract token from URL query params or hash as fallback when cookie is not present
-  let tokenFromUrl = "";
-  try {
-    tokenFromUrl=(url.searchParams.get("token") || (url.hash.match(/token=([^&]*)/)?.[1] || "")).replace("?","").trim();
-      } catch (e) {
-    tokenFromUrl="";
-      }
+       // Extract token from URL query params or hash as fallback when cookie is not present
+    let tokenFromUrl = "";
+    try {
+      tokenFromUrl = (url.searchParams.get("token") || (url.hash.match(/token=([^&]*)/i) || ["", ""])[1]).replace("?", "").trim();
+       } catch (e) {
+      tokenFromUrl = "";
+     }
 
     const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
   const token = tokenFromUrl || (cookieMatch ? cookieMatch[1] : null); // fixed parameterized binding

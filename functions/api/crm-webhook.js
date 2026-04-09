@@ -68,9 +68,9 @@ export async function onRequestPost(context) {
   }
 
   const sigHeader = request.headers.get("X-Webhook-Signature") || "";
-  const crmSecret = env.CRMSecret || "";
+  const crmSecret = env.WEBHOOK_SECRET || "";
 
-  // Log payload to D1 for debugging (with validated data now)
+      // Log payload to D1 for debugging (with validated data now)
   try {
     if (db) {
       await db.prepare(
