@@ -81,7 +81,7 @@
     const originalText = submitBtn.textContent;
     submitBtn.textContent = 'Sending...';
 
-     // Form data submission with error handling and retry logic
+      // Form data submission with error handling and retry logic
     try {
       const response = await fetch('/api/contact', {
         method: 'POST',
@@ -91,64 +91,73 @@
           name: getName,
           message: getMessage,
           timestamp: new Date().toISOString()
-         }),
+          }),
         signal: AbortSignal.timeout(10000) // 10s timeout
-       });
+        });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Server responded with status ' + response.status }));
         throw new Error(errorData.error || `HTTP ${response.status}`);
       }
 
-       // Success state - show confirmation without redirect (SPA behavior)
+        // Success state - show confirmation without redirect (SPA behavior)
       form?.reset();
       const successMsg = document.createElement('div');
       successMsg.className = 'form-success';
       successMsg.setAttribute('role', 'alert');
-      successMsg.textContent = 'Message sent successfully! We\'ll be in touch soon.';
+      successMsg.textContent = "Message sent successfully! We'll be in touch soon.";
       form?.querySelector('.form-actions')?.before(successMsg);
 
-       // Update status counter
+        // Update status counter
       const statusCount = document.getElementById('stat-tasks');
       if (statusCount) statusCount.textContent = parseInt(statusCount.textContent) + 1;
 
-       // Remove success message after 5 seconds with cleanup
+        // Remove success message after 5 seconds with cleanup
       setTimeout(() => {
         successMsg?.remove();
       }, 5000);
 
-     } catch (error) {
-       console.error('[Contact Form] Submission error:', error);
-      
-       // Retry logic for transient errors
+      } catch (error) {
+       console.error('[Contact Form] Submission error:', {
+          type: error.name,
+          message: error.message,
+          timestamp: new Date().toISOString(),
+          emailField: emailInput?.value ? 'filled' : 'empty',
+          nameField: nameInput?.value ? 'filled' : 'empty',
+          messageFieldLength: getMessage.length,
+          browserInfo: navigator.userAgent.substring(0, 100),
+          referrer: document.referrer
+       });
+       
+        // Retry logic for transient errors
       if (error.name === 'AbortError') {
           showError(form, 'Connection timed out. Please check your internet and try again.');
       } else {
         showError(form, 'Failed to send. Please try email or call us directly.');
         
-         // Fallback: update error counter instead of failing silently
+          // Fallback: update error counter instead of failing silently
         const errorCount = document.getElementById('stat-errors');
         if (errorCount) errorCount.textContent = parseInt(errorCount.textContent) + 1;
 
-        // Show support contact info for fallback
+         // Show support contact info for fallback
       const fallbackMessage = 'Contact us directly at hello@moliam.com or 949-XXX-XXXX';
       var successTextEl = form.querySelector('.form-success-text');
       if (successTextEl) successTextEl.textContent = fallbackMessage;
 }
 
-       // Re-enable button with error state message
+        // Re-enable button with error state message
       submitBtn.textContent = originalText + ' (Error)';
       setTimeout(() => {
         submitBtn.disabled = false;
         submitBtn.textContent = submitBtn.textContent.replace(' (Error)', '');
       }, 5000);
 
-     } finally {
+      } finally {
       submitBtn.disabled = false;
       if (!submitBtn.textContent.includes('(Error)')) {
         submitBtn.textContent = originalText;
-       }
-     }
+        }
+      }
    }
 
    // Event listener with passive optimization
