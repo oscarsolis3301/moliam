@@ -190,13 +190,8 @@ async function generateBooking(context, prequalId) {
         .prepare("INSERT INTO appointments (prequalification_id, calendar_link, status, scheduled_with) VALUES (?, ?, 'pending', ?)")
         .bind(prequalId, personalizedLink, context.env.ADMIN_EMAIL || "hello@moliam.com").run();
 
-       // Send booking confirmation email to qualified lead with priority access 
+// Send booking confirmation email to qualified lead with priority access 
      await sendBookingConfirmationEmail(context, prequal, personalizedLink);
-
-       // Auto-schedule initial demo slot within 30-day window from today
-     const targetDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // Next week
-
-    console.log(`Auto-generated booking #${bookingRef} for qualified lead: ${prequal.id}`);
     return { 
       booking_ref: bookingRef,
       schedule_url: personalizedLink,
