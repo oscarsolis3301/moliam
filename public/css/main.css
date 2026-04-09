@@ -211,10 +211,10 @@ html, body {
   font-weight: 800;
 }
 
-.stat-value-blue { color: #3B82F6; }    #3B82F6 - Blue (50+ clients)
-.stat-value-green { color: #10B981; }   #10B981 - Green (5.0★ rating)
-.stat-value-purple { color: #8B5CF6; } #8B5CF6 - Purple (72hr delivery)
-.stat-value-orange { color: #F59E0B; } #F59E0B - Orange (24/7 ops)
+.stat-value-blue { color: var(--accent-blue, #3B82F6); }     /* Blue (50+ clients) */
+.stat-value-green { color: #10B981; }                       /* Green (5.0★ rating) */
+.stat-value-purple { color: var(--accent-blue, #8B5CF6); }   /* Purple (72hr delivery) */
+.stat-value-orange { color: #F59E0B; }                      /* Orange (24/7 ops) */
 
 .stat-label-small {
   font-size: 0.7rem;
@@ -277,10 +277,6 @@ html, body {
 }
 
 /* ═══════════════════════ BUTTON DISPLAYS (Line 686, 690) ═══════════════════════ */
-.btn-flex-inline {
-  display: inline-flex;
-}
-
 /* ═══════════════════════ MISCELLANEOUS INLINE UTILITIES (Line 676, 677, 684) ═══════════════════════ */
 .moliam-small-gray {
   font-size: 12px;
