@@ -93,13 +93,13 @@ window.moliamResourceCleanup = function() {
 };
 
 /* Register cleanup for beforeunload */
+let resourceMon = true;
+
 window.addEventListener('beforeunload', () => {
   if (window.moliamResourceCleanup) {
     resourceMon = false; // prevent double cleanup during unload
   }
 }, true);
-
-let resourceMon = true;
 
 /* Initialize global error boundaries */
 if (window.MoliamErrorMonitor && typeof window.MoliamErrorMonitor.registerErrorHandler === 'function') {
@@ -112,8 +112,7 @@ if (window.MoliamErrorMonitor && typeof window.MoliamErrorMonitor.registerErrorH
      } else {
        // Show error in console only during dev
       if (window.location.hostname === 'localhost' || window.MOLIAM_DEV_MODE) {
-        console.error('[Moliam Error]', error.message);
-       }
+        }
      }
    };
   window.MoliamErrorMonitor.registerErrorHandler(errorHandler);

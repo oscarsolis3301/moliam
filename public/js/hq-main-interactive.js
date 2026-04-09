@@ -26,9 +26,8 @@
       this.resize();
       this.animate();
     } catch (error) {
-      console.error('[HQ Visualizer] Init failed:', error);
       document.body.classList.add('visualizer-error-loading');
-    }
+}
   };
 
   HQVisualizer.prototype.onResize = function() {

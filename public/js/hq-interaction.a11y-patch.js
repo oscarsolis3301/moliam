@@ -157,8 +157,8 @@
       window.removeEventListener('keydown', handleKeyboardEvents);
     }
 
-    console.log('Accessibility enhancements initialized. Tab to canvas to begin navigation.');
-  }
+
+   }
 
   /** Expose cleanup function for page unload */
   window.__moliam_cleanup_a11y__ = function() {
