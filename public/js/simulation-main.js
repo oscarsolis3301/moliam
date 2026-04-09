@@ -68,10 +68,9 @@ let layout = {};
     const seats = [];
     for(let s=0; s<4; s++) {
       seats.push({x: x + 20 + s * (rw-40)/3, y: y + rh - 50, taken:null});
-     }
+    }
     return {...def, x, y, w:rw, h:rh, seats, eventLog:[]};
    });
-}
 
 function getRoomById(id) { return rooms.find(r=>r.id===id); }
 
@@ -841,8 +840,7 @@ function updateHUD() {
 canvas = document.getElementById('canvas');
 const popEl = document.getElementById('popover');
 
-// Mobile/Touch handling - adds tap support for small screens
-const isMobile = () => window.innerWidth <= 768;
+// Mobile/Touch handling - reuses isMobile from initialization scope for click event handlers
 const minTargetSize = 44; // Accessibility touch target minimum
 
 canvas.addEventListener('click', (e) => {
