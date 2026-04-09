@@ -14,6 +14,7 @@
  *   phone TEXT,
  *   company TEXT,
  *   source TEXT NOT NULL DEFAULT 'manual' CHECK (source IN ('form', 'calendly', 'manual')),
+ *   source_channel TEXT DEFAULT 'unknown' CHECK (source_channel IN ('website_form', 'portfolio_page', 'qr_code', 'calendly_embed', 'landing_page', 'unknown')),
  *   lead_score INTEGER DEFAULT 0 CHECK (lead_score >= 0 AND lead_score <= 100),
  *   status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'qualified', 'booked', 'client', 'inactive')),
  *   notes TEXT,

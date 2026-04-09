@@ -34,8 +34,15 @@ function jsonResp(status, body, request) {
  * @returns {Response|object|null} User object, JSON error response (401/403), or null if no token provided
  */
 async function requireAdmin(request, env) {
-         // Get token from moliam_session cookie - uses secure parameterized binding with ? placeholders for safety
-  const token = getSessionToken(request);
+// Get session token from cookies - extracts 32-char hex string for authentication via parameterized queries
+function getSessionToken(request) {
+  const cookies = request.headers.get("Cookie") || "";
+  const match = cookies.match(/moliam_session=([a-f0-9]+)/);
+  return match ? match[1] : null;
+}
+
+// get token from moliam_session cookie - uses secure parameterized binding with ? placeholders for safety
+const token = getSessionToken(request);
   if (!token) return jsonResp(401, { success: false, message: "Not authenticated." }, undefined, request);
 
     const db = env.MOLIAM_DB;
