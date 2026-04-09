@@ -2,14 +2,11 @@
 (function() {
     'use strict';
 
-    const urlParams = new URLSearchParams(window.location.search);
-    let impersonatedUserId = urlParams.get('impersonate');
-
     // Check if user is authenticated by hitting auth/me endpoint with credentials: include (cookie-based)
     function checkAuth() {
         return fetch('/api/auth/me', { credentials: 'include' })
-            .then(r => r.json())
-            .catch(e => null);
+             .then(r => r.json())
+             .catch(e => null);
     }
 
     function fetchDashboard() {
