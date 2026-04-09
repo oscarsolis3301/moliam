@@ -36,11 +36,8 @@
             const interval = setInterval(() => {
                 tick++;
 
-                if (tick % 60 === 0) {
-                    // Tick milestone placeholder
-                 }
-
-                this.checkForNewLeads();
+            tick++;
+              this.checkForNewLeads();
              }, 1000);
 
             // Auto-cleanup every 15 minutes
