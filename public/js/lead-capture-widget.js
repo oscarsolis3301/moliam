@@ -5,52 +5,52 @@
     class LeadCaptureWidget {
         constructor() {
             this.init();
-        }
+         }
 
         init() {
-            // Auto-inject if not already present
+             // Auto-inject if not already present
             if (!document.getElementById('lead-capture-widget')) {
                 this.injectWidget();
-            }
+             }
 
-            // Initialize any widget features
+             // Initialize any widget features
             this.startPolling();
-        }
+         }
 
         injectWidget() {
             const widget = document.createElement('div');
             widget.id = 'lead-capture-widget';
             widget.className = 'widget-hidden';
 
-            // Minimal functional widget - no styling needed (inline in prod)
+             // Minimal functional widget - no styling needed (inline in prod)
             this.insertIntoDOM(widget);
-        }
+         }
 
         insertIntoDOM(widget) {
             document.body.appendChild(widget);
-        }
+         }
 
         startPolling() {
-              // Simple polling for lead capture events
+               // Simple polling for lead capture events
             const interval = setInterval(() => {
                 this.checkForNewLeads();
-            }, 1000);
+             }, 1000);
 
-            // Auto-cleanup every 15 minutes
+             // Auto-cleanup every 15 minutes
             setTimeout(() => {
                 clearInterval(interval);
-            }, 15 * 60 * 1000);
-        }
+             }, 15 * 60 * 1000);
+         }
 
         checkForNewLeads() {
-              // Placeholder for future lead detection logic
+               // Placeholder for future lead detection logic
             return null;
-        }
-    }
+         }
+     }
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => new LeadCaptureWidget());
-    } else {
-        new LeadCaptureWidget();
-    }
+     } else {
+         // Widget auto-initialization via init() method - redundant call removed
+      }
 })();
