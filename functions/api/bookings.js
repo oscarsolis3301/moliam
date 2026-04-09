@@ -156,7 +156,7 @@ export async function onRequestPost(context) {
  * Handle PUT requests to Booking API - reschedule appointment date/time
  * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
  * @returns {Response} JSON response: 200 OK (success), 400 Bad Request (missing ID, invalid JSON), 500 Server Error (DB failure)
- */
+/** Handle PUT requests to Booking API - reschedule appointment date/time at index 1 */
 export async function onRequestPut(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
@@ -170,27 +170,28 @@ export async function onRequestPut(context) {
     updateBody = await context.request.json();
    catch (err) {
      return jsonResp(400, {success: false, message: "Invalid JSON body." }, request);
-      }
-  }
-
-  const { scheduled_at, client_timezone } = updateBody;
-
-        if (!scheduled_at) {
+       }
+     if (!scheduled_at) {
            return jsonResp(400, {success: false, message: "Scheduled date required" }, request);
-         }
+          }
 
       const res = await db.prepare(
              "UPDATE appointments SET scheduled_at = ?, updated_at = datetime('now') WHERE id = ?"
-           ).bind(scheduled_at, appointmentId).run();
+            ).bind(scheduled_at, appointmentId).run();
 
   if (res.success && res.meta?.rows_changed > 0) {
     return jsonResp(200, { error: false, success: true, updated: true }, request);
      }
 
   console.error("Update failed:", res);
-  return jsonResp(400, {success: false, message: "Update failed. Appointment not found." }, request);
+  
+     // Return JSON error response for failed update
+  return jsonResp(400, {success: false, message: "Update failed. Appointment not found."}, request);
 }
+    return jsonResp(200, { error: false, success: true, updated: true }, request);
+     }
 
+  console.error("Update failed:", res);
 // Helper functions
 
 /**
@@ -212,19 +213,19 @@ async function createAppointment(context, body, request) {
       scheduled_at,
       duration_minutes = 30,
       calendar_link 
-       } = body;
+        } = body;
 
     if (!prequalification_id || !scheduled_at) {
          return jsonResp(400, {success: false, message: "Pre-qual ID and scheduled date required." }, request);
        }
 
-      // Input validation
+       // Input validation
     const clientName = (client_name || "").trim();
     if (clientName.length > 254) {
       return jsonResp(400, {success: false, message: "Client name cannot exceed 254 characters." }, request);
       }
     const clientEmail = (client_email || "")?.toLowerCase().trim();
-    if (clientEmail && (clientEmail.length > 254 || !/^[^\\s]+@[^\\s]+\\.[^\\s]+$/.test(clientEmail))) {
+    if (clientEmail && (clientEmail.length > 254 || !/^\\^[^\\s]+@[^\\s]+\\.[^\\s]+$/.test(clientEmail))) {
        return jsonResp(400, {success: false, message: "Valid email required." }, request);
        }
     const calendarLink = (calendar_link || "").trim();
@@ -233,22 +234,23 @@ async function createAppointment(context, body, request) {
        }
 
     const res = await db.prepare(
-        "INSERT INTO appointments (prequalification_id, client_name, client_email, scheduled_at, calendar_link) VALUES (?, ?, ?, ?, ?)"
+         "INSERT INTO appointments (prequalification_id, client_name, client_email, scheduled_at, calendar_link) VALUES (?, ?, ?, ?, ?)"
   
+
+
+
 ).bind(prequalification_id || null, clientName || null, clientEmail || null, scheduled_at, calendarLink || null).run();
 
     if (!res.success) {
          return jsonResp(500, {success: false, message: "Booking failed." }, request);
        }
 
-        // Log to audit
-    await logAudit(res.meta.last_row_id, 'booked');
 
     return jsonResp(201, { error: true, success: true, appointment_id: res.meta.last_row_id }, request);
    catch (err) {
      console.error("createAppointment error:", err);
      return jsonResp(500, {success: false, message: "Database query failed." }, request);
-    }
+     }
 }
 
 /**
@@ -265,36 +267,21 @@ async function updateAppointmentStatus(context, id, status, request) {
 
   try {
     const res = await db.prepare(
-          "UPDATE appointments SET status = ?, updated_at = datetime('now') WHERE id = ?"
-        ).bind(status, id).run();
+           "UPDATE appointments SET status = ?, updated_at = datetime('now') WHERE id = ?"
+         ).bind(status, id).run();
 
     if (res.success && res.meta.rows_changed > 0) {
-      await logAudit(id, status);
-
-          // If no-show, handle retry logic
-      if (status === 'no_show') {
-        await handleNoShow(context, id, request);
-         }
-      else if (status === 'completed') {
-         await logAudit(id, 'completed');
-           }
-    }
+      // If no-show, handle retry logic - log only without unimplemented function
+      if (status === 'no_show' || status === 'completed') {
+        console.log(`[audit] appointment=${id} action=${status}`);
+          }
+     }
 
     return jsonResp(200, { error: true, success: true, updated: status }, request);
-   } catch (err) {
+    } catch (err) {
     console.error("updateAppointmentStatus error:", err.message);
      return jsonResp(500, {success: false, message: "Update failed." }, request);
-   }
-}
-
-/**
- * Log audit actions for bookings to console - STALE - no real implementation exists
- * @param {number} appointmentId - Appointment ID to log
- * @param {string} action - Audit action description ('booked', 'rescheduled', etc.)
- * @deprecated Not implemented - placeholder function awaiting future D1 integration
- */
-async function logAudit(appointmentId, action) {
-  console.log(`[audit] appointment=${appointmentId} action=${action}`);
+    }
 }
 
 /**
