@@ -745,10 +745,10 @@ function mainLoop(t) {
 
   ctx.clearRect(0, 0, W, H);
 
-  // Ambient background particles
+   // Ambient background particles
   drawHQParticles(t);
 
-  // Title bar in canvas
+   // Title bar in canvas
   ctx.fillStyle = '#F9FAFB';
   ctx.font = '700 16px Inter, sans-serif';
   ctx.textAlign = 'left';
@@ -759,13 +759,13 @@ function mainLoop(t) {
 
   tickBots(dt);
 
-  // Draw rooms
+   // Draw rooms
   for (const room of rooms) drawRoom(room, t);
 
-  // Draw bots
+   // Draw bots
   for (const bot of bots) drawBot(bot, t);
 
-  // Connection lines (subtle, dashed)
+   // Connection lines (subtle, dashed)
   ctx.globalAlpha = 0.08;
   ctx.setLineDash([4, 4]);
   for (let i = 0; i < bots.length; i++) {
@@ -777,15 +777,24 @@ function mainLoop(t) {
         ctx.strokeStyle = '#9CA3AF';
         ctx.lineWidth = 1;
         ctx.stroke();
-      }
-    }
-  }
+       }
+     }
+   }
   ctx.setLineDash([]);
   ctx.globalAlpha = 1;
 
   requestAnimationFrame(mainLoop);
 }
-requestAnimationFrame(mainLoop);
+
+/* Track frameId for proper cleanup - fixes memory leak on tab visibility changes */
+let frameId = null;
+
+function startMainLoop() {
+  if (frameId) cancelAnimationFrame(frameId);
+  frameId = requestAnimationFrame(mainLoop);
+}
+
+startMainLoop();
 
 /* ─── SPARKLINE UPDATER ─── */
 let sparklineIntervalId = setInterval(() => {
@@ -794,16 +803,14 @@ let sparklineIntervalId = setInterval(() => {
   sparkData[sparkData.length - 1] = 0;
   drawSparkline();
 }, 5000);
-drawSparkline();
 
-/* Expose cleanup for status panel interval */
+/* Expose cleanup for maintenance */
 window.__moliam_cleanup_maintenance__ = function() {
   if (sparklineIntervalId) {
     clearInterval(sparklineIntervalId);
     sparklineIntervalId = null; // Clear reference to prevent double-cleanup
-  }
+   }
   if (typeof window.__moliam_cleanup_main__ === 'function') window.__moliam_cleanup_main__();
-  return true; // Successfully cleaned up maintenance-related intervals
 };
 
 /* ─── UPDATE BOT STATUS PANEL ─── */
@@ -1134,16 +1141,23 @@ window.__moliam_cleanup_main__ = function() {
   window.removeEventListener('resize', resizeHandler);
   
   mediaQuery.removeEventListener('change', mediaQueryChangeHandler);
-     // Add missing visibility handler cleanup for battery/CPU optimization
+      // Add missing visibility handler cleanup for battery/CPU optimization
   if (window.__moliam_visibility_handler) {
     document.removeEventListener('visibilitychange', window.__moliam_visibility_handler);
     delete window.__moliam_visibility_handler;
-    }
-      
+     }
+  
+  // FIX: Properly track and cleanup frameId for main loop
+  if (frameId) {
+    cancelAnimationFrame(frameId);
+    frameId = null;
+  }
+
   canvas.removeEventListener('mousemove', canvasMouseMoveHandler);
   canvas.removeEventListener('mouseleave', canvasMouseLeaveHandler);
-       // And hamburger menu cleanup:      
-  if (typeof window.__moliam_cleanup_hamburger__ === 'function') {   window.__moliam_cleanup_hamburger__();}
+        // And hamburger menu cleanup:      
+
+
 
 // Call speed button cleanup
 if (typeof window.__moliam_cleanup_speed_buttons__ === 'function') {
