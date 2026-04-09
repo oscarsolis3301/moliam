@@ -161,11 +161,11 @@ function showErrorHistory() {
     return;
   }
 
-  let message = `Error History (${errorQueue.length})\n\n`;
+  let message = "Error History (" + errorQueue.length + ")\n\n";
   errorQueue.slice(-10).forEach((err, i) => {
     const min = new Date(err.timestamp).getMinutes();
     const sec = String(new Date(err.timestamp).getSeconds()).padStart(2,'0');
-    message += `${i+1}. [${min}:${sec}] ${err.message}\n`;
+    message += (i+1) + ". [" + min + ":" + sec + "] " + err.message + "\n";
   });
 
   alert(message);

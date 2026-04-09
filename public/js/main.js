@@ -1,3 +1,5 @@
+import { sparklineColor, botColors, statusColors, feedItemColors } from './colors.js';
+
 (function() {
 'use strict';
 
@@ -126,7 +128,7 @@ function drawSparkline() {
   sparkCtx.clearRect(0, 0, W, H);
   const max = Math.max(1, ...sparkData);
   sparkCtx.beginPath();
-  sparkCtx.strokeStyle = '#3B82F6';
+  sparkCtx.strokeStyle = sparklineColor;
   sparkCtx.lineWidth = 2;
   sparkCtx.lineJoin = 'round';
   for (let i = 0; i < sparkData.length; i++) {
@@ -256,11 +258,11 @@ const TASKS = [
 ];
 
 const BOT_DEFS = [
-  { name: 'Ada',     initials: 'A', color: '#8B5CF6', role: 'Orchestrator',    online: true },
-  { name: 'Mavrick', initials: 'M', color: '#3B82F6', role: 'Lead Engineer',   online: true },
-  { name: 'Yagami',  initials: 'Y', color: '#EF4444', role: 'Strategy AI',     online: true },
-  { name: 'Willow',  initials: 'W', color: '#F59E0B', role: 'Content AI',      online: false },
-  { name: 'Soni',    initials: 'S', color: '#06B6D4', role: 'Research AI',     online: false },
+{name: 'Ada',     initials: 'A', color: botColors.Ada,     role: 'Orchestrator',    online: true },
+    { name: 'Mavrick', initials: 'M', color: botColors.Mavrick,   role: 'Lead Engineer',   online: true },
+    { name: 'Yagami',  initials: 'Y', color: botColors.Yagami,  role: 'Strategy AI',     online: true },
+    { name: 'Willow',  initials: 'W', color: botColors.Willow,  role: 'Content AI',      online: false },
+    { name: 'Soni',    initials: 'S', color: botColors.Soni,    role: 'Research AI',     online: false },
 ];
 
 let bots = BOT_DEFS.map((def, i) => {
@@ -458,7 +460,7 @@ function drawRoom(room, t) {
 
   // Label — centered below icon
   ctx.font = '600 14px Inter, sans-serif';
-  ctx.fillStyle = isActive ? '#F9FAFB' : '#9CA3AF';
+  ctx.fillStyle = isActive ? statusColors.textBright : statusColors.textDisabled;
   ctx.textAlign = 'center';
   ctx.fillText(label, x + w / 2, y + h * 0.62);
   ctx.textBaseline = 'alphabetic';
@@ -552,11 +554,11 @@ function drawBot(bot, t) {
   // Outer status ring (background)
   const ringColor = isOffline ? '#374151' :
                     state === 'working' ? '#10B981' :
-                    state === 'thinking' ? '#F59E0B' :
-                    state === 'moving' ? '#3B82F6' : 'rgba(107,114,128,0.3)';
+                    state === 'thinking' ? statusColors.thinking :
+                    state === 'moving' ? statusColors.moving : statusColors.offlineFallback;
   ctx.beginPath();
   ctx.arc(x, y, R + 4, 0, PI2);
-  ctx.strokeStyle = `rgba(${hexRGB(ringColor === 'rgba(107,114,128,0.3)' ? '#6B7280' : ringColor).join(',')},0.25)`;
+  ctx.strokeStyle = `rgba(${hexRGB(ringColor === statusColors.offlineFallback ? '#6B7280' : ringColor).join(',')},0.25)`;
   ctx.lineWidth = 2.5;
   ctx.stroke();
 
@@ -651,7 +653,7 @@ function drawBot(bot, t) {
     ctx.roundRect(lx, ly, tw + 20, 20, 8);
     ctx.stroke();
 
-    ctx.fillStyle = '#E5E7EB';
+    ctx.fillStyle = statusColors.grayLight;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(labelText, x, ly + 10);
@@ -767,11 +769,11 @@ function mainLoop(t) {
   drawHQParticles(t);
 
    // Title bar in canvas
-  ctx.fillStyle = '#F9FAFB';
+  ctx.fillStyle = statusColors.textBright;
   ctx.font = '700 16px Inter, sans-serif';
   ctx.textAlign = 'left';
   ctx.fillText('⚡ AI Operations HQ', 40, 30);
-  ctx.fillStyle = '#6B7280';
+  ctx.fillStyle = statusColors.textMuted;
   ctx.font = '400 12px Inter, sans-serif';
   ctx.fillText('Real-time agent activity', 230, 30);
 
@@ -880,7 +882,7 @@ form.addEventListener('submit', async (e) => {
     }
         
     if (parsed.success) {
-      status.style.color = '#10B981';
+      status.style.color = statusColors.online;
       status.textContent = '✓ Message sent! We\\&#39;ll be in touch.';
       form.reset();
     } else {
@@ -889,7 +891,7 @@ form.addEventListener('submit', async (e) => {
     }
   } catch (err) {
     console.error('Form submission error:', err);
-    status.style.color = '#EF4444';
+    status.style.color = statusColors.error;
     status.textContent = 'Something went wrong. Please try again.';
     // Log error for monitoring if we have a tracking endpoint
     if (window.__MOLIUM_ERROR_TRACKER) {
@@ -902,10 +904,10 @@ form.addEventListener('submit', async (e) => {
 });
 
 /* ─── INITIAL FEED ─── */
-addFeedItem('⚡ Moliam HQ initialized — all systems nominal', '#3B82F6');
-addFeedItem('🤖 5 AI agents deployed and ready', '#10B981');
-addFeedItem('📊 Connected to analytics pipeline', '#8B5CF6');
-addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
+addFeedItem('⚡ Moliam HQ initialized — all systems nominal', feedItemColors.init);
+    addFeedItem('🤖 5 AI agents deployed and ready', feedItemColors.deployed);
+    addFeedItem('📊 Connected to analytics pipeline', feedItemColors.analytics);
+    addFeedItem('🌐 Website builder engine loaded', feedItemColors.loaded);
 
 /* ─── FAQ ACCORDION ─── */
 (function() {
