@@ -202,7 +202,7 @@ async function createAppointment(context, body, request) {
        }
 
         // Log to audit
-    await logAudit(res.meta.last_row_id, 'booked');
+    await logAudit(context, res.meta.last_row_id, 'booked');
 
     return jsonResp(201, { error: true, success: true, appointment_id: res.meta.last_row_id }, request);
    catch (err) {
@@ -220,14 +220,14 @@ async function updateAppointmentStatus(context, id, status, request) {
        ).bind(status, id).run();
 
     if (res.success && res.meta.rows_changed > 0) {
-      await logAudit(id, status);
+      await logAudit(context, id, status);
 
          // If no-show, handle retry logic
       if (status === 'no_show') {
         await handleNoShow(context, id, request);
         }
       else if (status === 'completed') {
-         await logAudit(id, 'completed');
+         await logAudit(context, id, 'completed');
           }
        }
 
@@ -251,7 +251,7 @@ async function rescheduleAppointment(context, id, newDate, request) {
       return jsonResp(500, { error: true, success: false, message: "Database update failed." }, request);
       }
 
-    await logAudit(id, 'rescheduled');
+    await logAudit(context, id, 'rescheduled');
 
         // Send reschedule confirmation email
     const appointment = await db.prepare("SELECT * FROM appointments WHERE id = ?").bind(id).first();
@@ -291,7 +291,7 @@ async function handleNoShow(context, id, request) {
           console.error("Auto-denial exception:", dbErr);
            }
 
-        await logAudit(id, 'auto_denied');
+        await logAudit(context, id, 'auto_denied');
            return jsonResp(200, { error: true, success: true, message: "Lead auto-denied after multiple no-shows." }, request);
          }
 
@@ -316,15 +316,20 @@ async function handleNoShow(context, id, request) {
 }
 
 /**
- * Log audit to appointments table - no-op placeholder until context is passed
+ * Log audit to appointments table
+ * @param {object} context - Worker context with MOLIAM_DB
  * @param {number} appointmentId - Appointment ID to log
  * @param {string} action - Audit action description
  */
-async function logAudit(appointmentId, action) {
-  // NOTE: This function cannot access D1 without context being passed in.
-  // Callers should pass context as first arg. For now, this is a no-op
-  // to prevent runtime crashes. TODO: refactor to accept context param.
-  console.log(`[audit] appointment=${appointmentId} action=${action}`);
+async function logAudit(context, appointmentId, action) {
+  try {
+    const db = context.env.MOLIAM_DB;
+    await db.prepare(
+      "INSERT INTO audit_logs (appointment_id, action, logged_at) VALUES (?, ?, datetime('now'))"
+    ).bind(appointmentId, action).run();
+  } catch (err) {
+    console.log(`[audit] appointment=${appointmentId} action=${action}`, err.message);
+  }
 }
 
 /**
