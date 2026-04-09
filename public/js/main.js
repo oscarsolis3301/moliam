@@ -1141,8 +1141,6 @@ let FAQAccordionIndex = 0; // Counter for unique listener tracking
   }
 
   // Modify addFeedItem to use ARIA live region
-  const originalAddFeedItem = typeof addFeedItem !== 'undefined' ? null : undefined;
-  
   window.announceBotActivity = announceToLiveRegion;
 
   // Expose for cleanup/reference
