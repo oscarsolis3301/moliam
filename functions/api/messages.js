@@ -102,37 +102,34 @@ async function authenticate(request, db) {
   const cookies = request.headers.get("Cookie") || "";
   const url = new URL(request.url);
 
-   // Extract token from URL query params or hash as fallback when cookie is not present
+  // Extract token from URL query params or hash as fallback when cookie is not present
   let token;
   try {
-    token = url.searchParams.get('token') || "";
-    if (!token && /token=/.test(url.hash)) {
-      const parts = url.hash.substring(1).split('token=');
-      token = (parts.length > 1 && parts[1]) ? parts[1] : "";
-     }
-   } catch (e) {
+    const urlParams = new URLSearchParams(url.search);
+    const urlToken = urlParams.get('token');
+    if (urlToken) token = urlToken;
+  } catch (e) {
     console.warn("Token extraction from URL failed:", e.message);
-    token = null;
-   }
+  }
 
   const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-  const tokenVal = token || (cookieMatch ? cookieMatch[1] : null); // fixed parameterized binding
+  const tokenVal = token || (cookieMatch ? cookieMatch[1] : null); // parameterized binding
 
   if (!tokenVal) return null;
 
   try {
-     // Validate session with parameterized query - uses ? binding to prevent SQL injection
+      // Validate session with parameterized query - uses ? binding to prevent SQL injection
     const session = await db.prepare(
-       "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
-     ).bind(tokenVal).first();
+        "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND u.is_active=1"
+      ).bind(tokenVal).first();
 
     if (!session) return null;
 
-     // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
+      // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
     if (new Date(session.expires_at) < new Date()) {
-      await db.prepare("DELETE FROM sessions WHERE token=?").bind(tokenVal).run();
+      await db.prepare("DELETE FROM sessions WHERE token = ?").bind(tokenVal).run();
       return null;
-     }
+      }
 
     return {
       id: session.user_id,

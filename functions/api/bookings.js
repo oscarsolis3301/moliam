@@ -156,7 +156,6 @@ export async function onRequestPost(context) {
  * Handle PUT requests to Booking API - reschedule appointment date/time
  * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
  * @returns {Response} JSON response: 200 OK (success), 400 Bad Request (missing ID, invalid JSON), 500 Server Error (DB failure)
-/** Handle PUT requests to Booking API - reschedule appointment date/time at index 1 */
 export async function onRequestPut(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
@@ -164,34 +163,31 @@ export async function onRequestPut(context) {
   const path = context.request.url.split('/api/appointments/')[1];
   if (!path) return jsonResp(400, {success: false, message: "Appointment ID required" }, request);
 
-      const appointmentId = parseInt(path);
+  const appointmentId = parseInt(path);
   let updateBody;
   try {
     updateBody = await context.request.json();
-   catch (err) {
-     return jsonResp(400, {success: false, message: "Invalid JSON body." }, request);
-       }
-     if (!scheduled_at) {
-           return jsonResp(400, {success: false, message: "Scheduled date required" }, request);
-          }
+  } catch (err) {
+    return jsonResp(400, {success: false, message: "Invalid JSON body."}, request);
+  }
 
-      const res = await db.prepare(
-             "UPDATE appointments SET scheduled_at = ?, updated_at = datetime('now') WHERE id = ?"
-            ).bind(scheduled_at, appointmentId).run();
+  const { scheduled_at } = updateBody || {};
+  if (!scheduled_at) {
+    return jsonResp(400, {success: false, message: "Scheduled date required"}, request);
+  }
+
+  const res = await db.prepare(
+    "UPDATE appointments SET scheduled_at = ?, updated_at = datetime('now') WHERE id = ?"
+  ).bind(scheduled_at, appointmentId).run();
 
   if (res.success && res.meta?.rows_changed > 0) {
-    return jsonResp(200, { error: false, success: true, updated: true }, request);
-     }
+    return jsonResp(200, {success: true, updated: true}, request);
+  }
 
   console.error("Update failed:", res);
-  
-     // Return JSON error response for failed update
   return jsonResp(400, {success: false, message: "Update failed. Appointment not found."}, request);
 }
-    return jsonResp(200, { error: false, success: true, updated: true }, request);
-     }
 
-  console.error("Update failed:", res);
 // Helper functions
 
 /**
