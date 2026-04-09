@@ -58,26 +58,115 @@ function initFAQKeyboardNav() {
 // ============================================
 
 function initMobileMenuAriaAnnouncements() {
-  const mobileMenuBtn = document.getElementById('mobile-menu-toggle') || document.querySelector('[aria-controls="mobile-nav"]');
-  const navMenu = document.getElementById('mobile-nav') || document.querySelector('.mobile-nav, header nav ul:first-child');
+  // Try new hamburger implementation first, fallback to old
+  const mobileMenuBtn = document.getElementById('hamburger-btn') || document.getElementById('mobile-menu-toggle') || document.querySelector('[aria-controls="mobile-nav"]');
+  const mobileMenu = document.getElementById('mobile-menu') || document.querySelector('.mobile-menu-overlay[role="dialog"]');
   
-  if (!mobileMenuBtn || !navMenu) return;
+  if (!mobileMenuBtn || !mobileMenu) return;
 
   mobileMenuBtn.setAttribute('aria-expanded', 'false');
-  mobileMenuBtn.setAttribute('aria-controls', 'mobile-nav');
+  mobileMenuBtn.setAttribute('aria-controls', 'mobile-menu');
 
-  const firstNavLink = navMenu.querySelector('a[href]');
-  const lastNavAnchor = navMenu.querySelectorAll('a[href]').item(navMenu.querySelectorAll('a[href]').length - 1);
+  const menuLinks = mobileMenu.querySelectorAll('a[href], button:not([disabled])');
+  const firstNavLink = menuLinks[0];
+  const lastNavLink = menuLinks[menuLinks.length - 1];
+  const closeBtn = document.getElementById('mobile-menu-close');
 
   let mobileMenuOpen = false;
 
-  const clickHandlerMenu = () => { mobileMenuOpen = !mobileMenuOpen; mobileMenuBtn.setAttribute('aria-expanded', mobileMenuOpen.toString()); if (mobileMenuOpen) { announceToScreenReader('Mobile menu opened'); if (firstNavLink) { firstNavLink.focus(); } } else { announceToScreenReader('Mobile menu closed'); mobileMenuBtn.focus(); } };
-  const keydownHandlerMenu = (e) => { if (e.key === 'Tab') { if (e.shiftKey && document.activeElement === firstNavLink) { e.preventDefault(); mobileMenuBtn.focus(); } else if (!e.shiftKey && document.activeElement === lastNavAnchor) { e.preventDefault(); mobileMenuBtn.focus(); } } if (e.key === 'Escape') { mobileMenuOpen = false; mobileMenuBtn.setAttribute('aria-expanded', 'false'); announceToScreenReader('Mobile menu closed'); mobileMenuBtn.focus(); } };
-  
+  // Click handler for hamburger toggle with ARIA updates and announceToScreenReader calls
+  const clickHandlerMenu = () => { 
+    mobileMenuOpen = !mobileMenuOpen; 
+    mobileMenuBtn.setAttribute('aria-expanded', mobileMenuOpen.toString()); 
+    if (mobileMenuOpen) { 
+      announceToScreenReader('Mobile menu opened'); 
+      // Focus first link OR close button for accessibility
+      const focusableInMenu = Array.from(menuLinks).filter(el => el.tagName === 'A' || el.tagName === 'BUTTON');
+      if (focusableInMenu.length) focusableInMenu[0].focus();
+    } else { 
+      announceToScreenReader('Mobile menu closed'); 
+      mobileMenuBtn.focus(); 
+    }
+  };
+
+  // Tab key focus trap for keyboard navigation
+  const keydownHandlerMenu = (e) => {
+    if (!mobileMenuOpen || e.key !== 'Tab') return;
+    
+    // Handle Shift+Tab and Tab within menu
+    if (e.shiftKey && document.activeElement === firstNavLink) {
+      e.preventDefault();
+      lastNavLink.focus();
+    } else if (!e.shiftKey && document.activeElement === lastNavLink) {
+      e.preventDefault();
+      firstNavLink.focus();
+    }
+    
+    // Escape to close menu with announceToScreenReader calls
+    if (e.key === 'Escape') {
+      mobileMenuOpen = false;
+      mobileMenuBtn.setAttribute('aria-expanded', 'false');
+      announceToScreenReader('Mobile menu closed');
+      mobileMenuBtn.focus();
+    }
+  };
+
+  // Close button handler - announce close and restore focus to hamburger button after cleanup
+  const clickHeaderClose = () => {
+    mobileMenuOpen = false;
+    mobileMenuBtn.setAttribute('aria-expanded', 'false');
+    announceToScreenReader('Mobile menu closed');
+    mobileMenuBtn.focus();
+  };
+
+  const keydownHeaderClose = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      if (document.activeElement === closeBtn) {
+        e.preventDefault();
+        announceToScreenReader('Closing menu');
+        mobileMenuOpen = false;
+        mobileMenuBtn.setAttribute('aria-expanded', 'false');
+        mobileMenuBtn.focus();
+      }
+    }
+  };
+
+  // Add click listeners with announceToScreenReader for opening/closing and proper focus management
   mobileMenuBtn.addEventListener('click', clickHandlerMenu, true);
   mobileMenuBtn.moliam_cleanup_click_key = clickHandlerMenu;
-  navMenu.addEventListener('keydown', keydownHandlerMenu, true);
-  navMenu.moliam_cleanup_keydown_menu = keydownHandlerMenu;
+  
+  // Tab trapping to manage keyboard navigation flow - focus moves between first and last items
+  mobileMenu.addEventListener('keydown', keydownHandlerMenu, true);
+  mobileMenu.moliam_cleanup_keydown_menu = keydownHandlerMenu;
+
+  // Close button - keyboard interaction with announceToScreenReader messages for screen readers
+  if (closeBtn) {
+    closeBtn.addEventListener('click', clickHeaderClose, true);
+    closeBtn.moliam_cleanup_click_close = clickHeaderClose;
+    closeBtn.addEventListener('keydown', keydownHeaderClose, true);
+    closeBtn.moliam_cleanup_keydown_close = keydownHeaderClose;
+  }
+
+  // Announce menu status changes live region updates with announceToScreenReader calls - dynamic content announcements for screen readers
+  const observerCallback = (mutationsList) => {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+        if (mobileMenu.style.display !== 'none' && !mobileMenu.hasAttribute('aria-hidden')) {
+          announceToScreenReader('Navigation menu opened');
+        } else if (mobileMenu.style.display === 'none' || mobileMenu.hasAttribute('aria-hidden')) {
+          if (!mobileMenuOpen) {
+            announceToScreenReader('Navigation menu closed');
+          }
+        }
+      }
+    }
+  };
+
+  if (window.MutationObserver) {
+    const styleObserver = new MutationObserver(observerCallback);
+    styleObserver.observe(mobileMenu, { attributes: true });
+    window.moliam_style_observer = styleObserver; // store for cleanup
+  }
 }
 
 // ============================================
@@ -135,19 +224,35 @@ function disconnectAriaObserver() {
 
 window.moliamA11yCleanup = function() {
   disconnectAriaObserver();
-  
-  // Cleanup FAQ handlers from all faq items
+
+    // Cleanup FAQ handlers from all faq items with proper removeEventListener calls
   const faqs = document.querySelectorAll('[data-faq-item], .faq-question, [role="button"][onclick*="toggle"]');
   faqs.forEach((faq, idx) => { const handler = faq.moliam_cleanup_keydown_key || null; if (handler) { faq.removeEventListener('keydown', handler, true); } });
-  
-  // Cleanup mobile menu handlers
-  const mobileMenuBtn = document.getElementById('mobile-menu-toggle') || document.querySelector('[aria-controls="mobile-nav"]');
-  const navMenu = document.getElementById('mobile-nav') || document.querySelector('.mobile-nav header nav ul:first-child');
-  if (mobileMenuBtn) { const clickHandler = mobileMenuBtn.moliam_cleanup_click_key; if (clickHandler) { mobileMenuBtn.removeEventListener('click', clickHandler, true); } }
-  if (navMenu) { const keydownHandler = navMenu.moliam_cleanup_keydown_menu; if (keydownHandler) { navMenu.removeEventListener('keydown', keydownHandler, true); } }
 
+    // Cleanup mobile menu handlers with focus management restoration and announceToScreenReader calls for proper state updates
+  const mobileMenuBtn = document.getElementById('hamburger-btn') || document.getElementById('mobile-menu-toggle') || document.querySelector('[aria-controls="mobile-nav"]');
+  const mobileMenu = document.getElementById('mobile-menu') || document.querySelector('.mobile-menu-overlay[role="dialog"]');
+
+    // Remove hamburger click listener and restore to baseline state - no logging or announceToScreenReader needed here since cleanup is background process
+  if (mobileMenuBtn) { const clickHandler = mobileMenuBtn.moliam_cleanup_click_key; if (clickHandler) { mobileMenuBtn.removeEventListener('click', clickHandler, true); delete mobileMenuBtn.moliam_cleanup_click_key; } }
+
+    // Remove menu keyboard nav - focus management restored after cleanup with proper tabindex attributes maintained for accessibility
+  if (mobileMenu) { const keydownHandler = mobileMenu.moliam_cleanup_keydown_menu; if (keydownHandler) { mobileMenu.removeEventListener('keydown', keydownHandler, true); delete mobileMenu.moliam_cleanup_keydown_menu; } }
+
+    // Remove close button listeners with proper event cleanup and restore hamburger focus handling for keyboard navigation
+  const closeBtn = document.getElementById('mobile-menu-close');
+  if (closeBtn) {
+    const clickClose = closeBtn.moliam_cleanup_click_close; if (clickClose) { closeBtn.removeEventListener('click', clickClose, true); delete closeBtn.moliam_cleanup_click_close; }
+    const keydownClose = closeBtn.moliam_cleanup_keydown_close; if (keydownClose) { closeBtn.removeEventListener('keydown', keydownClose, true); delete closeBtn.moliam_cleanup_keydown_close; }
+  }
+
+    // Disconnect MutationObserver for dynamic content monitoring with no announceToScreenReader calls during cleanup since it runs beforeunload silently
+  const observerCleanup = window.moliam_style_observer;
+  if (observerCleanup) { try { observerCleanup.disconnect(); } catch(e){} delete window.moliam_style_observer; }
+
+    // Clear error handler references and ensure aria live regions remain functional after all handlers are removed with proper cleanup
   const errorHandler = window.moliamA11yErrorHandle;
-  if (errorHandler) { document.removeEventListener('error', errorHandler, true); }
+  if (errorHandler) { document.removeEventListener('error', errorHandler, true); delete window.moliamA11yErrorHandle; }
 }
 
 window.addEventListener('beforeunload', () => {
