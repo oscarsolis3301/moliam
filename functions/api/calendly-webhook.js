@@ -84,20 +84,20 @@ export async function onRequestPost(context) {
 
 
        const rawBody = await request.text();
+       const rawBody = await request.text();
 
 
     let data;
-
   try { data = JSON.parse(rawBody); } catch { return jsonResp(400, { success:false, message:"Invalid JSON body provided by Calendly webhook endpoint." });}
 
-        // Verify Calendly HMAC signature for security - prevents unauthorized third parties from forging booking events into the backend system
+         // Verify Calendly HMAC signature for security - prevents unauthorized third parties from forging booking events into the backend system
 
 
       const sigHeader = request.headers.get('Calendly-Webhook-Signature') ?? '';
        const webhookSecret = env.CALENDLY_WEBHOOK_SECRET ?? '';
 
-
        if (webhookSecret && !(await verifySignature(rawBody, sigHeader, webhookSecret))) return jsonResp(401, { success:false, message:"Invalid webhook signature detected - rejecting potentially forged payload." });
+    const event = data.event ??'unknown'; // "invitee.created" or "invitee.canceled" only
 
    const event = data.event ??'unknown'; // "invitee.created" or "invitee.canceled" only
        const payload = data.payload ?? {};

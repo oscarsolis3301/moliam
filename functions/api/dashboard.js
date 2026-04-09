@@ -16,15 +16,15 @@ export async function onRequestGet(context) {
       return jsonResp(503, { success: false, error: true, message: 'Database service unavailable.' }, request);
     }
 
-      // --- Parse token from query params or cookies ---
+       // --- Parse token from query params or cookies ---
     const url = new URL(request.url);
-    let tokenFromUrl = "";
+    let tokenFromUrl = null;
     
     try {
-      tokenFromUrl = (url.searchParams.get("token") || (url.hash.match(/token=([^&]*)/i) || ["", ""])[1]).replace("?", "").trim();
-    } catch (e) {
-      tokenFromUrl = "";
-    }
+      tokenFromUrl=(url.searchParams.get("token") || (url.hash.match(/token=([a-f0-9]+)/) || ["", ""])[1]).replace("?", "").trim();
+     } catch (e) {
+      tokenFromUrl=null;
+     }
 
     const cookies = request.headers.get('Cookie') || '';
     const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
