@@ -139,7 +139,4 @@ function dimColor(hex, factor) {
   return `rgb(${Math.floor(r*factor)},${Math.floor(g*factor)},${Math.floor(b*factor)})`;
 }
 
-// ═══════════════════════════════════════
-// SECTION: Orb Renderer
-// ═══════════════════════════════════════
-
+// ═══════════════════════════════════════\n// SECTION: Orb Renderer\n// ═══════════════════════════════════════\n\n/**\n * Orb renderer with error handling for rendering failures\n */\nfunction drawOrb(orb) {\n  try {\n    const x = orb.x;\n    const y = orb.y;\n    \n    // Safe color parsing\n    let fillHex;\n    try { fillHex = (typeof orb.color === 'string' && /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(orb.color)) ? orb.color : '#10B981'; } catch(e) { fillHex = '#10B981'; }\n    \n    // Orb body with gradient simulation (no createLinearGradient to keep performance)\n    ctx.fillStyle = fillHex;\n    ctx.beginPath();\n    ctx.arc(x, y, orb.size || 4, 0, Math.PI * 2);\n    ctx.fill();\n    \n    // Border for visual separation\n    ctx.strokeStyle = '#FFFFFF';\n    ctx.lineWidth = 1 / (orb.speed || 1);\n    ctx.beginPath();\n    ctx.arc(x, y, max(3, orb.size > 6 ? 4 : 3), 0, Math.PI * 2);\n    ctx.stroke();\n    \n  } catch(e) {\n    console.warn('[Hero Canvas] Orb rendering error:', e);\n  }\n}\n\n// Safe resize handler with error catching\ncanvas.addEventListener('resize', () => {\n  try { resize(); } catch(e) {\n    console.error('[Hero Canvas] Resize handler error:', e);\n  }\n}, { passive: true });\n\n})(); // Close IIFE with error-safe wrapping\n
