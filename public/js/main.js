@@ -993,32 +993,42 @@ let FAQAccordionIndex = 0; // Counter for unique listener tracking
   const speedBtns = document.querySelectorAll('.speed-btn');
   if (!speedBtns.length) return;
 
+  // Store listeners for proper cleanup - array of [element, type, handler]
+  const speedListeners = [];
+
   speedBtns.forEach(function(btn) {
     btn.setAttribute('tabindex', '0'); // make tabbable
     btn.setAttribute('role', 'button'); // explicit role
 
-    btn.addEventListener('click', function() {
-      const newSpeed = parseInt(this.dataset.speed, 10);
+    function handleClick() {
+      const newSpeed = parseInt(btn.dataset.speed, 10);
       document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
+      btn.classList.add('active');
 
       updateSimulationSpeed(newSpeed);
 
       // Update live region for screen readers
       const speedLabel = getSpeedLabel(newSpeed);
       announceToLiveRegion('⚡ Simulation speed: ' + speedLabel);
-    });
+    }
 
-    btn.addEventListener('keydown', function(e) {
+    function handleKeydown(e) {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        this.click();
+        btn.click();
       }
-    });
+    }
+
+    btn.addEventListener('click', handleClick);
+    btn.addEventListener('keydown', handleKeydown);
+
+    // Store refs for cleanup
+    speedListeners.push([btn, 'click', handleClick]);
+    speedListeners.push([btn, 'keydown', handleKeydown]);
   });
 
   function updateSimulationSpeed(speed) {
-    // Find tickBots call and set speed multiplier
+     // Find tickBots call and set speed multiplier
     simulationSpeedMultiplier = speed;
   }
 
@@ -1030,12 +1040,12 @@ let FAQAccordionIndex = 0; // Counter for unique listener tracking
     return 'Unknown';
   }
 
-  // Expose cleanup
+  // Proper cleanup function
   window.__moliam_cleanup_speed_buttons__ = function() {
-    speedBtns.forEach(function(btn, idx) {
-      // We can't easily remove individual listeners without storing refs,
-      // so skip this part or store them elsewhere for proper cleanup
-    });
+    for (const [elem, type, handler] of speedListeners) {
+      elem.removeEventListener(type, handler);
+    }
+    speedListeners.length = 0;
   };
 })();
 
@@ -1121,7 +1131,6 @@ let FAQAccordionIndex = 0; // Counter for unique listener tracking
 window.__moliam_cleanup_main__ = function() {
   clearInterval(updateUptimeIntervalId || 0);
   clearInterval(sparklineIntervalId || 0);
-  clearInterval(statusPanelIntervalId || 0);
   window.removeEventListener('resize', resizeHandlerHQ);
   window.removeEventListener('resize', resizeHandler);
   
