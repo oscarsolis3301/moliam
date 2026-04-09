@@ -294,11 +294,11 @@ export async function onRequestPut(context) {
       }
     }
 
-    // Clean email if provided
+     // Clean email if provided
     const email = data.email ? (((data.email || "")).toLowerCase().trim()) : null;
-    if (email && (!/^[^s@]+@[^s@]+\.[^s@]+$/.test(email))) {
+    if (email && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
       return jsonResp(400, { success: false, message: "Invalid email format." });
-    }
+     }
 
     // Clean phone if provided
     const cleanPhone = data.phone ? String(data.phone).replace(/[\d()\-+\s]/g, "").trim() : null;

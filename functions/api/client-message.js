@@ -105,26 +105,25 @@ async function authenticate(request, db) {
      // Extract token from URL query params or hash as fallback when cookie is not present
   let token;
   try {
-    token = url.searchParams.get('token') || "";
-    if (!token && /token=/.test(url.hash)) {
-      const hash = url.hash.substring(1).split('token=');
-      token = (hash !== undefined && hash.length > 1) ? hash[1] : null;
-      }
-    } catch (e) {
-    console.warn("Token extraction from URL failed:", e.message);
-    token = null;
-    }
-
+     // Extract token from cookie and query params cleanly
   const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-  const tokenVal = token || (cookieMatch ? cookieMatch[1] : null); // fixed parameterized binding
-
+  let tokenVal = cookieMatch ? cookieMatch[1] : null;
+  
+     // Also check query string if not in cookie
+  if (!tokenVal) {
+    const query = url.searchParams.get('token');
+    if (query && query.length > 20) {
+      tokenVal = query;
+     }
+   }
+  
   if (!tokenVal) return null;
 
   try {
-      // Validate session with parameterized query - uses ? binding and bind(tokenVal) to prevent SQL injection
+       // Validate session with parameterized query - uses ? binding to prevent SQL injection
     const session = await db.prepare(
-        "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
-      ).bind(tokenVal).first();
+           "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
+         ).bind(tokenVal).first();
 
       // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
     if (session && new Date(session.expires_at) < new Date()) {

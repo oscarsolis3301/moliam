@@ -91,32 +91,28 @@ function sanitizeAdminMessage(input, isAdmin = false) {
 
 /**
  * Session authentication helper - extracts token from cookie and validates via parameterized query with ? binding
- * @param {Request} request - Cloudflare Pages Request object with Cookie header
+ * @param {Request} request - Cloudflare Pages Request Object with Cookie header
  * @param {D1Database} db - Database binding to MOLIAM_DB
  * @returns {object|null} User object with id, email, name, role or null if invalid/expired
  */
 async function authenticate(request, db) {
   if (!db) return null;
 
-   // Get token from moliam_session cookie for authentication - no SQL injection possible here
+    // Get token from moliam_session cookie for authentication
   const cookies = request.headers.get("Cookie") || "";
   const url = new URL(request.url);
 
-  // Extract token from URL query params or hash as fallback when cookie is not present
-  let token;
-  try {
-    const urlParams = new URLSearchParams(url.search);
-    const urlToken = urlParams.get('token');
-    if (urlToken) token = urlToken;
-  } catch (e) {
-    console.warn("Token extraction from URL failed:", e.message);
-  }
-
+    // Extract token from cookie or query params
   const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-  const tokenVal = token || (cookieMatch ? cookieMatch[1] : null); // parameterized binding
-
-  if (!tokenVal) return null;
-
+  let tokenVal = cookieMatch ? cookieMatch[1] : null;
+  
+    // Also check query string if not in cookie
+  if (!tokenVal) {
+    const query = url.searchParams.get('token');
+    if (query && query.length > 20) {
+      tokenVal = query;
+    }
+  }
   try {
       // Validate session with parameterized query - uses ? binding to prevent SQL injection
     const session = await db.prepare(

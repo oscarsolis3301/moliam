@@ -22,14 +22,14 @@ export async function onRequestGet(context) {
     const { request, env } = context;
     
     if (!env.MOLIAM_DB) {
-      return jsonResp(503, {success: false, message: 'Database service unavailable.' }, request);
-    }
-    
-    const db = env.MOLIAM_DB;
-    // List all appointments for dashboard
-    if (context.request.url.includes('/list')) {
-      try {
-        const data = await db.prepare(`
+return jsonResp(503, {success: false, message: 'Database service unavailable.' }, request);
+}
+
+const db = env.MOLIAM_DB;
+
+if (context.request.url.includes('/list')) {
+  try {
+    const data = await db.prepare(`
             SELECT a.*, p.qualification_score, p.budget_range, 
                    s.name AS lead_name, s.email AS lead_email
             FROM appointments a
@@ -37,45 +37,50 @@ export async function onRequestGet(context) {
              LEFT JOIN submissions s ON p.submission_id = s.id
             ORDER BY a.scheduled_at DESC
             LIMIT 50
-                  ).all();
+                    ).all();
 
-        return jsonResp(200, { 
+    return jsonResp(200, { 
           success: true, 
           data: data 
-             }, request);
-      } catch (err) {
+               }, request);
+        } catch (err) {
         console.error('List bookings error:', err);
         return jsonResp(500, {success: false, message: 'Failed to retrieve appointments.' }, request);
       }
-    }
+}
 
-    // Get specific appointment by ID
+// Get specific appointment by ID
     const path = context.request.url.split('/api/appointments/')[1];
     if (path) {
       try {
         const id = parseInt(path);
         if (isNaN(id)) {
           return jsonResp(400, {success: false, message: 'Invalid appointment ID format.' }, request);
-              }
-              
+                }
+               
         const data = await db.prepare(
-                   "SELECT * FROM appointments WHERE id = ?"
-                 ).bind(id).first();
+                     "SELECT * FROM appointments WHERE id = ?"
+                   ).bind(id).first();
 
            if (!data) {
               return jsonResp(404, {success: false, message: 'Appointment not found.' }, request);
-          }
-          
+            }
+           
         return jsonResp(200, { 
             success: true, 
             data: data,
-             }, request);
-        } catch (err) {
-           console.error('Get appointment error:', err);
-           return jsonResp(500, {success: false, message: 'Failed to retrieve appointment.' }, request);
-       }
-    }
+               }, request);\n          } catch (err) {\n           console.error('Get appointment error:', err);\n           return jsonResp(500, {success: false, message: 'Failed to retrieve appointment.' }, request);\n         }\n      }\
 
+return jsonResp(400, {success: false, message: 'Invalid request. Use /list or /id endpoint.' }, request);
+} catch (err) {
+       console.error('GET bookings error:', err);
+       return jsonResp(500, {success: false, message: 'Database query failed.' }, request);\n     }\n}\n\n/**\n * Handle CORS preflight requests for Booking API   
+ * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
+ * @returns {Response} 204 No Content with proper Access-Control headers for moliam.com and moliam.pages.dev domains
+ */
+export async function onRequestOptions(context) {
+
+  return new Response(null, {
 return jsonResp(400, {success: false, message: 'Invalid request. Use /list or /id endpoint.' }, request);
 } catch (err) {
        console.error('GET bookings error:', err);
