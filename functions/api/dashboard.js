@@ -185,12 +185,33 @@ export async function onRequestGet(context) {
               stats,
                   }, request);
 
-     } catch (err) {
+} catch (err) {
     console.error('Dashboard error:', err);
       return jsonResp(500, { success: false, message: 'Server error.' }, request);
-        }
+  }
 }
 
 /**
-
+ * Handle dashboard data fetch with pagination and filtering capabilities.
+ * 
+ * **Query Parameters:**
+ * - action: leads | pipeline (optional)
+ * - page: integer (default: 1)
+ * - limit: integer (default: 50)
+ * - filter: string (status, category, date range, etc.)
+ * 
+ * **Returns JSON Response with proper error handling:**
+ * - Success: `{success: true, data: {...}, fetchAt: 'ISO-8601'}`
+ * - Error: `{error: 'message'}` with appropriate HTTP status code
+ * 
+ * **Security Features:**
+ * - Token validation from URL hash or cookie (session-based auth)
+ * - Parameterized SQL queries to prevent SQL injection
+ * - Role-based data access control (client vs admin)
+ * 
+ * @param {Object} context - Request context from Cloudflare Pages
+ * @param {Request} context.request - Incoming request object
+ * @param {Object} context.env - Environment variables including MOLIAM_DB binding
+ * @returns {Response} JSON response with dashboard data or error
+ */
 
