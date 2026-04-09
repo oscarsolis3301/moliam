@@ -35,10 +35,8 @@
             let tick = 0;
             const interval = setInterval(() => {
                 tick++;
-
-            tick++;
-              this.checkForNewLeads();
-             }, 1000);
+                this.checkForNewLeads();
+              }, 1000);
 
             // Auto-cleanup every 15 minutes
             setTimeout(() => {
