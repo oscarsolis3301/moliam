@@ -45,7 +45,7 @@ const ResourceMonitor = {
       try { clearInterval(item.intervalId); } catch(e){}
     });
     this.intervals = [];
-    console.log('[Optimization] Reset intervals');
+
    },
 
   cancelAllTimeouts() {
@@ -53,7 +53,7 @@ const ResourceMonitor = {
       try { clearTimeout(item.timeoutId); } catch(e){}
     });
     this.timeouts = [];
-    console.log('[Optimization] Cancelled timeouts');
+
    },
 
   cleanupAllListeners() {
@@ -62,7 +62,7 @@ const ResourceMonitor = {
         try { cleaner(); } catch(e){}
        }
      });
-    console.log('[Optimization] Event listeners cleaned');
+
    },
 
   destroy() {
@@ -77,7 +77,7 @@ const ResourceMonitor = {
 
 /* Global cleanup registration */
 window.moliamResourceCleanup = function() {
-  console.log('[Optimization] Running full cleanup...');
+
   ResourceMonitor.destroy();
   
    // Notify all registered cleanup callbacks  
@@ -89,7 +89,7 @@ window.moliamResourceCleanup = function() {
     window.MoliamErrorMonitor.destroy();
   }
 
-   console.log('[Optimization] Complete system shutdown');
+
 };
 
 /* Register cleanup for beforeunload */
@@ -119,6 +119,6 @@ if (window.MoliamErrorMonitor && typeof window.MoliamErrorMonitor.registerErrorH
   window.MoliamErrorMonitor.registerErrorHandler(errorHandler);
 }
 
-console.log('[Optimization] Resource tracker initialized');
+
 
 })();

@@ -46,7 +46,7 @@ function initErrorSystem() {
   // Initialize visual bell for errors
   initErrorBell();
   
-  console.log('✓ Error handling system initialized');
+
 }
 
 /* Handle browser exceptions */
