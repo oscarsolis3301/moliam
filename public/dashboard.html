@@ -218,15 +218,7 @@ h1{font-size:28px;font-weight:600}
 /* Empty state styling */
 .empty-state { padding: 48px; text-align: center; color: var(--text-secondary); background: var(--bg-room); border-radius: 12px; border: 1px dashed var(--border-room); animation: fadeInUp 0.5s ease-out; }
 
-/* Next actions container - replaces inline styles in body */
-.next-actions { margin-top: 8px; display: flex; flex-direction: column; gap: 16px; }
-.next-actions-flex { display: flex; justify-content: space-between; align-items: center; }
-.next-actions-wr { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
-
-/* Skeleton active */
-.skeleton-active { display: grid !important; }
-
-</style>
+/* Next actions container - replaces inline styles in body */\n.next-actions { margin-top: 8px; display: flex; flex-direction: column; gap: 16px; }\n.next-actions-flex { display: flex; justify-content: space-between; align-items: center; }\n.next-actions-wr { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }\n\n/* Skeleton active */\n.skeleton-active { display: grid !important; }\n\n/* Skeleton stats wrapper - removed inline styles from skeleton-stats */\n.skeleton-stats-wrapper { display: none; }\n\n</style>
 </head>
 <body>
 
@@ -266,10 +258,7 @@ h1{font-size:28px;font-weight:600}
        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>Refresh Data</button></div><div class="next-actions-wr"><a class="btn" href="/">Book a Call</a><a class="btn secondary" onclick="window.showInvoices()">View Invoice</a><a class="btn secondary" href="#contact">Message Us</a></div></div>
 
 <!-- Loading Skeleton (hidden when data loaded) -->
-<div class="stats-grid" id="skeleton-stats" style="display:none;">
-    <div class="stat-card loading-skeleton" style="--h:80px;height:var(--h);border:none;background:transparent"></div>
-    <div class="stat-card loading-skeleton" style="--h:80px;height:var(--h);border:none;background:transparent"></div>
-</div>
+<div class="stats-grid skeleton-stats-wrapper" id="skeleton-stats"></div>\n\n<div class="section">\n     <div class="section-title">Active Projects</div>\n     <div class="project-grid" id="skeleton-projects"></div>
 
 <div class="section">
     <div class="section-title">Active Projects</div>
