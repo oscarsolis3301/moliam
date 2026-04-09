@@ -30,27 +30,9 @@
             document.body.appendChild(widget);
          }
 
-        startPolling() {
-               // Simple polling for lead capture events
-            const interval = setInterval(() => {
-                this.checkForNewLeads();
-             }, 1000);
-
-             // Auto-cleanup every 15 minutes
-            setTimeout(() => {
-                clearInterval(interval);
-             }, 15 * 60 * 1000);
-         }
-
         checkForNewLeads() {
-               // Placeholder for future lead detection logic
             return null;
-         }
-     }
+        }
+    }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => new LeadCaptureWidget());
-     } else {
-         // Widget auto-initialization via init() method - redundant call removed
-      }
 })();
