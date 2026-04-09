@@ -16,14 +16,14 @@ export async function onRequestGet(context) {
       return jsonResp(503, { success: false, error: true, message: 'Database service unavailable.' }, request);
     }
 
-    // --- Parse token from query params or cookies ---
+     // --- Parse token from query params or cookies ---
     const url = new URL(request.url);
     let tokenFromUrl = "";
     try {
-      tokenFromUrl = url.searchParams.get("token") || (url.hash.match(/token=([^&]*)/)?.[1] || "");
-    } catch (e) {
-      tokenFromUrl = "";
-    }
+      tokenFromUrl=(url.searchParams.get("token") || (url.hash.match(/token=([^&]*)/)?.[1] || "")).replace("?","").trim();
+     } catch (e) {
+      tokenFromUrl="";
+     }
 
     const cookies = request.headers.get('Cookie') || '';
     const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
@@ -31,11 +31,11 @@ export async function onRequestGet(context) {
 
     if (!token) {
       return jsonResp(401, { success: false, error: true, message: "Authentication token required." }, request);
-    }
+     }
 
-    // --- Session validation with parameterized query - uses ? binding to prevent SQL injection ---
+     // --- Session validation with parameterized query - uses ? binding to prevent SQL injection ---
     const session = await db.prepare(
-      "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1 AND s.expires_at > datetime('now')"
+       "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND u.is_active = 1 AND s.expires_at > datetime('now')"),
     ).bind(token).first();
 
     if (!session) {

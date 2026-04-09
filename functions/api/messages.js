@@ -99,17 +99,17 @@ function sanitizeAdminMessage(input, isAdmin = false) {
 async function authenticate(request, db) {
   if (!db) return null;
 
-     // Get token from moliam_session cookie for authentication - no SQL injection possible here
+      // Get token from moliam_session cookie for authentication - no SQL injection possible here
     const cookies = request.headers.get("Cookie") || "";
     const url = new URL(request.url);
 
-     // Extract token from URL query params or hash as fallback when cookie is not present
-  let tokenFromUrl="";
+      // Extract token from URL query params or hash as fallback when cookie is not present
+  let tokenFromUrl = "";
   try {
-    tokenFromUrl=(url.searchParams.get("token") || (url.hash.match(/token=([^&]*)/)?.[1] || ""));
-     } catch (e) {
+    tokenFromUrl=(url.searchParams.get("token") || (url.hash.match(/token=([^&]*)/)?.[1] || "")).replace("?","").trim();
+      } catch (e) {
     tokenFromUrl="";
-     }
+      }
 
     const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
   const token = tokenFromUrl || (cookieMatch ? cookieMatch[1] : null); // fixed parameterized binding
@@ -124,11 +124,11 @@ async function authenticate(request, db) {
 
     if (!session) return null;
 
-     // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
+      // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
      if (new Date(session.expires_at) < new Date()) {
       await db.prepare("DELETE FROM sessions WHERE token=?").bind(token).run();
       return null;
-     }
+    }
 
     return {
         id: session.user_id,
