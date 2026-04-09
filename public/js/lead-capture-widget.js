@@ -29,9 +29,6 @@
             document.body.appendChild(widget);
          }
 
-        checkForNewLeads() {
-            return null;
-        }
-    }
+     }
 
 })();

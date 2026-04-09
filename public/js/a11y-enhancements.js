@@ -85,9 +85,8 @@
              });
         }
 
-        // Removed unused methods: announce(), getLiveRegion() - never called anywhere in codebase
+        
     }
-
     const MoliamA11y = new AccessibilityEnhancements();
     window.a11y = MoliamA11y;
 })();
