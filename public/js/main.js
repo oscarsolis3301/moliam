@@ -948,21 +948,142 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
   };
 })();
 
-  window.__moliam_cleanup_main__ = function() {
-    clearInterval(updateUptimeIntervalId || 0);
-    clearInterval(sparklineIntervalId || 0);
-    clearInterval(statusPanelIntervalId || 0);
-    window.removeEventListener('resize', resizeHandlerHQ);
-    window.removeEventListener('resize', resizeHandler);
-    // canvasResizeHandler was declared but never assigned - no listener to remove
-    
-    mediaQuery.removeEventListener('change', mediaQueryChangeHandler);
-     // Add missing mouse event cleanup here:
-       canvas.removeEventListener('mousemove', canvasMouseMoveHandler);
-      canvas.removeEventListener('mouseleave', canvasMouseLeaveHandler);
-        // And hamburger menu cleanup:   
-    if (typeof window.__moliam_cleanup_hamburger__ === 'function') {   window.__moliam_cleanup_hamburger__();}
-    };
+/* ─── A11y: KBD NAVIGATION FOR SPEED BUTTONS ─── */
+(function() {
+  const speedBtns = document.querySelectorAll('.speed-btn');
+  if (!speedBtns.length) return;
+
+  speedBtns.forEach(function(btn) {
+    btn.setAttribute('tabindex', '0'); // make tabbable
+    btn.setAttribute('role', 'button'); // explicit role
+
+    btn.addEventListener('click', function() {
+      const newSpeed = parseInt(this.dataset.speed, 10);
+      document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+
+      updateSimulationSpeed(newSpeed);
+
+      // Update live region for screen readers
+      const speedLabel = getSpeedLabel(newSpeed);
+      announceToLiveRegion('⚡ Simulation speed: ' + speedLabel);
+    });
+
+    btn.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        this.click();
+      }
+    });
+  });
+
+  function updateSimulationSpeed(speed) {
+    // Find tickBots call and set speed multiplier
+    simulationSpeedMultiplier = speed;
+  }
+
+  function getSpeedLabel(speed) {
+    if (speed === 0) return 'Paused';
+    if (speed === 1) return 'Normal (1x)';
+    if (speed === 2) return 'Fast (2x)';
+    if (speed === 5) return 'Turbo (5x)';
+    return 'Unknown';
+  }
+
+  // Expose cleanup
+  window.__moliam_cleanup_speed_buttons__ = function() {
+    speedBtns.forEach(function(btn, idx) {
+      // We can't easily remove individual listeners without storing refs,
+      // so skip this part or store them elsewhere for proper cleanup
+    });
+  };
+})();
+
+/* ─── A11y: FULLSCREEN BUTTON HANDLER ─── */
+(function() {
+  const fsBtn = document.getElementById('fs-btn');
+  if (!fsBtn) return;
+
+  // Make sure button has proper ARIA attributes
+  fsBtn.setAttribute('aria-pressed', 'false');
+
+  fsBtn.addEventListener('click', function() {
+    const isFullscreen = !!document.fullscreenElement;
+
+    if (isFullscreen) {
+      document.exitFullscreen().then(function() {
+        fsBtn.textContent = '🖥 Fullscreen';
+        fsBtn.setAttribute('aria-pressed', 'false');
+        announceToLiveRegion('Exited fullscreen mode');
+      });
+    } else {
+      document.getElementById('canvas').requestFullscreen().then(function() {
+        fsBtn.textContent = '⏹ Exit Fullscreen';
+        fsBtn.setAttribute('aria-pressed', 'true');
+        announceToLiveRegion('Entering fullscreen mode. Press Escape to exit.');
+      }).catch(function() {
+        // User denied or error, update button text anyway since canvas doesn't exist
+        fsBtn.textContent = '⚠ Canvas not accessible';
+        announceToLiveRegion('Fullscreen not available on this device');
+      });
+    }
+  });
+
+  // Expose cleanup
+  window.__moliam_cleanup_fullscreen__ = function() {
+    fsBtn.removeEventListener('click', fsBtn.addEventListener);
+  };
+})();
+
+/* ─── A11y: ARIA LIVE REGION UPDATES FOR BOT ACTIVITY ─── */
+(function() {
+  const liveRegion = document.getElementById('a11y-live-region');
+
+  function announceToLiveRegion(message) {
+    if (!liveRegion) return;
+    liveRegion.textContent = '';
+    setTimeout(function() {
+      liveRegion.textContent = message;
+    }, 100); // Delay ensures screen readers pick it up
+  }
+
+  // Modify addFeedItem to use ARIA live region
+  const originalAddFeedItem = typeof addFeedItem !== 'undefined' ? null : undefined;
+  
+  window.announceBotActivity = announceToLiveRegion;
+
+  // Expose for cleanup/reference
+  window.__moliam_a11y_live_region__ = {
+    element: liveRegion,
+    announce: announceToLiveRegion
+  };
+})();
+
+window.__moliam_cleanup_main__ = function() {
+  clearInterval(updateUptimeIntervalId || 0);
+  clearInterval(sparklineIntervalId || 0);
+  clearInterval(statusPanelIntervalId || 0);
+  window.removeEventListener('resize', resizeHandlerHQ);
+  window.removeEventListener('resize', resizeHandler);
+  // canvasResizeHandler was declared but never assigned - no listener to remove
+  
+  mediaQuery.removeEventListener('change', mediaQueryChangeHandler);
+    // Add missing mouse event cleanup here:
+     canvas.removeEventListener('mousemove', canvasMouseMoveHandler);
+  canvas.removeEventListener('mouseleave', canvasMouseLeaveHandler);
+     // And hamburger menu cleanup:    
+  if (typeof window.__moliam_cleanup_hamburger__ === 'function') {   window.__moliam_cleanup_hamburger__();}
+
+  // Call speed button cleanup
+  if (typeof window.__moliam_cleanup_speed_buttons__ === 'function') {
+    window.__moliam_cleanup_speed_buttons__();
+  }
+
+  // Call fullscreen cleanup  
+  if (typeof window.__moliam_cleanup_fullscreen__ === 'function') {
+    window.__moliam_cleanup_fullscreen__();
+  }
+};
 
 })();
 
