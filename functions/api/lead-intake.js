@@ -39,23 +39,28 @@ export async function onRequestPost(context) {
   const phone = phoneResult.value;
 
   const company = sanitizeText(String(data.company || ""), 100);
-  const message = sanitizeText(String(data.message || ""), 2000);
+  const originalMessage = String(data.message || "");
+  const message = sanitizeText(originalMessage, 2000);
 
-  // Enhanced fields for scoring (sanitized)
+    // Enhanced fields for scoring (sanitized)
   const budget = sanitizeText(String(data.budget || "undisclosed"), 50);
   const scope = sanitizeText(String(data.scope || data.inquiry_type || "General inquiry").trim(), 200);
   const industry = sanitizeText(String(data.industry || "general").trim(), 100);
   const urgency_level = String(data.urgency_level || 'medium').toLowerCase();
 
-  // Sanitized pain_points array (limit item length to 500 chars)
+    // Sanitized pain_points array (limit item length to 500 chars)
   const pain_points = Array.isArray(data.pain_points) 
-      ? data.pain_points.filter(p => p && typeof p.trim === "function" && p.trim().length > 0).slice(0, 5).map((p, i) => sanitizeText(String(p), 500))
-       : [];
+        ? data.pain_points.filter(p => p && typeof p.trim === "function" && p.trim().length > 0).slice(0, 5).map((p, i) => sanitizeText(String(p), 500))
+         : [];
 
-  // Field length validation after sanitization
+    // Field length validation after sanitization
   const errors = [];
   if (name.length < 2) errors.push("Name must be at least 2 characters.");
+  if (name.length > 200) errors.push("Name cannot exceed 200 characters.");
   if (message.length < 10) errors.push("Message must be at least 10 characters.");
+  if (originalMessage && originalMessage.trim().length > 2000) {
+    errors.push("Message exceeds maximum length of 2000 characters.");
+   }
 
   if (errors.length) {
     return jsonResp(400, { success: false, error: true, message: errors.join(" ") }, request);

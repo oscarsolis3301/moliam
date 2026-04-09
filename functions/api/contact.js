@@ -34,12 +34,17 @@ export async function onRequestPost(context) {
   const phone = phoneResult.value;
 
   const company = sanitizeText(String(data.company || ""), 100);
-  const message = sanitizeText(String(data.message || ""), 2000);
+  const originalMessage = String(data.message || "");
+  const message = sanitizeText(originalMessage, 2000);
 
-     // --- Field Length Validation (after sanitization) ---
+      // --- Field Length Validation (after sanitization) ---
   const errors = [];
   if (name.length < 2) errors.push("Name must be at least 2 characters.");
+  if (name.length > 100) errors.push("Name cannot exceed 100 characters.");
   if (message.length < 10) errors.push("Message must be at least 10 characters long.");
+  if (originalMessage && originalMessage.trim().length > 2000) {
+    errors.push("Message exceeds maximum length of 2000 characters.");
+  }
 
   if (errors.length) return jsonResp(400, { success: false, error: true, message: errors.join(" ") }, undefined, request);
 
