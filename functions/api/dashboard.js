@@ -18,7 +18,7 @@ export async function onRequestGet(context) {
 
     // --- Parse token from query params or cookies ---
     const url = new URL(request.url);
-    let token = null;
+    let token = url.searchParams.get('token');
 
     // Try to get token from URL hash fragment if query param not found
     try {
@@ -26,18 +26,18 @@ export async function onRequestGet(context) {
         if (hashIdx > -1) {
             const hash = request.url.substring(hashIdx + 1);
             const query = new URLSearchParams(hash.split('&')[0]);
-            token = query.get('token') || '';
-        }
-    } catch (urlErr) {
+            token=token || query.get('token') || '';
+         }
+     } catch (urlErr) {
         console.warn("Token extraction from URL fragment failed:", urlErr.message);
-    }
+     }
 
     // Fall back to cookie extraction if no token found in hash
     if (!token) {
         const cookies = request.headers.get('Cookie') || '';
         const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-        token = cookieMatch ? cookieMatch[1] : null;
-    }
+        token=cookieMatch ? cookieMatch[1] : null;
+     }
 
     if (!token) {
         return jsonResp(401, { success: false, message: "Authentication token required." }, request);

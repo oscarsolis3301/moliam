@@ -43,34 +43,45 @@ if (context.request.url.includes('/list')) {
           success: true, 
           data: data 
                }, request);
-        } catch (err) {
-        console.error('List bookings error:', err);
-        return jsonResp(500, {success: false, message: 'Failed to retrieve appointments.' }, request);
+} catch (err) {
+       console.error('GET bookings error:', err);
+       return jsonResp(500, {success: false, message: 'Database query failed.' }, request);
       }
-}
+   }
 
-// Get specific appointment by ID
-    const path = context.request.url.split('/api/appointments/')[1];
-    if (path) {
-      try {
-        const id = parseInt(path);
-        if (isNaN(id)) {
-          return jsonResp(400, {success: false, message: 'Invalid appointment ID format.' }, request);
-                }
-               
+/**
+ * Handle CORS preflight requests for Booking API     
+ * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
+
+
         const data = await db.prepare(
                      "SELECT * FROM appointments WHERE id = ?"
                    ).bind(id).first();
 
-           if (!data) {
+      if (!data) {
               return jsonResp(404, {success: false, message: 'Appointment not found.' }, request);
-            }
-           
+             }
+            
         return jsonResp(200, { 
             success: true, 
             data: data,
-               }, request);\n          } catch (err) {\n           console.error('Get appointment error:', err);\n           return jsonResp(500, {success: false, message: 'Failed to retrieve appointment.' }, request);\n         }\n      }\
+                 }, request);
+          } catch (err) {
+           console.error('Get appointment error:', err);
+           return jsonResp(500, {success: false, message: 'Failed to retrieve appointment.' }, request);
+          }
+      }
 
+return jsonResp(400, {success: false, message: 'Invalid request. Use /list or /id endpoint.' }, request);
+} catch (err) {
+       console.error('GET bookings error:', err);
+       return jsonResp(500, {success: false, message: 'Database query failed.' }, request);
+      }
+   }
+
+/**
+ * Handle CORS preflight requests for Booking API     
+ * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
 return jsonResp(400, {success: false, message: 'Invalid request. Use /list or /id endpoint.' }, request);
 } catch (err) {
        console.error('GET bookings error:', err);

@@ -42,14 +42,15 @@ function getSessionToken(request) {
 }
 
 // get token from moliam_session cookie - uses secure parameterized binding with ? placeholders for safety
-const token = getSessionToken(request);
+  const token = getSessionToken(request);
+  
   if (!token) return jsonResp(401, { success: false, message: "Not authenticated." }, undefined, request);
 
     const db = env.MOLIAM_DB;
 
-         // Validate admin session via parameterized SELECT with ? binding - no SQL injection possible
-  const session = await db.prepare(
-       "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id=u.id WHERE s.token=? AND u.is_active=1 AND s.expires_at>datetime('now')"
+      // Validate admin session via parameterized SELECT with ? binding - no SQL injection possible
+      const session = await db.prepare(
+        "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id=u.id WHERE s.token=? AND u.is_active=1 AND s.expires_at>datetime('now')").bind(token).first();
 
 
     ).bind(token).first();
