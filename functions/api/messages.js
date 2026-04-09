@@ -99,20 +99,24 @@ function sanitizeAdminMessage(input, isAdmin = false) {
 async function authenticate(request, db) {
   if (!db) return null;
 
-        // Get token from moliam_session cookie for authentication - no SQL injection possible here
+    // Get token from moliam_session cookie for authentication - no SQL injection possible here
     const cookies = request.headers.get("Cookie") || "";
     const url = new URL(request.url);
 
-        // Extract token from URL query params or hash as fallback when cookie is not present
-    let tokenFromUrl = null;
+    // Extract token from URL query params or hash as fallback when cookie is not present
+    let token;
     try {
-      tokenFromUrl=(url.searchParams.get("token") || (url.hash.match(/token=([a-f0-9]+)/) || ["", ""])[1]).replace("?", "").trim();
-        } catch (e) {
-      tokenFromUrl=null;
-      }
+      token = url.searchParams.get('token') || "";
+      if (!token && /token=/.test(url.hash)) {
+        token = url.hash.replace('#', '').split('token=')[1]?.replace('&', '');
+       }
+     } catch (e) {
+      console.warn("Token extraction from URL failed:", e.message);
+      token = "";
+     }
 
     const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-  const token = tokenFromUrl || (cookieMatch ? cookieMatch[1] : null); // fixed parameterized binding
+    token = token || (cookieMatch ? cookieMatch[1] : null); // fixed parameterized binding
 
   if (!token) return null;
 

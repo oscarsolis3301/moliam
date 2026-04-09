@@ -16,28 +16,33 @@ export async function onRequestGet(context) {
       return jsonResp(503, { success: false, error: true, message: 'Database service unavailable.' }, request);
     }
 
-       // --- Parse token from query params or cookies ---
+    // --- Parse token from query params or cookies ---
     const url = new URL(request.url);
-    let tokenFromUrl = null;
+    let token;
     
     try {
-      tokenFromUrl=(url.searchParams.get("token") || (url.hash.match(/token=([a-f0-9]+)/) || ["", ""])[1]).replace("?", "").trim();
-     } catch (e) {
-      tokenFromUrl=null;
-     }
+      // Try to get token from URL search params
+      token = url.searchParams.get('token') || "";
+      if (!token && /token=/.test(url.pathname)) {
+        token = url.hash.replace('#', '').split('token=')[1]?.replace('&', '');
+      }
+    } catch (e) {
+      console.warn("Token extraction from URL failed:", e.message);
+    }
 
+    // Fall back to cookie extraction
     const cookies = request.headers.get('Cookie') || '';
     const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-    const token = tokenFromUrl || (cookieMatch ? cookieMatch[1] : null); // fixed parameterized binding
+    token = token || (cookieMatch ? cookieMatch[1] : null);
 
     if (!token) {
       return jsonResp(401, { success: false, error: true, message: "Authentication token required." }, request);
-     }
+       }
 
      // --- Session validation with parameterized query - uses ? binding to prevent SQL injection ---
     const session = await db.prepare(
-       "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND u.is_active = 1 AND s.expires_at > datetime('now')"),
-    ).bind(token).first();
+        "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1 AND s.expires_at > datetime('now')")
+      .bind(token).first();
 
     if (!session) {
       return jsonResp(401, { success: false, error: true, message: "Session invalid or expired." }, request);
