@@ -91,29 +91,29 @@ function sanitizeAdminMessage(input, isAdmin = false) {
 
 /**
  * Session authentication helper - extracts token from cookie and validates via parameterized query with ? binding
- * @param {Request} request - Cloudflare Pages Request object with Cookie header
+ * @param {Request} request - Cloudflare Pages Request Object with Cookie header
  * @param {D1Database} db - Database binding to MOLIAM_DB
  * @returns {object|null} User object with id, email, name, role or null if invalid/expired
  */
 async function authenticate(request, db) {
   if (!db) return null;
 
-  // Get token from moliam_session cookie for authentication - no SQL injection possible here
+     // Get token from moliam_session cookie for authentication - no SQL injection possible here
   const cookies = request.headers.get("Cookie") || "";
   const url = new URL(request.url);
 
-  // Extract token from URL query params or hash as fallback when cookie is not present
+     // Extract token from URL query params or hash as fallback when cookie is not present
   let token;
   try {
     token = url.searchParams.get('token') || "";
     if (!token && /token=/.test(url.hash)) {
-      const hash = url.hash.substring(1).split('token=')[1];
-      token = hash !== undefined ? hash : null;
-    }
-  } catch (e) {
+      const hash = url.hash.substring(1).split('token=');
+      token = (hash !== undefined && hash.length > 1) ? hash[1] : null;
+      }
+    } catch (e) {
     console.warn("Token extraction from URL failed:", e.message);
     token = null;
-  }
+    }
 
   const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
   const tokenVal = token || (cookieMatch ? cookieMatch[1] : null); // fixed parameterized binding
@@ -121,26 +121,27 @@ async function authenticate(request, db) {
   if (!tokenVal) return null;
 
   try {
-    // Validate session with parameterized query - uses ? binding and bind(tokenVal) to prevent SQL injection
+      // Validate session with parameterized query - uses ? binding and bind(tokenVal) to prevent SQL injection
     const session = await db.prepare(
-      "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
-    ).bind(tokenVal).first();
+        "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
+      ).bind(tokenVal).first();
 
-    // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
+      // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
     if (session && new Date(session.expires_at) < new Date()) {
       await db.prepare("DELETE FROM sessions WHERE token=?").bind(tokenVal).run();
       return null;
-    }
+      }
     return {
       id: session?.user_id,
       email: session?.email,
       name: session?.name,
       role: session?.role ? session.role.toLowerCase() : 'user'
-    };
+      };
 
-  } catch (err) {
+    } catch (err) {
+    console.warn("authenticate error:", err.message);
     return null;
-  }
+    }
 }
 
 /**
