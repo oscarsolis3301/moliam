@@ -21,15 +21,19 @@ import { jsonResp } from './api-helpers.js';
  * @returns {Response} JSON response with form_url, min_budget, preferred_timeline, support_industries
  */
 export async function onRequestGet(context) {
-  const { env } = context;
+  const { env, request } = context;
   const db = env.MOLIAM_DB;
 
+  try {
     // Return form metadata with proper CORS headers for moliam domains
-  if (!db) {
-     return jsonResp(200, { success: true, error: false, form_url: "/booking/prequalify.html", criteria: { min_budget: 2000, preferred_timeline: ["immediate", "within_week", "next_month"], support_industries: ["real_estate", "financial_services", "healthcare", "retail"] } }, request);
-  }
+    if (!db) {
+      return jsonResp(200, { success: true, message: "Form metadata retrieved successfully.", form_url: "/booking/prequalify.html", criteria: { min_budget: 2000, preferred_timeline: ["immediate", "within_week", "next_month"], support_industries: ["real_estate", "financial_services", "healthcare", "retail"] } }, request);
+    }
 
-  return jsonResp(200, { success: true, error: false, form_url: "/booking/prequalify.html", criteria: { min_budget: 2000, preferred_timeline: ["immediate", "within_week", "next_month"], support_industries: ["real_estate", "financial_services", "healthcare", "retail"] } }, request);
+    return jsonResp(200, { success: true, message: "Form metadata retrieved successfully.", form_url: "/booking/prequalify.html", criteria: { min_budget: 2000, preferred_timeline: ["immediate", "within_week", "next_month"], support_industries: ["real_estate", "financial_services", "healthcare", "retail"] } }, request);
+  } catch (err) {
+    return jsonResp(500, { success: false, error: true, message: "Failed to retrieve form metadata.", details: err.message }, request);
+  }
 }
 
 /**
