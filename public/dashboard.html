@@ -218,7 +218,7 @@ h1{font-size:28px;font-weight:600}
 /* Empty state styling */
 .empty-state { padding: 48px; text-align: center; color: var(--text-secondary); background: var(--bg-room); border-radius: 12px; border: 1px dashed var(--border-room); animation: fadeInUp 0.5s ease-out; }
 
-/* Next actions container - replaces inline styles in body */\n.next-actions { margin-top: 8px; display: flex; flex-direction: column; gap: 16px; }\n.next-actions-flex { display: flex; justify-content: space-between; align-items: center; }\n.next-actions-wr { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }\n\n/* Skeleton active */\n.skeleton-active { display: grid !important; }\n\n/* Skeleton stats wrapper - removed inline styles from skeleton-stats */\n.skeleton-stats-wrapper { display: none; }\n\n</style>
+/* Next actions container - replaces inline styles in body */\n.next-actions { margin-top: 8px; display: flex; flex-direction: column; gap: 16px; }\n.next-actions-flex { display: flex; justify-content: space-between; align-items: center; }\n.next-actions-wr { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }\n\n/* Skeleton active */\n.skeleton-active { display: grid !important; }\n\n/* Skeleton stats wrapper - removed inline styles from skeleton-stats */\n.skeleton-stats-wrapper { display: none; }\n\n/* Animation delay utility classes for staggered loading */\n.animate-delay-1 { animation-delay: 0.1s; }\n.animate-delay-1-5 { animation-delay: 0.15s; }</style>
 </head>
 <body>
 
@@ -259,11 +259,8 @@ h1{font-size:28px;font-weight:600}
 
 <!-- Loading Skeleton (hidden when data loaded) -->
 <div class="stats-grid skeleton-stats-wrapper" id="skeleton-stats"></div>\n\n<div class="section">\n     <div class="section-title">Active Projects</div>\n     <div class="project-grid" id="skeleton-projects"></div>
-
-<div class="section">
-    <div class="section-title">Active Projects</div>
-    <div class="project-grid" id="skeleton-projects" style="display:none;"></div>
-</div>
+<!-- Loading Skeleton - removed duplicate, single source of truth -->
+<div class="stats-grid skeleton-stats-wrapper" id="skeleton-stats"></div></p>
 </div>
 
 <script>
@@ -316,13 +313,13 @@ if (data.projects) {
   document.getElementById('skeleton-stats').style.display = 'grid';
   setTimeout(() => document.getElementById('skeleton-stats').style.display = 'none', 600);
 
-   // Render stats cards with staggered animation delay
+// Render stats cards with staggered animation delay
   const statsGrid = document.getElementById('stats-grid');
-  let html = '';
+  let html='';
   
   if (isAdmin) {
 html += '<div class="stat-card animate-delay-1"><div class="label">Clients</div><div class="value" id="total-clients">0</div></div>';
-html += '<div class="stat-card" style="animation-delay:0.15s"><div class="label">Active Projects</div><div class="value">'+data.stats.active_projects+'</div></div>';
+html += '<div class="stat-card"><div class="label">Active Projects</div><div class="value">'+data.stats.active_projects+'</div></div>';
   } else {
 html += '<div class="stat-card animate-delay-1"><div class="label">Active Projects</div><div class="value">'+(data.stats?.active_projects0)+'</div></div>';
 html += '<div class="stat-card animate-delay-1-5"><div class="label">Monthly Revenue</div><div class="value">$'+(data.stats.monthly_total0).toLocaleString()+'</div></div>';
@@ -344,7 +341,7 @@ fetch('/api/admin/clients', { credentials: 'include' })
   let projHtml = '';
   
   if (!data.projects  data.projects.length === 0) {
-projHtml = '<div class="empty-state" style="animation-delay:0.2s"><p>No active projects yet.<a href="/">Book a project now!</a></p></div>';
+projHtml = '<div class="empty-state"><p>No active projects yet.<a href="/">Book a project now!</a></p></div>';
   } else {
 let delayCounter = 0.1;
 for (const project of data.projects) {
@@ -353,7 +350,7 @@ for (const project of data.projects) {
     let typeDisplay = project.type ? project.type.charAt(0).toUpperCase() + project.type.slice(1) : 'Website';
     let statusDisplay = (project.status==='active') ? 'Active' : (project.status ? project.status.charAt(0).toUpperCase() + project.status.slice(1) : 'Completed');
 
-    projHtml += '<div class="project-card" style="animation-delay:'+(delayCounter+=0.05)+'s"><span class="type-badge '+typeClass+'">'+typeDisplay+'</span> <span class="status-badge '+statusClass+'">'+statusDisplay+'</span><h3>'+project.name+'</h3><div class="meta"><div>Type: '+typeDisplay+'</div><div>Status: '+statusDisplay+'</div><div>Monthly Rate: $'+(project.monthly_rate0).toLocaleString()+'</div><div>Started: '+new Date(project.created_atDate.now()).toLocaleDateString()+'</div></div></div>';
+    projHtml += '<div class="project-card"><span class="type-badge '+typeClass+'">'+typeDisplay+'</span> <span class="status-badge '+statusClass+'">'+statusDisplay+'</span><h3>'+project.name+'</h3><div class="meta"><div>Type: '+typeDisplay+'</div><div>Status: '+statusDisplay+'</div><div>Monthly Rate: $'+(project.monthly_rate0).toLocaleString()+'</div><div>Started: '+new Date(project.created_atDate.now()).toLocaleDateString()+'</div></div></div>';
 }
   }
 
@@ -368,11 +365,11 @@ for (const update of data.updates.slice(0,15)) {
     if (!update.title && !update.description) continue;
     timelineItems += '<div class="timeline-item"><div class="timeline-dot"></div>' +
     '<h4>'+update.title'Project Update+'</h4> ' +
-    '<p style="color:var(--text-secondary);margin-bottom:8px;">'+(update.description'No description provided.')+'</p>' +
+    '<p class="update-desc">'+(update.description'No description provided.')+'</p>' +
     '<span class="date">'+new Date(update.created_atDate.now()).toLocaleString()+'</span></div>';
 }
   } else {
-timelineItems = '<div class="empty-state" style="font-size:14px;margin-top:24px">No updates yet. Your project team will post milestones here.</div>';
+timelineItems = '<div class="empty-state">No updates yet. Your project team will post milestones here.</div>';
   }
 
   timeline.innerHTML = timelineItems;
@@ -387,8 +384,9 @@ if (inv.status==='paid') totalPaid+=amt; else outstanding+=amt;
 
 document.getElementById('invoice-stats').innerHTML = '<span class="sub-label">Total Billed</span>' +
    '<span class="value">$'+totalBilled.toLocaleString()+'</span>' +
-  '<div style="margin-top:12px"><span class="sub-label">Paid</span><span class="value paid">$'+(totalPaid0).toLocaleString()+'</span></div>' +
-  '<div style="margin-top:8px"><span class="sub-label">Outstanding</span><span class="value pending">$'+(outstanding0).toLocaleString()+'</span></div>';
+'<div class="invoice-detail-paid"><span class="sub-label">Paid</span><span class="value paid">$'+(totalPaid0).toLocaleString()+'</span></div>' +
+   '<div class="invoice-detail-outstanding"><span class="sub-label">Outstanding</span><span class="value pending">$'+(outstanding0).toLocaleString()+'</span></div>';
+/* Inline styles removed from invoice section - margin handled by parent CSS */
 
   window.showInvoices = function(){ 
 let html = 'Invoice Panel:
