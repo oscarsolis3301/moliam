@@ -1002,31 +1002,50 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
   // Make sure button has proper ARIA attributes
   fsBtn.setAttribute('aria-pressed', 'false');
 
-  fsBtn.addEventListener('click', function() {
-    const isFullscreen = !!document.fullscreenElement;
+  let isFullscreen = false;
+
+  function handleFullscreenClick() {
+    isFullscreen = !isFullscreen;
 
     if (isFullscreen) {
       document.exitFullscreen().then(function() {
         fsBtn.textContent = '🖥 Fullscreen';
         fsBtn.setAttribute('aria-pressed', 'false');
         announceToLiveRegion('Exited fullscreen mode');
-      });
-    } else {
-      document.getElementById('canvas').requestFullscreen().then(function() {
-        fsBtn.textContent = '⏹ Exit Fullscreen';
-        fsBtn.setAttribute('aria-pressed', 'true');
-        announceToLiveRegion('Entering fullscreen mode. Press Escape to exit.');
+        isFullscreen = false;
       }).catch(function() {
         // User denied or error, update button text anyway since canvas doesn't exist
         fsBtn.textContent = '⚠ Canvas not accessible';
+        isFullscreen = false;
         announceToLiveRegion('Fullscreen not available on this device');
       });
+    } else {
+      const canvasEl = document.getElementById('canvas');
+      if (!canvasEl) {
+        fsBtn.textContent = '⚠ Canvas not accessible';
+        isFullscreen = false;
+        announceToLiveRegion('Fullscreen not available - canvas missing');
+        return;
+      }
+      canvasEl.requestFullscreen().then(function() {
+        fsBtn.textContent = '⏹ Exit Fullscreen';
+        fsBtn.setAttribute('aria-pressed', 'true');
+        announceToLiveRegion('Entering fullscreen mode. Press Escape to exit.');
+      }).catch(function(err) {
+        console.error('Fullscreen error:', err);
+        fsBtn.textContent = '🖥 Fullscreen';
+        isFullscreen = false;
+        announceToLiveRegion('Unable to enter fullscreen mode');
+      });
     }
-  });
+  }
 
-  // Expose cleanup
+  const clickHandlerRef = handleFullscreenClick;
+  fsBtn.addEventListener('click', clickHandlerRef);
+
+  // Expose cleanup for this block - store ref separately for proper removal
   window.__moliam_cleanup_fullscreen__ = function() {
-    fsBtn.removeEventListener('click', fsBtn.addEventListener);
+    fsBtn.removeEventListener('click', clickHandlerRef);
   };
 })();
 
