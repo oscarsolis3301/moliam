@@ -8,5 +8,22 @@
 <link rel="stylesheet" href="/css/main.css">
 <script src="/js/lead-capture-widget.js"></script>
 <script src="/js/a11y-enhancements.js"></script>
+</head>
+<body>
+<header id="hud">
+<div class="left">
+<span class="logo">MOLIAMA AI</span>
+<span class="status-dot" aria-label="Online" role="img" aria-hidden="true"></span>
+</div>
+<nav class="center" role="navigation" aria-label="System controls">
+<button class="stat-block" id="refresh-status-btn" tabindex="0" role="button" aria-label="Refresh Status">⟳</button>
+</nav>
+<div class="right">
+<button class="fs-btn" id="fullscreen-toggle" tabindex="0" role="button" aria-label="Toggle fullscreen">⛶</button>
+</div>
+</header>
+<canvas id="canvas" role="application" aria-label="Real-time AI simulation visualization" tabindex="0"></canvas>
+<div id="popover" role="dialog" aria-hidden="true"></div>
+<div id="demo-badge" aria-hidden="true">Demo Mode</div>
 </body>
 </html>
