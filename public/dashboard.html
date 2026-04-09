@@ -285,7 +285,7 @@ h1{font-size:28px;font-weight:600}
     }
 
     function showAuthError() {
-  document.body.innerHTML = '<div style="text-align:center;padding:48px"><h2>Login Required</h2><a href="/login.html" class="btn">Go to Login →</a></div>';
+    document.body.innerHTML = '<div class="auth-error-message"><h2>Login Required</h2><a href="/login.html" class="btn">Go to Login →</a></div>';
     }
 
 // First verify authentication, then fetch dashboard
@@ -321,11 +321,11 @@ if (data.projects) {
   let html = '';
   
   if (isAdmin) {
-html += '<div class="stat-card" style="animation-delay:0.1s"><div class="label">Clients</div><div class="value" id="total-clients">0</div></div>';
+html += '<div class="stat-card animate-delay-1"><div class="label">Clients</div><div class="value" id="total-clients">0</div></div>';
 html += '<div class="stat-card" style="animation-delay:0.15s"><div class="label">Active Projects</div><div class="value">'+data.stats.active_projects+'</div></div>';
   } else {
-html += '<div class="stat-card" style="animation-delay:0.1s"><div class="label">Active Projects</div><div class="value">'+(data.stats?.active_projects0)+'</div></div>';
-html += '<div class="stat-card" style="animation-delay:0.15s"><div class="label">Monthly Revenue</div><div class="value">$'+(data.stats.monthly_total0).toLocaleString()+'</div></div>';
+html += '<div class="stat-card animate-delay-1"><div class="label">Active Projects</div><div class="value">'+(data.stats?.active_projects0)+'</div></div>';
+html += '<div class="stat-card animate-delay-1-5"><div class="label">Monthly Revenue</div><div class="value">$'+(data.stats.monthly_total0).toLocaleString()+'</div></div>';
   }
 
   statsGrid.innerHTML = html;
