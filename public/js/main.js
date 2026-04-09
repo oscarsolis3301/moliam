@@ -79,7 +79,6 @@ if (!isMobile && !prefersReducedMotion) {
 // Store listeners for cleanup
 let resizeHandler;
 let mediaQueryChangeHandler;
-let canvasResizeHandler;
 
 // Listen for mobile viewport changes and reduce-motion changes
 let currentMobile = isMobile;
@@ -1133,8 +1132,6 @@ window.__moliam_cleanup_main__ = function() {
   clearInterval(sparklineIntervalId || 0);
   window.removeEventListener('resize', resizeHandlerHQ);
   window.removeEventListener('resize', resizeHandler);
-  
-   // canvasResizeHandler was declared but never assigned - no listener to remove
   
   mediaQuery.removeEventListener('change', mediaQueryChangeHandler);
      // Add missing visibility handler cleanup for battery/CPU optimization
