@@ -1173,11 +1173,11 @@ window.__moliam_cleanup_main__ = function() {
     frameId = null;
   }
 
-  // CRITICAL FIX: Only remove canvas listeners if element exists
+  // CRITICAL FIX: Remove canvas listeners if element exists
   if (canvas && typeof canvasMouseMoveHandler !== 'undefined' && typeof canvasMouseLeaveHandler !== 'undefined') {
     try {
       canvas.removeEventListener('mousemove', canvasMouseMoveHandler);
-      canvas.addEventListener('mouseleave', canvasMouseLeaveHandler);
+      canvas.removeEventListener('mouseleave', canvasMouseLeaveHandler);
     } catch(e) {/* safe fail */}
   }
 
