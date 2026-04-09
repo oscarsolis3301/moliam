@@ -17,36 +17,39 @@ export async function onRequestGet(context) {
     }
 
     // --- Parse token from query params or cookies ---
-    const url = new URL(request.url);
-    let token;
+  const url = new URL(request.url);
+  let token = url.searchParams.get('token') || "";
     
+  if (!token) {
     try {
-      // Try to get token from URL search params
-      token = url.searchParams.get('token') || "";
-      if (!token && /token=/.test(url.pathname)) {
-        token = url.hash.replace('#', '').split('token=')[1]?.replace('&', '');
+      // Try to get token from URL hash fragment
+      const hashIdx = request.url.indexOf('#');
+      if (hashIdx > -1) {
+        const hash = request.url.substring(hashIdx + 1);
+        token = hash.startsWith('token=') ? hash.split('token=')[1] : "";
       }
-    } catch (e) {
-      console.warn("Token extraction from URL failed:", e.message);
+    } catch (urlErr) {
+      console.warn("Token extraction from URL fragment failed:", urlErr.message);
     }
+  }
 
-    // Fall back to cookie extraction
-    const cookies = request.headers.get('Cookie') || '';
-    const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-    token = token || (cookieMatch ? cookieMatch[1] : null);
+  // Fall back to cookie extraction
+  const cookies = request.headers.get('Cookie') || '';
+  const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
+  token = token || (cookieMatch ? cookieMatch[1] : null);
 
-    if (!token) {
-      return jsonResp(401, { success: false, error: true, message: "Authentication token required." }, request);
-       }
+  if (!token) {
+    return jsonResp(401, { success: false, error: true, message: "Authentication token required." }, request);
+   }
 
-     // --- Session validation with parameterized query - uses ? binding to prevent SQL injection ---
-    const session = await db.prepare(
-        "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1 AND s.expires_at > datetime('now')")
-      .bind(token).first();
+   // --- Session validation with parameterized query - uses ? binding to prevent SQL injection ---
+  const session = await db.prepare(
+        "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND u.is_active = 1 AND s.expires_at > datetime('now')") 
+     .bind(token).first();
 
-    if (!session) {
-      return jsonResp(401, { success: false, error: true, message: "Session invalid or expired." }, request);
-    }
+  if (!session) {
+    return jsonResp(401, { success: false, error: true, message: "Session invalid or expired." }, request);
+   }
 
     const isAdmin = session.role === 'admin' || session.role === 'superadmin';
 
@@ -121,15 +124,15 @@ export async function onRequestGet(context) {
 
    /******  ORIGINAL DASHBOARD CONTENTS ******/
 
-       // Get projects
+   // Get projects
       let projects;
       if (isAdmin) {
         const result = await db.prepare(
-                     `SELECT p.*, u.name as client_name, u.company as client_company
+                      `SELECT p.*, u.name as client_name, u.company as client_company
            FROM projects p JOIN users u ON p.user_id = u.id
            ORDER BY p.updated_at DESC`
-                   ).all();
-        projects = (result?.results || []));
+                    ).all();
+        projects = (result?.results || []);
       } else {
         const result = await db.prepare(
                         'SELECT * FROM projects WHERE user_id = ? ORDER BY updated_at DESC'
@@ -192,11 +195,16 @@ export async function onRequestGet(context) {
  * @returns {Response} 204 No Content with Access-Control headers for moliam.com and moliam.pages.dev domains
  */
 export async function onRequestOptions() {
-  const headers = {
-        'Access-Control-Allow-Origin': 'https://moliam.pages.dev',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Allow-Credentials': 'true'
-  };
-  return new Response(null, { status: 204, headers });
+  try {
+    const headers = {
+           'Access-Control-Allow-Origin': 'https://moliam.pages.dev',
+           'Access-Control-Allow-Methods': 'GET, OPTIONS',
+           'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+           'Access-Control-Allow-Credentials': 'true'
+     };
+      return new Response(null, { status: 204, headers });
+         } catch (err) {
+    return new Response(null, {status: 204});
+    }
 }
+
