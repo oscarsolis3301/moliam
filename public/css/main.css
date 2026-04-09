@@ -302,4 +302,37 @@ html, body {
   line-height: 1.6;
 }
 
+.moliam-cta-plain-text {
+  color: #9CA3AF;
+  margin-bottom: 32px;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.body-base {
+  margin: 0;
+  padding: 0;
+  background: rgba(11, 14, 20, 1);
+}
+
+.fieldset-padded {
+  margin-bottom: 16px;
+}
+
+.mobile-footer-copyright {
+  text-align: center;
+  padding: 24px;
+  font-size: 14px;
+  color: #9CA3AF;
+}
+
+.cta-buttons-centered {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 /* ═══════════════════════ END CSS ADDITIONS ════════════════════════ */
