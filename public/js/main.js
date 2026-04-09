@@ -170,9 +170,7 @@ window.moliamMainCleanup = function() {
     if (mediaQueryChangeHandler) mediaQuery.removeEventListener('change', mediaQueryChangeHandler);
      // Remove layout rooms resize handler (added line 243)
     if (layoutRoomsResizeHandler) window.removeEventListener('resize', layoutRoomsResizeHandler);
-    if (updateUptimeIntervalId) clearInterval(updateUptimeIntervalId);
-    if (sparklineIntervalId) clearInterval(sparklineIntervalId);
-    if (originalCleanup) originalCleanup();
+    if (updateUptimeIntervalId) clearInterval(updateUptimeIntervalId);\n    if (sparklineIntervalId) clearInterval(sparklineIntervalId);\n    if (frameId) cancelAnimationFrame(frameId);\n    if (originalCleanup) originalCleanup();
 };
 
 /* ACTIVITY FEED -- HQ CANVAS */
