@@ -869,14 +869,43 @@ addFeedItem('🌐 Website builder engine loaded', '#06B6D4');
 /* ─── FAQ ACCORDION ─── */
 (function() {
   const faqItems = document.querySelectorAll('.faq-item');
+  const faqListeners = []; // Store listeners for cleanup
+  
   faqItems.forEach(function(item) {
-    item.querySelector('.faq-question').addEventListener('click', function() {
+    const question = item.querySelector('.faq-question');
+    const handleClick = function() {
       const isActive = item.classList.contains('active');
-      faqItems.forEach(function(i) { i.classList.remove('active'); i.querySelector('.faq-question').setAttribute('aria-expanded', 'false'); });
-      if (!isActive) { item.classList.add('active'); this.setAttribute('aria-expanded', 'true'); }
-    });
+      faqItems.forEach(function(i) { 
+        i.classList.remove('active'); 
+        if (i.querySelector('.faq-question')) 
+          i.querySelector('.faq-question').setAttribute('aria-expanded', 'false'); 
+      });
+      if (!isActive) { 
+        item.classList.add('active'); 
+        question.setAttribute('aria-expanded', 'true'); 
+      }
+    };
+    
+    question.addEventListener('click', handleClick);
+    // Store reference for cleanup: [element, 'click', handler]
+    faqListeners.push({element: question, event: 'click', handler: handleClick, index: FAQAccordionIndex++});
   });
+  
+  // Expose cleanup function
+  window.__moliam_cleanup_faq__ = function() {
+    faqListeners.forEach(function(l) { 
+      if (l.element && l.handler) { 
+        l.element.removeEventListener(l.event, l.handler); 
+        delete l.element; 
+        delete l.handler; 
+      }
+    });
+    faqItems.length = 0; // Clear array reference
+    window['FAQAccordionIndex'] = undefined;
+  };
 })();
+
+let FAQAccordionIndex = 0; // Counter for unique listener tracking
 
 /* ─── SCROLL REVEAL (IntersectionObserver) ─── */
 (function() {
@@ -1093,15 +1122,20 @@ window.__moliam_cleanup_main__ = function() {
        // And hamburger menu cleanup:      
   if (typeof window.__moliam_cleanup_hamburger__ === 'function') {   window.__moliam_cleanup_hamburger__();}
 
-     // Call speed button cleanup
-  if (typeof window.__moliam_cleanup_speed_buttons__ === 'function') {
-    window.__moliam_cleanup_speed_buttons__();
-    }
+// Call speed button cleanup
+if (typeof window.__moliam_cleanup_speed_buttons__ === 'function') {
+  window.__moliam_cleanup_speed_buttons__();
+}
 
-     // Call fullscreen cleanup   
-  if (typeof window.__moliam_cleanup_fullscreen__ === 'function') {
-    window.__moliam_cleanup_fullscreen__();
-    }
+// Call FAQ accordion cleanup - prevent memory leaks from untracked listeners
+if (typeof window.__moliam_cleanup_faq__ === 'function') {
+  window.__moliam_cleanup_faq__();
+}
+
+// Call fullscreen cleanup    
+if (typeof window.__moliam_cleanup_fullscreen__ === 'function') {
+  window.__moliam_cleanup_fullscreen__();
+}
 };
 
 // Visibility change handler: pause animation when tab hidden to save battery/CPU
