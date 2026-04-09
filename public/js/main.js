@@ -121,6 +121,7 @@ const sparkCanvas = $('#sparkline');
 const sparkCtx = sparkCanvas.getContext('2d');
 const sparkData = new Array(30).fill(0);
 let sparkIdx = 0;
+let sparklineIntervalId; // declare early for cleanup access
 
 function drawSparkline() {
   const W = sparkCanvas.width = sparkCanvas.offsetWidth * 2;
@@ -163,10 +164,12 @@ try {
 window.moliamMainCleanup = window.moliamMainCleanup || (() => {});
 const originalCleanup = window.moliamMainCleanup;
 window.moliamMainCleanup = function() {
-      // Remove resize listener (was added on line 99 with window.addEventListener('resize', resizeHandler))
+        // Remove resize listener (was added on line 99 with window.addEventListener('resize', resizeHandler))
     if (resizeHandler) window.removeEventListener('resize', resizeHandler);
-      // Remove media query change listener (was added on line 115 with mediaQuery.addEventListener('change', mediaQueryChangeHandler))  
+        // Remove media query change listener (was added on line 115 with mediaQuery.addEventListener('change', mediaQueryChangeHandler))   
     if (mediaQueryChangeHandler) mediaQuery.removeEventListener('change', mediaQueryChangeHandler);
+     // Remove layout rooms resize handler (added line 243)
+    if (layoutRoomsResizeHandler) window.removeEventListener('resize', layoutRoomsResizeHandler);
     if (updateUptimeIntervalId) clearInterval(updateUptimeIntervalId);
     if (sparklineIntervalId) clearInterval(sparklineIntervalId);
     if (originalCleanup) originalCleanup();

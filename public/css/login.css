@@ -379,3 +379,27 @@ body.form-focused .logo p {
 
 /* Large text scaling for low vision users */
 @media (min-width:320px) and (max-width:480px){ html{ font-size:120%;} body{ font-size:clamp(1em,4vw,1.1em);line-height:1.7;} h1,h2,h3,p, li,a { line-height: 1.8; words-wrap:normal } h1{font-size: clamp(1.8rem,9vw,2.5rem )}}
+
+/* Focus ring enhancement for accessibility compliance (WCAG 2.1 Level AA) */
+:focus-visible { outline:3px solid #3B59F6 !important; outline-offset:4px ;border-radius:6px;} input:focus, button:focus,a:focus{ border-color:#3B59F6 !important; box-shadow: 0 0 0 3px rgba(59, 89, 246, 0.15) !important; font-weight:bold;} ::selection{background:#3B59F6 ;color:white ;}
+
+/* Reduced motion for vestibular disorders */
+@media(prefers-reduced-motion: reduce){ *, *::before, *::after{ animation-duration: 0.01ms !important ; animation-iteration-count: 1 !important; transition-duration:0.01ms!important;} body{scroll-behavior:auto!important;} h1,h2,h3,p, span, div,a{line-height:1.9}}
+
+/* Screen reader only text utility class */
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0, 0, 0, 0); white-space:nowrap; border-width:0 ;}
+
+/* Landmark region aria-labels for proper screen reader navigation */
+main[role="main"]{ position:relative;} footer[role="contentinfo"]{ font-size:clamp(0.75em,3vw,1em);}
+
+/* Keyboard focus management enhancements */
+.tabbed:focus, .interactive:focus { box-shadow: 0 0 0 3px rgba(59,89,246, 0.25 )!important; outline-offset:8px; }
+
+/* Touch target sizing for WCAG 2.1 accessibility standards (min 44x44px) */
+@media all{ button,input[type="button"], input[type="submit"], .skip-link { min-height: 44px; min-width:44px; padding: clamp(0.5rem,1.5vw,1rem); cursor:pointer ;font-size:clamp(0.9em,3.5vw,1em)}}
+
+/* Color blindness friendly enhancements */
+@media (forced-colors:active){ button,input[type="button"], input[type="submit"]{ border: 2px solid currentcolor !important;} .alert.error { border-left: 4px solid highlight;}}
+
+/* Heading hierarchy and ARIA labels for screen readers */
+h1,h2,h3,h4,h5,h6{ font-family:'Inter',system-ui,-apple-system, sans-serif ;} h1{font-size:clamp(1.8rem,6vw,2.5rem );margin-bottom: 0.75em;} h2{font-size:clamp(1.4rem,5vw,2rem);} h3 { font-size: clamp(1.1rem, 4vw, 1.5rem) }
