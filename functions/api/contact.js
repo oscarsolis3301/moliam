@@ -237,24 +237,3 @@
    237|   237|    // Webhook failure is never fatal
    238|   238|  }
    239|   239|
-   240|   240|  const socials = {
-   241|   241|   website: (data.website || "").trim(),
-   242|   242|   gbp: (data.gbp || "").trim(),
-   243|   243|   facebook: (data.facebook || "").trim(),
-   244|   244|   instagram: (data.instagram || "").trim(),
-   245|   245|   yelp: (data.yelp || "").trim(),
-   246|   246| };
-   247|   247| await sendWebhook(env, { name, email, phone, company, message, service: data.service, score, category, subId, socials });
-   248|   248|}
-   249|   249|
-   250|   250|/**
-   251|   251| * Generate SHA256 hash of string for IP/user identification and rate limiting
-   252|   252| * Uses Web Crypto API (subtle digest) for SHA-256 computation
-   253|   253| * @param {string} str - String to hash
-   254|   254| * @returns {Promise<string>} Hex representation of SHA-256 hash (lowercase, 64 chars)
-   255|   255| */
-   256|   256|async function hashSHA256(str) {
-   257|   257|  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
-   258|   258|  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
-   259|   259|}
-   260|   260|

@@ -78,17 +78,7 @@
     78| * Validate required field presence with custom error messages
     79| * @param {object} data - Object containing fields to validate
     80| * @param {Array<{key: string, required: boolean, min?: number, max?: number, customError?: string}>} fields - Array of validation rules
-    81| * @returns {{valid: boolean, errors: object<string, string>}} Validation result
-    82| */
-    83|
 
-/**
- * Slice text to maximum length with ellipsis if truncated
- * @param {string} str - Text to slice
- * @param {number} maxLen - Maximum character length (default: 1024)
- * @returns {string} Sliced text with ellipsis if truncated, or original if under max
- */
-export function sliceText(str, maxLen = 1024) {
   const text = String(str || "");
   if (text.length <= maxLen) return text;
   return text.slice(0, maxLen - 3) + '\u2026'; // Use unicode ellipsis character

@@ -10,81 +10,86 @@ import { jsonResp } from '../lib/api-helpers.js';
 
 export async function onRequestGet(context) {
   const { request, env } = context;
-  const urlObj = new URL(request.url);
-  const db = env.MOLIAM_DB;
 
-  // --- Get and validate query params ---
-  let inputUrl = urlObj.searchParams.get("url");
-  const sizeStr = urlObj.searchParams.get("size") || "256";
-  let colorHex = urlObj.searchParams.get("color") || "#000000";
+  try {
+    const urlObj = new URL(request.url);
+    const db = env.MOLIAM_DB;
 
-   // Validate URL is present and not empty
-  if (!inputUrl) {
-    return jsonResp(400, { success: false, error: true, message: "Missing 'url' query parameter" }, request);
-  }
+       // --- Get and validate query params ---
+    let inputUrl = urlObj.searchParams.get("url");
+    const sizeStr = urlObj.searchParams.get("size") || "256";
+    let colorHex = urlObj.searchParams.get("color") || "#000000";
 
-  inputUrl = inputUrl.trim();
-  if (inputUrl.length < 1 || inputUrl.length > 2000) {
-    return jsonResp(400, { success: false, error: true, message: "URL must be between 1 and 2000 characters" }, request);
+      // Validate URL is present and not empty
+    if (!inputUrl) {
+      return jsonResp(400, { success: false, error: true, message: "Missing 'url' query parameter" }, request);
      }
 
-   // Validate size
-  let modulesPerSide;
-  if (!/^\d+$/.test(sizeStr)) {
-    return jsonResp(400, { success: false, error: true, message: "Invalid 'size' parameter — must be a positive integer" }, request);
-     }
-  const size = parseInt(sizeStr, 10);
-  if (size < 128 || size > 2048) {
-    return jsonResp(400, { success: false, error: true, message: "Size must be between 128 and 2048 pixels" }, request);
-     }
-
-   // Parse and validate color - convert hex to proper format
-  if (!/^[#]?[0-9a-fA-F]{6}$/.test(colorHex)) {
-    return jsonResp(400, { success: false, error: true, message: "Invalid 'color' parameter — must be 6-digit hex like #3B82F6" }, request);
-     }
-
-   // --- Rate limiting (D1) ---
-  if (db) {
-    try {
-      const ip = request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for") || "unknown";
-      const ipHash = await hashSHA256(ip);
-
-      const rl = await db.prepare(
-        "SELECT request_count, window_start FROM rate_limits WHERE hash_ip = ?"
-      ).bind(ipHash).first();
-
-      if (rl) {
-        const windowAge = Date.now() - new Date(rl.window_start).getTime();
-        if (windowAge < 360000 && rl.request_count >= 30) {
-          return sendRateLimited(inputUrl, size, colorHex, db, ipHash);
+    inputUrl = inputUrl.trim();
+    if (inputUrl.length < 1 || inputUrl.length > 2000) {
+      return jsonResp(400, { success: false, error: true, message: "URL must be between 1 and 2000 characters" }, request);
         }
-        if (windowAge < 360000) {
-          await db.prepare("UPDATE rate_limits SET request_count = request_count + 1 WHERE hash_ip = ?").bind(ipHash).run();
-        } else {
-          await db.prepare("UPDATE rate_limits SET request_count = 1, window_start = datetime('now') WHERE hash_ip = ?").bind(ipHash).run();
+
+      // Validate size
+    let modulesPerSide;
+    if (!/^\d+$/.test(sizeStr)) {
+      return jsonResp(400, { success: false, error: true, message: "Invalid 'size' parameter — must be a positive integer" }, request);
         }
-      } else {
-        await db.prepare(
-          "INSERT INTO rate_limits (hash_ip, request_count, window_start, last_request_timestamp) VALUES (?, 1, datetime('now'), datetime('now'))"
-        ).bind(ipHash).run();
-      }
-    } catch {
-      // Rate limiting table might not exist — skip, don't fail the request
-    }
+    const size = parseInt(sizeStr, 10);
+    if (size < 128 || size > 2048) {
+      return jsonResp(400, { success: false, error: true, message: "Size must be between 128 and 2048 pixels" }, request);
+        }
+
+      // Parse and validate color - convert hex to proper format
+    if (!/^[#]?[0-9a-fA-F]{6}$/.test(colorHex)) {
+      return jsonResp(400, { success: false, error: true, message: "Invalid 'color' parameter — must be 6-digit hex like #3B82F6" }, request);
+        }
+
+      // --- Rate limiting (D1) ---
+    if (db) {
+      try {
+        const ip = request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for") || "unknown";
+        const ipHash = await hashSHA256(ip);
+
+        const rl = await db.prepare(
+           "SELECT request_count, window_start FROM rate_limits WHERE hash_ip = ?"
+         ).bind(ipHash).first();
+
+        if (rl) {
+          const windowAge = Date.now() - new Date(rl.window_start).getTime();
+          if (windowAge < 360000 && rl.request_count >= 30) {
+            return sendRateLimited(inputUrl, size, colorHex, db, ipHash);
+           }
+          if (windowAge < 360000) {
+            await db.prepare("UPDATE rate_limits SET request_count = request_count + 1 WHERE hash_ip = ?").bind(ipHash).run();
+           } else {
+            await db.prepare("UPDATE rate_limits SET request_count = 1, window_start = datetime('now') WHERE hash_ip = ?").bind(ipHash).run();
+           }
+         } else {
+          await db.prepare(
+             "INSERT INTO rate_limits (hash_ip, request_count, window_start, last_request_timestamp) VALUES (?, 1, datetime('now'), datetime('now'))"
+           ).bind(ipHash).run();
+         }
+       } catch {
+         // Rate limiting table might not exist — skip, don't fail the request
+       }
+     }
+
+      // --- Generate QR Code ---
+    const svgCode = generateQRCodeSVG(inputUrl, size, colorHex);
+
+    // Send SVG response with proper headers
+    return new Response(svgCode, {
+      status: 200,
+      headers: {
+         "Content-Type": "image/svg+xml",
+         "Cache-Control": "public, max-age=86400",
+         "Access-Control-Allow-Origin": "*",
+       },
+     });
+   } catch (err) {
+    return jsonResp(500, { success: false, error: true, message: "Failed to generate QR code.", details: err.message }, request);
   }
-
-  // --- Generate QR Code ---
-  const svgCode = generateQRCodeSVG(inputUrl, size, colorHex);
-
-  // Send SVG response with proper headers
-  return new Response(svgCode, {
-    status: 200,
-    headers: {
-      "Content-Type": "image/svg+xml",
-      "Cache-Control": "public, max-age=86400",
-      "Access-Control-Allow-Origin": "*",
-    },
-  });
 }
 
 /**

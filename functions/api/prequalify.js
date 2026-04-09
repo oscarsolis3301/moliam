@@ -21,15 +21,19 @@ import { jsonResp } from './api-helpers.js';
  * @returns {Response} JSON response with form_url, min_budget, preferred_timeline, support_industries
  */
 export async function onRequestGet(context) {
-  const { env } = context;
+  const { env, request } = context;
   const db = env.MOLIAM_DB;
 
+  try {
     // Return form metadata with proper CORS headers for moliam domains
-  if (!db) {
-     return jsonResp(200, { success: true, error: false, form_url: "/booking/prequalify.html", criteria: { min_budget: 2000, preferred_timeline: ["immediate", "within_week", "next_month"], support_industries: ["real_estate", "financial_services", "healthcare", "retail"] } }, request);
-  }
+    if (!db) {
+      return jsonResp(200, { success: true, message: "Form metadata retrieved successfully.", form_url: "/booking/prequalify.html", criteria: { min_budget: 2000, preferred_timeline: ["immediate", "within_week", "next_month"], support_industries: ["real_estate", "financial_services", "healthcare", "retail"] } }, request);
+    }
 
-  return jsonResp(200, { success: true, error: false, form_url: "/booking/prequalify.html", criteria: { min_budget: 2000, preferred_timeline: ["immediate", "within_week", "next_month"], support_industries: ["real_estate", "financial_services", "healthcare", "retail"] } }, request);
+    return jsonResp(200, { success: true, message: "Form metadata retrieved successfully.", form_url: "/booking/prequalify.html", criteria: { min_budget: 2000, preferred_timeline: ["immediate", "within_week", "next_month"], support_industries: ["real_estate", "financial_services", "healthcare", "retail"] } }, request);
+  } catch (err) {
+    return jsonResp(500, { success: false, error: true, message: "Failed to retrieve form metadata.", details: err.message }, request);
+  }
 }
 
 /**
@@ -190,13 +194,8 @@ async function generateBooking(context, prequalId) {
         .prepare("INSERT INTO appointments (prequalification_id, calendar_link, status, scheduled_with) VALUES (?, ?, 'pending', ?)")
         .bind(prequalId, personalizedLink, context.env.ADMIN_EMAIL || "hello@moliam.com").run();
 
-       // Send booking confirmation email to qualified lead with priority access 
+// Send booking confirmation email to qualified lead with priority access 
      await sendBookingConfirmationEmail(context, prequal, personalizedLink);
-
-       // Auto-schedule initial demo slot within 30-day window from today
-     const targetDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // Next week
-
-    console.log(`Auto-generated booking #${bookingRef} for qualified lead: ${prequal.id}`);
     return { 
       booking_ref: bookingRef,
       schedule_url: personalizedLink,
