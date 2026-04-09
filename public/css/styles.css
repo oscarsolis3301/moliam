@@ -660,3 +660,29 @@ footer {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Mobile section styles - inline style extraction */
+.moliam-cta-plain-text {
+  color: #9CA3AF;
+  margin-top: 32px;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.cta-buttons-row-center {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.mobile-footer-copyright {
+  text-align: center;
+  padding: 24px;
+  font-size: 14px;
+  color: #9CA3AF;
+}
+
+/* Ensure mobile forms don't have inline styles - use classes from above */
