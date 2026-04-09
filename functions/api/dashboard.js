@@ -19,14 +19,14 @@ export async function onRequestGet(context) {
     // --- Parse token from query params or cookies ---
   const url = new URL(request.url);
   let token = url.searchParams.get('token') || "";
-    
+  
   if (!token) {
     try {
       // Try to get token from URL hash fragment
       const hashIdx = request.url.indexOf('#');
       if (hashIdx > -1) {
         const hash = request.url.substring(hashIdx + 1);
-        token = hash.startsWith('token=') ? hash.split('token=')[1] : "";
+        token = hash.split('token=')[1] || "";
       }
     } catch (urlErr) {
       console.warn("Token extraction from URL fragment failed:", urlErr.message);
