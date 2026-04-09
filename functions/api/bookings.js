@@ -24,51 +24,47 @@ export async function onRequestGet(context) {
             FROM appointments a
             LEFT JOIN prequalifications p ON a.prequalification_id = p.id
              LEFT JOIN submissions s ON p.submission_id = s.id
-            ORDER BY a.scheduled_at DESC
-            LIMIT 50`).all();
+            ORDER BY a.scheduled_at DESC`).limit(50).all();
 
         return jsonResp(200, { 
           success: true, 
           data: data 
              }, request);
-      } catch (err) {
-        console.error('List bookings error:', err);
+       } catch (err) {
         return jsonResp(500, { error: true, success: false, message: 'Failed to retrieve appointments.' }, request);
-      }
-    }
+       }
+     }
 
-    // Get specific appointment by ID
+     // Get specific appointment by ID
     const path = context.request.url.split('/api/appointments/')[1];
     if (path) {
       try {
         const id = parseInt(path);
         if (isNaN(id)) {
           return jsonResp(400, { error: true, success: false, message: 'Invalid appointment ID format.' }, request);
-              }
-              
+               }
+               
         const data = await db.prepare(
-                   "SELECT * FROM appointments WHERE id = ?"
-                 ).bind(id).first();
+                    "SELECT * FROM appointments WHERE id = ?"
+                  ).bind(id).first();
 
         if (!data) {
           return jsonResp(404, { error: true, success: false, message: 'Appointment not found.' }, request);
-              }
-        
+               }
+          
         return jsonResp(200, { 
           success: true, 
           data: data 
              }, request);
-      } catch (err) {
-        console.error('Get appointment error:', err);
+       } catch (err) {
         return jsonResp(500, { error: true, success: false, message: 'Failed to retrieve appointment.' }, request);
-      }
-    }
+       }
+     }
 
 return jsonResp(400, { error: true, success: false, message: 'Invalid request. Use /list or /id endpoint.' }, request);
-   } catch (err) {
-       console.error('GET bookings error:', err);
+    } catch (err) {
        return jsonResp(500, { error: true, success: false, message: 'Database query failed.' }, request);
-   }
+    }
 }
 
 // CORS preflight for all booking endpoints
