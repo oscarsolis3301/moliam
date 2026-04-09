@@ -13,14 +13,4 @@ window.addEventListener('resize', function() {
 	}
 });
 
-// Start initialization when DOM is ready
-if(document.readyState === 'loading') {
-	document.addEventListener('DOMContentLoaded', function() {
-		if(typeof initBots === 'function') {
-			initBots();
-		}
-		if(typeof resize === 'function') {
-			resize();
-		}
-	});
-}
+
