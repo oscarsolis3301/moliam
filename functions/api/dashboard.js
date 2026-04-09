@@ -19,13 +19,15 @@ export async function onRequestGet(context) {
     // --- Parse token from query params or cookies ---
   const cookies = request.headers.get("Cookie") || "";
   const url = new URL(request.url);
-  
+
    // Extract token from URL query params or hash as fallback when cookie is not present
   let tokenFromUrl = "";
   try {
-    tokenFromUrl = url.searchParams.get("token") || (url.hash.match(/token=([^&]+)/)?.[1] || "");
-     } catch (e) { tokenFromUrl = ""; }
-  
+    tokenFromUrl = url.searchParams.get("token") || (url.hash.match(/token=([a-f0-9]+)/) || "")?.[1] || "";
+  } catch (e) {
+    tokenFromUrl = "";
+  }
+
   const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
   const token = tokenFromUrl || cookieMatch?.[1];
 

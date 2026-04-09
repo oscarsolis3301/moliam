@@ -72,22 +72,23 @@ function sanitizeAdminMessage(input, isAdmin = false) {
   }
 
   const text = String(input).trim();
-
-  // Strip HTML tags
-  let cleanText = text.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-
-  if (cleanText.length > maxLength) {
-    return { valid: false, error: `Message exceeds maximum length of ${maxLength} characters.`, value: cleanText.slice(0, maxLength) };
+  } else {
+      // Fallback: regex strip HTML entities and tags
+      cleanText = text.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
   }
 
-  const trimmed = cleanText.length > maxLength ? cleanText.slice(0, maxLength).trim() : cleanText;
+  } catch (e) {
+    cleanText = text.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  }
+
+  // Trim to 500 chars if over limit but still keep portion
+  const trimmed = cleanText.length > 500 ? cleanText.slice(0, 500).trim() : cleanText;
 
   if (!trimmed) {
     return { valid: false, error: "Message cannot be empty." };
   }
 
   return { valid: true, value: trimmed };
-}
 
 // Session authentication helper - extracts token from cookie and validates via parameterized query with ? binding
 /**
@@ -99,17 +100,16 @@ function sanitizeAdminMessage(input, isAdmin = false) {
 async function authenticate(request, db) {
   if (!db) return null;
 
-  // Get token from moliam_session cookie for authentication - no SQL injection possible here
   const cookies = request.headers.get("Cookie") || "";
   const url = new URL(request.url);
 
-  // Extract token from URL query params or hash as fallback when cookie is not present
+    // Extract token from URL query params or hash as fallback when cookie is not present
   let tokenFromUrl = "";
   try {
-    tokenFromUrl = url.searchParams.get("token") || (url.hash.match(/token=([^&]+)/)?.[1] || "");
-  } catch (e) {
+    tokenFromUrl = url.searchParams.get("token") || (url.hash.match(/token=([a-f0-9]+)/) || "")?.[1] || "";
+   } catch (e) {
     tokenFromUrl = "";
-  }
+   }
 
   const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
   const token = tokenFromUrl || cookieMatch?.[1];
@@ -117,19 +117,17 @@ async function authenticate(request, db) {
   if (!token) return null;
 
   try {
-    // Validate session with parameterized query - uses ? binding and bind(token) to prevent SQL injection
+     // Validate session with parameterized query - uses ? binding and bind(token) to prevent SQL injection
     const session = await db.prepare(
-      "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
-    ).bind(token).first();
+       "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
+     ).bind(token).first();
 
-    if (!session) return null;
-
-    // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
+     // Delete stale tokens and return null if session expired
     if (new Date(session.expires_at) < new Date()) {
-      await db.prepare("DELETE FROM sessions WHERE token=?").run();
+      await db.prepare("DELETE FROM sessions WHERE token=?").bind(token).run();
       return null;
-    }
-    return {
+      }
+     return {
       id: session.user_id,
       email: session.email,
       name: session.name,

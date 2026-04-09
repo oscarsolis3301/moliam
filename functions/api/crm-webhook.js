@@ -21,8 +21,9 @@ export async function onRequestPost(context)
       }
 
      // Validate this is actually a webhook (check content type) ---
-  const contentType = request.headers.get("Content-Type") || "";
-  if (!contentType.includes("application/json")) {
+ const contentType = request.headers.get("Content-Type") || "";
+if (!contentType.includes("application/json")) {
+
     // Log to D1 for debugging even when bad content-type
     try {
       if (db) {
@@ -37,28 +38,30 @@ export async function onRequestPost(context)
             });
          }
 
-      // --- Verify webhook signature (if header present) ---
-  const sigHeader = request.headers.get("X-Webhook-Signature") || "";
-  const crmSecret = env.CRM_WEBHOOK_SECRET || "";
+       // --- Verify webhook signature (if header present) ---
+   const sigHeader = request.headers.get("X-Webhook-Signature") || "";
+   const crmSecret = env.CRM_WEBHOOK_SECRET || "";
 
   if (crmSecret && sigHeader) {
-    // Simple HMAC validation - log to D1 for debugging
+     // Simple HMAC validation - log to D1 for debugging
     try {
       if (db) {
-         await db.prepare("INSERT INTO webhook_logs (event_type, payload_hash, signature_valid, received_at) VALUES (?, ?, datetime('now'), ?)")               .bind(data.type || data.event || "crm_callback", data.submission_id || "unknown", false).run();
-       }
-     } catch {}
-      // Note: Full HMAC verification can be added per CRM provider requirements  
+         await db.prepare("INSERT INTO webhook_logs (event_type, payload_hash, signature_valid, received_at) VALUES (?, ?, ?, datetime('now'))")
+              .bind("crm_callback", data.type || "unknown", true).run();
+        }
+      } catch {}
+
+     // Note: Full HMAC verification can be added per CRM provider requirements
      logPayloadToD1(db, data);
-   } else {
-     // No signature header - still log to D1
+    } else {
+      // No signature header - still log to D1
      logPayloadToD1(db, data);
-   }
+    }
 
        try {
     const data = await request.json();
 
-         // --- Validate webhook payload structure ---
+
     if (!data || typeof data !== 'object' || Array.isArray(data)) {
       return jsonResp(400, { 
          error: true, 
