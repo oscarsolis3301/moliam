@@ -168,6 +168,7 @@ window.moliamMainCleanup = function() {
       // Remove media query change listener (was added on line 115 with mediaQuery.addEventListener('change', mediaQueryChangeHandler))  
     if (mediaQueryChangeHandler) mediaQuery.removeEventListener('change', mediaQueryChangeHandler);
     if (updateUptimeIntervalId) clearInterval(updateUptimeIntervalId);
+    if (sparklineIntervalId) clearInterval(sparklineIntervalId);
     if (originalCleanup) originalCleanup();
 };
 
