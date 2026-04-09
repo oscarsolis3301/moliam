@@ -1097,7 +1097,45 @@ window.__moliam_cleanup_main__ = function() {
   if (typeof window.__moliam_cleanup_fullscreen__ === 'function') {
     window.__moliam_cleanup_fullscreen__();
   }
+};window.__moliam_cleanup_main__ = function() {
+  clearInterval(updateUptimeIntervalId || 0);
+  clearInterval(sparklineIntervalId || 0);
+  clearInterval(statusPanelIntervalId || 0);
+  window.removeEventListener('resize', resizeHandlerHQ);
+  window.removeEventListener('resize', resizeHandler);
+    // canvasResizeHandler was declared but never assigned - no listener to remove
+   // Add missing visibility handler cleanup for battery/CPU optimization
+  if (window.__moliam_visibility_handler) {
+    document.removeEventListener('visibilitychange', window.__moliam_visibility_handler);
+    delete window.__moliam_visibility_handler;
+   }
+        
+  mediaQuery.removeEventListener('change', mediaQueryChangeHandler);
+     // Add missing mouse event cleanup here:
+     canvas.removeEventListener('mousemove', canvasMouseMoveHandler);
+  canvas.removeEventListener('mouseleave', canvasMouseLeaveHandler);
+      // And hamburger menu cleanup:     
+  if (typeof window.__moliam_cleanup_hamburger__ === 'function') {   window.__moliam_cleanup_hamburger__();}
+
+    // Call speed button cleanup
+  if (typeof window.__moliam_cleanup_speed_buttons__ === 'function') {
+    window.__moliam_cleanup_speed_buttons__();
+   }
+
+    // Call fullscreen cleanup   
+  if (typeof window.__moliam_cleanup_fullscreen__ === 'function') {
+    window.__moliam_cleanup_fullscreen__();
+   }
 };
 
-})();
+// Visibility change handler: pause animation when tab hidden to save battery/CPU
+window.__moliam_visibility_handler = function() {
+  if (document.hidden) {
+    cancelAnimationFrame(frameId); // Pause when invisible
+  } else {
+    frameId = requestAnimationFrame(mainLoop); // Resume when visible
+  }
+};
+document.addEventListener('visibilitychange', window.__moliam_visibility_handler);
 
+})();
