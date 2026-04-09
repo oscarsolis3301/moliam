@@ -132,11 +132,20 @@ export async function onRequestPost(context) {
    }
 
   try {
-    const res = await db.prepare(`
-       INSERT INTO prequalifications 
+    const res = await db.prepare(`INSERT INTO prequalifications 
          (submission_id, budget_range, max_budget, timeline_urgency, project_start_date, 
           primary_industry, current_stack, pain_points, qualification_score, calendar_access_granted)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)\n       .bind(\n        submission_id || null,\n        budget_range || 'unknown',\n        max_budget || null,\n        timeline_urgency || 'flexible',\n        project_start_date || null,\n        primary_industry || 'unknown',\n        current_stack || '',\n        pain_points || '',\n        score,\n        calendarAccessGranted)\n       .run();
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(
+        submission_id || null,
+        budget_range || 'unknown',
+        max_budget || null,
+        timeline_urgency || 'flexible',
+        project_start_date || null,
+        primary_industry || 'unknown',
+        current_stack || '',
+        pain_points || '',
+        score,
+        calendarAccessGranted).run();
 
     const prequalId = res.meta.last_row_id;
 
