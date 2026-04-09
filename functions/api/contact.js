@@ -6,6 +6,11 @@
 
 import { jsonResp, validateEmail, validatePhone, sanitizeText, calculateLeadScore } from './api-helpers.js';
 
+/** Helper: consistent JSON error wrapper for all API responses - returns proper {success, error, message|data} format */
+function ensureError(status, message, request) {
+  return jsonResp(status, { success: false, error: message }, request);
+}
+
 /**
  * Handle POST requests to contact form endpoint
  * @param {object} context - Cloudflare Pages function context with request and env

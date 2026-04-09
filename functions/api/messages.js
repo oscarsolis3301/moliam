@@ -103,16 +103,17 @@ async function authenticate(request, db) {
   const url = new URL(request.url);
 
   // Extract token from cookie or query params
+  // Extract token from cookie or query params  
   const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
   let tokenVal = cookieMatch ? cookieMatch[1] : null;
 
-  // Also check query string if not in cookie
-  if (!tokenVal) {
+       // Also check query string if not in cookie
+      if (!tokenVal) {
     const query = url.searchParams.get('token');
     if (query && query.length > 20) {
       tokenVal = query;
-       }
-     }
+        }
+      }
 try {
    // Validate session with parameterized query - uses ? binding to prevent SQL injection
     const session = await db.prepare(
@@ -122,8 +123,9 @@ try {
     if (!session) return null;
 
 // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
+     // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation  
     if (new Date(session.expires_at) < new Date()) {
-      await db.prepare("DELETE FROM sessions WHERE token=?").bind(tokenVal).run();
+      await db.prepare("DELETE FROM sessions WHERE token=?").bind().run();
       return null;
          }
 
