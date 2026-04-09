@@ -17,7 +17,7 @@ export async function onRequestGet(context) {
     const { request, env } = context;
     
     if (!env.MOLIAM_DB) {
-      return jsonResp(503, { error: true, success: false, message: 'Database service unavailable.' }, request);
+      return jsonResp(503, {success: false, message: 'Database service unavailable.' }, request);
     }
     
     const db = env.MOLIAM_DB;
@@ -40,7 +40,7 @@ export async function onRequestGet(context) {
              }, request);
       } catch (err) {
         console.error('List bookings error:', err);
-        return jsonResp(500, { error: true, success: false, message: 'Failed to retrieve appointments.' }, request);
+        return jsonResp(500, {success: false, message: 'Failed to retrieve appointments.' }, request);
       }
     }
 
@@ -50,7 +50,7 @@ export async function onRequestGet(context) {
       try {
         const id = parseInt(path);
         if (isNaN(id)) {
-          return jsonResp(400, { error: true, success: false, message: 'Invalid appointment ID format.' }, request);
+          return jsonResp(400, {success: false, message: 'Invalid appointment ID format.' }, request);
               }
               
         const data = await db.prepare(
@@ -58,7 +58,7 @@ export async function onRequestGet(context) {
                  ).bind(id).first();
 
            if (!data) {
-              return jsonResp(404, { error: true, success: false, message: 'Appointment not found.' }, request);
+              return jsonResp(404, {success: false, message: 'Appointment not found.' }, request);
           }
           
         return jsonResp(200, { 
@@ -67,14 +67,14 @@ export async function onRequestGet(context) {
              }, request);
         } catch (err) {
            console.error('Get appointment error:', err);
-           return jsonResp(500, { error: true, success: false, message: 'Failed to retrieve appointment.' }, request);
+           return jsonResp(500, {success: false, message: 'Failed to retrieve appointment.' }, request);
        }
     }
 
-return jsonResp(400, { error: true, success: false, message: 'Invalid request. Use /list or /id endpoint.' }, request);
+return jsonResp(400, {success: false, message: 'Invalid request. Use /list or /id endpoint.' }, request);
 } catch (err) {
        console.error('GET bookings error:', err);
-       return jsonResp(500, { error: true, success: false, message: 'Database query failed.' }, request);
+       return jsonResp(500, {success: false, message: 'Database query failed.' }, request);
    }
 }
 
@@ -113,7 +113,7 @@ export async function onRequestPost(context) {
   try {
     body = await context.request.json();
   } catch (err) {
-    return jsonResp(400, { error: true, success: false, message: "Invalid JSON body." }, request);
+    return jsonResp(400, {success: false, message: "Invalid JSON body." }, request);
   }
 
   const { action, appointment_id, reschedule_date } = body;
@@ -130,7 +130,7 @@ export async function onRequestPost(context) {
 
     case 'reschedule':
       if (!reschedule_date) {
-        return jsonResp(400, { error: true, success: false, message: "Reschedule date required" }, request);
+        return jsonResp(400, {success: false, message: "Reschedule date required" }, request);
       }
      return rescheduleAppointment(context, appointment_id, reschedule_date, request);
 
@@ -141,7 +141,7 @@ export async function onRequestPost(context) {
       return handleNoShow(context, appointment_id, request);
 
     default:
-      return jsonResp(400, { error: true, success: false, message: "Unknown action" }, request);
+      return jsonResp(400, {success: false, message: "Unknown action" }, request);
   }
 }
 
@@ -155,21 +155,21 @@ export async function onRequestPut(context) {
   const db = env.MOLIAM_DB;
 
   const path = context.request.url.split('/api/appointments/')[1];
-  if (!path) return jsonResp(400, { error: true, success: false, message: "Appointment ID required" }, request);
+  if (!path) return jsonResp(400, {success: false, message: "Appointment ID required" }, request);
 
       const appointmentId = parseInt(path);
   let updateBody;
   try {
     updateBody = await context.request.json();
    catch (err) {
-     return jsonResp(400, { error: true, success: false, message: "Invalid JSON body." }, request);
+     return jsonResp(400, {success: false, message: "Invalid JSON body." }, request);
       }
   }
 
   const { scheduled_at, client_timezone } = updateBody;
 
         if (!scheduled_at) {
-           return jsonResp(400, { error: true, success: false, message: "Scheduled date required" }, request);
+           return jsonResp(400, {success: false, message: "Scheduled date required" }, request);
          }
 
       const res = await db.prepare(
@@ -181,7 +181,7 @@ export async function onRequestPut(context) {
      }
 
   console.error("Update failed:", res);
-  return jsonResp(400, { error: true, success: false, message: "Update failed. Appointment not found." }, request);
+  return jsonResp(400, {success: false, message: "Update failed. Appointment not found." }, request);
 }
 
 // Helper functions
@@ -199,21 +199,21 @@ async function createAppointment(context, body, request) {
        } = body;
 
     if (!prequalification_id || !scheduled_at) {
-         return jsonResp(400, { error: true, success: false, message: "Pre-qual ID and scheduled date required." }, request);
+         return jsonResp(400, {success: false, message: "Pre-qual ID and scheduled date required." }, request);
        }
 
       // Input validation
     const clientName = (client_name || "").trim();
     if (clientName.length > 254) {
-      return jsonResp(400, { error: true, success: false, message: "Client name cannot exceed 254 characters." }, request);
+      return jsonResp(400, {success: false, message: "Client name cannot exceed 254 characters." }, request);
       }
     const clientEmail = (client_email || "")?.toLowerCase().trim();
     if (clientEmail && (clientEmail.length > 254 || !/^[^\\s]+@[^\\s]+\\.[^\\s]+$/.test(clientEmail))) {
-       return jsonResp(400, { error: true, success: false, message: "Valid email required." }, request);
+       return jsonResp(400, {success: false, message: "Valid email required." }, request);
        }
     const calendarLink = (calendar_link || "").trim();
     if (calendarLink && calendarLink.length > 254) {
-      return jsonResp(400, { error: true, success: false, message: "Calendar link cannot exceed 254 characters." }, request);
+      return jsonResp(400, {success: false, message: "Calendar link cannot exceed 254 characters." }, request);
        }
 
     const res = await db.prepare(
@@ -222,7 +222,7 @@ async function createAppointment(context, body, request) {
 ).bind(prequalification_id || null, clientName || null, clientEmail || null, scheduled_at, calendarLink || null).run();
 
     if (!res.success) {
-         return jsonResp(500, { error: true, success: false, message: "Booking failed." }, request);
+         return jsonResp(500, {success: false, message: "Booking failed." }, request);
        }
 
         // Log to audit
@@ -231,7 +231,7 @@ async function createAppointment(context, body, request) {
     return jsonResp(201, { error: true, success: true, appointment_id: res.meta.last_row_id }, request);
    catch (err) {
      console.error("createAppointment error:", err);
-     return jsonResp(500, { error: true, success: false, message: "Database query failed." }, request);
+     return jsonResp(500, {success: false, message: "Database query failed." }, request);
     }
 }
 
@@ -258,7 +258,7 @@ async function updateAppointmentStatus(context, id, status, request) {
     return jsonResp(200, { error: true, success: true, updated: status }, request);
    } catch (err) {
     console.error("updateAppointmentStatus error:", err.message);
-     return jsonResp(500, { error: true, success: false, message: "Update failed." }, request);
+     return jsonResp(500, {success: false, message: "Update failed." }, request);
    }
 }
 
