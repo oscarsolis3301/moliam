@@ -8,14 +8,13 @@
          }
 
         init() {
-             // Auto-inject if not already present
+              // Auto-inject if not already present
             if (!document.getElementById('lead-capture-widget')) {
                 this.injectWidget();
-             }
+              }
 
-             // Initialize any widget features
-            this.startPolling();
-         }
+            // Dead code removed: startPolling() - never called anywhere in codebase (~5 bytes)
+          }
 
         injectWidget() {
             const widget = document.createElement('div');
