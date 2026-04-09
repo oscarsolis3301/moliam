@@ -1210,9 +1210,6 @@ if (typeof window.__moliam_cleanup_fullscreen__ === 'function') {
     window.__moliam_cleanup_fullscreen__();
   }
 }
-if (typeof window.__moliam_cleanup_fullscreen__ === 'function') {
-  window.__moliam_cleanup_fullscreen__();
-}
 };
 
 // Visibility change handler: pause animation when tab hidden to save battery/CPU
