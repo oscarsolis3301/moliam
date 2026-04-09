@@ -154,7 +154,7 @@ export async function onRequestPatch(context) {
       const hash = await hashPassword(data.password.trim());
       updates.push("password_hash = ?");
       binds.push(hash);
-    }
+     }
 
     if (data.role !== undefined && ["admin", "client"].includes(data.role)) {
       // Only superadmin can change roles
