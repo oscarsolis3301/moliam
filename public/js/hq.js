@@ -4,37 +4,19 @@
 // ═══════════════════════════════════════
 
 (function() {
-  'use strict';
+   'use strict';
 
-  // SECTION: Configuration & Constants
-   const COLORS = {
-      bgDeep:'#0B0E14', bgBuilding:'#111827', bgRoom:'#1F2937', borderRoom:'#374151',
-      accentBlue:'#3B82F6', accentPurple:'#8B5CF6', accentGreen:'#10B981',
-      accentAmber:'#F59E0B', accentRed:'#EF4444', accentCyan:'#06B6D4',
-      textPrimary:'#F9FAFB', textSecondary:'#9CA3AF', textDim:'#6B7280'
-   };
+   import { COLORS } from './hq-config.js';
    
+   // SECTION: Configuration & Constants
    const ROOM_DEFS = [
-      { id:'engineering', name:'ENGINEERING', floor:2, col:0, accent:COLORS.accentBlue },
-      { id:'planning',    name:'PLANNING',    floor:2, col:1, accent:COLORS.accentPurple },
-      { id:'comms',       name:'COMMS',       floor:2, col:2, accent:COLORS.accentGreen },
-      { id:'data',        name:'DATA',        floor:1, col:0, accent:COLORS.accentAmber },
-      { id:'error',       name:'ERROR ROOM',  floor:1, col:1, accent:COLORS.accentRed },
-      { id:'ratelimit',   name:'RATE LIMIT LOUNGE', floor:1, col:2, accent:'#9A7B2A' },
-   ];
-   
-   const BOT_DEFS = [
-      { id:'yagami', name:'Yagami', color:'#3B82F6' },
-      { id:'ada',    name:'Ada',    color:'#8B5CF6' },
-      { id:'soni',   name:'Soni',   color:'#10B981' },
-      { id:'willow', name:'Willow', color:'#F59E0B' },
-      { id:'reaper', name:'Reaper', color:'#EF4444' },
-   ];
-   
-   const STATUS_COLORS = {
-      active:COLORS.accentGreen, thinking:COLORS.accentPurple, blocked:COLORS.accentRed,
-      error:COLORS.accentRed, retrying:COLORS.accentAmber, rate_limited:COLORS.textDim, idle:'#374151'
-   };
+       { id:'engineering', name:'ENGINEERING', floor:2, col:0, accent:COLORS.blue },
+       { id:'planning',    name:'PLANNING',    floor:2, col:1, accent:COLORS.purple },
+       { id:'comms',       name:'COMMS',       floor:2, col:2, accent:COLORS.green },
+       { id:'data',        name:'DATA',        floor:1, col:0, accent:COLORS.amber },
+       { id:'error',       name:'ERROR ROOM',  floor:1, col:1, accent:COLORS.red },
+       { id:'ratelimit',   name:'RATE LIMIT LOUNGE', floor:1, col:2, accent:COLORS.accentAmber },
+    ];
 
    let speedMultiplier = 1;
    let now = 0;

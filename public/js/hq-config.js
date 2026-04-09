@@ -31,7 +31,7 @@ export const ROOM_DEFS = [
   {id:'comms',       name:'COMMS',       floor:1, col:2, accent:COLORS.green},
   {id:'data',        name:'DATA OPS',    floor:0, col:0, accent:COLORS.amber},
   {id:'error',       name:'ERROR ROOM',  floor:0, col:1, accent:COLORS.red},
-  {id:'ratelimit',   name:'RATE LIMIT LOUNGE', floor:0, col:2, accent:'#9a7a2a'}
+{id:'ratelimit',   name:'RATE LIMIT LOUNGE', floor:0, col:2, accent:COLORS. amber}]);
 ];
 
 // Bot/AI agent definitions for HQ visualization

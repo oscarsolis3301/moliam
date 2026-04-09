@@ -48,10 +48,10 @@ let layout = {};
 
   const W = canvas.width / dpr;
   const H = (canvas.height / dpr);
-  const isMobile = W <= 768;
-  const margin = isMobile ? 12 : 20;
-  const gap = isMobile ? 4 : 8;
-  const corridorH = isMobile ? 30 : 40;
+  const _isMobile = W <= 768; // read-only constant, don't call as function
+  const margin = _isMobile ? 12 : 20;
+  const gap = _isMobile ? 4 : 8;
+  const corridorH = _isMobile ? 30 : 40;
   const cols = 3, rows = 2;
   const totalGapX = gap * (cols - 1);
   const rw = ((W - margin*2) - totalGapX) / cols;
@@ -859,7 +859,7 @@ canvas.addEventListener('click', (e) => {
 
   // Check rooms (increased margins for mobile tap accuracy)
   for(const room of rooms) {
-    const marginBuffer = isMobile() ? 20 : 10;
+    const marginBuffer = _isMobile ? 20 : 10;
     if(mx >= room.x-marginBuffer && mx <= room.x+room.w+marginBuffer && my >= room.y-marginBuffer && my <= room.y+room.h+marginBuffer) {
       showRoomPopover(room, e.clientX, e.clientY);
       return;
@@ -870,7 +870,7 @@ canvas.addEventListener('click', (e) => {
 });
 
 canvas.addEventListener('pointermove', (e) => {
-  if(!isMobile()) return;
+  if(!_isMobile) return;
   const rect = canvas.getBoundingClientRect();
   const mx = (e.clientX - rect.left);
   const my = (e.clientY - rect.top);
@@ -885,7 +885,7 @@ canvas.addEventListener('pointermove', (e) => {
    }
   if(!hovering) {
     for(const room of rooms) {
-      const marginBuffer = isMobile() ? 30 : 15;
+      const marginBuffer = _isMobile ? 30 : 15;
       if(mx >= room.x-marginBuffer && mx <= room.x+room.w+marginBuffer && my >= room.y-marginBuffer && my <= room.y+room.h+marginBuffer) {
         canvas.style.cursor = 'pointer';
         hovering = true;
