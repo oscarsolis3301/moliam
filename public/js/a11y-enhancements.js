@@ -170,44 +170,6 @@ function initMobileMenuAriaAnnouncements() {
 }
 
 // ============================================
-// Modal Focus Management (if exists)
-// ============================================
-
-function initModalFocusTrap(modalElement) {
-  if (!modalElement) return null;
-
-  const focusableElements = modalElement.querySelectorAll(
-    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-  );
-  
-  const firstFocusable = focusableElements[0];
-  const lastFocusable = focusableElements[focusableElements.length - 1];
-
-  function handleTabKey(e) {
-    if (e.key !== 'Tab') return;
-
-    if (e.shiftKey) {
-      if (document.activeElement === firstFocusable) {
-        e.preventDefault();
-        lastFocusable.focus();
-      }
-    } else {
-      if (document.activeElement === lastFocusable) {
-        e.preventDefault();
-        firstFocusable.focus();
-      }
-    }
-  }
-
-  const focusablesToCleanup = Array.from(modalElement.querySelectorAll('[tabindex], button, a[href]'));
-  focusablesToCleanup.forEach(el => { el.addEventListener('keydown', handleTabKey, true); el.moliam_cleanup_keydown_modal = handleTabKey; });
-
-  return () => {
-    focusablesToCleanup.forEach(el => { el.removeEventListener('keydown', el.moliam_cleanup_keydown_modal, true); });
-  };
-}
-
-// ============================================
 // Cleanup Functions - Memory Leak Prevention
 // ============================================
 
