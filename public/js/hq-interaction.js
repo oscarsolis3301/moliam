@@ -197,11 +197,11 @@ function resize() {
   canvas.style.height = h + 'px';
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   
-   // Recalculate layout and position bots accordingly
+  // Recalculate layout and position bots accordingly
   
-   calcLayout();
-   
-       // Reposition bots to new seat coordinates after resize
+  calcLayout();
+  
+        // Reposition bots to new seat coordinates after resize
   if(bots.length && !bots[0].moving) {
     bots.forEach(bot => {
       const room = getRoomById(bot.room);
@@ -212,16 +212,26 @@ function resize() {
           bot.y = room.seats[seatIdx].y;
           bot.targetX = bot.x;
           bot.targetY = bot.y;
-             }
+              }
           }
-           });
-        }
+            });
+    }
 }
 
+// Store resize handler reference for cleanup later
+let windowResizeHandlerRef = () => resize();
+
 // Register resize event listener and initialize immediately
-window.addEventListener('resize', resize);
+window.addEventListener('resize', windowResizeHandlerRef);
 resize();
 initBots(); // Initial bot assignment to seats
+
+// Expose cleanup for this block's listeners
+window.__moliam_cleanup_hq_interaction__ = function() {
+  if (typeof windowResizeHandlerRef === 'function') {
+    window.removeEventListener('resize', windowResizeHandlerRef);
+  }
+};
 
 /**
  * Main animation frame loop - orchestrates all game system updates + rendering

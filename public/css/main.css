@@ -252,6 +252,26 @@ html, body {
 }
 
 /* ═══════════════════════ FORM INPUT STYLES (Line 558-561) ═══════════════════════ */
+.pf-input {
+  margin-bottom: 12px;
+  background-color: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #fff;
+  width: 100%;
+}
+
+.pf-input::placeholder {
+  color: rgba(255,255,255,0.5);
+}
+
+.pf-input:focus {
+  outline: none;
+  border-color: var(--accent-blue, #3B82F6);
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+}
+
 .form-input-padded {
   margin-bottom: 12px;
 }
