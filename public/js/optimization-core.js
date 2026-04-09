@@ -95,8 +95,8 @@ window.moliamResourceCleanup = function() {
 /* Register cleanup for beforeunload */
 window.addEventListener('beforeunload', () => {
   if (window.moliamResourceCleanup) {
-    resourceMon = false; // prevent double cleanup
-   }
+    resourceMon = false; // prevent double cleanup during unload
+  }
 }, true);
 
 let resourceMon = true;

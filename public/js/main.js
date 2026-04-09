@@ -799,7 +799,10 @@ drawSparkline();
 
 /* Expose cleanup for status panel interval */
 window.__moliam_cleanup_maintenance__ = function() {
-  if (sparklineIntervalId) clearInterval(sparklineIntervalId);
+  if (sparklineIntervalId) {
+    clearInterval(sparklineIntervalId);
+    sparklineIntervalId = null; // Clear reference to prevent double-cleanup
+  }
   if (typeof window.__moliam_cleanup_main__ === 'function') window.__moliam_cleanup_main__();
   return true; // Successfully cleaned up maintenance-related intervals
 };
