@@ -655,51 +655,63 @@ function drawBot(bot, t) {
 }
 
 /* ─── HOVER DETECTION ─── */
+// CRITICAL FIX: Select canvas element before using it (lines 695,702 previously failed)
+let canvas = $('#canvas'); // Added missing element selection
 let canvasMouseMoveHandler, canvasMouseLeaveHandler;
 
-canvasMouseMoveHandler = (e) => {
-  const rect = canvas.getBoundingClientRect();
-  mouseX = e.clientX - rect.left;
-  mouseY = e.clientY - rect.top;
+if (canvas) {
+  canvasMouseMoveHandler = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
 
-  hoveredBot = null;
-  for (const bot of bots) {
-    const dx = mouseX - bot.x;
-    const dy = mouseY - bot.y;
-    if (dx * dx + dy * dy < (24) ** 2) {
-      hoveredBot = bot;
-      break;
-     }
-   }
+    hoveredBot = null;
+    for (const bot of bots) {
+      const dx = mouseX - bot.x;
+      const dy = mouseY - bot.y;
+      if (dx * dx + dy * dy < (24) ** 2) {
+        hoveredBot = bot;
+        break;
+        }
+      }
 
-  const tooltip = $('#bot-tooltip');
-  if (hoveredBot) {
-    tooltip.classList.add('visible');
-    tooltip.style.left = (e.clientX + 16) + 'px';
-    tooltip.style.top = (e.clientY - 16) + 'px';
-     $('#tt-avatar').style.background = hoveredBot.color;
-     $('#tt-avatar').textContent = hoveredBot.initials;
-     $('#tt-name').textContent = hoveredBot.name;
-     $('#tt-role').textContent = hoveredBot.role;
-     $('#tt-task').textContent = hoveredBot.task || '—';
-     $('#tt-done').textContent = hoveredBot.tasksDone;
-    const elapsed = Math.floor((Date.now() - startTime) / 1000);
-    const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
-    const s = String(elapsed % 60).padStart(2, '0');
-     $('#tt-uptime').textContent = `${m}:${s}`;
-   } else {
-    tooltip.classList.remove('visible');
-   }
-};
+    const tooltip = $('#bot-tooltip');
+    if (hoveredBot) {
+      tooltip.classList.add('visible');
+      tooltip.style.left = (e.clientX + 16) + 'px';
+      tooltip.style.top = (e.clientY - 16) + 'px';
+        $('#tt-avatar').style.background = hoveredBot.color;
+        $('#tt-avatar').textContent = hoveredBot.initials;
+        $('#tt-name').textContent = hoveredBot.name;
+        $('#tt-role').textContent = hoveredBot.role;
+        $('#tt-task').textContent = hoveredBot.task || '—';
+        $('#tt-done').textContent = hoveredBot.tasksDone;
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+      const s = String(elapsed % 60).padStart(2, '0');
+        $('#tt-uptime').textContent = `${m}:${s}`;
+      } else {
+      tooltip.classList.remove('visible');
+      }
+    };
 
-canvas.addEventListener('mousemove', canvasMouseMoveHandler);
+    canvas.addEventListener('mousemove', canvasMouseMoveHandler);
 
-canvasMouseLeaveHandler = () => {
-  hoveredBot = null;
-    $('#bot-tooltip').classList.remove('visible');
-};
+    canvasMouseLeaveHandler = () => {
+      hoveredBot = null;
+         $('#bot-tooltip').classList.remove('visible');
+    };
 
-canvas.addEventListener('mouseleave', canvasMouseLeaveHandler);
+    canvas.addEventListener('mouseleave', canvasMouseLeaveHandler);
+
+    // Expose cleanup for this canvas event listeners
+    window.__moliam_cleanup_canvas__ = function() {
+      if (canvas) {
+        canvas.removeEventListener('mousemove', canvasMouseMoveHandler);
+        canvas.removeEventListener('mouseleave', canvasMouseLeaveHandler);
+      }
+    };
+}
 
 /* ─── AMBIENT HQ PARTICLES */
 let hqParticles = [];
@@ -1147,18 +1159,21 @@ window.__moliam_cleanup_main__ = function() {
     delete window.__moliam_visibility_handler;
      }
   
-  // FIX: Properly track and cleanup frameId for main loop
+    // FIX: Properly track and cleanup frameId for main loop
   if (frameId) {
     cancelAnimationFrame(frameId);
     frameId = null;
   }
 
-  canvas.removeEventListener('mousemove', canvasMouseMoveHandler);
-  canvas.removeEventListener('mouseleave', canvasMouseLeaveHandler);
-        // And hamburger menu cleanup:      
+  // CRITICAL FIX: Only remove canvas listeners if element exists
+  if (canvas && typeof canvasMouseMoveHandler !== 'undefined' && typeof canvasMouseLeaveHandler !== 'undefined') {
+    try {
+      canvas.removeEventListener('mousemove', canvasMouseMoveHandler);
+      canvas.addEventListener('mouseleave', canvasMouseLeaveHandler);
+    } catch(e) {/* safe fail */}
+  }
 
-
-
+// Call speed button cleanup
 // Call speed button cleanup
 if (typeof window.__moliam_cleanup_speed_buttons__ === 'function') {
   window.__moliam_cleanup_speed_buttons__();
