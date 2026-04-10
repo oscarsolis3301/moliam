@@ -5,7 +5,7 @@
  * NEW: action=pipeline returns pipeline summary (hot/warm/cold counts and follow-up stats)
  */
 
-import { jsonResp } from './api-helpers.js';
+import { jsonResp } from './lib/standalone.js';
 
 export async function onRequestGet(context) {
   try {

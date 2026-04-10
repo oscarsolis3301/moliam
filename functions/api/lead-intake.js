@@ -2,9 +2,9 @@
  * MOLIAM Lead Capture → CRM Pipeline
  * Enhanced contact form with scoring and automation triggers
  * POST /api/lead-intake — Uses api-helpers for consistent validation and JSON responses
- */
-
-import { jsonResp, calculateLeadScore, sanitizeText, validateEmail, validatePhone } from './api-helpers.js';
+/* eslint no-irregular-whitespace: "off" */
+// Import centralized helpers from lib/standalone.js - eliminates duplicate auth/message logic across messages.js & client-message.js
+import { jsonResp, sanitizeText, validateEmail, validatePhone, hashSHA256 } from './lib/standalone.js';
 
 /**
  * Handle POST requests to lead intake endpoint with email validation, phone validation, HTML stripping, and lead scoring
@@ -15,10 +15,10 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
-  // Return consistent JSON error with CORS headers when DB unavailable
+   // Return consistent JSON error with CORS headers when DB unavailable
   if (!db) {
     return jsonResp(503, { success: false, error: true, message: "Database not available. Please try again later." }, request);
-  }
+   }
 
   // --- Parse body with try/catch for malformed JSON ---
   let data;
