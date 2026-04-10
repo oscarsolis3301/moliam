@@ -134,17 +134,23 @@ export async function sendRateLimited(url, size, colorHex, db, ipHash) {
 
 /**
  * Error response using jsonResp helper from api-helpers
+ * Creates consistent JSON error responses with proper HTTP status codes
  * @param {number} status - HTTP status code for error response (400-599)
- * @param {string} message - Human-readable error message
- * @param {Request?} request - Original request context for CORS parameters
- * @returns {Response} JSON formatted error response with proper headers
+ * @param {string} message - Human-readable error message describing the issue
+ * @param {Request?} request - Optional original request context for CORS headers
+ * @returns {Response} JSON formatted error response with Content-Type: application/json header
  */
 function sendError(status, message, request) {
   return jsonResp(status, { success: false, error: true, message }, request);
 }
 
 /**
- * Pure JS QR Code generator — generates SVG output from URL string using bit matrix
+ * Pure JS QR Code generator using bit matrix algorithm - no dependencies required
+ * Generates SVG QR code output from input URL with customizable size and color
+ * @param {string} data - URL or text content to encode in QR code
+ * @param {number} size - Output image dimensions in pixels (128-2048 recommended)
+ * @param {string} colorHex - Hex color code for QR code modules (#RRGGBB format)
+ * @returns {string} SVG code string ready for browser display or download
  */
 function generateQRCodeSVG(data, size, colorHex) {
   // Parse hex to numeric RGB for use in CSS fill colors

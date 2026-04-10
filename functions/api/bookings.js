@@ -23,74 +23,60 @@ return jsonResp(503, {success: false, message: 'Database service unavailable.' }
 const db = env.MOLIAM_DB;
 
 if (context.request.url.includes('/list')) {
-  try {
     const data = await db.prepare(
-        "SELECT a.*, p.qualification_score, p.budget_range, s.name AS lead_name, s.email AS lead_email FROM appointments a LEFT JOIN prequalifications p ON a.prequalification_id = p.id LEFT JOIN submissions s ON p.submission_id = s.id ORDER BY a.scheduled_at DESC LIMIT 50"
-    ).all();
+         "SELECT a.*, p.qualification_score, p.budget_range, s.name AS lead_name, s.email AS lead_email FROM appointments a LEFT JOIN prequalifications p ON a.prequalification_id = p.id LEFT JOIN submissions s ON p.submission_id = s.id ORDER BY a.scheduled_at DESC LIMIT 50"
+     ).all();
 
     return jsonResp(200, { 
           success: true, 
           data: data 
-                }, request);
-} catch (err) {
-       console.error('GET bookings error:', err);
-       return jsonResp(500, {success: false, message: 'Database query failed.' }, request);
-      }
-   }
+         }, request);
+  } else {
+    // Get single appointment by ID
+    const id = parseInt(path || '');
+    if (isNaN(id)) {
+      return jsonResp(400, {success: false, message: 'Invalid request. Use /list or /id endpoint.'}, request);
+    }
+    const data = await db.prepare("SELECT * FROM appointments WHERE id = ?").bind(id).first();
+    if (!data) {
+      return jsonResp(404, {success: false, message: 'Appointment not found.'}, request);
+    }
+    return jsonResp(200, { success: true, data: data }, request);} catch (err) {
+      console.error('GET bookings error:', err);
+      return jsonResp(500, {success: false, message: 'Database query failed.'}, request);
+     }
+     }
+
+// Helper to get single appointment by ID - extracted from malformed code section below
+async function getAppointmentById(db, id, request) {
+  const data = await db.prepare("SELECT * FROM appointments WHERE id = ?").bind(id).first();
+
+  if (!data) {
+    return jsonResp(404, {success: false, message: 'Appointment not found.'}, request);
+  }
+
+  return jsonResp(200, { success: true, data: data }, request);
+}
+
 
 /**
- * Handle CORS preflight requests for Booking API     
- * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
-
-
-        const data = await db.prepare(
-                     "SELECT * FROM appointments WHERE id = ?"
-                   ).bind(id).first();
-
-      if (!data) {
-              return jsonResp(404, {success: false, message: 'Appointment not found.' }, request);
-             }
-            
-        return jsonResp(200, { 
-            success: true, 
-            data: data,
-                 }, request);
-          } catch (err) {
-           console.error('Get appointment error:', err);
-           return jsonResp(500, {success: false, message: 'Failed to retrieve appointment.' }, request);
-          }
-      }
-
-return jsonResp(400, {success: false, message: 'Invalid request. Use /list or /id endpoint.' }, request);
-} catch (err) {
-       console.error('GET bookings error:', err);
-       return jsonResp(500, {success: false, message: 'Database query failed.' }, request);
-      }
-   }
-
-/**
- * Handle CORS preflight requests for Booking API     
- * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
-return jsonResp(400, {success: false, message: 'Invalid request. Use /list or /id endpoint.' }, request);
-} catch (err) {
-       console.error('GET bookings error:', err);
-       return jsonResp(500, {success: false, message: 'Database query failed.' }, request);\n     }\n}\n\n/**\n * Handle CORS preflight requests for Booking API   
+ * Handle CORS preflight requests for Booking API   
  * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
  * @returns {Response} 204 No Content with proper Access-Control headers for moliam.com and moliam.pages.dev domains
  */
 export async function onRequestOptions(context) {
 
   return new Response(null, {
-return jsonResp(400, {success: false, message: 'Invalid request. Use /list or /id endpoint.' }, request);
-} catch (err) {
-       console.error('GET bookings error:', err);
-       return jsonResp(500, {success: false, message: 'Database query failed.' }, request);
-   }
+    status: 204,
+    headers: {
+         "Access-Control-Allow-Origin": "https://moliam.pages.dev",
+       "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
+       "Access-Control-Allow-Headers": "Content-Type"
+     }
+   });
 }
 
-
-/**
- * Handle CORS preflight requests for Booking API  
+// Remove the duplicate/obsolete getAppointmentById helper and use inline logic instead
  * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
  * @returns {Response} 204 No Content with proper Access-Control headers for moliam.com and moliam.pages.dev domains
  */
