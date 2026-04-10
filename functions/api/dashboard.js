@@ -27,7 +27,7 @@ try {
         const hash = request.url.substring(hashIdx + 1);
         const query = new URLSearchParams(hash);
         token = query.get('token') || '';
-      }
+       }
 } catch (urlErr) {
     console.warn("Token extraction from URL fragment failed:", urlErr.message); 
 }

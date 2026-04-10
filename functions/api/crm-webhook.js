@@ -33,39 +33,23 @@ export async function onRequestPost(context) {
             });
          }
 
-      // --- Verify webhook signature (if header present) ---
-  const sigHeader = request.headers.get("X-Webhook-Signature") || "";
-  const crmSecret = env.CRM_WEBHOOK_SECRET || "";
+   // --- Verify webhook signature (if header present) ---
+const sigHeader = request.headers.get("X-Webhook-Signature") || "";
 
-  if (crmSecret && sigHeader) {
-    // Simple HMAC validation - log to D1 for debugging
-    try {
-      if (db) {
-         await db.prepare("INSERT INTO webhook_logs (event_type, payload_hash, signature_valid, received_at) VALUES (?, ?, datetime('now'), ?)")               .bind(data.type || data.event || "crm_callback", data.submission_id || "unknown", false).run();
-       }
-     } catch {}
-      // Note: Full HMAC verification can be added per CRM provider requirements  
-     logPayloadToD1(db, data);
-   } else {
-     // No signature header - still log to D1
-     logPayloadToD1(db, data);
-   }
-
-       try {
+      try {
     const data = await request.json();
 
-         // --- Validate webhook payload structure ---
+// --- Helper function: Log webhook payloads to D1 for debugging ---
+// --- Webhook payload structure validation ---
     if (!data || typeof data !== 'object' || Array.isArray(data)) {
       return jsonResp(400, { 
          error: true, 
           message: "Invalid webhook payload. Expected JSON object.",
            receivedType: Array.isArray(data) ? "array" : typeof data 
-              });
-             }
+               });
+              }
 
-       // Webhook signature verification - log even errors to D1 for debugging
-
-      if (crmSecret && sigHeader) {
+// --- Helper function: Log webhook payloads to D1 for debugging ---
          // Log the attempted validation to db
         try {
           if (db) {
