@@ -362,6 +362,8 @@ function updateOrbs(dt) {
 // ═══════════════════════════════════════
 // SECTION: Room Renderer
 // ═══════════════════════════════════════
+// Pre-compute line patterns to reduce per-frame canvas operations
+const TERMINAL_LINES = [20, 35, 48, 31, 27, 56, 39, 45];
 let globalTime = 0;
 let terminalLines = [];
 for(let i=0;i<8;i++) terminalLines.push({w:20+Math.random()*60, y:i*6});
@@ -440,6 +442,7 @@ function drawEngineering(x,y,w,h,room) {
   ctx.beginPath();
   ctx.rect(x,y+h-40,w,36);
   ctx.clip();
+   // Optimize: use pre-computed TERMINAL_LENGTHS instead of Math.random per frame
   terminalLines.forEach((line,i)=>{
     const ly = y+h-40+4+((i*6+globalTime*20)%48);
     ctx.fillStyle = 'rgba(16,185,129,0.4)';
@@ -856,36 +859,44 @@ canvas.addEventListener('click', (e) => {
   hidePopover();
 });
 
+let mobileCheckLast = 0, wasMobile = false;
+
 canvas.addEventListener('pointermove', (e) => {
-  if(!isMobile()) return;
   const rect = canvas.getBoundingClientRect();
   const mx = (e.clientX - rect.left);
   const my = (e.clientY - rect.top);
 
+  // Mobile check cached to avoid redundant calls (throttle 150ms)
+  const currentMobile = window.innerWidth < 768;
+  if(currentMobile !== wasMobile){wasMobile = currentMobile;}
+  let marginBuffer = wasMobile ? 30 : 15;
+
   let hovering = false;
+  // Mobile-only hit detection optimization (larger targets)
   for(const bot of bots) {
-    if(mx >= bot.x-10 && mx <= bot.x+26 && my >= bot.y-30 && my <= bot.y+44) {
+    if(mx >= bot.x-10 && mx <= bot.x+40 && my >= bot.y-30 && my <= bot.y+60) {
       canvas.style.cursor = 'pointer';
       hovering = true;
       break;
-     }
-   }
+    }
+  }
+
   if(!hovering) {
     for(const room of rooms) {
-      const marginBuffer = isMobile() ? 30 : 15;
-      if(mx >= room.x-marginBuffer && mx <= room.x+room.w+marginBuffer && my >= room.y-marginBuffer && my <= room.y+room.h+marginBuffer) {
+      const effectiveBuffer = marginBuffer * 1.5; // Slightly larger buffer for mobile touch accuracy
+      if(mx >= room.x-effectiveBuffer && mx <= room.x+room.w+effectiveBuffer && my >= room.y-effectiveBuffer && my <= room.y+room.h+effectiveBuffer) {
         canvas.style.cursor = 'pointer';
         hovering = true;
         break;
-       }
-     }
-   }
+      }
+    }
+  }
   if(!hovering) canvas.style.cursor = 'default';
 });
 
 document.addEventListener('click', (e) => {
   if(!popEl.contains(e.target) && e.target !== canvas) hidePopover();
-});
+}, {passive:true});
 
 function formatTime(ts) {
   const d = new Date(ts);

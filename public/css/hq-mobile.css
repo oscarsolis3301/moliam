@@ -1,0 +1,70 @@
+/* HQ Mobile Responsive Styles - Extracted for optimization */
+
+@media (max-width: 480px) {
+    #hud { padding: 12px; flex-direction: column; gap: 6px; }
+    .left .title { font-size: 18px; margin-bottom: 4px; }
+    .left .status-dot { width: 7px; height: 7px; margin-right: 8px; }
+    .center { display: none; }
+    .right .speed-btn { font-size: 11px; padding: 4px 6px; }
+    .right .fs-btn { font-size: 12px; width: 30px; height: 30px; }
+    #demo-badge { font-size: 9px; bottom: 8px; right: 8px; padding: 3px 6px; border-width: 1px; }
+}
+
+@media (max-width: 360px) {
+    #hud { padding: 8px; }
+    .left .title { font-size: 14px; }
+    .right .speed-btn { display: none; }
+    .right { justify-content: flex-end; align-items: center; }
+}
+
+@media (max-height: 600px) {
+    #hud { bottom: 4px; padding: 8px; }
+    .left .status-dot { margin-right: 6px; width: 6px; height: 6px; }
+    .left .title { font-size: 15px; }
+}
+
+@media (orientation: portrait) {
+    canvas { width: 100%; max-width: 320px; height: auto; margin: 8px auto; }
+}
+
+@media print {
+    #hud, #demo-badge { display: none !important; }
+    canvas { width: 100%; max-width: none; }
+}
+
+@media (prefers-color-scheme: dark) {
+}
+
+@media (prefers-reduced-motion: reduce) {
+    canvas { transition: none; animation: none !important; }
+    * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+    #hud { padding: 14px 18px; flex-direction: row; gap: 8px; }
+    .left .title { font-size: 16px; margin-bottom: 0; }
+    .left .status-dot { width: 7px; height: 7px; }
+    .center { display: flex; gap: clamp(8px, 1.5vw, 12px); }
+    .center .stat-block { min-width: 60px; flex: 1; padding: 6px 8px; border-radius: 6px; }
+    .right { gap: 4px; }
+    .right .speed-btn { font-size: 12px; padding: 5px 7px; min-height: 30px; }
+    #demo-badge { right: 12px; bottom: 10px; font-size: 10px; }
+}
+
+@media (min-width: 1024px) {
+    #hud { padding: 16px 24px; flex-direction: row-reverse; }
+    .left .title { font-size: 18px; margin-bottom: 0; }
+    .left .status-dot { width: 8px; height: 8px; margin-right: 10px; }
+    .right { left: auto; right: 24px; top: 30px; position: fixed; flex-direction: column-reverse; gap: 8px; background: rgba(15,23,42,.9); border-radius: 8px; padding: 10px; box-shadow: 0 4px 16px rgba(0,0,0,.25); }
+    .right .speed-btn { font-size: 14px; padding: 6px 10px; min-height: 36px; border-radius: 8px; border: 1px solid var(--border-medium); background: rgba(255,255,255,.04); color: var(--text-secondary); transition: transform .15s, box-shadow .15s; }
+    .right .speed-btn.active { background: var(--accent-amber/15); border-color: var(--accent-amber); color: var(--accent-amber); box-shadow: 0 0 0 1px var(--accent-amber); }
+    #demo-badge { right: 24px; bottom: 16px; font-size: 11px; padding: 4px 10px; border-width: 1px; }
+}
+
+@media (transform-mode: landscape) {
+    #hud { top: 12px; left: 16px; right: 16px; flex-direction: row; justify-content: space-between; padding: 14px 18px; background: rgba(15,23,42,.7); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border-strong); }
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .hud-item:hover, .speed-btn:hover { box-shadow: none; transform: none !important; border-color: transparent !important; }
+}
