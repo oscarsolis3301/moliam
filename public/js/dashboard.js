@@ -207,18 +207,28 @@
         };
     }
 
-    // Add hover animations for project cards - Linear/Vercel micro-interactions
+    // Add hover animations for project cards - throttled for performance, Linear/Vercel micro-interactions
+    let mouseTimeout;
     document.addEventListener('mousemove', function(e) {
-        const card = e.target.closest('.project-card');
-        if(card){
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            // Subtle parallax effect
-            card.style.transform = 
-                'translateY(-3px) translateX(' + (x - rect.width/2) * 0.01 + 'px)';
-        }
+        clearTimeout(mouseTimeout);
+        
+        mouseTimeout = setTimeout(function() {
+            const card = e.target.closest('.project-card');
+            if(card){
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                
+                // Subtle parallax effect (throttled to prevent excessive updates)
+                card.style.transform = 
+                    'translateY(-3px) translateX(' + (x - rect.width/2) * 0.01 + 'px)';
+            } else {
+                // Reset all cards when mouse leaves a project area
+                document.querySelectorAll('.project-card').forEach(c => {
+                    c.style.transform = '';
+                });
+            }
+        }, 16); // ~60fps throttle (16ms) for better performance on slower devices
     });
 
 })();
+
