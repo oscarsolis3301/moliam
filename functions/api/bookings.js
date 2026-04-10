@@ -137,8 +137,8 @@ export async function onRequestPut(context) {
   }
 
   const res = await db.prepare(
-    "UPDATE appointments SET scheduled_at = ?, updated_at = datetime('now') WHERE id = ?"
-  ).bind(scheduled_at, appointmentId).run();
+       "UPDATE appointments SET scheduled_at = ?, updated_at = datetime('now') WHERE id = ?"
+   ).bind(scheduled_at, appointmentId).run();
 
   if (res.success && res.meta?.rows_changed > 0) {
     return jsonResp(200, {success: true, updated: true}, request);
@@ -190,12 +190,8 @@ async function createAppointment(context, body, request) {
        }
 
     const res = await db.prepare(
-         "INSERT INTO appointments (prequalification_id, client_name, client_email, scheduled_at, calendar_link) VALUES (?, ?, ?, ?, ?)"
-  
-
-
-
-).bind(prequalification_id || null, clientName || null, clientEmail || null, scheduled_at, calendarLink || null).run();
+          "INSERT INTO appointments (prequalification_id, client_name, client_email, scheduled_at, calendar_link) VALUES (?, ?, ?, ?, ?)"
+     ).bind(prequalification_id || null, clientName || null, clientEmail || null, scheduled_at, calendarLink || null).run();
 
     if (!res.success) {
          return jsonResp(500, {success: false, message: "Booking failed." }, request);
@@ -224,7 +220,7 @@ async function updateAppointmentStatus(context, id, status, request) {
   try {
     const res = await db.prepare(
            "UPDATE appointments SET status = ?, updated_at = datetime('now') WHERE id = ?"
-         ).bind(status, id).run();
+     ).bind(status, id).run();
 
     if (res.success && res.meta.rows_changed > 0) {
       // If no-show, handle retry logic - log only without unimplemented function

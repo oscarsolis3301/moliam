@@ -83,26 +83,21 @@ export async function onRequestGet(context) {
 
     if (action === 'pipeline') {
          // Return pipeline summary: count by hot/warm/cold, follow-up stats
-      const coldCount = await db.prepare(isAdmin
-                       ? 'SELECT COUNT(*) as c FROM submissions WHERE category=\'cold\''
-                       : 'SELECT COUNT(*) as c FROM submissions WHERE email=? AND category=\'warm\'')
-                    .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
-      const warmCount = await db.prepare(isAdmin
-                       ? 'SELECT COUNT(*) as c FROM submissions WHERE category=\'warm\''
-                       : 'SELECT COUNT(*) as c FROM submissions WHERE email=? AND category=\'warm\'')
-                    .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
-      const hotCount = await db.prepare(isAdmin
-                       ? 'SELECT COUNT(*) as c FROM submissions WHERE category=\'hot\''
-                       : 'SELECT COUNT(*) as c FROM submissions WHERE email=? AND category=\'hot\'')
-                    .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
-      const followedCount = await db.prepare(isAdmin
-                       ? 'SELECT COUNT(*) as c FROM submissions WHERE follow_up_status=\'completed\''
-                       : 'SELECT COUNT(*) as c FROM submissions WHERE email=? AND follow_up_status=\'pending\'')
-                    .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
-      const pendingCount = await db.prepare(isAdmin
-                       ? 'SELECT COUNT(*) as c FROM submissions WHERE follow_up_status=\'completed\''
-                       : 'SELECT COUNT(*) as c FROM submissions WHERE email=? AND follow_up_status=\'pending\'')
-                    .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
+      const coldCount = await db.prepare(
+        isAdmin ? 'SELECT COUNT(*) as c FROM submissions WHERE category=\'cold\'' : 'SELECT COUNT(*) as c FROM submissions WHERE email=? AND category=\'warm\''
+      ).bind(session.email).all().then(r => r.results?.[0]?.c || 0);
+      const warmCount = await db.prepare(
+        isAdmin ? 'SELECT COUNT(*) as c FROM submissions WHERE category=\'warm\'' : 'SELECT COUNT(*) as c FROM submissions WHERE email=? AND category=\'warm\''
+      ).bind(session.email).all().then(r => r.results?.[0]?.c || 0);
+      const hotCount = await db.prepare(
+        isAdmin ? 'SELECT COUNT(*) as c FROM submissions WHERE category=\'hot\'' : 'SELECT COUNT(*) as c FROM submissions WHERE email=? AND category=\'hot\''
+      ).bind(session.email).all().then(r => r.results?.[0]?.c || 0);
+      const followedCount = await db.prepare(
+        isAdmin ? 'SELECT COUNT(*) as c FROM submissions WHERE follow_up_status=\'completed\'' : 'SELECT COUNT(*) as c FROM submissions WHERE email=? AND follow_up_status=\'pending\'')
+      .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
+      const pendingCount = await db.prepare(
+        isAdmin ? 'SELECT COUNT(*) as c FROM submissions WHERE follow_up_status=\'completed\'' : 'SELECT COUNT(*) as c FROM submissions WHERE email=? AND follow_up_status=\'pending\'')
+      .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
 
       return jsonResp(200, {
            success: true,
