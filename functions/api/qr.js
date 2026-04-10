@@ -6,7 +6,7 @@
 
 /**\n * MOLIAM QR Code Generator — CloudFlare Pages Function   * GET /api/qr?url=...&size=...&color=... * Pure JS QR code generation using bit matrix algorithm, no npm deps\n */
 
-import { jsonResp } from './lib/standalone.js';
+import { jsonResp, hashSHA256 } from './lib/standalone.js';
 
 /**
  * GET /api/qr - QR Code generation handler
@@ -329,10 +329,3 @@ function hashString(str) {
 }
 
 
-/**
- * hashSHA256 — Helper pattern from contact.js  
- */
-async function hashSHA256(str) {
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
-}

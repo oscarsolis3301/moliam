@@ -5,7 +5,8 @@
  * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB and optional DISCORD_WEBHOOK_URL
  */
 
-import { jsonResp } from './api-helpers.js';
+import { jsonResp } from './lib/standalone.js';
+
 
 /**
  * Verify Calendly webhook signature using HMAC-SHA256 for security against replay attacks
