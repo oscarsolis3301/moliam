@@ -4,9 +4,7 @@
  * GET /api/appointments/:id - Get appointment
  * PUT /api/appointments/:id - Update/confirm/reschedule/cancel
  */
-
 import { jsonResp } from './api-helpers.js';
-
 /**
  * Handle GET requests to Booking API - list all appointments or get single by ID
  * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
@@ -19,15 +17,12 @@ export async function onRequestGet(context) {
     if (!env.MOLIAM_DB) {
 return jsonResp(503, {success: false, message: 'Database service unavailable.' }, request);
 }
-
 const db = env.MOLIAM_DB;
 const urlPath = context.request.url.split('/api/appointments/')[1] || '';
-
 if (context.request.url.includes('/list')) {
     const data = await db.prepare(
          "SELECT a.*, p.qualification_score, p.budget_range, s.name AS lead_name, s.email AS lead_email FROM appointments a LEFT JOIN prequalifications p ON a.prequalification_id = p.id LEFT JOIN submissions s ON p.submission_id = s.id ORDER BY a.scheduled_at DESC LIMIT 50"
      ).all();
-
     return jsonResp(200, { 
           success: true, 
           data: data 
@@ -47,8 +42,6 @@ return jsonResp(400, {success: false, message: 'Invalid request. Use /list or /i
       return jsonResp(500, {success: false, message: 'Database query failed.'}, request);
      }
      }
-
-
 /** Handle CORS preflight requests for Booking API. @param {object} context Cloudflare Pages request with env.MOLIAM_DB binding. @returns Response 204 No Content with Access-Control headers. */
 export async function onRequestOptions(context) {
   return new Response(null, {
@@ -60,8 +53,6 @@ export async function onRequestOptions(context) {
     }
   });
 }
-
-
 /**
  * Handle POST requests to Booking API endpoints - create/confirm/cancel/reschedule bookings
  * POST /api/appointments?action=create - Create new appointment from prequalification
@@ -83,36 +74,27 @@ export async function onRequestPost(context) {
   } catch (err) {
     return jsonResp(400, {success: false, message: "Invalid JSON body." }, request);
   }
-
   const { action, appointment_id, reschedule_date } = body;
-
   switch (action) {
     case 'create':
       return createAppointment(context, body, request);
-
     case 'confirm':
       return updateAppointmentStatus(context, appointment_id, 'confirmed', request);
-
     case 'cancel':
       return updateAppointmentStatus(context, appointment_id, 'cancelled', request);
-
     case 'reschedule':
       if (!reschedule_date) {
         return jsonResp(400, {success: false, message: "Reschedule date required" }, request);
       }
      return rescheduleAppointment(context, appointment_id, reschedule_date, request);
-
     case 'completed':
       return updateAppointmentStatus(context, appointment_id, 'completed', request);
-
     case 'no_show':
       return handleNoShow(context, appointment_id, request);
-
     default:
       return jsonResp(400, {success: false, message: "Unknown action" }, request);
   }
 }
-
 /**
  * Handle PUT requests to Booking API - reschedule appointment date/time
  * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
@@ -120,10 +102,8 @@ export async function onRequestPost(context) {
 export async function onRequestPut(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
-
 const putPath = context.request.url.split('/api/appointments/')[1] || '';
 if (!putPath) return jsonResp(400, {success: false, message: "Appointment ID required" }, request);
-
 const appointmentId = parseInt(putPath);
   let updateBody;
   try {
@@ -131,26 +111,20 @@ const appointmentId = parseInt(putPath);
   } catch (err) {
     return jsonResp(400, {success: false, message: "Invalid JSON body."}, request);
   }
-
   const { scheduled_at } = updateBody || {};
   if (!scheduled_at) {
     return jsonResp(400, {success: false, message: "Scheduled date required"}, request);
   }
-
   const res = await db.prepare(
        "UPDATE appointments SET scheduled_at = ?, updated_at = datetime('now') WHERE id = ?"
    ).bind(scheduled_at, appointmentId).run();
-
   if (res.success && res.meta?.rows_changed > 0) {
     return jsonResp(200, {success: true, updated: true}, request);
   }
-
   console.error("Update failed:", res);
   return jsonResp(400, {success: false, message: "Update failed. Appointment not found."}, request);
 }
-
 // Helper functions
-
 /**
  * Create appointment record in database for prequalified leads
  * Non-exported helper that executes DB insert with parameterized queries, logs to audit trail, and returns JSON response
@@ -162,7 +136,6 @@ const appointmentId = parseInt(putPath);
 async function createAppointment(context, body, request) {
   try {
     const db = context.env.MOLIAM_DB;
-
     const { 
       prequalification_id,
       client_name, 
@@ -171,11 +144,9 @@ async function createAppointment(context, body, request) {
       duration_minutes = 30,
       calendar_link 
         } = body;
-
     if (!prequalification_id || !scheduled_at) {
          return jsonResp(400, {success: false, message: "Pre-qual ID and scheduled date required." }, request);
        }
-
        // Input validation
     const clientName = (client_name || "").trim();
     if (clientName.length > 254) {
@@ -189,23 +160,18 @@ async function createAppointment(context, body, request) {
     if (calendarLink && calendarLink.length > 254) {
       return jsonResp(400, {success: false, message: "Calendar link cannot exceed 254 characters." }, request);
        }
-
     const res = await db.prepare(
           "INSERT INTO appointments (prequalification_id, client_name, client_email, scheduled_at, calendar_link) VALUES (?, ?, ?, ?, ?)"
      ).bind(prequalification_id || null, clientName || null, clientEmail || null, scheduled_at, calendarLink || null).run();
-
     if (!res.success) {
          return jsonResp(500, {success: false, message: "Booking failed." }, request);
        }
-
-
     return jsonResp(201, { error: true, success: true, appointment_id: res.meta.last_row_id }, request);
    catch (err) {
      console.error("createAppointment error:", err);
      return jsonResp(500, {success: false, message: "Database query failed." }, request);
      }
 }
-
 /**
  * Update appointment status in database and trigger follow-up actions
  * Non-exported helper that executes DB UPDATE with parameterized queries, handles no-show retry logic via handleNoShow(), logs to audit trail
@@ -217,29 +183,46 @@ async function createAppointment(context, body, request) {
  */
 async function updateAppointmentStatus(context, id, status, request) {
   const db = context.env.MOLIAM_DB;
-
   try {
     const res = await db.prepare(
            "UPDATE appointments SET status = ?, updated_at = datetime('now') WHERE id = ?"
      ).bind(status, id).run();
-
     if (res.success && res.meta.rows_changed > 0) {
       // If no-show, handle retry logic - log only without unimplemented function
       if (status === 'no_show' || status === 'completed') {
         console.log(`[audit] appointment=${id} action=${status}`);
           }
      }
-
     return jsonResp(200, { error: true, success: true, updated: status }, request);
     } catch (err) {
     console.error("updateAppointmentStatus error:", err.message);
      return jsonResp(500, {success: false, message: "Update failed." }, request);
     }
 }
-
 /**
- * Send reschedule confirmation email via MailChannels
+ * Send reschedule confirmation email via MailChannels - async fire-and-forget pattern
+ * Non-exported function that handles email delivery without blocking response, suppresses errors gracefully
  * @param {object} appointment - Appointment object with client_email and scheduled_with fields
  * @returns {Promise<null>} Null on success (errors logged to console only)
  */
-
+async function sendRescheduleEmail(appointment) {
+  try {
+    if (!appointment || !appointment.client_email) return null;
+    const MAILCHANNELS_API_KEY = context.env.MAILCHANNELS_API_KEY;
+    if (!MAILCHANNELS_API_KEY) return null;
+    
+    await fetch('https://api.mailchannels.net/tx/v1/send', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${MAILCHANNELS_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: "bookings@moliam.com",
+        to: [{ email: appointment.client_email, name: appointment.client_name }],
+        subject: "Appointment Rescheduled - Moliam",
+        content: [{ type: "text/plain", value: `Your appointment with ${appointment.client_name} has been rescheduled. New time: ${appointment.scheduled_at}` }]
+      })
+    });
+  } catch (err) {
+    console.warn("sendRescheduleEmail failed:", err.message);
+  }
+  return null;
+}

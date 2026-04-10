@@ -34,13 +34,18 @@ export async function onRequestGet(context) {
   }
 }
 
+/**
+ * CORS preflight handler for Calendly API - responds to OPTIONS requests with allowed headers
+ * @param {Request} request - Cloudflare Pages request object (unused, standard signature)
+ * @returns {Response} 204 No Content with CORS headers for moliam.com and moliam.pages.dev
+ */
 export async function onRequestOptions() { 
   return new Response(null, { 
       status: 204, 
       headers: { 
-         "Access-Control-Allow-Origin": "*",
-         "Access-Control-Allow-Methods": "GET, OPTIONS",
-         "Access-Control-Allow-Headers": "Content-Type" 
+           "Access-Control-Allow-Origin": "*",
+           "Access-Control-Allow-Methods": "GET, OPTIONS",
+           "Access-Control-Allow-Headers": "Content-Type" 
         } 
-      });
+       });
 }

@@ -113,10 +113,14 @@ export async function onRequestPost(context) {
   }
 }
 
-// CORS preflight handler for all endpoints - supports moliam.com, moliam.pages.dev, and development URLs
+/**
+ * CORS preflight handler for Followup API - responds to OPTIONS requests with allowed headers
+ * @param {Request} request - Cloudflare Pages request object with origin header
+ * @returns {Response} 204 No Content with CORS headers for moliam.com and moliam.pages.dev
+ */
 export async function onRequestOptions(request) {
   const origin = request.headers.get('Origin') || '*';
-  // Restrict to moliam domains for production security, allow * for dev/testing
+   // Restrict to moliam domains for production security, allow * for dev/testing
   const allowedOrigins = ['https://moliam.com', 'https://moliam.pages.dev'];
   const effectiveOrigin = allowedOrigins.includes(origin) ? origin : (process.env.NODE_ENV === 'production' ? '*' : origin);
   const headers = new Headers({
