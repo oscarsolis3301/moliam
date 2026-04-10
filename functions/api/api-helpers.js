@@ -234,7 +234,7 @@ export function validateRequiredFields(data, fields) {
    // Categorize based on score: hot (80+), warm (40-79), cold (<40)
    const category = total_score >= 80 ? "hot" : total_score >= 40 ? "warm" : "cold";
    
-   return {
+    return {
    score: total_score,
    category,
    base_score,
@@ -242,5 +242,30 @@ export function validateRequiredFields(data, fields) {
    urgency_boost: urgencyBoost,
    budget_fit_score: budgetFitScore,
    total_score
-   };
-   }
+    };
+}
+
+/**
+ * Normalize API responses to ensure consistent {success, data} or {success, error} structure
+ * Handles edge cases where error field is boolean (true/false) vs string message
+ * @param {object} response - Response object with success/error/data fields
+ * @returns {object} Normalized response with proper structure
+ */
+export function balanceSuccessError(response) {
+  if (!response || typeof response !== 'object') return { success: false, error: "Invalid response format" };
+  
+  const normalized = { ...response };
+  delete normalized.error;  // Remove boolean error flag if present
+  
+  // If original had string error, keep it; otherwise remove error field entirely
+  if (typeof response.error === 'string') {
+    normalized.error = response.error;
+  }
+  
+  // Always ensure success field exists
+  if (typeof normalized.success !== 'boolean') {
+    normalized.success = true;
+  }
+  
+  return normalized;
+}
