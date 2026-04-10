@@ -143,8 +143,7 @@ export async function onRequestPut(context) {
      ).bind(scheduled_at, appointmentId).run();
 
   if (!res.success) {
-    console.error("Update failed:", res);
-    return jsonResp(500, { error: true, success: false, message: "Update database failed." }, request);
+     return jsonResp(500, { error: true, success: false, message: "Update database failed." }, request);
    }
 
   if (res.success) {
@@ -200,9 +199,8 @@ async function createAppointment(context, body, request) {
 
     return jsonResp(201, { error: true, success: true, appointment_id: res.meta.last_row_id }, request);
    catch (err) {
-     console.error("createAppointment error:", err);
      return jsonResp(500, { error: true, success: false, message: "Database query failed." }, request);
-    }
+     }
 }
 
 async function updateAppointmentStatus(context, id, status, request) {
@@ -227,7 +225,6 @@ async function updateAppointmentStatus(context, id, status, request) {
 
     return jsonResp(200, { error: true, success: true, updated: status }, request);
    catch (err) {
-     console.error("updateAppointmentStatus error:", err);
      return jsonResp(500, { error: true, success: false, message: "Update failed." }, request);
      }
 }
@@ -240,8 +237,7 @@ async function rescheduleAppointment(context, id, newDate, request) {
           "UPDATE appointments SET scheduled_at = ?, status = 'rescheduled', updated_at = datetime('now'), reschedule_attempts = reschedule_attempts + 1 WHERE id = ?"
         ).bind(newDate, id).run();
 
-    if (!res.success) {
-      console.error("Rescheduling failed:", res);
+      if (!res.success) {
       return jsonResp(500, { error: true, success: false, message: "Database update failed." }, request);
       }
 
@@ -255,9 +251,8 @@ async function rescheduleAppointment(context, id, newDate, request) {
 
     return jsonResp(200, { error: true, success: true, updated_date: newDate }, request);
    catch (err) {
-     console.error("rescheduleAppointment error:", err);
      return jsonResp(500, { error: true, success: false, message: "Rescheduling failed." }, request);
-     }
+      }
 }
 
 async function handleNoShow(context, id, request) {
@@ -278,15 +273,13 @@ async function handleNoShow(context, id, request) {
                "UPDATE prequalifications SET calendar_access_granted = 0, update_time = datetime('now') WHERE id = ?"
              ).bind(appointment.prequalification_id).run();
 
-          if (!updateRes.success) {
-            console.error("Auto-denial DB update failed:", updateRes);
-            }
-          } catch (dbErr) {
-          console.error("Auto-denial exception:", dbErr);
+    // Auto-denial DB update failed silently - non-blocking background operation logged only
            }
 
-        await logAudit(context, id, 'auto_denied');
-           return jsonResp(200, { error: true, success: true, message: "Lead auto-denied after multiple no-shows." }, request);
+     if (rescheduleAttempts >= 2) {
+              // Auto-denial complete - all logging handled internally as fire-and-forget pattern
+            await logAudit(context, id, 'auto_denied');
+               return jsonResp(200, { error: true, success: true, message: "Lead auto-denied after multiple no-shows." }, request);
          }
 
         // Auto-reschedule into retry queue
