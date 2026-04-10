@@ -166,8 +166,8 @@ return jsonResp(200, {
  * Lead Scoring Engine — Auto-calculate lead priority
  * Algorithm: Base 40 + budget(0-25) + industry(0-20) + urgency(0-25) = max 100
  * Categories: hot (75+), moderate (60-74), normal (<60)
- * @param {object} data - Lead data with email, name, company, budget, scope, industry, urgency_level, message
- * @returns {{base_score:number,intustry_boost:int,urgency_boost:int,budget_fit_score:int,total_score:int,urgency_status:string,score_breakdown:object}} Scoring result object with components and final total
+ * @param {{email?:string, name:string, company:string, budget:string, scope:string, industry:string, urgency_level:string, message:string}} data - Lead object with all scoring fields
+ * @returns {{base_score:number,intustry_boost:int,urgency_boost:int,budget_fit_score:int,total_score:int,urgency_status:string,score_breakdown:{base_score:number,industry_boost:number,urgencyBoost:number}}} Scoring result with components (total_score capped at 100)
  */
 function calculateLeadScore(data) {
   const { email, name, company, budget, scope, industry, urgency_level, message } = data;

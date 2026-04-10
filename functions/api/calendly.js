@@ -1,5 +1,4 @@
-
-/**
+/*
  * Calendly API - Public link endpoint
  * GET /api/calendly
  * Returns Calendly demo URL and embed status
