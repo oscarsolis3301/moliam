@@ -5,7 +5,7 @@
  * @returns {Response} JSON response with success status or authentication error
  */
 
-import { jsonResp } from '../lib/api-helpers.js';
+import { jsonResp } from './api-helpers.js';
 
 export async function onRequestPost(context) {
   const { request, env } = context;

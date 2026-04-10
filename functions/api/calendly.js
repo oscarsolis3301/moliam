@@ -5,7 +5,7 @@
  * Returns Calendly demo URL and embed status
  */
 
-import { jsonResp } from '../lib/api-helpers.js';
+import { jsonResp } from './api-helpers.js';
 
 /**
  * Handle GET requests to Calendly API - returns Calendly demo URL and embed status for VisualArk booking system

@@ -12,7 +12,7 @@
 /**
  * API Helpers import for standardized error handling and response formatting
  */
-import { jsonResp, balanceSuccessError } from '../lib/api-helpers.js';
+import { jsonResp, balanceSuccessError } from './api-helpers.js';
 
 const API_VERSION = "1.0.0";
 

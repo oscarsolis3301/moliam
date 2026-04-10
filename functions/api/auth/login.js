@@ -6,7 +6,7 @@
  * @returns {Response} JSON response with success/error status and authentication token
  */
 
-import { corsResponse, jsonResp, getAllowedOrigin, hashPassword, generateToken } from '../lib/api-helpers.js';
+import { corsResponse, jsonResp, getAllowedOrigin, hashPassword, generateToken } from './api-helpers.js';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
