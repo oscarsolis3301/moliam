@@ -114,11 +114,15 @@ export async function onRequestPost(context) {
 }
 
 // CORS preflight handler for all endpoints - supports moliam.com, moliam.pages.dev, and development URLs
-export async function onRequestOptions() {
+export async function onRequestOptions(request) {
+  const origin = request.headers.get('Origin') || '*';
+  // Restrict to moliam domains for production security, allow * for dev/testing
+  const allowedOrigins = ['https://moliam.com', 'https://moliam.pages.dev'];
+  const effectiveOrigin = allowedOrigins.includes(origin) ? origin : (process.env.NODE_ENV === 'production' ? '*' : origin);
   const headers = new Headers({
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type"
-  });
+     "Access-Control-Allow-Origin": effectiveOrigin,
+     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+     "Access-Control-Allow-Headers": "Content-Type"
+   });
   return new Response(null, { status: 204, headers });
 }

@@ -277,14 +277,19 @@ console.error("Email error:", e);
 
  */
 export async function onRequestOptions(context) {
+      // Return response based on origin header - prefer moliam domains but allow * for dev/testing
+  const { request } = context || {};
+  const origin = request?.headers?.get('Origin') || '';
+  const allowedOrigins = ['https://moliam.com', 'https://moliam.pages.dev'];
+    const effectiveOrigin = allowedOrigins.includes(origin) ? origin : (process.env.NODE_ENV === 'production' ? '*' : origin);
   return new Response(null, {
     status: 204,
-    headers: {
-       "Access-Control-Allow-Origin": "*",
-       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-       "Access-Control-Allow-Headers": "Content-Type"
-      }
-   });
+    headers:{
+        "Access-Control-Allow-Origin": effectiveOrigin,
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type"
+       }
+    });
 }
 
 /**

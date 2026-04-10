@@ -294,14 +294,18 @@ export async function onRequestPost(context) {
  * @returns {Response} 204 No Content with CORS headers Access-Control-Allow-Origin, Methods, Headers enabled for frontend integration endpoints
  */
 export async function onRequestOptions(context) {
-   // Return response based on origin header from environment or default to all origins
+   // Return response based on origin header - prefer moliam domains but allow wildard for dev
   const { request } = context || {};
+  const origin = request?.headers?.get('Origin') || '';
+  const allowedOrigins = ['https://moliam.com', 'https://moliam.pages.dev'];
+   // Production: restrict to allowed origins, otherwise allow * for testing
+  const effectiveOrigin = allowedOrigins.includes(origin) ? origin : (process.env.NODE_ENV === 'production' ? '*' : origin);
   const headers = new Headers({
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Allow-Credentials": true
-    });
+       "Access-Control-Allow-Origin": effectiveOrigin,
+       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+       "Access-Control-Allow-Headers": "Content-Type, Authorization",
+       "Access-Control-Allow-Credentials": true
+     });
 
   return new Response(null, { status: 204, headers });
 }
