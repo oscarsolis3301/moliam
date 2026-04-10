@@ -167,12 +167,12 @@ async function createAppointment(context, body, request) {
       return jsonResp(400, {success: false, message: "Calendar link cannot exceed 254 characters." }, request);
        }
     const res = await db.prepare(
-          "INSERT INTO appointments (prequalification_id, client_name, client_email, scheduled_at, calendar_link) VALUES (?, ?, ?, ?, ?)"
-     ).bind(prequalification_id || null, clientName || null, clientEmail || null, scheduled_at, calendarLink || null).run();
+           "INSERT INTO appointments (prequalification_id, client_name, client_email, scheduled_at, calendar_link) VALUES (?, ?, ?, ?, ?)"
+      ).bind(prequalification_id || null, clientName || null, clientEmail || null, scheduled_at, calendarLink || null).run();
     if (!res.success) {
-         return jsonResp(500, {success: false, message: "Booking failed." }, request);
+         return jsonResp(500, {success: false, error: "Booking failed." }, request);
        }
-    return jsonResp(201, { error: true, success: true, appointment_id: res.meta.last_row_id }, request);
+    return jsonResp(201, { success: true, data: { appointment_id: res.meta.last_row_id }}, request);
    catch (err) {
      console.error("createAppointment error:", err);
      return jsonResp(500, {success: false, message: "Database query failed." }, request);
@@ -197,9 +197,9 @@ async function updateAppointmentStatus(context, id, status, request) {
       // If no-show, handle retry logic - log only without unimplemented function
       if (status === 'no_show' || status === 'completed') {
         console.log(`[audit] appointment=${id} action=${status}`);
-          }
+           }
      }
-    return jsonResp(200, { error: true, success: true, updated: status }, request);
+    return jsonResp(200, { success: true, data: { updated: status }}, request);
     } catch (err) {
     console.error("updateAppointmentStatus error:", err.message);
      return jsonResp(500, {success: false, message: "Update failed." }, request);
@@ -211,10 +211,10 @@ async function updateAppointmentStatus(context, id, status, request) {
  * @param {object} appointment - Appointment object with client_email and scheduled_with fields
  * @returns {Promise<null>} Null on success (errors logged to console only)
  */
-async function sendRescheduleEmail(appointment) {
+async function sendRescheduleEmail(appointment, requestContext) {
   try {
     if (!appointment || !appointment.client_email) return null;
-    const MAILCHANNELS_API_KEY = context.env.MAILCHANNELS_API_KEY;
+    const MAILCHANNELS_API_KEY = requestContext.env.MAILCHANNELS_API_KEY;
     if (!MAILCHANNELS_API_KEY) return null;
     
     await fetch('https://api.mailchannels.net/tx/v1/send', {

@@ -1,8 +1,9 @@
 /**
  * CRM Webhook Handler - Processes CRM callbacks and updates lead status
  * POST /api/webhooks/lead-updates
+ * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB and env.ADMIN_EMAIL bindings
+ * @returns {Response} JSON response: 200 OK (success), 400 Bad Request (validation errors), 500 Server Error (DB/API failure)
  */
-
 export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
