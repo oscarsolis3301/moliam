@@ -286,44 +286,6 @@ async function initiateCrmSync(env, submission_id, data) {
    }
 }
 
-/**
- * Queue email sequences for new lead submissions (fire-and-forget background task)
- * Non-blocking call that logs errors to console without affecting user response
- * Inserts record into email_queue table for scheduled deliverability  
- * @param {object} env - Worker environment with EMAIL_API_KEY if configured  
- * @param {number} submission_id - Lead submission ID from database  
- * @returns {Promise<null>} null on success (errors logged silently to console.warn)  
- */
-async function queueEmailSequences(env, submission_id) {
-
-    const priorityTag = scoreResult.total_score >= 75 ? "<@1466244456088080569>" : "";
-
-    await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: "Moliam Lead Score Alert",
-        avatar_url: "https://moliam.com/logo.png",
-        content: priorityTag + `Lead scored ${scoreResult.total_score}/100 (${scoreResult.urgency_status})`,
-        embeds: [{
-          title: "🔔 New Lead — High Priority",
-          color: scoreResult.total_score >= 75 ? 0x10B981 : 0xF59E0B,
-          fields: [
-              { name: "Lead Score", value: `${scoreResult.total_score}/100`, inline: true },
-              { name: "Status", value: scoreResult.urgency_status.charAt(0).toUpperCase() + scoreResult.urgency_status.slice(1), inline: true }
-             ],
-          footer: { text: `moliam.com/lead-score` },
-          timestamp: new Date().toISOString()
-         }]
-        })
-     });
-
-    return null; // Success logged separately
-  } catch (err) {
-     console.warn("Discord alert failed:", err.message);
-     return null;
-   }
-}
 
 /**
  * Queue email sequences for new lead submissions (fire-and-forget background task)
