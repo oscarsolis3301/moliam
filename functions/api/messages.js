@@ -98,45 +98,45 @@ function sanitizeAdminMessage(input, isAdmin = false) {
 async function authenticate(request, db) {
   if (!db) return null;
 
-  // Get token from moliam_session cookie for authentication
+// Get token from moliam_session cookie for authentication
   const cookies = request.headers.get("Cookie") || "";
   const url = new URL(request.url);
 
-  // Extract token from cookie or query params
+   // Extract token from cookie or query params
   const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-  let tokenVal = cookieMatch ? cookieMatch[1] : null;
+  let tokenVal=cookieMatch ? cookieMatch[1] : null;
 
-  // Also check query string if not in cookie
+   // Also check query string if not in cookie
   if (!tokenVal) {
     const query = url.searchParams.get('token');
     if (query && query.length > 20) {
-      tokenVal = query;
-    }
-  }
+      tokenVal=query
+     }
+   }
 
   try {
-      // Validate session with parameterized query - uses ? binding to prevent SQL injection
+       // Validate session with parameterized query - uses ? binding to prevent SQL injection
     const session = await db.prepare(
              "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1").bind(tokenVal).first();
 
     if (!session) return null;
 
-      //// Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
+       // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
     if (new Date(session.expires_at) < new Date()) {
-      await db.prepare("DELETE FROM sessions WHERE token=?").bind(tokenVal).run();
+      await db.prepare("DELETE FROM sessions WHERE token=?").run();
       return null;
-       }
+        }
     return {
       id: session?.user_id,
       email: session?.email,
       name: session?.name,
       role: session?.role ? session.role.toLowerCase() : 'user'
-        };
+         };
 
-  } catch (err) {
+   } catch (err) {
     console.warn("authenticate error:", err.message);
     return null;
-  }
+   }
 }
 
 /**
@@ -153,12 +153,14 @@ export async function onRequestGet(context) {
     if (!user) {
       console.error("Not authenticated");
       return jsonResp(401, { success: false, message: "Not authenticated." }, request);
-    }
+     }
 
     if (db === null) {
       console.error("D1 not bound - cannot retrieve messages");
       return jsonResp(503, { success: false, message: "Database unavailable" }, request);
-    }
+     }
+
+      const session = user; // Fixed: use 'user' variable from authenticate, not undefined 'session'
 
     let stmt;
 
