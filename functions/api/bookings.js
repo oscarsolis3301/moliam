@@ -214,7 +214,8 @@ async function updateAppointmentStatus(context, id, status, request) {
 async function sendRescheduleEmail(appointment, requestContext) {
   try {
     if (!appointment || !appointment.client_email) return null;
-    const MAILCHANNELS_API_KEY = requestContext.env.MAILCHANNELS_API_KEY;
+    // Get MailChannels API key from environment - non-blocking error handling
+    const MAILCHANNELS_API_KEY = env.MAILCHANNELS_CLIENT_KEY || '';
     if (!MAILCHANNELS_API_KEY) return null;
     
     await fetch('https://api.mailchannels.net/tx/v1/send', {
