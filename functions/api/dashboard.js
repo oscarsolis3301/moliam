@@ -176,12 +176,37 @@ const session = await db.prepare(
    177|              stats,
    178|                  }, request);
    179|
-   180|} catch (err) {
-   181|    console.error('Dashboard error:', err);
-   182|      return jsonResp(500, { success: false, message: 'Server error.' }, request);
-   183|  }
-   184|}
-   185|
+    } catch (err) {
+      console.error('Dashboard error:', err);
+      return jsonResp(500, { success: false, message: 'Server error.' }, request);
+    }
+}
+
+/**
+ * CORS preflight handler for dashboard endpoints - allows browsers to properly test access
+ * Handles OPTIONS requests with moliam.com and moliam.pages.dev origins only (no wildcards)
+ * @param {object} context - Cloudflare Pages function context
+ * @returns {Response} 204 No Content with proper Access-Control headers
+ */
+export async function onRequestOptions(context) {
+  const allowedOrigins = ['https://moliam.com', 'https://www.moliam.com', 'https://moliam.pages.dev'];
+  const origin = context.request.headers.get('Origin');
+  
+  if (allowedOrigins.includes(origin)) {
+    return new Response(null, {
+      headers: {
+        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, moliam_session',
+        'Access-Control-Max-Age': '86400',
+        'Vary': 'Origin'
+      }
+    });
+  }
+  
+  return new Response(null, { status: 204 });
+}
+
    186|/**
    187| * Handle dashboard data fetch with pagination and filtering capabilities.
    188| * 
