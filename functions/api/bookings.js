@@ -211,6 +211,12 @@ async function updateAppointmentStatus(context, id, status, request) {
  * @param {object} appointment - Appointment object with client_email and scheduled_with fields
  * @returns {Promise<null>} Null on success (errors logged to console only)
  */
+/**
+ * Send reschedule confirmation email via MailChannels - async fire-and-forget pattern
+ * Non-exported function that handles email delivery without blocking response, logs errors to console only
+ * @param {object} appointment - Appointment object with client_email, client_name, scheduled_with fields  
+ * @returns {Promise<null>} Null on success (errors logged to console only), never throws
+ */
 async function sendRescheduleEmail(appointment, requestContext) {
   try {
     if (!appointment || !appointment.client_email) return null;
