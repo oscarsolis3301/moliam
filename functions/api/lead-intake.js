@@ -226,29 +226,14 @@ function calculateLeadScore(data) {
     total_score,
     urgency_status,
     score_breakdown: { base_score, industry_boost, urgencyBoost }
-      };
+       };
+  } catch (err) {
+    console.error("Lead scoring error:", err);
+    return { base_score, industry_boost, urgency_boost, budget_fit_score, total_score, urgency_status, score_breakdown };
+  }
 }
 
 /**
- * CRM Sync - Push to HubSpot/Airtable/Pipedrive (fire-and-forget)
- * Sends lead data to external CRM systems asynchronously without blocking response
- * Uses error handling with console.warn only - non-blocking to user  
- * @param {object} env - Worker environment variables with HUBSPOT_API_KEY, AIRTABLE_API_KEY  
- * @param {number} submission_id - Lead submission ID from database   
- * @param {object} data - Lead object with name, email, phone, company, budget, scope, industry, urgency_level, message  
- * @returns {Promise<null>} Null on success (errors logged to console only)  
- */
-/**
- * CRM Sync - Push to HubSpot/Airtable/Pipedrive (fire-and-forget)
- * Sends lead data to external CRM systems asynchronously without blocking response
- * Uses error handling with console.warn only - non-blocking to user   
- * @param {object} env - Worker environment variables with HUBSPOT_API_KEY, AIRTABLE_API_KEY  
- * @param {number} submission_id - Lead submission ID from database    
- * @param {object} data - Lead object with name, email, phone, company, budget, scope, industry, urgency_level, message  
- * @returns {Promise<null>} Null on success (errors logged to console only)   
- */
-async function initiateCrmSync(env, submission_id, data) {
-  try {
     const CRM_PROVIDER = env.HUBSPOT_API_KEY || env.AIRTABLE_API_KEY;
     
     // Skip if no CRM configured
