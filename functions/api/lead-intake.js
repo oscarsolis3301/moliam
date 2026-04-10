@@ -280,10 +280,10 @@ async function initiateCrmSync(env, submission_id, data) {
       }
 
     return null; // Success logged separately
-   } catch (err) {
-     console.warn("CRM sync failed:", err.message);
-     return null; // Fire and forget - don't propagate errors to user
-   }
+} catch (err) {
+  console.warn("CRM sync failed:", err.message);
+  return null; // Fire and forget - don't propagate errors to user
+}
 }
 
 
