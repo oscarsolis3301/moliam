@@ -47,50 +47,19 @@ if (context.request.url.includes('/list')) {
      }
      }
 
-// Helper to get single appointment by ID - extracted from malformed code section below
-async function getAppointmentById(db, id, request) {
-  const data = await db.prepare("SELECT * FROM appointments WHERE id = ?").bind(id).first();
 
-  if (!data) {
-    return jsonResp(404, {success: false, message: 'Appointment not found.'}, request);
-  }
-
-  return jsonResp(200, { success: true, data: data }, request);
-}
-
-
-/**
- * Handle CORS preflight requests for Booking API   
- * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
- * @returns {Response} 204 No Content with proper Access-Control headers for moliam.com and moliam.pages.dev domains
- */
+/** Handle CORS preflight requests for Booking API. @param {object} context Cloudflare Pages request with env.MOLIAM_DB binding. @returns Response 204 No Content with Access-Control headers. */
 export async function onRequestOptions(context) {
-
   return new Response(null, {
     status: 204,
     headers: {
-         "Access-Control-Allow-Origin": "https://moliam.pages.dev",
-       "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
-       "Access-Control-Allow-Headers": "Content-Type"
-     }
-   });
-}
-
-// Remove the duplicate/obsolete getAppointmentById helper and use inline logic instead
- * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
- * @returns {Response} 204 No Content with proper Access-Control headers for moliam.com and moliam.pages.dev domains
- */
-export async function onRequestOptions(context) {
-
-  return new Response(null, {
-    status: 204,
-    headers: {
-        "Access-Control-Allow-Origin": "https://moliam.pages.dev",
+      "Access-Control-Allow-Origin": "https://moliam.pages.dev",
       "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type"
     }
   });
 }
+
 
 /**
  * Handle POST requests to Booking API endpoints - create/confirm/cancel/reschedule bookings
@@ -276,45 +245,4 @@ async function updateAppointmentStatus(context, id, status, request) {
  * @param {object} appointment - Appointment object with client_email and scheduled_with fields
  * @returns {Promise<null>} Null on success (errors logged to console only)
  */
-async function sendRescheduleEmail(appointment) {
-  try {
-    const subject = "Your appointment has been rescheduled";
 
-    await fetch("https://api.mailchannels.net/tx/v1/send", {
-      method: "POST",
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        personalizations: [{ to: [{ email: appointment.client_email, name: appointment.scheduled_with }] }],
-        from: { email: "hello@moliam.com" },
-        subject,
-        content: [{ type: "text/html", value: `<h3>Your demo call has been rescheduled to a new time.</h3>` }]
-      })
-       });
-     } catch (e) {
-    console.error("Reschedule email error:", e);
-    }
-}
-
-/**
- * Send auto-retry notification email for no-show appointments
- * @param {object} appointment - Appointment object with client info
- */
-async function sendAutoRetryNotice(appointment) {
-  try {
-    await fetch("https://api.mailchannels.net/tx/v1/send", {
-      method: "POST",
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        personalizations: [{ to: [{ email: appointment.client_email }] }],
-        from: { email: "hello@moliam.com" },
-        subject: "Let's Reschedule Your Demo",
-        content: [{ 
-          type: "text/html", 
-          value: "<p>We missed you, no worries! Reply to schedule new time or use your calendar link.</p>"
-          }]
-        })
-      });
-    } catch (e) {
-    console.error("Retry email error:", e);
-   }
-}
