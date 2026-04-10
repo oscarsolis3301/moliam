@@ -89,9 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
       showAlert('Network error. Please try again.', 'error');
       loginBtn.disabled = false;
       loginBtn.classList.remove('loading');
-      console.error('Login error:', error);
-      }
-    });
+       }
+     });
 
      // Helper: Show alert
   function showAlert(message, type = 'error') {
@@ -139,5 +138,4 @@ document.addEventListener('DOMContentLoaded', () => {
     emailInput.classList.add('prefilled');
       }
 
-  console.log('Moliam login handler loaded successfully [v1]');
 });

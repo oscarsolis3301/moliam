@@ -139,18 +139,16 @@
     });
   }
 
-  // Initialize everything on page load
+   // Initialize everything on page load
   function init() {
     setupLazyLoad();
     updateStatusBadges();
     addTouchGestures();
     enhanceMobileTables();
     setupModalUX();
-    
-    console.log('🎨 Dashboard mobile enhancement loaded');
-  }
+   }
 
-  // Run initialization when DOM is ready
+   // Run initialization when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
