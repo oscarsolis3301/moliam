@@ -224,16 +224,26 @@
    224|   224|      };
    225|   225|}
    226|   226|
-   227|   227|/**
-   228|   228| * CRM Sync - Push to HubSpot/Airtable/Pipedrive (fire-and-forget)
-   229|   229| * Sends lead data to external CRM systems asynchronously without blocking response
-   230|   230| * Uses error handling with console.warn only - non-blocking to user
-   231|   231| * @param {object} env - Worker environment variables with HUBSPOT_API_KEY, AIRTABLE_API_KEY
-   232|   232| * @param {number} submission_id - Lead submission ID from database   
-   233|   233| * @param {object} data - Lead object with name, email, phone, company, budget, scope, industry, urgency_level, message
-   234|   234| * @returns {Promise<null>} Null on success (errors logged to console only)
-   235|   235| */
-   236|   236|async function initiateCrmSync(env, submission_id, data) {
+/**
+ * Text slicing utility - truncate text to max length and add ellipsis if truncated
+ * @param {string} text - Text to slice
+ * @param {number} maxLength - Maximum characters allowed (default 1024)
+ * @returns {string} Sliced text, or empty string if no input
+ */
+function sliceText(text, maxLength = 1024) {
+    return typeof text === 'string' && text.length > maxLength ? text.substring(0, maxLength - 3) + '...' : (text || '');
+}
+
+/**
+ * CRM Sync - Push to HubSpot/Airtable/Pipedrive (fire-and-forget)
+ * Sends lead data to external CRM systems asynchronously without blocking response
+ * Uses error handling with console.warn only - non-blocking to user
+ * @param {object} env - Worker environment variables with HUBSPOT_API_KEY, AIRTABLE_API_KEY
+ * @param {number} submission_id - Lead submission ID from database    
+ * @param {object} data - Lead object with name, email, phone, company, budget, scope, industry, urgency_level, message
+ * @returns {Promise<null>} Null on success (errors logged to console only)
+ */
+async function initiateCrmSync(env, submission_id, data) {
    237|   237|  try {
    238|   238|    const CRM_PROVIDER = env.HUBSPOT_API_KEY || env.AIRTABLE_API_KEY;
    239|   239|    

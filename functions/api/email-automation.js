@@ -61,8 +61,7 @@ export async function onCron(event) { /** Check if database bound before attempt
 
     for (const row of result.results || []) { const submission = row?.submission ?? null;
 
-         if (!submission || !submission.email) { await db.prepare(
-               `UPDATE email_sequences SET error_message=`+ "'Missing submission record or email'" + `,email_status='failed' WHERE id=?`).bind(row.id).run();
+if (!submission || !submission.email) { await db.prepare("UPDATE email_sequences SET error_message=?, email_status='failed' WHERE id=?").bind('Missing submission record or email', row.id).run();
 
 
            continue;} try { const templateName = row.sequence_name.split('-')[0].toLowerCase();
@@ -86,12 +85,12 @@ export async function onCron(event) { /** Check if database bound before attempt
          // Mark sequence record as sent/failed based on email API response outcome - always try sending even if result unknown for reliability
 
 
-        await db.prepare(`UPDATE email_sequences SET email_status=${emailSent? "'sent'" : "'failed'"}, sent_at=datetime('now'), email_sent=${emailSent ? "1" : "0"} WHERE id=?`).bind(row.id).run();
+        await db.prepare("UPDATE email_sequences SET email_status=?, sent_at=datetime('now'), email_sent=? WHERE id=?").bind(emailSent ? 'sent' : 'failed', emailSent ? 1 : 0, row.id).run();
 
     if (emailSent) sentCount++;} catch (err) { console.error(`Email send failed for row ${row.id}:`, err.message);
 
 
-       await db.prepare( `UPDATE email_sequences SET error_message=`+ `'${String(err.message).replace(/'/g, "''")}'` + `,email_status='failed', sent_at=datetime('now') WHERE id=?`).bind(row.id).run(); }
+       await db.prepare("UPDATE email_sequences SET error_message=?, email_status='failed', sent_at=datetime(\\'now\\') WHERE id=?").bind(String(err.message).replace(/'/g, "''"), row.id).run(); }
 
      }
 
