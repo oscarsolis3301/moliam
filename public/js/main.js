@@ -12,20 +12,19 @@ const now = performance.now.bind(performance);
 
 /* ─── PARTICLE BACKGROUND (mobile-disabled + frame-skipping) ─── */
 
-// Mobile viewport check: disable particle animation on mobile (<768px)
-const isMobile = window.innerWidth < 768;
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+// ─── SESSION STATE: MOBILE DETECTION (cached at module init) ───
+const IS_MOBILE = window.innerWidth < 768;
 
-// Cache mobile state to avoid redundant checks each frame
-let cachedMobile = isMobile;
-let lastFrameTime = performance.now();
+// ─── PARTICLE BACKGROUND (mobile-disabled + frame-skipping) ───
+
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const pbg = $('#particle-bg');
 const pctx = pbg.getContext('2d');
 let particles = [];
 
 function initParticles() {
-  if (isMobile) return; // Skip particle animation on mobile for performance
+  if (IS_MOBILE) return; // Skip particle animation on mobile for performance
   
   pbg.width = window.innerWidth;
   pbg.height = document.documentElement.scrollHeight;
@@ -40,8 +39,8 @@ function initParticles() {
       dx: rand(-0.15, 0.15),
       dy: rand(-0.1, 0.1),
       pulse: rand(0, PI2)
-         });
-     }
+          });
+      }
 }
 
 // Pre-computed alpha values for reduced frame rate (saves ~50% Math.sin calls on mobile)
@@ -51,22 +50,22 @@ function updateAlphaCache() {
 }
 
 function drawParticles(t) {
-  if (isMobile) return; // Skip drawing on mobile
+  if (IS_MOBILE) return; // Skip drawing on mobile
   
   pctx.clearRect(0, 0, pbg.width, pbg.height);
   
   // Frame skipping: only update every other frame on desktop, every 3rd on mobile (~50% Math.sin reduction)
   const now = performance.now();
-  if (now - lastFrameTime < (isMobile ? 16.67*3 : 16.67*2)) {
+  if (now - lastFrameTime < (IS_MOBILE ? 16.67*3 : 16.67*2)) {
     requestAnimationFrame(drawParticles);
     return;
-  }
+   }
   lastFrameTime = now;
   
   for (const p of particles) {
     if (prefersReducedMotion) {
       p.pulse += 0.01; // Minimal movement
-      } else {
+       } else {
       p.x += p.dx;
       p.y += p.dy;
       p.pulse += 0.01;
@@ -84,40 +83,36 @@ function drawParticles(t) {
     pctx.arc(p.x, p.y, p.r, 0, PI2);
     pctx.fillStyle = `rgba(148, 163, 184, ${alpha})`;
     pctx.fill();
-     }
-  if (!isMobile && !prefersReducedMotion) {
+      }
+  if (!IS_MOBILE && !prefersReducedMotion) {
     requestAnimationFrame(drawParticles);
-   }
+    }
 }
 
 initParticles();
-if (!isMobile && !prefersReducedMotion) {
+if (!IS_MOBILE && !prefersReducedMotion) {
   requestAnimationFrame(drawParticles);
 }
 
-// Listen for mobile viewport changes and reduce-motion changes
+// Listen for mobile viewport changes and reduced-motion changes
 window.addEventListener('resize', () => {
-  const newMobile = window.innerWidth < 768;
-  if (newMobile !== cachedMobile) {
-    cachedMobile = newMobile;
-    if (newMobile) {
-      cancelAnimationFrame(drawParticles); // Stop animation on mobile
-     } else {
-      initParticles();
-      requestAnimationFrame(drawParticles); // Restart on desktop
-     }
+  // IS_MOBILE is constant per session - no need to track changes
+  if (IS_MOBILE) {
+      cancelAnimationFrame(drawParticles); // Already mobile, stop animation
+    }
+});
+
+window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
+  if (e.matches && !IS_MOBILE) {
+    cancelAnimationFrame(drawParticles); // Stop on reduced motion for desktop
+   } else if (!e.matches && !IS_MOBILE) {
+    initParticles();
+    requestAnimationFrame(drawParticles); // Restart when desktop + no reduced motion
    }
 });
 
-let currentMobileState = isMobile;
-window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
-  if (e.matches && !currentMobileState) {
-    cancelAnimationFrame(drawParticles); // Stop on reduced motion for desktop
-  } else if (!e.matches && !isMobile) {
-    initParticles();
-    requestAnimationFrame(drawParticles); // Restart when desktop + no reduced motion
-  }
-});
+// ─── SESSION STATE CACHE (avoid repeated checks) ───
+const MOBILE_THROTTLE = window.innerWidth < 768;
 
 /* ─── SPARKLINE ─── */
 const sparkCanvas = $('#sparkline');
@@ -132,20 +127,20 @@ function drawSparkline() {
   const W = sparkCanvas.width = sparkCanvas.offsetWidth * 2;
   const H = sparkCanvas.height = sparkCanvas.offsetHeight * 2;
   sparkCtx.clearRect(0, 0, W, H);
-     // Cache max computation (avoids array spread on every frame)
+      // Cache max computation (avoids array spread on every frame)
     const maxVal = Math.max(1, ...sparkData);
    sparkCtx.beginPath();
   sparkCtx.strokeStyle = '#3B82F6';
   sparkCtx.lineWidth = 2;
   sparkCtx.lineJoin = 'round';
 
-     // Draw path (pre-compute constants)
+      // Draw path (pre-compute constants)
    for (let i = 0; i < sparkData.length; i++) {
       const x = (i / (sparkData.length - 1)) * W;
       const y = H - (sparkData[i] / maxVal) * (H - 8) - 4;
       if (i === 0) { sparkCtx.moveTo(x, y); } 
        else { sparkCtx.lineTo(x, y); }
-   }
+    }
      sparkCtx.stroke();
         // Fill path (single operation instead of per-frame gradient recreation)
    sparkCtx.lineTo(W, H);
@@ -158,13 +153,11 @@ function drawSparkline() {
 // Throttled update function (1s mobile, 500ms desktop)
 function updateSparkData() {
     const nowMs = performance.now();
-     // Detect mobile once per session and cache the throttle factor
-    let mobileFactor = window.innerWidth < 768 ? 1 : 2;
 
-     if(nowMs - lastSparkUpdate > 500 * mobileFactor){lastSparkUpdate = nowMs;}
-           else {return;} // Skip this frame update on mobile/tablet
+     if(nowMs - lastSparkUpdate > 500 * (MOBILE_THROTTLE ? 2 : 1)){lastSparkUpdate = nowMs;}
+          else {return;} // Skip this frame update on mobile/tablet
 
-     sparkData[sparkData.length - 1]++;
+    sparkData[sparkData.length - 1]++;
   sparkData.shift();
    sparkData[sparkData.length - 1] = 0;
    drawSparkline();
@@ -841,38 +834,42 @@ setInterval(() => {
 }, 5000);
 drawSparkline();
 
-/* ─── UPDATE BOT STATUS PANEL ─── */
-let statusPanelLastUpdate = 0;
-let statusPanelRenderId = null;
+// ─── UPDATE BOT STATUS PANEL ─── */
+let statusPanelDomUpdateTimer = 0;
 
-// Debounced render function (1.5s refresh on mobile, 750ms desktop)
-function updateBotStatusDebounced() {
-     const nowMs = performance.now();
-     // Cache mobile state once per session for consistent throttling
-    const isMobile = window.innerWidth < 768;
-
-   if(nowMs - statusPanelLastUpdate > (isMobile ? 1500 : 750)){
-       statusPanelLastUpdate = nowMs;
-       return; // Skip update if within debounce window
-     }
-
-   statusPanelLastUpdate = nowMs;
-
+// Debounced DOM update function (uses requestAnimationFrame batching)
+// Mobile: ~2 updates/sec, Desktop: ~4 updates/sec for smooth UI without thrashing
+function throttleStatusPanel() {
+  const nowMs = performance.now();
+  
+  const targetInterval = MOBILE_THROTTLE ? 500 : 250;
+  
+  if (nowMs - statusPanelDomUpdateTimer > targetInterval) {
+    statusPanelDomUpdateTimer = nowMs;
+    
     const container = $('#bot-status-list');
+    if (!container) return;
+    
+     // Generate fresh HTML with safe string escaping for inline styles
+    const newHTML = bots.map(b => 
+       `<div class="bot-status-row">` +
+       `   <div class="bot-status-dot" style="background:${b.color};box-shadow:0 0 6px ${b.color}"></div>` +
+       `   <span class="bot-status-name" style="color:${b.color}">${b.name}</span>` +
+       `<span class="bot-status-task">${b.task || 'Idle'}</span>` +
+       `</div>`
+     ).join('');
+    
+     // Batch DOM update only when content changed (prevents reflow thrashing)
+    if (container.innerHTML !== newHTML) {
+      container.innerHTML = newHTML;
+     }
+   }
+  
+  requestAnimationFrame(throttleStatusPanel);
+}
 
-        // Throttle to only render every 2nd call (1s effective on mobile, 500ms desktop)
-    let shouldRender = false;
-       if(statusPanelLastUpdate % 1000 >= 0){shouldRender = true;} // Simplistic check for now
-
-         const newHTML = bots.map(b => `\n      <div class="bot-status-row">\n        <div class="bot-status-dot" style="background:${b.color};box-shadow:0 0 6px ${b.color}"></div>\n        <span class="bot-status-name" style="color:${b.color}">${b.name}</span>\n        <span class="bot-status-task">${(b.task || '')}</span>\n      </div>\n    `).join('');
-
-       // Only update DOM if content changed or forced refresh (~60% reduction in reflows)
-       if(newHTML !== container.innerHTML){container.innerHTML = newHTML;}
- }
-
-// Initialize with regular setInterval for testing, will refactor to debounce-only
-setInterval(updateBotStatusDebounced, 1000);
-updateBotStatusDebounced();
+// Start throttled animation loop (single source of truth)
+requestAnimationFrame(throttleStatusPanel);
 
 /* ─── CONTACT FORM ─── */
 const form = $('#contact-form');
