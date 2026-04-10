@@ -24,20 +24,14 @@ const db = env.MOLIAM_DB;
 
 if (context.request.url.includes('/list')) {
   try {
-    const data = await db.prepare(`
-            SELECT a.*, p.qualification_score, p.budget_range, 
-                   s.name AS lead_name, s.email AS lead_email
-            FROM appointments a
-            LEFT JOIN prequalifications p ON a.prequalification_id = p.id
-             LEFT JOIN submissions s ON p.submission_id = s.id
-            ORDER BY a.scheduled_at DESC
-            LIMIT 50
-                    ).all();
+    const data = await db.prepare(
+        "SELECT a.*, p.qualification_score, p.budget_range, s.name AS lead_name, s.email AS lead_email FROM appointments a LEFT JOIN prequalifications p ON a.prequalification_id = p.id LEFT JOIN submissions s ON p.submission_id = s.id ORDER BY a.scheduled_at DESC LIMIT 50"
+    ).all();
 
     return jsonResp(200, { 
           success: true, 
           data: data 
-               }, request);
+                }, request);
 } catch (err) {
        console.error('GET bookings error:', err);
        return jsonResp(500, {success: false, message: 'Database query failed.' }, request);
