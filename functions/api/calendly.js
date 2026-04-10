@@ -38,13 +38,17 @@ export async function onRequestGet(context) {
  * @param {Request} request - Cloudflare Pages request object (unused, standard signature)
  * @returns {Response} 204 No Content with CORS headers for moliam.com and moliam.pages.dev
  */
-export async function onRequestOptions() { 
+export async function onRequestOptions(context) { 
+  const origin = context.request.headers.get("Origin") || "";
+  const allowedOrigins = new Set(['https://moliam.pages.dev', 'https://moliam.com']);
+  
   return new Response(null, { 
       status: 204, 
       headers: { 
-           "Access-Control-Allow-Origin": "*",
-           "Access-Control-Allow-Methods": "GET, OPTIONS",
-           "Access-Control-Allow-Headers": "Content-Type" 
-        } 
-       });
+             "Access-Control-Allow-Origin": allowedOrigins.has(origin) ? origin : "",
+             "Access-Control-Allow-Methods": "GET, OPTIONS",
+             "Access-Control-Allow-Headers": "Content-Type",
+             "Vary": "Origin"
+         } 
+        });
 }

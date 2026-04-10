@@ -177,22 +177,25 @@ export async function onRequestPost(context) {
       let contactId = 0;
       
       if (existing) {
-        // Update existing contact with partial merge approach
+          // Update existing contact with partial merge approach  
         const updateResult = await db.prepare(
           `UPDATE contacts SET 
              name = ?, 
              phone = COALESCE(NULLIF(?,''), phone),
              company = COALESCE(NULLIF(?,''), company),
-             notes = notes || COALESCE(CONCAT('
-',?),''),
+             notes = notes || COALESCE(CONCAT('\\n',?),''),
              status = CASE WHEN ? IN ('new','contacted','qualified','booked','client','inactive') THEN ? ELSE status END,
-             lead_score = CASE WHEN typeof(?) NOT 'number' OR ? < 0 OR ? > 100 THEN lead_score ELSE LEAD(? OF 0, 100) * (lead_score * 0.5 + ? * 0.5) / 100 END,
+             lead_score = CASE WHEN typeof(?) NOT 'number' OR ? < 0 
+                 THEN lead_score 
+                 WHEN ? > 100 THEN 100 
+                 ELSE (${leadScore} * 0.5 + (lead_score * 0.5) / 100 / 2) 
+               END,
              updated_at = datetime('now')
            WHERE id = ?`
-        ).bind(name, phone, company, notes || "", status, status, leadScore, leadScore, leadScore, leadScore, existing.id).run();
+            ).bind(name, phone, company, notes || "", status, status, leadScore, leadScore, existing.id).run();
 
         contactId = existing.id;
-      } else {
+} else {
         // Insert new contact for the first time (create)
         const insertResult = await db.prepare(
           `INSERT INTO contacts 

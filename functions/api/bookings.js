@@ -45,19 +45,19 @@ return jsonResp(400, {success: false, message: 'Invalid request. Use /list or /i
 /** Handle CORS preflight requests for Booking API. @param {object} context Cloudflare Pages request with env.MOLIAM_DB binding. @returns Response 204 No Content with Access-Control headers. */
 export async function onRequestOptions(context) {
   const { request } = context;
-  const defaultOrigins = new Set(['https://moliam.pages.dev', 'https://moliam.com']);
-  const origin = request.headers.get("Origin") || "*";
+  const allowedOrigins = new Set(['https://moliam.pages.dev', 'https://moliam.com']);
+  const origin = request.headers.get("Origin") || "";
   
   return new Response(null, {
     status: 204,
     headers: {
-       "Access-Control-Allow-Origin": defaultOrigins.has(origin) ? origin : "*",
-       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-       "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
-       "Access-Control-Max-Age": "86400",
-       "Vary": "Origin"
-     }
-   });
+        "Access-Control-Allow-Origin": allowedOrigins.has(origin) ? origin : "",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+        "Access-Control-Max-Age": "86400",
+        "Vary": "Origin"
+      }
+    });
 }
 /**
  * Handle POST requests to Booking API endpoints - create/confirm/cancel/reschedule bookings

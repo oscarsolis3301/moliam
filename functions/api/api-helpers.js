@@ -188,33 +188,14 @@ export function validateRequiredFields(data, fields) {
    * @param {Request} request - Incoming request object
    * @returns {object} CORS header object ready for response
    */
-   export function getCorsHeaders(request) {
-   const defaultOrigins = new Set(['https://moliam.pages.dev', 'https://moliam.com']);
-   const origin = request?.headers.get("Origin") || "*";
-   
-   return {
-   "Content-Type": "application/json",
-   "Cache-Control": "no-cache, no-store, must-revalidate",
-   "Access-Control-Allow-Origin": defaultOrigins.has(origin) ? origin : "*",
-   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
-   "Access-Control-Max-Age": "86400",
-   "Vary": "Origin"
-   };
-   }
+}
    
    /**
    * Parse and validate JSON request body with error handling
    * @param {Request} request - Incoming request object
    * @returns {object} Parsed data or empty object on error
    */
-   export async function parseRequestBody(request) {
-   try {
-   return await request.json();
-   } catch (e) {
-   return {};
-   }
-   }
+}
    
    /**
    * Standardize success response format for all API endpoints
@@ -222,12 +203,7 @@ export function validateRequiredFields(data, fields) {
    * @param {number} status - HTTP status code (default: 200)
    * @returns {{status: number, body: object}} Response object ready for jsonResp wrapper
    */
-   export function makeSuccessResponse(data, status = 200) {
-   return {
-   status,
-   body: { success: true, data }
-   };
-   }
+}
    
    /**
    * Standardize error response format for all API endpoints
@@ -235,12 +211,7 @@ export function validateRequiredFields(data, fields) {
    * @param {number} statusCode - HTTP status code (default: 400)
    * @returns {{status: number, body: object}} Response object ready for jsonResp wrapper
    */
-   export function makeErrorResponse(message, statusCode = 400) {
-   return {
-   status: statusCode,
-   body: { success: false, error: message }
-   };
-   }
+}
    
    /**
    * Calculate lead score based on email, budget, urgency, and service type
