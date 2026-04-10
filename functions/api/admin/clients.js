@@ -41,9 +41,9 @@ function getSessionToken(request) {
  * @returns {Response|object|null} User object, JSON error response (401/403), or null if no token provided
  */
 async function requireAdmin(request, env) {
-  // Get session token from cookies - extracts 32-char hex string for authentication via parameterized queries
+   // Get session token from cookies - extracts 32-char hex string for authentication via parameterized queries
   const token = getSessionToken(request);
-  
+
   if (!token) return jsonResp(401, { success: false, message: "Not authenticated." }, undefined, request);
 
   const db = env.MOLIAM_DB;
@@ -140,7 +140,7 @@ export async function onRequestPost(context) {
   try { data = await request.json(); } catch {
      return jsonResp(400, { success: false, message: "Invalid JSON." }, request); }
 
-      const name = (data.name || "").trim();
+const name = (data.name || "").trim();
       const email = (data.email || "").toLowerCase().trim();
        const company = (data.company || "").trim();
    const phone = (data.phone || "").trim();
