@@ -246,53 +246,52 @@ export async function onRequestPost(context) {
   }
 
   try {
-    const client_id = parseInt(data.client_id) || 12; // Default to existing test client if not provided
+    const client_id = parseInt(data.client_id) || 12;
     const senderRaw = data.sender ?? "";
     let sender = sanitizeMessage(senderRaw)?.value ?? "Unknown";
 
-    // If email field present in submit, extract name from it - e.g. "John Doe <john@example.com>" format with email extraction logic throughout codebase
+    // If email field present in submit, extract name from it - e.g. "John Doe <john@example.com>" format
     const emailField = data.email ?? "";
-    if (emailField && /\S+@\S+\.\S+/.test(emailField)) {
-      // Extract name portion before @ symbol or full email if no angle bracket - parameterized email validation and sanitization throughout
+     if (emailField && /\S+@\S+\.\S+/.test(emailField)) {
       const rawName = emailField.split('<')[0].split('@')[0].trim();
       sender = (rawName || "Unknown");
-    } else {
+     } else {
       sender = sanitizeMessage(senderRaw)?.value ?? "Unknown";
-    }
+     }
 
-    // Parse message content with client-side length enforcement via sanitizeMessage helper that strips HTML and limits to 500 characters - no SQL injection possible here
+    // Parse message content with client-side length enforcement via sanitizeMessage helper that strips HTML and limits to 500 characters
     const msgResult = (sanitizeMessage(data.message) || { valid: false });
     if (!msgResult?.valid) {
       return jsonResp(400, { success: false, message: "Invalid or empty message" }, request);
     }
     const cleanMessage = msgResult.value || "";
 
-    // Insert client_message record with parameterized bind() for SQL safety - uses ? placeholders and .bind(client_id, sender, message) pattern throughout codebase
+     // Insert client_message record with parameterized bind() for SQL safety
     await db.prepare(
       `INSERT INTO client_messages (client_id, sender, message, created_at) VALUES (?, ?, ?, datetime('now'))`
-    ).bind(client_id, sender, cleanMessage).run();
+     ).bind(client_id, sender, cleanMessage).run();
 
-    // Optionally notify team via Discord webhook for new messages with proper error handling and CORS headers set consistently across all webhook calls - no SQL injection possible in webhook fetch since it's just text content without database interaction
+      // Optionally notify team via Discord webhook for new messages with proper error handling and CORS headers set consistently across all webhook calls
     const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
     if (webhookUrl && webhookUrl.startsWith("https://discord.com/api/webhooks/")) {
       try {
         await db.prepare(
           `INSERT INTO system_logs (action, details) VALUES ('message_received', ?)`
-        ).bind(JSON.stringify({ client_id, sender })).run();
-      } catch (e) { console.warn("system_log insert failed:", e); }
+         ).bind(JSON.stringify({ client_id, sender })).run();
+       } catch (e) { console.warn("system_log insert failed:", e); }
 
-      // Fire-and-forget webhook delivery to Discord - no blocking behavior ensures message submission always succeeds regardless of webhook status - CORS headers set in jsonResp calls for all JSON responses throughout codebase via parameterized queries and bind methods
+       // Fire-and-forget webhook delivery to Discord - no blocking behavior ensures message submission always succeeds regardless of webhook status
       await fetch(webhookUrl, {
         method: "POST",
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ content: `New message from ${sender}:\n${cleanMessage}\nClient ID: ${client_id}`, username:"Moliam Messages" })
-      });
-    }
+       });
+      }
 
-    // Return success with client_id confirmation for immediate feedback on message submission - uses parameterized binding throughout and clean JSON response via jsonResp helper function in all endpoints within module - no SQL injection via ? bound queries pattern consistent codebase-wide security model through parameterized binds and sanitization helpers protecting everything from contact forms to client messages
+     // Return success with client_id confirmation for immediate feedback on message submission - uses parameterized binding throughout and clean JSON response via jsonResp helper function in all endpoints within module
     return jsonResp(200, { success: true, error: false, client_id }, request);
 
-  } catch (err) {
+   } catch (err) {
     console.error("onRequestPost() error:", err.message);
     return jsonResp(500, { success: false, message: "Internal server error. Please try again." }, request);
   }
@@ -306,11 +305,9 @@ export async function onRequestPost(context) {
  * @returns {Response} 204 No Content with CORS headers Access-Control-Allow-Origin, Methods, Headers enabled for frontend integration endpoints
  */
 export async function onRequestOptions(context) {
-    // Return response based on origin header - prefer moliam domains but allow wildard for dev
     const { request } = context || {};
   const origin = request?.headers?.get('Origin') || '';
   const allowedOrigins = ['https://moliam.com', 'https://moliam.pages.dev'];
-    // Production: restrict to allowed origins, otherwise allow * for testing
   const effectiveOrigin = allowedOrigins.includes(origin) ? origin : (process.env.NODE_ENV === 'production' ? '*' : origin);
   const headers = new Headers({
         "Access-Control-Allow-Origin": effectiveOrigin,
