@@ -557,13 +557,14 @@ function jsonResp(status, body, request) {
       });
 }
 
-// CORS preflight handler for all endpoints
+// CORS preflight handler for all endpoints with try/catch wrapper
 export async function onRequestOptions(request) {
-  const origin = request ? new URL(request.url).hostname : "moliam.pages.dev";
-  return new Response(null, { 
+  try {  
+    const origin = request ? new URL(request.url).hostname : "moliam.pages.dev";
+    return new Response(null, { 
       status: 204,
       headers: {
-            "Access-Control-Allow-Origin": `https://${origin}`,
+             "Access-Control-Allow-Origin": `https://${origin}`,
            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Auth-Token"
           }

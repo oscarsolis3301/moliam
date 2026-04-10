@@ -41,8 +41,7 @@ if (!token) {
 
 // --- Session validation with parameterized query - uses ? binding to prevent SQL injection ---
 const session = await db.prepare(
-               "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1 AND s.expires_at > datetime('now')"
-           ).bind(token).first();
+                "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1 AND s.expires_at > datetime('now')"\n           ).bind(token).first();
     47|
     48|    if (!session) {
     49|      return jsonResp(401, { success: false, message: "Session invalid or expired." }, request);

@@ -184,38 +184,3 @@ export async function onLeadMonitor(event) {
   return jsonResp(200, { success: true, hot_leads_processed: hotLeadsProcessed });
 }
 
-/** Lead Monitoring Check - triggers for high-score lead follow-up rules via scheduled cron handler with automatic hot lead escalation detection */
-export async function onLeadMonitor(event) {
-
-
-      const db = event.env.MOLIAM_DB;
-
-
-  if (!db) return jsonResp(503, { success: false, message:"Database not bound." });
-
-       // Find all hot leads (score>=75) with no response in last hour for priority handling - secure parameterized query below
-
-
-    const result = await db.prepare(
-           `SELECT s.*, l.status as lead_status FROM submissions s LEFT JOIN leads l ON s.id=l.submission_id WHERE s.lead_score>=75 AND s.status='new' AND (s.updated_at IS NULL OR s.updated_at < datetime('now', '-1 hour'))`).all();
-
-       let hotLeadsProcessed=0;
-
-
-    for (const lead of result.results ||[]) { try { const discordWebhookUrl = event.env.DISCORD_WEBHOOK_URL ?? '';
-
-           // Send Discord alert for hot leads to priority monitoring channel for rapid human response team escalation process requirements
-
-
-        if (discordWebhookUrl?.startsWith('https://discord.com/api/webhooks/')) { await fetch(discordWebhookUrl, { method: "POST", headers:{"Content-Type":"application/json"},
-
-          body: JSON.stringify({username:'Moliam Priority Alert', embeds:[{ title:`🚨 High-Priority Lead - ${lead.lead_score}/100`, color: 0x22c55e, fields: [{name:"Name", value:String(lead.name),inline:true},{name:"Email",value:String(lead.email),inline:true}] }]) });
-
-         console.log(`[HOT LEAD] ${lead.email} scored ${lead.lead_score}`); hotLeadsProcessed++;
-
-           } catch (err) { console.error(`Discord alert failed:`, err.message); }
-
-
-       } catch (err) { console.error(`Lead monitoring error for lead ${lead.id}:`, err.message); }
-
-       return jsonResp(200, { success:true, hot_leads_processed: hotLeadsProcessed });
