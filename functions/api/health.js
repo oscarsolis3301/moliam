@@ -37,42 +37,32 @@ export async function onRequestGet(context) {
 
     // 1) D1 connectivity check
     let databaseStatus = "connected";
-    let dbError = null;
     try {
       const check = await db.prepare("SELECT 1 AS ping").first();
       databaseStatus = check?.ping === 1 ? "connected" : "unexpected_result";
     } catch (err) {
       databaseStatus = "error";
-      dbError = err.message;
     }
 
     // 2) Table list with row counts
-    let tables = [];
-    let tableCount = 0;
-    let tablesError = null;
     try {
-      const { results: tablesRaw } = await db.prepare(
-        "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' ORDER BY name"
-      ).all();
+const { results: tablesRaw } = await db.prepare(
+         "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' ORDER BY name"
+       ).all();
 
       const tableInfo = [];
       for (const t of tablesRaw) {
         try {
           const row = await db.prepare(
-            "SELECT COUNT(*) AS cnt FROM ?"
-          ).bind(t.name).first();
+             "SELECT COUNT(*) AS cnt FROM ?"
+           ).bind(t.name).first();
           tableInfo.push({ name: t.name, row_count: row?.cnt ?? 0 });
-        } catch {
+         } catch {
           tableInfo.push({ name: t.name, row_count: "error" });
-        }
-      }
-      tables = tableInfo;
-      tableCount = tableInfo.length;
-    } catch (err) {
-      tablesError = err.message;
-    }
+         }
+       }
 
-    // 3) Quick data integrity checks
+     // 3) Quick data integrity checks
     const integrity = {};
     try {
       // Admin exists?
@@ -96,19 +86,17 @@ export async function onRequestGet(context) {
       // Non-fatal — tables may not exist yet
     }
 
-    const result = balanceSuccessError({ 
+const result = balanceSuccessError({ 
       success: true, 
       api_version: API_VERSION,
       status: databaseStatus === "error" ? "degraded" : "ok",
       timestamp: new Date().toISOString(),
       database: databaseStatus,
-      tables,
-      table_count: tableCount,
-      db_error: dbError,
-      tables_error: tablesError,
+      tables: tableInfo,
+      table_count: tableInfo.length,
       integrity,
       uptime_note: "Serverless — no persistent uptime"
-    });
+     });
 
     return jsonResp(databaseStatus === "error" ? 503 : 200, result);
   } catch (err) {
