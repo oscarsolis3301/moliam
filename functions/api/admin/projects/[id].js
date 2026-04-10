@@ -21,6 +21,7 @@ export async function onRequestOptions() {
  * @returns {Promise<Response|object>} JSON error Response for auth failures, session object for success
  */
 async function requireAdmin(request, env) {
+<<<<<<< HEAD
   const token = getSessionToken(request);
   if (!token) return jsonResp(401, { success: false, message: "Not authenticated." }, undefined, request);
 
@@ -28,6 +29,21 @@ async function requireAdmin(request, env) {
   const session = await db.prepare(
     "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
   ).bind(token).first();
+=======
+  const cookies = request.headers.get("Cookie") || "";
+  const match = cookies.match(/moliam_session=([a-f0-9]+)/);
+  const token = match ? match[1] : null;
+
+  if (!token) return jsonResp(401, { success: false, message: "Not authenticated." }, undefined, request);
+
+   // Validate session via parameterized query - uses ? binding for SQL safety - no injection possible here
+  const db = env.MOLIAM_DB;
+  const session = await db.prepare(
+       "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
+
+
+     ).bind(token).first();
+>>>>>>> origin/main
 
   if (!session) return jsonResp(401, { success: false, message: "Not authenticated." }, undefined, request);
   if (session.role !== "admin" && session.role !== "superadmin") return jsonResp(403, { success: false, message: "Admin access required." }, undefined, request);
@@ -153,6 +169,7 @@ export async function onRequestPatch(context) {
 
   try {
 
+<<<<<<< HEAD
       // Get number of dynamic columns being updated - count the updates array length
      const num_updates = updates.length;
       
@@ -167,6 +184,10 @@ export async function onRequestPatch(context) {
              await db.prepare(
                  "UPDATE projects SET status = ?, monthly_rate = ?, notes = ?, updated_at=datetime('now') WHERE id = ?"
              ).bind(...params).run();
+=======
+      // Execute parameterized UPDATE query - uses ? placeholders for SQL safety with all binds array values
+      await db.prepare(`UPDATE projects SET ${updates.join(", ")}, updated_at=datetime('now') WHERE id=?`).bind(...binds).run();
+>>>>>>> origin/main
 
       // If status changed, log the transition in project_updates history table for audit trail tracking
   if (data.status) {

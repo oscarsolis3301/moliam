@@ -1,0 +1,36 @@
+/* Dashboard Page - Consolidated Style Rules */
+
+/* Skeleton loader wrapper */
+.skeleton-wrapper { display: grid; }
+.skeleton-stats-wrapper { display: none; }
+
+/* Auth error message container */
+.auth-error-message { text-align: center; padding: 48px; }
+.auth-error-message h2 { margin-bottom: 16px; }
+
+/* Staggered animation delays for cards */
+.animate-delay-1 { animation-delay: 0.1s; }
+.animate-delay-1-5 { animation-delay: 0.15s; }
+.animate-delay-1-4 { animation-delay: 0.2s; }
+.animate-delay-dynamic { animation-duration: 0.05s; animation-delay: var(--dynamic-delay, 0); }
+
+/* Timeline description style */
+.timeline-description { color: var(--text-secondary); margin-bottom: 8px; }
+
+/* Empty state with font size */
+.empty-state-timeline { font-size: 14px; margin-top: 24px; }
+
+/* Invoice stats styling */
+.invoice-stats-desc { text-align: left; }
+.invoice-stat-row { display: block; margin-bottom: 4px; }
+.invoice-stat-sublabel { font-size: 13px; color: var(--text-secondary); display: block; margin-bottom: 8px; }
+
+/* Skeleton initial hidden state */
+.skeleton-hidden { display: none; }
+.skeleton-visible { display: grid; }
+
+/* Mobile responsive skeleton */
+@media (max-width: 768px) {
+    .skeleton-stats-wrapper { display: none; }
+    .invoice-stat-row { margin-bottom: 2px; }
+}

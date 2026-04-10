@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 /* ═══════════════════════════════════════════
    DESIGN TOKENS
@@ -1081,10 +1082,86 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   .pf-nav-next,
   .pf-nav-submit {
     margin-left: 0;
+=======
+:root {
+    --accent-blue: #3B82F6;
+    --accent-green: #10B981;
+    --accent-amber: #F59E0B;
+    --accent-purple: #8B5CF6;
+    --text-dim: #6B7280;
+}
+
+/* Mobile HUD responsive styles */
+@media (max-width: 768px) {
+  #hud { 
+    padding: 0 12px; 
+    height: auto; 
+    min-height: 52px; 
+  }
+  #hud .left .logo { 
+    font-size: 13px; 
+  }
+  #hud .center {
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    width: 100%;
+    order: 2;
+    background: rgba(11, 14, 20, 0.95);
+    border-radius: 6px;
+    padding: 8px;
+    margin-top: 8px;
+    display: flex;
+  }
+  .stat-block {
+    min-width: 64px;
+    padding: 4px 6px;
+    text-align: center;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .stat-block .label {
+    font-size: 7px;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    white-space: normal;
+    word-break: break-word;
+  }
+  .stat-block .value {
+    font-size: 14px;
+    min-height: 17px;
+  }
+  #hud .right {
+    gap: 8px;
+    margin-left: auto;
+  }
+  /* Ensure touch targets are at least 44x44px */
+  .speed-btn { 
+    padding: 10px 12px; 
+    font-size: 11px; 
+    min-height: 44px;
+    min-width: 56px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .speed-btn.active { 
+    min-height: 44px;
+  }
+  .fs-btn { 
+    width: 44px;
+    height: 44px; 
+    font-size: 16px;
+  }
+  #canvas {
+    touch-action: manipulation;
+>>>>>>> origin/main
   }
 }
 
 @media (max-width: 480px) {
+<<<<<<< HEAD
   .progressive-form-card {
     padding: 24px 18px 20px;
     border-radius: 16px;
@@ -1749,12 +1826,72 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   --text-dim: #6B7280;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
+=======
+  /* Ultra-mobile - stricter constraints, lock horizontal overflow */
+  #hud { 
+    padding: 0 8px; 
+    gap: 6px; 
+    min-height: 52px; 
+    max-width: 100%;
+  }
+  #hud .left .logo { 
+    font-size: 12px; 
+    white-space: nowrap; 
+    max-width: 100px; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+  }
+  #hud .center { 
+    gap: 6px; 
+    width: 100%; 
+    overflow-x: auto; 
+    scroll-behavior: smooth; 
+    display: flex; 
+  }
+  .stat-block { 
+    min-width: 48px; 
+    padding: 3px 4px; 
+    max-width: 60px; 
+    white-space: nowrap; 
+    text-overflow: ellipsis; 
+    overflow: hidden; 
+  }
+  .stat-block .label { 
+    font-size: 7px; 
+    letter-spacing: 0.04em; 
+    overflow: hidden; 
+  }
+  .stat-block .value { 
+    font-size: 12px; 
+    word-break: normal; 
+  }
+  #hud .right { 
+    gap: 6px; 
+    width: 100%; 
+    display: flex; 
+    justify-content: center; 
+    min-height: 48px; 
+  }
+  /* Ensure touch targets meet 44x44px minimum */
+  .speed-btn { 
+    padding: 8px 6px; 
+    font-size: 10px; 
+    min-width: 44px; 
+    min-height: 44px; 
+  }
+}
+
+/* Prevent horizontal scroll on all screen sizes */
+* { box-sizing: border-box; }
+
+>>>>>>> origin/main
 html, body {
   overflow-x: hidden;
   max-width: 100vw;
   width: 100%;
 }
 
+<<<<<<< HEAD
 body {
   background: var(--bg-deep);
   font-family: 'Inter', system-ui, sans-serif;
@@ -1894,3 +2031,203 @@ body {
 #popover .pop-log div { padding:2px 0; border-bottom:1px solid #374151; color:var(--text-secondary); font-family:'Inter',monospace; }
 #popover .pop-log .ts { color:var(--text-dim); margin-right:6px; }
 .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:middle; }
+=======
+/* ═══════════════════════ INLINED STYLE EXTRACTS ═══════════════════════ */
+/* Common text styles extracted from inline HTML */
+/* Common text styles extracted from inline HTML */
+.moliam-text-muted {
+  margin-bottom: 32px;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.moliam-text-small-center {
+  font-size: 12px;
+  color: var(--text-dim, #6B7280);
+  text-align: center;
+  margin-top: 16px;
+}
+
+/* Links */
+.moliam-link-accent {
+  color: var(--accent-blue, #3B82F6);
+  text-decoration: underline;
+}
+
+/* Utility classes for inline styles moved to CSS */
+.sr-absolute {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  display: none;
+}
+
+.btn-flex-inline {
+  display: inline-flex;
+}
+
+/* ═══════════════════════ END EXTRACTS ════════════════════════ */
+
+/* Accessible Live Region - moved from inline HTML */
+#a11y-live-region {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+""/* ═══════════════════════ MOBILE MENU OVERLAY UTILITY ═══════════════════════ */
+.mobile-menu-overlay {
+  display: none;
+}
+
+/* ═══════════════════════ CARD ICON BACKGROUNDS ═══════════════════════ */
+.card-icon-blue { background: rgba(59,130,246, 0.1); }   #3B82F6 - default blue
+.card-icon-green { background: rgba(16,185,129, 0.1); }  #10B981 - success green
+.card-icon-yellow { background: rgba(245,158,11, 0.1); } #F59E0B - warning orange/yellow
+.card-icon-purple { background: rgba(139,92,246, 0.1); } #8B5CF6 - purple
+
+/* ═══════════════════════ STATS GROUP UTILITY CLASSES ═══════════════════════ */
+.stat-section {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  flex-wrap: wrap;
+  padding: 32px 24px;
+  background: rgba(17,24,39, 0.5);
+  border-top: 1px solid rgba(255,255,255, 0.05);
+  border-bottom: 1px solid rgba(255,255,255, 0.05);
+}
+
+.stat-value-stat {
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.stat-value-blue { color: var(--accent-blue, #3B82F6); }     /* Blue (50+ clients) */
+.stat-value-green { color: var(--accent-green, #10B981); }    /* Green (5.0★ rating) */
+.stat-value-purple { color: var(--accent-purple, #8B5CF6); }  /* Purple (72hr delivery) */
+.stat-value-orange { color: var(--accent-amber, #F59E0B); }    /* Orange (24/7 ops) */
+
+.stat-label-small {
+  font-size: 0.7rem;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 4px;
+}
+
+.stat-align-center {
+  text-align: center;
+}
+
+/* ═══════════════════════ SECTION HEADING STYLES (Line 683) ═══════════════════════ */
+.section-heading-large {
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+/* ═══════════════════════ FLEXBOX LAYOUTS ═══════════════════════ */
+.revealeable-section {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  flex-wrap: wrap;
+  padding: 32px 24px;
+}
+
+.cta-buttons-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ═══════════════════════ FORM INPUT STYLES (Line 558-561) ═══════════════════════ */
+.pf-input {
+  margin-bottom: 12px;
+  background-color: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #fff;
+  width: 100%;
+}
+
+.pf-input::placeholder {
+  color: rgba(255,255,255,0.5);
+}
+
+.pf-input:focus {
+  outline: none;
+  border-color: var(--accent-blue, #3B82F6);
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+}
+
+.form-input-padded {
+  margin-bottom: 12px;
+}
+
+/* ═══════════════════════ BUTTON DISPLAYS (Line 686, 690) ═══════════════════════ */
+/* ═══════════════════════ MISCELLANEOUS INLINE UTILITIES (Line 676, 677, 684) ═══════════════════════ */
+.moliam-small-gray {
+  font-size: 12px;
+  color: var(--text-dim, #6B7280);
+  margin-top: 16px;
+  text-align: center;
+}
+
+.moliam-blue-link {
+  color: var(--accent-blue, #3B82F6);
+  text-decoration: underline;
+}
+
+.cta-plain-text {
+  color: #9CA3AF;
+  margin-bottom: 32px;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.moliam-cta-plain-text {
+  color: #9CA3AF;
+  margin-bottom: 32px;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.body-base {
+  margin: 0;
+  padding: 0;
+  background: rgba(11, 14, 20, 1);
+}
+
+.fieldset-padded {
+  margin-bottom: 16px;
+}
+
+.mobile-footer-copyright {
+  text-align: center;
+  padding: 24px;
+  font-size: 14px;
+  color: #9CA3AF;
+}
+
+.cta-buttons-centered {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ═══════════════════════ END CSS ADDITIONS ════════════════════════ */
+>>>>>>> origin/main

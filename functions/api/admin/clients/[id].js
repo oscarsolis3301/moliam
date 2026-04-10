@@ -5,6 +5,7 @@
  * DELETE — delete client and all their data
  */
 
+<<<<<<< HEAD
 /**
  * GET /api/admin/clients/:id - Retrieve single client details with projects
  * 
@@ -31,6 +32,8 @@
  * @param {Object} context.params - URL params containing client ID as `id`
  * @returns {Response} JSON response with client data or error
  */
+=======
+>>>>>>> origin/main
 export async function onRequestGet(context) {
   const { request, env, params } = context;
   const user = await requireAdmin(request, env);
@@ -43,12 +46,18 @@ export async function onRequestGet(context) {
 
   try {
     const client = await db.prepare(
+<<<<<<< HEAD
        "SELECT id, email, name, company, phone, is_active, created_at, last_login, role FROM users WHERE id = ?"
      ).bind(clientId).first();
+=======
+      "SELECT id, email, name, company, phone, is_active, created_at, last_login, role FROM users WHERE id = ?"
+    ).bind(clientId).first();
+>>>>>>> origin/main
 
     if (!client) return jsonResp(404, { error: true, message: "Client not found." }, request);
 
     const { results: projects } = await db.prepare(
+<<<<<<< HEAD
        "SELECT * FROM projects WHERE user_id = ? ORDER BY created_at DESC"
      ).bind(clientId).all();
 
@@ -94,6 +103,18 @@ export async function onRequestGet(context) {
  * @param {Object} context.params - URL params containing client ID as `id`
  * @returns {Response} JSON response with update success message or error
  */
+=======
+      "SELECT * FROM projects WHERE user_id = ? ORDER BY created_at DESC"
+    ).bind(clientId).all();
+
+    return jsonResp(200, { success: true, client, projects }, request);
+  } catch (err) {
+    console.error("Get client error:", err);
+    return jsonResp(500, { error: true, message: "Server error." }, request);
+  }
+}
+
+>>>>>>> origin/main
 export async function onRequestPatch(context) {
   const { request, env, params } = context;
   const user = await requireAdmin(request, env);
@@ -154,7 +175,11 @@ export async function onRequestPatch(context) {
       const hash = await hashPassword(data.password.trim());
       updates.push("password_hash = ?");
       binds.push(hash);
+<<<<<<< HEAD
      }
+=======
+    }
+>>>>>>> origin/main
 
     if (data.role !== undefined && ["admin", "client"].includes(data.role)) {
       // Only superadmin can change roles
@@ -188,6 +213,7 @@ export async function onRequestPatch(context) {
   }
 }
 
+<<<<<<< HEAD
 
 /**
  * DELETE /api/admin/clients/:id - Permanently remove client and all cascading data
@@ -223,6 +249,8 @@ export async function onRequestPatch(context) {
  * @param {Object} context.params - URL params containing client ID as `id`
  * @returns {Response} JSON response confirming deletion or error message
  */
+=======
+>>>>>>> origin/main
 export async function onRequestDelete(context) {
   const { request, env, params } = context;
   const user = await requireAdmin(request, env);
@@ -288,6 +316,7 @@ async function requireAdmin(request, env) {
   return session;
 }
 
+<<<<<<< HEAD
 /**
  * Extract session token from Cookie header for authentication
  * 
@@ -297,12 +326,15 @@ async function requireAdmin(request, env) {
  * @param {Object} request - Cloudflare Request object
  * @returns {string|null} Hex-encoded session token or null
  */
+=======
+>>>>>>> origin/main
 function getSessionToken(request) {
   const cookies = request.headers.get("Cookie") || "";
   const match = cookies.match(/moliam_session=([a-f0-9]+)/);
   return match ? match[1] : null;
 }
 
+<<<<<<< HEAD
 /**
  * Hash password using salted SHA-256 for user authentication storage
  * 
@@ -313,6 +345,8 @@ function getSessionToken(request) {
  * @param {string} password - Plain text user password (min length 6)
  * @returns {Promise<string>} Lowercase hexadecimal hash string
  */
+=======
+>>>>>>> origin/main
 async function hashPassword(password) {
   const buf = await crypto.subtle.digest("SHA-256",
     new TextEncoder().encode(password + "_moliam_salt_2026")
@@ -320,6 +354,7 @@ async function hashPassword(password) {
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
+<<<<<<< HEAD
 /**
  * Determine allowed Origin header value for CORS policy enforcement
  * 
@@ -333,12 +368,15 @@ async function hashPassword(password) {
  * @param {Object} request - Cloudflare Request object with Origin header
  * @returns {string} Allowed CORS origin for Access-Control-Allow-Origin header
  */
+=======
+>>>>>>> origin/main
 function getAllowedOrigin(request) {
   const origin = request.headers.get("Origin") || "";
   if (origin.includes("moliam.pages.dev") || origin.includes("moliam.com") || origin.includes("localhost")) return origin;
   return "https://moliam.pages.dev";
 }
 
+<<<<<<< HEAD
 /**
  * Generate CORS response headers for API endpoints
  * 
@@ -350,6 +388,8 @@ function getAllowedOrigin(request) {
  * @param {number} status - HTTP status code (default 204 for OPTIONS preflight)
  * @returns {Response} Empty CORS response with security headers
  */
+=======
+>>>>>>> origin/main
 function corsResponse(status) {
   return new Response(null, { status, headers: {
     "Access-Control-Allow-Origin": "https://moliam.pages.dev",
@@ -359,6 +399,7 @@ function corsResponse(status) {
   }});
 }
 
+<<<<<<< HEAD
 /**
  * Unified JSON response helper with CORS header injection
  * 
@@ -375,6 +416,8 @@ function corsResponse(status) {
  * @param {Object|undefined} request - Optional Request object for CORS headers
  * @returns {Response} JSON stringified response with appropriate headers
  */
+=======
+>>>>>>> origin/main
 function jsonResp(status, body, request) {
   return new Response(JSON.stringify(body), { status, headers: {
     "Content-Type": "application/json",
