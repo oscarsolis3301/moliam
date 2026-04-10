@@ -12,16 +12,20 @@ import { jsonResp } from './api-helpers.js';
  * @returns {Response} JSON response with success/data structure containing Calendly URL, or error 500 if exception occurred
  */
 export async function onRequestGet(context) { 
+  const { request, env } = context;
+  if (!env.MOLIAM_DB) {
+    return jsonResp(503, { success: false, error: "Database not bound", data: null }, request);
+  }
   try {
     const result = { 
       success: true,
       data: { 
           url: "https://calendly.com/visualark/demo", 
           embed: true 
-         },
+          },
       error: false 
-       };
-    return jsonResp(200, result, context.request);
+        };
+    return jsonResp(200, result, request);
   } catch (error) {
     console.error("ERROR [calendly.js GET]:", error.message);
     const response = { 
