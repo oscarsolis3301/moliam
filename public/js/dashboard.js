@@ -106,7 +106,7 @@
         for (const update of data.updates.slice(0,15)) {
           if (!update.title && !update.description) continue;
           timelineItems += '<div class="timeline-item"><div class="timeline-dot"></div>' +
-            '<h4>'+update.title||'Project Update+'</h4> ' +
+             '<h4>'+(update.title||'Project Update')+'</h4> '+
             '<p style="color:var(--text-secondary);margin-bottom:8px;">'+(update.description||'No description provided.')+'</p>' +
             '<span class="date">'+new Date(update.created_at||Date.now()).toLocaleString()+'</span></div>';
         }
