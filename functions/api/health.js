@@ -121,10 +121,11 @@ export async function onRequestGet(context) {
 }
 
 /**
- * Handle CORS preflight requests to Health Check endpoint  
- * @returns {Response} 204 No Content with Access-Control headers for moliam.com and moliam.pages.dev
+ * Handle CORS preflight requests to Health Check endpoint   
+ * @param {Request} request - Cloudflare Pages request object (unused, standard signature)
+ * @returns {Response} 204 No Content with CORS headers for moliam.com and moliam.pages.dev
  */
-export async function onRequestOptions() {
+export async function onRequestOptions(request) {
   return new Response(null, {
     status: 204,
     headers: {
