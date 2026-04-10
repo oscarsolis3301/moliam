@@ -186,45 +186,17 @@ export function validateRequiredFields(data, fields) {
    * Generate UUID v4 for unique identifiers (submissions, tokens, etc.)
    * @returns {string} UUID v4 string
    */
-   export function generateUUID() {
-   return crypto.randomUUID();
-   }
-   
-   /**
-   * Check CORS configuration and add appropriate headers
-   * @param {Request} request - Incoming request object
-   * @returns {object} CORS header object ready for response
-   */
+  /**
+     * Generate UUID v4 for unique identifiers (submissions, tokens, etc.)
+     * @returns {string} UUID v4 string
+     */
+    export function generateUUID() {
+    return crypto.randomUUID();
 }
-   
-   /**
-   * Parse and validate JSON request body with error handling
-   * @param {Request} request - Incoming request object
-   * @returns {object} Parsed data or empty object on error
-   */
-}
-   
-   /**
-   * Standardize success response format for all API endpoints
-   * @param {object} data - Payload object to wrap in success response
-   * @param {number} status - HTTP status code (default: 200)
-   * @returns {{status: number, body: object}} Response object ready for jsonResp wrapper
-   */
-}
-   
-   /**
-   * Standardize error response format for all API endpoints
-   * @param {string} message - Human-readable error message
-   * @param {number} statusCode - HTTP status code (default: 400)
-   * @returns {{status: number, body: object}} Response object ready for jsonResp wrapper
-   */
-}
-   
-   /**
-   * Calculate lead score based on email, budget, urgency, and service type
-   * @param {{email: string, company?: string, budget?: string, scope?: string, industry?: string, urgency_level?: string, message?: string}} data - Lead data object
-   * @returns {{score: number, category: string, base_score: number, industry_boost: number, urgency_boost: number, budget_fit_score: number}} Lead scoring result with score (0-100), category (hot/warm/cold), and component scores
-   */
+
+/**
+ * Calculate lead score based on email, budget, urgency, and service type
+     * @param {{email: string, company?: string, budget?: string, scope?: string, industry?: string, urgency_level?: string, message?: string}} data - Lead data object
    export function calculateLeadScore(data) {
    const email = data.email || "";
    const company = data.company || "";

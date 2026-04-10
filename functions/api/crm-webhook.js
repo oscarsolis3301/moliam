@@ -203,7 +203,7 @@ function logPayloadToD1(db, data) {
       }
     }
 
-/** Get webhook origin (for logging/debugging) */
+/** Get webhook origin (for logging/debugging) - Identifies CRM provider from User-Agent header */
 function getWebhookOrigin(request) {
   try {
      const cf = request.headers.get("CF-Connecting-IP");
@@ -214,24 +214,25 @@ function getWebhookOrigin(request) {
            if (userAgent.includes("HubSpot")) return "hubspot";
              if (userAgent.includes("Airtable")) return "airtable";
                if (userAgent.includes("Pipedrive")) return "pipedrive";
-                  }
+                   }
 
     return "unknown";
      } catch {
      return "unknown";
+        }
        }
-      }
 
+/** Helper: Standardized JSON response with CORS headers - returns consistent {success, error, message|data} format */
 function jsonResp(status, body) {
   const responseBody = JSON.stringify(body);
   return new Response(responseBody, {
     status,
     headers: { 
-        "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-           "Access-Control-Allow-Methods": "POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, X-Webhook-Signature",
-             "Cache-Control": "no-store, no-cache"
-               }
-                });
+         "Content-Type": "application/json",
+           "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+             "Access-Control-Allow-Headers": "Content-Type, X-Webhook-Signature",
+              "Cache-Control": "no-store, no-cache"
+                }
+                 });
     }
