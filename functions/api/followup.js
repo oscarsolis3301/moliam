@@ -6,7 +6,7 @@
  * Task 4 Fix: Uses central api-helpers.jsonResp() for consistent {success, data/error} format across all endpoints
  */
 
-import { jsonResp } from './api-helpers.js';
+import { jsonResp } from './lib/standalone.js';
 
 /** Helper: Ensure consistent error response format - wraps errors with success:false and proper error string */
 function ensureErrorResponse(status, message, request = null) {
