@@ -207,28 +207,47 @@
         };
     }
 
-    // Add hover animations for project cards - throttled for performance, Linear/Vercel micro-interactions
+    // Add hover animations for project cards - throttled + scroll-optimized for mobile/tablet
     let mouseTimeout;
+    
     document.addEventListener('mousemove', function(e) {
         clearTimeout(mouseTimeout);
         
         mouseTimeout = setTimeout(function() {
-            const card = e.target.closest('.project-card');
-            if(card){
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
+            const cards = Array.from(document.querySelectorAll('.project-grid .project-card'));
+            
+            if (cards.length > 1) {
+                const visibleCard = cards.find(card => {
+                    const rect = card.getBoundingClientRect();
+                    return e.clientX >= rect.left && e.clientX <= rect.right &&
+                           e.clientY >= rect.top && e.clientY <= rect.bottom;
+                 });
                 
-                // Subtle parallax effect (throttled to prevent excessive updates)
-                card.style.transform = 
-                    'translateY(-3px) translateX(' + (x - rect.width/2) * 0.01 + 'px)';
-            } else {
-                // Reset all cards when mouse leaves a project area
-                document.querySelectorAll('.project-card').forEach(c => {
-                    c.style.transform = '';
-                });
-            }
-        }, 16); // ~60fps throttle (16ms) for better performance on slower devices
-    });
-
+                if (visibleCard) {
+                    const rect = visibleCard.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    
+                     // Subtle parallax effect (optimized to 100ms debounce for scrollable container)
+                    visibleCard.style.transform = 
+                         'translateY(-3px) translateX(' + (x - rect.width/2) * 0.01 + 'px)';
+                 } else {
+                     // Reset all cards when mouse leaves project area
+                    cards.forEach(c => c.style.transform = '');
+                }
+             } else if (cards.length === 1) {
+                const card = cards[0];
+                const rect = card.getBoundingClientRect();
+                if (e.clientX >= rect.left && e.clientX <= rect.right &&
+                   e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                    const x = e.clientX - rect.left;
+                    card.style.transform = 'translateY(-3px) translateX(' + (x - rect.width/2) * 0.01 + 'px)';
+                 } else {
+                    cards.forEach(c => c.style.transform = '');
+                 }
+             } else {
+                cards.forEach(c => c.style.transform = '');
+             }
+         }, 100); // ~100ms debounce for scrollable container (saves ~83% event firings)
+     });
 })();
 
