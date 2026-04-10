@@ -238,16 +238,25 @@ function calculateLeadScore(data) {
  * @param {object} data - Lead object with name, email, phone, company, budget, scope, industry, urgency_level, message  
  * @returns {Promise<null>} Null on success (errors logged to console only)  
  */
+/**
+ * CRM Sync - Push to HubSpot/Airtable/Pipedrive (fire-and-forget)
+ * Sends lead data to external CRM systems asynchronously without blocking response
+ * Uses error handling with console.warn only - non-blocking to user   
+ * @param {object} env - Worker environment variables with HUBSPOT_API_KEY, AIRTABLE_API_KEY  
+ * @param {number} submission_id - Lead submission ID from database    
+ * @param {object} data - Lead object with name, email, phone, company, budget, scope, industry, urgency_level, message  
+ * @returns {Promise<null>} Null on success (errors logged to console only)   
+ */
 async function initiateCrmSync(env, submission_id, data) {
-
+  try {
     const CRM_PROVIDER = env.HUBSPOT_API_KEY || env.AIRTABLE_API_KEY;
     
     // Skip if no CRM configured
     if (!CRM_PROVIDER) return null;
 
     const crmUrl = CRM_PROVIDER.includes('hubspot') 
-         ? 'https://api.hubapi.com/crm/v3/objects/contacts'
-         : (env.AIRTABLE_API_KEY ? 'https://api.airtable.com/v0/' + env.AIRTABLE_APP_ID + '/Leads' : null);
+          ? 'https://api.hubapi.com/crm/v3/objects/contacts'
+          : (env.AIRTABLE_API_KEY ? 'https://api.airtable.com/v0/' + env.AIRTABLE_APP_ID + '/Leads' : null);
 
     if (!crmUrl) return null;
 
@@ -266,25 +275,26 @@ async function initiateCrmSync(env, submission_id, data) {
         lead_score: 50, // Placeholder - actual scoring done in main function
         source: "moliam-web-intake",
         submitted_at: new Date().toISOString()
-      }
-    });
+       }
+     });
 
     const headers = { 'Content-Type': 'application/json' };
 
     if (CRM_PROVIDER.includes('hubspot') && env.HUBSPOT_API_KEY) {
       headers['Authorization'] = `Bearer ${env.HUBSPOT_API_KEY}`;
       await fetch(crmUrl, { method: 'POST', headers, body: payload, signal: AbortSignal.timeout(5000) });
-      } else if (CRM_PROVIDER.includes('airtable') && env.AIRTABLE_API_KEY) {
+    } else if (CRM_PROVIDER.includes('airtable') && env.AIRTABLE_API_KEY) {
       headers['Authorization'] = `Bearer ${env.AIRTABLE_API_KEY}`;
       await fetch(crmUrl, { method: 'POST', headers, body: payload, signal: AbortSignal.timeout(5000) });
-      }
+    }
 
     return null; // Success logged separately
-} catch (err) {
-  console.warn("CRM sync failed:", err.message);
-  return null; // Fire and forget - don't propagate errors to user
+  } catch (err) {
+    console.warn("CRM sync failed:", err.message);
+    return null; // Fire and forget - don't propagate errors to user
+  }
 }
-}
+
 
 
 /**
