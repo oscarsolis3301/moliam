@@ -4,12 +4,12 @@
  * Input validation: email format, text field lengths, HTML stripping
  */
 
-import { jsonResp, validateEmail, validatePhone, sanitizeText, calculateLeadScore } from './api-helpers.js';
+import { 
+  jsonResp, validateEmail, validatePhone, sanitizeText, calculateLeadScore,
+  sendDiscordWebhook, parseRequestBody 
+} from './standalone.js';
 
-/** Helper: consistent JSON error wrapper for all API responses - returns proper {success, error, message|data} format */
-function ensureError(status, message, request) {
-  return jsonResp(status, { success: false, error: message }, request);
-}
+// Import consolidate from standalone.js - reduces duplication from 312KB total backend size
 
 /**
  * Handle POST requests to contact form endpoint
@@ -174,87 +174,21 @@ export async function onRequestPost(context) {
   }
 }
 
-/**
- * Send Discord webhook notification for new lead submissions
- * Skips test/debug emails and handles webhook failures gracefully (non-blocking)
- * @param {object} env - Cloudflare worker environment with DISCORD_WEBHOOK_URL
- * @param {{name: string, email: string, phone: string|null, company: string, message: string, service?: string, score: number, category: string, subId: number}} params - Lead data to send to webhook
- */
-async function sendWebhook(env, { name, email, phone, company, message, service, score, category, subId }) {
-  const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
-  if (!webhookUrl || !webhookUrl.startsWith("https://discord.com/api/webhooks/")) return;
-
-  // Skip test/debug submissions — only real leads get webhooks
-  const skipEmails = ["test@test.com", "test@moliam.com", "debug@moliam.com", "preview@moliam.com", "roman@moliam.com"];
-  if (skipEmails.includes(email) || email.endsWith("@example.com")) return;
-
-  try {
-    const svcRaw = (service || "").toLowerCase();
-    const svcLabel = { website: "Website Build", gbp: "GBP Optimization", lsa: "Google LSA", retainer: "Full Retainer", other: "Other" }[svcRaw] || service || "—";
-
-    // Determine priority tag based on lead_score and category
-    let priorityTag = "";
-    if (category === "hot") {
-      priorityTag = "<@1466244456088080569>";     // Ada - hot leads
-    } else if (category === "warm") {
-      priorityTag = "<@1486921534441259098>";     // Ultra - warm leaves      
-    } else {
-      priorityTag = "";     // cold leads don't need immediate attention tag
-    }
-
-    // Build fields array with lead score and category
-    const fields = [
-      { name: "📧 Email", value: email, inline: true },
-      { name: "📱 Phone", value: phone || "—", inline: true },
-      { name: "🏢 Company", value: company || "—", inline: true },
-      { name: "🎯 Service", value: svcLabel, inline: true },
-      { name: "📊 Lead Score", value: `**${score}/100**`, inline: true },
-      { name: "🏷️ Category", value: `**${category.toUpperCase()}**`, inline: true }
-    ];
-
-    // Add social media fields if provided
-    const s = socials || {};
-    const socialLines = [];
-    if (s.website) socialLines.push(`🌐 [Website](${s.website})`);
-    if (s.gbp) socialLines.push(`📍 [Google Business](${s.gbp})`);
-    if (s.facebook) socialLines.push(`📘 [Facebook](${s.facebook})`);
-    if (s.instagram) socialLines.push(`📸 ${s.instagram.startsWith('http') ? `[Instagram](${s.instagram})` : `@${s.instagram.replace('@','')}`}`);
-    if (s.yelp) socialLines.push(`⭐ [Yelp](${s.yelp})`);
-
-    if (socialLines.length > 0) {
-      fields.push({ name: "🔗 Online Presence", value: socialLines.join("\n") });
-    }
-
-    fields.push({ name: "💬 Message", value: (message || "—").length > 300 ? message.slice(0, 297) + "…" : (message || "—") });
-
-    await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-         username: "Moliam Lead",
-         avatar_url: "https://moliam.com/logo.png",
-         content: priorityTag + (priorityTag ? " New high-priority lead! " : " New lead submitted!"),
-         embeds: [{
-           title: "🔔" + (category === "hot" ? " HOT LEAD —" : category === "warm" ? " Warm Lead —" : " New Lead —") + name,
-           color: category === "hot" ? 0x10B981 : category === "warm" ? 0xF59E0B : 0x3B82F6,
-           fields,
-           footer: { text: `Lead #${subId} • moliam.com` },
-           timestamp: new Date().toISOString()
-         }]
-       })
-    } catch {
-      // Webhook failure is never fatal
-    }
-}
 
 /**
- * Generate SHA256 hash of string for IP/user identification and rate limiting.
- * Uses Web Crypto API (subtle digest) for SHA-256 computation.
- * Returns hex string (lowercase, 64 chars) for use in database queries and caching.
- * @param {string} str - String to hash
- * @returns {Promise<string>} Hex representation of SHA-256 hash (lowercase, 64 characters)
+ * Send Discord webhook with embedded lead/message data - centralized helper from standalone.js
+ * Fire-and-forget pattern: never blocks response, handles failures gracefully
+ * @param {object} env - Worker environment containing DISCORD_WEBHOOK_URL
+ * @param {{name, email, phone, company, message, service, score, category}} params - Lead data payload
  */
-async function hashSHA256(str) {
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+async function sendWebhook(env, { name, email, phone, company, message, service, score, category }) {
+  // Use centralized Discord helper from standalone.js to avoid duplication
+  await sendDiscordWebhook(env, { 
+    email, phone, company, message, leadScore: score, category, priority: category === 'hot' ? '<@1466244456088080569>' : ''
+  });
 }
+
+
+/* ============================================================================
+   MODULE USAGE - contact.js uses standalone.js for: jsonResp, validateEmail, validatePhone, sanitizeText, calculateLeadScore, sendDiscordWebhook
+   ========================================================================== */
