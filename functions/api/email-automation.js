@@ -13,11 +13,26 @@ import { jsonResp } from './api-helpers.js';
 * @param {object} body - Response body object containing success/data/error fields
 * @returns {Response} New Response object with JSON body and appropriate headers
 */
-function jsonResp(status, body) {
+/**
+ * Standard JSON response helper with CORS - moliam.com domains only
+ * @param {number} status HTTP status code for response
+ * @param {object} body Response payload object
+ * @param {Request?} [request] Optional request for origin checking
+ * @returns {Response} JSON response with restrictive CORS headers
+ */
+function jsonResp(status, body, request) {
+  const allowedOrigins = new Set(['https://moliam.pages.dev', 'https://moliam.com']);
+  let corsOrigin = '';
+  
+  if (request && request.headers) {
+    const origin = request.headers.get("Origin");
+    corsOrigin = origin && allowedOrigins.has(origin ? String(origin) : '') ? origin : '';
+   }
+  
   return new Response(JSON.stringify(body), {
     status: typeof status === 'number' ? status : 200,
-    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-  });
+    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": corsOrigin }
+   });
 }
 
 /**

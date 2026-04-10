@@ -188,9 +188,21 @@ export async function onRequestPost(context) {
 }
 
 // Handle CORS preflight requests from Calendly integration
-export async function onRequestOptions() {
+/**
+ * CORS preflight handler for Calendly webhook - allows only moliam.com and moliam.pages.dev origins
+ * @param {object} context Cloudflare Pages request context (standard OPTIONS handler signature)
+ * @returns {Response} 204 No Content with restricted Access-Control-Allow-Origin headers
+ */
+export async function onRequestOptions(context) {
+  const origin = context.request?.headers?.get("Origin") || "";
+  const allowedOrigins = new Set(['https://moliam.pages.dev', 'https://moliam.com']);
+  
   return new Response(null, { 
     status: 204, 
-    headers:{'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type, Calendly-Webhook-Signature'} 
+    headers:{
+      'Access-Control-Allow-Origin': allowedOrigins.has(origin) ? origin : '',
+      'Access-Control-Allow-Methods':'POST, OPTIONS',
+      'Access-Control-Allow-Headers':'Content-Type, Calendly-Webhook-Signature'
+    }
   });
 }

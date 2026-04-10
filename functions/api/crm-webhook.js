@@ -194,12 +194,12 @@ function logPayloadToD1(db, data) {
                });
                }
 
-       return jsonResp(500, { 
+return jsonResp(500, { 
          error: true, 
-          message: "Failed to process webhook",
-           errorCode: 'WEBHOOK_ERROR',
-            requestId: crypto.randomUUID ? crypto.randomUUID() : undefined
-              });
+         message: "Failed to process webhook",
+         errorCode: 'WEBHOOK_ERROR',
+         requestId: crypto.randomUUID ? crypto.randomUUID() : undefined
+         }, request);
       }
     }
 
@@ -222,16 +222,35 @@ function getWebhookOrigin(request) {
        }
       }
 
-function jsonResp(status, body) {
+/**
+ * Create JSON response with CORS headers for moliam.com domains only
+ * Internal helper for crm-webhook.js - validates allowed origins before setting CORS
+ * @param {number} status HTTP status code (200, 400, 500, etc.)
+ * @param {object} body Response payload object with success/error fields
+ * @param {Request?} [request] Optional request for origin header extraction
+ * @returns {Response} JSON response with restrictive CORS headers
+ */
+function jsonResp(status, body, request) {
   const responseBody = JSON.stringify(body);
+  
+  let corsOrigin = '';
+  if (request) {
+    const origin = request.headers.get("Origin");
+    const allowedOrigins = new Set(['https://moliam.pages.dev', 'https://moliam.com']);
+    corsOrigin = allowedOrigins.has(origin ? String(origin) : '') ? origin : '';
+  } else {
+    // Fallback: no CORS header if request not provided
+    corsOrigin = '';
+  }
+  
   return new Response(responseBody, {
     status,
     headers: { 
-        "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-           "Access-Control-Allow-Methods": "POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, X-Webhook-Signature",
-             "Cache-Control": "no-store, no-cache"
-               }
-                });
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": corsOrigin,
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, X-Webhook-Signature",
+      "Cache-Control": "no-store, no-cache"
     }
+  });
+}
