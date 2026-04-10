@@ -105,19 +105,19 @@ async function authenticate(request, db) {
 // Extract token from URL query params or hash as fallback when cookie is not present
   let tokenVal;
   try {
-     // Extract token from cookie and query params cleanly
-  const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-  tokenVal = cookieMatch ? cookieMatch[1] : null;
+      // Extract token from cookie and query params cleanly
+    const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
+    tokenVal = cookieMatch ? cookieMatch[1] : null;
 
-     // Also check query string if not in cookie
-  if (!tokenVal) {
-    const query = url.searchParams.get('token');
-    if (query && query.length > 20) {
-      tokenVal = query;
-         }
-         }
+      // Also check query string if not in cookie
+    if (!tokenVal) {
+      const query = url.searchParams.get('token');
+      if (query && query.length > 20) {
+        tokenVal = query;
+      }
+    }
 
-  if (!tokenVal) return null;
+    if (!tokenVal) return null;
 
 try {
            // Validate session with parameterized query - uses ? binding to prevent SQL injection

@@ -215,21 +215,18 @@ function getWebhookOrigin(request) {
       if (cf && typeof cf === "string") return `ip:${cf}`;
 
         const userAgent = request.headers.get("User-Agent");
-         if (userAgent && typeof userAgent === "string") {
-           if (userAgent.includes("HubSpot")) return "hubspot";\n             if (userAgent.includes("Airtable")) return "airtable";
-               if (userAgent.includes("Pipedrive")) return "pipedrive";
-                   }
-
-    return "unknown";\n        } catch {
-     return "unknown";
-          }
+    if (userAgent && typeof userAgent === "string") {
+      if (userAgent.includes("HubSpot")) return "hubspot";
+      if (userAgent.includes("Airtable")) return "airtable";
+      if (userAgent.includes("Pipedrive")) return "pipedrive";
     }
 
-  const responseBody = JSON.stringify(body);
-  
-  let corsOrigin = '';
-  if (request) {
-    const origin = request.headers.get("Origin");
+    return "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
     const allowedOrigins = new Set(['https://moliam.pages.dev', 'https://moliam.com']);
     corsOrigin = allowedOrigins.has(origin ? String(origin) : '') ? origin : '';
   } else {
