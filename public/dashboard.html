@@ -287,37 +287,29 @@ if (data.projects) {
   document.getElementById('skeleton-stats').style.display = 'grid';
   setTimeout(() => document.getElementById('skeleton-stats').style.display = 'none', 600);
 
-<<<<<<< HEAD
-// Render stats cards with staggered animation delay
-  const statsGrid = document.getElementById('stats-grid');
-  let html='';
-  
-  if (isAdmin) {
-html += '<div class="stat-card animate-delay-1"><div class="label">Clients</div><div class="value" id="total-clients">0</div></div>';
-html += '<div class="stat-card"><div class="label">Active Projects</div><div class="value">'+data.stats.active_projects+'</div></div>';
-// Render stats cards with staggered animation delay
-  const statsGrid = document.getElementById('stats-grid');
-  let html='';
+// Render stats cards - cleaned from merge conflict, keeping local version (newer/simpler)
+  let html = '';
   
   if (isAdmin) {
     html += '<div class="stat-card animate-delay-1"><div class="label">Clients</div><div class="value" id="total-clients">0</div></div>';
     html += '<div class="stat-card animate-delay-1-5"><div class="label">Active Projects</div><div class="value">'+(data.stats?.active_projects||0)+'</div></div>';
-   } else {
+  } else {
     html += '<div class="stat-card animate-delay-1"><div class="label">Active Projects</div><div class="value">'+(data.stats?.active_projects||0)+'</div></div>';
     html += '<div class="stat-card animate-delay-1-5"><div class="label">Monthly Revenue</div><div class="value">$'+(data.stats.monthly_total||0).toLocaleString()+'</div></div>';
-   }
+  }
 
+  const statsGrid = document.getElementById('stats-grid');
   statsGrid.innerHTML = html;
 
-    // Get total client count for admin dashboard mode
+// Get total client count for admin dashboard mode (keep only since it's the cleaner version)
   if (isAdmin) {
     fetch('/api/admin/clients', { credentials: 'include' })
-    .then(r => r.json())
-    .then(c => {
+     .then(r => r.json())
+     .then(c => {
       if (c.clients && c.clients.length > 0) { 
         document.getElementById('total-clients').textContent = c.clients.length; 
       }
-    });
+});
    }
 
     // Render project cards - enhance with hover effects and animations
