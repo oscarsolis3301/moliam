@@ -99,12 +99,14 @@ export async function onRequestPost(context) {
       return handleNoShow(context, appointment_id, request);
     default:
       return jsonResp(400, {success: false, message: "Unknown action" }, request);
-  }
-}
+   }
+   }
+ */
 /**
  * Handle PUT requests to Booking API - reschedule appointment date/time
  * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
  * @returns {Response} JSON response: 200 OK (success), 400 Bad Request (missing ID, invalid JSON), 500 Server Error (DB failure)
+ */
 export async function onRequestPut(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
@@ -200,22 +202,23 @@ async function updateAppointmentStatus(context, id, status, request) {
            }
      }
     return jsonResp(200, { success: true, data: { updated: status }}, request);
-    } catch (err) {
+} catch (err) {
     console.error("updateAppointmentStatus error:", err.message);
      return jsonResp(500, {success: false, message: "Update failed." }, request);
-    }
+     }
 }
+
 /**
  * Send reschedule confirmation email via MailChannels - async fire-and-forget pattern
  * Non-exported function that handles email delivery without blocking response, logs errors to console only
- * @param {object} appointment - Appointment object with client_email, client_name, scheduled_with fields   
+ * @param {object} env - Cloudflare environment with MAILCHANNELS_API_KEY
+ * @param {object} appointment - Appointment object with client_email, client_name, scheduled_with fields    
  * @returns {Promise<null>} Null on success (errors logged to console only), never throws
  */
-async function sendRescheduleEmail(env, appointment, requestContext) {
   try {
     if (!appointment || !appointment.client_email) return null;
-    // Get MailChannels API key from environment - non-blocking error handling
-    const MAILCHANNELS_API_KEY = env.MAILCHANNELS_API_KEY || '';
+     // Get MailChannels API key from environment - non-blocking error handling
+    const MAILCHANNELS_API_KEY = env.MAILCHANNELS_CLIENT_KEY || '';
     if (!MAILCHANNELS_API_KEY) return null;
     
     await fetch('https://api.mailchannels.net/tx/v1/send', {
