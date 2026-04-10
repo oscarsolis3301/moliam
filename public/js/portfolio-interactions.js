@@ -10,7 +10,6 @@ const galleryState = {
 };
 
 function initPortfolioGallery() {
-     console.log('Portfolio Gallery initialized', document.querySelectorAll('.gallery-card').length);
     
    // Add click handlers to all gallery cards  
    const cards = document.querySelectorAll('.gallery-card');
@@ -29,7 +28,6 @@ function initPortfolioGallery() {
        card.dataset.initialOffset = card.style.transform || '';
    });
 
-    console.log(`✅ ${cards.length} gallery cards ready for interaction`);
     // Define handleCardClick to open lightbox with animation
     return initPortfolioGallery;
     }
@@ -86,7 +84,6 @@ function openLightbox(index) {
             // Add modal animation with smooth timing (default 300ms) - already in CSS
           lightbox.classList.add('active');     // Opens the lightbox with opacity transition
     
-          console.log('Lightbox opened:', index, sourceCard?.querySelector('.card-title')?.textContent || 'Untitled');
 
          // Make the lightbox accessible via keyboard too   
          document.addEventListener('keydown', handleLightboxKeydown);
@@ -101,7 +98,6 @@ function closeLightbox() {
     const lightbox = document.getElementById('gallery-lightbox');
      if (lightbox) {
           lightbox.classList.remove('active');      /* Fade out with CSS transition - ease-out timing */
-          console.log('Lightbox closed successfully');
 
          // Remove event listeners   
         document.removeEventListener('keydown', handleLightboxKeydown);
@@ -137,11 +133,9 @@ function handleLightboxKeydown(event) {
          closeLightbox();
      } else if (event.key === 'ArrowLeft') {
         // Navigate backwards through cards - circular navigation implemented!
-        console.log('Previous card:', galleryState.currentCardId - 1);
         openLightbox(Math.max(1, galleryState.currentCardId - 1));
      } else if (event.key === 'ArrowRight') {
          // Navigate forwards through cards with wrap-around - circular navigation implemented!   
-        console.log('Next card:', ((galleryState.currentCardId % 6) + 1).toLocaleString());
        openLightbox(galleryState.currentCardId % 6 + 1); /* Wrap around to start after last */
     }
 
@@ -178,7 +172,6 @@ function handleTouchEnd(e) {
        // Swipe left (from right edge to center) closes the lightbox - mobile UX improvement!
      if (swipeDistance > 100 && window.innerWidth <= 768) {  // Minimum 100px swipe threshold
          closeLightbox();
-         console.log('Swipe detected: closed', galleryState.currentCardId, 'cards');
        }
 
        // Reset touch coordinates
@@ -189,7 +182,6 @@ function handleTouchEnd(e) {
 /* Initialize on page load */
 document.addEventListener('DOMContentLoaded', () => {
       let cardsLoaded = document.querySelectorAll('.gallery-card').length;
-    console.log('Portfolio Gallery loaded with', cardsLoaded, 'cards ready');
 
        // Add click handlers to all gallery cards with proper touch action for mobile
      const cards = Array.from(document.querySelectorAll('.gallery-card'));
@@ -209,16 +201,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
        });
 
-       console.log(`✓ ${cards.length} gallery cards ready for interaction`, window.innerWidth <= 768 ? '(MOBILE optimized)' : '');
-       console.group('PROGRESS CHECK - Portfolio System Status:');
-       console.log('- Cards created and interactive:', cards.length);
-         console.log('- Lightbox system fully implemented: YES - image population, animations, swipe detection');
-         console.log('- Accessibility ARIA labels: ADDED on all 6 cards with proper structure');
-         console.log('- Mobile swipe-to-close functionality: IMPLEMENTED');
-         console.log('- Touch drag-to-close enabled:', window.innerWidth <= 768 ? 'Yes' : 'N/A (desktop)');
 
        // Final status report for both agents - ready testing across all device sizes!
-       console.info('Status: Portfolio Gallery complete and production-ready!', 'Test by clicking cards in the grid on any device.');
 
 })
 
@@ -258,7 +242,6 @@ function handleCardClick(e) {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
-     console.log('Portfolio Gallery loaded:', document.querySelectorAll('.gallery-card').length, 'cards');
     
    // Call library state functions to wire everything together  
     initPortfolioGallery();
@@ -267,19 +250,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const cards = Array.from(document.querySelectorAll('.gallery-card'));
      cards.forEach((card, index) => { /* Add aria-label='Open card #' */ });
 
-        console.log('✅ Gallery fully wired up! Test by clicking cards in the grid.');
 
        // Show progress note - Mavrick + Yagami check both: "Are all 6 cards interactive?"  
-   console.group('PROGRESS CHECK');
-    console.log('- Cards created:', cards.length);    /* Should be 6 */
-    console.log('- Lightbox system integrated: YES'); /* From code above */
-     console.log('- Accessibility ARIA labels: ADDED - all 6 gallery cards have aria-label attributes set with proper keyboard navigation support')    
-    console.log('- Mobile swipe-detection: FULLY IMPLEMENTED - swipe-to-close working on all mobile devices, touch events properly wired')
 
-   console.groupEnd();
 
       // Report completion note for both agents: "Ready for testing on mobile/desktop"  
-   console.info('Status: Both agents should now test this gallery across device sizes.');
 
      // Show success message to console (we can read logs together)  
     alert('Portfolio Gallery Interactive Demo Ready! Click any card to open full image view.');
