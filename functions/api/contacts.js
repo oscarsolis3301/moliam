@@ -576,3 +576,42 @@ export async function onRequestOptions(request) {
           }
       });
 }
+
+/**
+ * Task 4: Webhook dispatch for new contact notifications (Slack/Discord integration)
+ */
+export async function dispatchWebhook(env, contactData, eventType = 'new_contact') {
+  const webhookUrl = env.DISCORD_WEBHOOK_URL;
+  if (!webhookUrl) return null;
+  
+  try {
+    await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        embeds: [{
+          title: eventType === 'booked_status' ? '🎉 Lead Booked!' : '💬 New Contact Received',
+          color: eventType === 'booked_status' ? 2459457 : 5793600, // Green or Blue  
+          fields: [
+            { name: 'Name', value: contactData.name || 'N/A', inline: true },
+            { name: 'Email', value: contactData.email, inline: true },
+            { name: 'Source Channel', value: String(contactData.source), inline: true },
+            { name: 'Lead Score', value: (contactData.lead_score ?? 0).toString() + '%', inline: true },
+            { name: 'Status', value: contactData.status, inline: false }
+          ],
+          footer: { text: 'Moliam CRM' },
+          timestamp: new Date().toISOString()
+        }]
+      })
+    });
+  } catch (e) { 
+    console.error('Webhook dispatch error:', e.message);
+  }
+  return null; // Fire-and-forget, non-blocking HTTP request
+}
+
+export async function sendBookingAlert(env, contactId, data) {
+  if (!env.DISCORD_WEBHOOK_URL || !data || data.status !== 'booked') return null;
+  return dispatchWebhook(env, { id: contactId, ...data }, 'booked_status');
+}
+
