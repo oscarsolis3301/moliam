@@ -345,9 +345,9 @@ if (!data.projects || data.projects.length === 0) {
 for (const update of data.updates.slice(0,15)) {
     if (!update.title && !update.description) continue;
     timelineItems += '<div class="timeline-item"><div class="timeline-dot"></div>' +
-    '<h4>'+update.title'Project Update+'</h4> ' +
-    '<p class="update-desc">'+(update.description'No description provided.')+'</p>' +
-    '<span class="date">'+new Date(update.created_atDate.now()).toLocaleString()+'</span></div>';
+    '<h4>'+update.title+'</h4> ' +
+     '<p class="update-desc">'+(update.description || 'No description provided.')+'</p>' +
+     '<span class="date">'+new Date(update.created_at || Date.now()).toLocaleString()+'</span></div>';
 }
   } else {
 timelineItems = '<div class="empty-state">No updates yet. Your project team will post milestones here.</div>';
@@ -355,10 +355,10 @@ timelineItems = '<div class="empty-state">No updates yet. Your project team will
 
   timeline.innerHTML = timelineItems;
 
-   // Invoice summary calculation from invoices API   
+// Invoice summary calculation from invoices API    
   let totalBilled=0, totalPaid=0, outstanding=0;
-  for (const inv of data.invoices[]) {
-const amt = inv.amount0;
+  for (const inv of data.invoices || []) {
+const amt = inv.amount || 0;
 totalBilled += amt;
 if (inv.status==='paid') totalPaid+=amt; else outstanding+=amt;
   }
