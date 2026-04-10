@@ -173,11 +173,11 @@ export async function onRequestPost(context) {
         title: `❌ Booking Cancelled - ${clientName}`, 
         color: 0xef4444,
         fields: [
-          {name:'Name', value:string(clientName), inline:true},
-          {name:'Email', value: clientEmail ?? "-",inline:true}
-        ]
-      });
-    }
+           {name:'Name', value:String(clientName), inline:true},
+           {name:'Email', value: clientEmail ?? '-',inline:true}
+         ]
+       });
+}
     
     // Always return success so Calendly doesn't retry - errors logged to console silently
     return jsonResp(200, { success: true, message: "Webhook received and processed." });
@@ -188,6 +188,7 @@ export async function onRequestPost(context) {
 }
 
 // Handle CORS preflight requests from Calendly integration
+<<<<<<< HEAD
 /**
  * CORS preflight handler for Calendly webhook - allows only moliam.com and moliam.pages.dev origins
  * @param {object} context Cloudflare Pages request context (standard OPTIONS handler signature)
@@ -205,4 +206,20 @@ export async function onRequestOptions(context) {
       'Access-Control-Allow-Headers':'Content-Type, Calendly-Webhook-Signature'
     }
   });
+=======
+export async function onRequestOptions(context) {
+  const allowedOrigins = ['https://calendly.com', 'https://app.calendly.com'];
+  const origin = context?.request?.headers?.get('Origin');
+  
+  if (allowedOrigins.includes(origin)) {
+     return new Response(null, { 
+      status: 204, 
+       headers:{'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Methods':'POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type, Calendly-Webhook-Signature'} 
+    });
+  } else if (!origin) {
+     return new Response(null, { status: 204 });
+  } else {
+     return new Response(null, { status: 403, body: "Origin not allowed" });
+  }
+>>>>>>> origin/main
 }

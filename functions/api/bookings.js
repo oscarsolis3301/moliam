@@ -144,8 +144,8 @@ const appointmentId = parseInt(putPath);
 /**
  * Create appointment record in database for prequalified leads
  * Non-exported helper that executes DB insert with parameterized queries, logs to audit trail, and returns JSON response
- * @param {object} context - Cloudflare Pages context with env.MOLIAM_DB and env.ADMIN_EMAIL
- * @param {object} body - Request body with prequalification_id, client_name, client_email, scheduled_at, calendar_link, duration_minutes
+ * @param {object} context - Cloudflare Pages context with env.MOLIAM_DB and env.ADMIN_EMAIL  
+ * @param {object} body - Request body with prequalification_id, client_name, client_email, scheduled_at, calendar_link, duration_minutes  
  * @param {Response} request - Original fetch request for CORS headers
  * @returns {Response} JSON response with appointment_id on success or error message
  */
@@ -190,12 +190,12 @@ async function createAppointment(context, body, request) {
 }
 /**
  * Update appointment status in database and trigger follow-up actions
- * Non-exported helper that executes DB UPDATE with parameterized queries, handles no-show retry logic via handleNoShow(), logs to audit trail
+ * Non-exported helper that executes DB UPDATE with parameterized queries, handles no-show retry logic (error logging only), logs to audit trail  
  * @param {object} context - Cloudflare Pages context with env.MOLIAM_DB
  * @param {number} id - Appointment ID to update
  * @param {string} status - Status value ('rescheduled', 'completed', 'cancelled', 'no_show')
- * @param {Response} request - Original fetch request for CORS headers  
- * @returns {Response} JSON response with updated status on success or error message
+ * @param {Response} request - Original fetch request for CORS headers   
+ * @returns {Promise<Response>} JSON response with updated status on success or error message  
  */
 async function updateAppointmentStatus(context, id, status, request) {
   const db = context.env.MOLIAM_DB;
@@ -217,14 +217,15 @@ async function updateAppointmentStatus(context, id, status, request) {
 }
 /**
  * Send reschedule confirmation email via MailChannels - async fire-and-forget pattern
- * Non-exported function that handles email delivery without blocking response, suppresses errors gracefully
- * @param {object} appointment - Appointment object with client_email and scheduled_with fields
- * @returns {Promise<null>} Null on success (errors logged to console only)
+ * Non-exported function that handles email delivery without blocking response, logs errors to console only
+ * @param {object} appointment - Appointment object with client_email, client_name, scheduled_with fields   
+ * @returns {Promise<null>} Null on success (errors logged to console only), never throws
  */
-async function sendRescheduleEmail(appointment, requestContext) {
+async function sendRescheduleEmail(env, appointment, requestContext) {
   try {
     if (!appointment || !appointment.client_email) return null;
-    const MAILCHANNELS_API_KEY = requestContext.env.MAILCHANNELS_API_KEY;
+    // Get MailChannels API key from environment - non-blocking error handling
+    const MAILCHANNELS_API_KEY = env.MAILCHANNELS_API_KEY || '';
     if (!MAILCHANNELS_API_KEY) return null;
     
     await fetch('https://api.mailchannels.net/tx/v1/send', {

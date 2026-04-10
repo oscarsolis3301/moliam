@@ -203,11 +203,15 @@ return jsonResp(500, {
        }
      }
 
+<<<<<<< HEAD
 /**
  * Helper: Get webhook origin for logging/debugging purposes only
  * @param {Request} request - Cloudflare Pages request object
  * @returns {string} Origin identifier string (ip:x, hubspot, airtable, pipedrive, or unknown)
  */
+=======
+/** Get webhook origin (for logging/debugging) - Identifies CRM provider from User-Agent header */
+>>>>>>> origin/main
 function getWebhookOrigin(request) {
   try {
     const cf = request.headers.get("CF-Connecting-IP");
@@ -215,6 +219,7 @@ function getWebhookOrigin(request) {
       if (cf && typeof cf === "string") return `ip:${cf}`;
 
         const userAgent = request.headers.get("User-Agent");
+<<<<<<< HEAD
     if (userAgent && typeof userAgent === "string") {
       if (userAgent.includes("HubSpot")) return "hubspot";
       if (userAgent.includes("Airtable")) return "airtable";
@@ -245,3 +250,31 @@ function getWebhookOrigin(request) {
      }
    });
 }
+=======
+         if (userAgent && typeof userAgent === "string") {
+           if (userAgent.includes("HubSpot")) return "hubspot";
+             if (userAgent.includes("Airtable")) return "airtable";
+               if (userAgent.includes("Pipedrive")) return "pipedrive";
+                   }
+
+    return "unknown";
+     } catch {
+     return "unknown";
+        }
+       }
+
+/** Helper: Standardized JSON response with CORS headers - returns consistent {success, error, message|data} format */
+function jsonResp(status, body) {
+  const responseBody = JSON.stringify(body);
+  return new Response(responseBody, {
+    status,
+    headers: { 
+         "Content-Type": "application/json",
+           "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+             "Access-Control-Allow-Headers": "Content-Type, X-Webhook-Signature",
+              "Cache-Control": "no-store, no-cache"
+                }
+                 });
+    }
+>>>>>>> origin/main

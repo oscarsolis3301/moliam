@@ -43,17 +43,24 @@ export function jsonResp(status, data, request, allowedOrigins = null) {
   });
   
   if (request) {
-    const origin = request.headers.get("Origin") || "*";
-    if (defaultOrigins.has(origin)) headers.set("Access-Control-Allow-Origin", origin);
-    else headers.set("Access-Control-Allow-Origin", "*");
+    const origin = request.headers.get("Origin");
+    if (defaultOrigins.has(origin)) {
+      headers.set("Access-Control-Allow-Origin", origin);
+    } else if (!origin) {
+      // No Origin header (same-origin or server-side call), allow it
+      headers.set("Access-Control-Allow-Origin", "*");
+    } else {
+      // Unknown origin - don't allow, return without CORS headers except Content-Type
+      headers.delete("Access-Control-Allow-Origin");
+    }
     
     headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
     headers.set(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization, X-Requested-With"
-    );
+       "Access-Control-Allow-Headers",
+       "Content-Type, Authorization, X-Requested-With"
+     );
     headers.set("Access-Control-Max-Age", "86400");
-  
+
   return new Response(JSON.stringify(normalizedData), { status, headers });
 }
     
@@ -179,45 +186,17 @@ export function validateRequiredFields(data, fields) {
    * Generate UUID v4 for unique identifiers (submissions, tokens, etc.)
    * @returns {string} UUID v4 string
    */
-   export function generateUUID() {
-   return crypto.randomUUID();
-   }
-   
-   /**
-   * Check CORS configuration and add appropriate headers
-   * @param {Request} request - Incoming request object
-   * @returns {object} CORS header object ready for response
-   */
+  /**
+     * Generate UUID v4 for unique identifiers (submissions, tokens, etc.)
+     * @returns {string} UUID v4 string
+     */
+    export function generateUUID() {
+    return crypto.randomUUID();
 }
-   
-   /**
-   * Parse and validate JSON request body with error handling
-   * @param {Request} request - Incoming request object
-   * @returns {object} Parsed data or empty object on error
-   */
-}
-   
-   /**
-   * Standardize success response format for all API endpoints
-   * @param {object} data - Payload object to wrap in success response
-   * @param {number} status - HTTP status code (default: 200)
-   * @returns {{status: number, body: object}} Response object ready for jsonResp wrapper
-   */
-}
-   
-   /**
-   * Standardize error response format for all API endpoints
-   * @param {string} message - Human-readable error message
-   * @param {number} statusCode - HTTP status code (default: 400)
-   * @returns {{status: number, body: object}} Response object ready for jsonResp wrapper
-   */
-}
-   
-   /**
-   * Calculate lead score based on email, budget, urgency, and service type
-   * @param {{email: string, company?: string, budget?: string, scope?: string, industry?: string, urgency_level?: string, message?: string}} data - Lead data object
-   * @returns {{score: number, category: string, base_score: number, industry_boost: number, urgency_boost: number, budget_fit_score: number}} Lead scoring result with score (0-100), category (hot/warm/cold), and component scores
-   */
+
+/**
+ * Calculate lead score based on email, budget, urgency, and service type
+     * @param {{email: string, company?: string, budget?: string, scope?: string, industry?: string, urgency_level?: string, message?: string}} data - Lead data object
    export function calculateLeadScore(data) {
    const email = data.email || "";
    const company = data.company || "";
@@ -255,7 +234,7 @@ export function validateRequiredFields(data, fields) {
    // Categorize based on score: hot (80+), warm (40-79), cold (<40)
    const category = total_score >= 80 ? "hot" : total_score >= 40 ? "warm" : "cold";
    
-   return {
+    return {
    score: total_score,
    category,
    base_score,
@@ -263,5 +242,30 @@ export function validateRequiredFields(data, fields) {
    urgency_boost: urgencyBoost,
    budget_fit_score: budgetFitScore,
    total_score
-   };
-   }
+    };
+}
+
+/**
+ * Normalize API responses to ensure consistent {success, data} or {success, error} structure
+ * Handles edge cases where error field is boolean (true/false) vs string message
+ * @param {object} response - Response object with success/error/data fields
+ * @returns {object} Normalized response with proper structure
+ */
+export function balanceSuccessError(response) {
+  if (!response || typeof response !== 'object') return { success: false, error: "Invalid response format" };
+  
+  const normalized = { ...response };
+  delete normalized.error;  // Remove boolean error flag if present
+  
+  // If original had string error, keep it; otherwise remove error field entirely
+  if (typeof response.error === 'string') {
+    normalized.error = response.error;
+  }
+  
+  // Always ensure success field exists
+  if (typeof normalized.success !== 'boolean') {
+    normalized.success = true;
+  }
+  
+  return normalized;
+}

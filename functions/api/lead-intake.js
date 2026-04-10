@@ -232,14 +232,14 @@ function calculateLeadScore(data) {
 /**
  * CRM Sync - Push to HubSpot/Airtable/Pipedrive (fire-and-forget)
  * Sends lead data to external CRM systems asynchronously without blocking response
- * Uses error handling with console.warn only - non-blocking to user
- * @param {object} env - Worker environment variables with HUBSPOT_API_KEY, AIRTABLE_API_KEY
+ * Uses error handling with console.warn only - non-blocking to user  
+ * @param {object} env - Worker environment variables with HUBSPOT_API_KEY, AIRTABLE_API_KEY  
  * @param {number} submission_id - Lead submission ID from database   
- * @param {object} data - Lead object with name, email, phone, company, budget, scope, industry, urgency_level, message
- * @returns {Promise<null>} Null on success (errors logged to console only)
+ * @param {object} data - Lead object with name, email, phone, company, budget, scope, industry, urgency_level, message  
+ * @returns {Promise<null>} Null on success (errors logged to console only)  
  */
 async function initiateCrmSync(env, submission_id, data) {
-  try {
+
     const CRM_PROVIDER = env.HUBSPOT_API_KEY || env.AIRTABLE_API_KEY;
     
     // Skip if no CRM configured
@@ -280,50 +280,12 @@ async function initiateCrmSync(env, submission_id, data) {
       }
 
     return null; // Success logged separately
-   } catch (err) {
-     console.warn("CRM sync failed:", err.message);
-     return null; // Fire and forget - don't propagate errors to user
-   }
+} catch (err) {
+  console.warn("CRM sync failed:", err.message);
+  return null; // Fire and forget - don't propagate errors to user
+}
 }
 
-/**
- * Send Discord alert webhook with lead score embedding (fire-and-forget)
- * Non-blocking call that logs errors to console without affecting user response
- * Uses error handling - never throws to caller
- * @param {string} webhookUrl - Discord webhook URL from env.DISCORD_WEBHOOK_URL
- * @param {object} scoreResult - calculatedLeadScore result object with total_score, urgency_status
- * @returns {Promise<null>} Null always (errors logged only)
- */
-async function sendDiscordAlert(webhookUrl, scoreResult) {
-  try {
-    const priorityTag = scoreResult.total_score >= 75 ? "<@1466244456088080569>" : "";
-
-    await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: "Moliam Lead Score Alert",
-        avatar_url: "https://moliam.com/logo.png",
-        content: priorityTag + `Lead scored ${scoreResult.total_score}/100 (${scoreResult.urgency_status})`,
-        embeds: [{
-          title: "🔔 New Lead — High Priority",
-          color: scoreResult.total_score >= 75 ? 0x10B981 : 0xF59E0B,
-          fields: [
-              { name: "Lead Score", value: `${scoreResult.total_score}/100`, inline: true },
-              { name: "Status", value: scoreResult.urgency_status.charAt(0).toUpperCase() + scoreResult.urgency_status.slice(1), inline: true }
-             ],
-          footer: { text: `moliam.com/lead-score` },
-          timestamp: new Date().toISOString()
-         }]
-        })
-     });
-
-    return null; // Success logged separately
-  } catch (err) {
-     console.warn("Discord alert failed:", err.message);
-     return null;
-   }
-}
 
 /**
  * Queue email sequences for new lead submissions (fire-and-forget background task)

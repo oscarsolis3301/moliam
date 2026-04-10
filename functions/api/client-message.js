@@ -106,6 +106,7 @@ async function authenticate(request, db) {
   let tokenVal;
   try {
       // Extract token from cookie and query params cleanly
+<<<<<<< HEAD
     const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
     tokenVal = cookieMatch ? cookieMatch[1] : null;
 
@@ -116,20 +117,32 @@ async function authenticate(request, db) {
         tokenVal = query;
       }
     }
+=======
+  const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
+  tokenVal = cookieMatch ? cookieMatch[1] : null;
+
+      // Also check query string if not in cookie
+  if (!tokenVal) {
+    const query = url.searchParams.get('token');
+    if (query && query.length > 20) {
+      tokenVal = query;
+          }
+          }
+>>>>>>> origin/main
 
     if (!tokenVal) return null;
 
 try {
-           // Validate session with parameterized query - uses ? binding to prevent SQL injection
+            // Validate session with parameterized query - uses ? binding to prevent SQL injection
     const session = await db.prepare(
-               "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
-             ).bind(tokenVal).first();
+"SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
+              ).bind(tokenVal).first();
 
-          // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
+           // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
     if (session && new Date(session.expires_at) < new Date()) {
-      await db.prepare("DELETE FROM sessions WHERE token=?").bind(tokenVal).run();
+await db.prepare("DELETE FROM sessions WHERE token=?").bind(tokenVal).run();
       return null;
-         }
+          }
     return {
       id: session?.user_id,
       email: session?.email,
