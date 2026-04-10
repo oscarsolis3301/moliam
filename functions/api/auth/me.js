@@ -58,17 +58,21 @@ export async function onRequestGet(context) {
    }
 }
 
-// CORS preflight handler - returns 204 with standard Access-Control headers
+/**
+ * Handle CORS preflight requests for Me API endpoint - standard OPTIONS response
+ * @param {Request} request - Cloudflare Pages request object (unused, standard signature)
+ * @returns {Response} 204 No Content with CORS headers for moliam domains
+ */
 export async function onRequestOptions() {
   return new Response(null, {
     status: 204,
     headers: {
-        "Access-Control-Allow-Origin": "https://moliam.pages.dev",
-        "Access-Control-Allow-Methods": "GET, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Allow-Credentials": "true",
+	"Access-Control-Allow-Origin": "https://moliam.pages.dev",
+	"Access-Control-Allow-Methods": "GET, OPTIONS",
+	"Access-Control-Allow-Headers": "Content-Type",
+	"Access-Control-Allow-Credentials": "true",
       }
-    });
+     });
 }
 
 // Helper: get allowed origin from request headers for dynamic CORS configuration
