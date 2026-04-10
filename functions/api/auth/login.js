@@ -107,7 +107,11 @@ export async function onRequestPost(context) {
    }
 }
 
-// Handle CORS preflight for OPTIONS requests - returns 204 No Content with proper headers
+/**
+ * Handle CORS preflight for OAuth API endpoints via OPTIONS method - returns 204 No Content
+ * @param {Request} request - Cloudflare Pages Request object (unused, standard signature)
+ * @returns {Response} 204 No Content with proper Access-Control headers
+ */
 export async function onRequestOptions() {
   return corsResponse(204);
 }
