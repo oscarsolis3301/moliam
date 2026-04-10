@@ -232,14 +232,14 @@ function calculateLeadScore(data) {
 /**
  * CRM Sync - Push to HubSpot/Airtable/Pipedrive (fire-and-forget)
  * Sends lead data to external CRM systems asynchronously without blocking response
- * Uses error handling with console.warn only - non-blocking to user
- * @param {object} env - Worker environment variables with HUBSPOT_API_KEY, AIRTABLE_API_KEY
+ * Uses error handling with console.warn only - non-blocking to user  
+ * @param {object} env - Worker environment variables with HUBSPOT_API_KEY, AIRTABLE_API_KEY  
  * @param {number} submission_id - Lead submission ID from database   
- * @param {object} data - Lead object with name, email, phone, company, budget, scope, industry, urgency_level, message
- * @returns {Promise<null>} Null on success (errors logged to console only)
+ * @param {object} data - Lead object with name, email, phone, company, budget, scope, industry, urgency_level, message  
+ * @returns {Promise<null>} Null on success (errors logged to console only)  
  */
 async function initiateCrmSync(env, submission_id, data) {
-  try {
+
     const CRM_PROVIDER = env.HUBSPOT_API_KEY || env.AIRTABLE_API_KEY;
     
     // Skip if no CRM configured
@@ -287,15 +287,15 @@ async function initiateCrmSync(env, submission_id, data) {
 }
 
 /**
- * Send Discord alert webhook with lead score embedding (fire-and-forget)
+ * Queue email sequences for new lead submissions (fire-and-forget background task)
  * Non-blocking call that logs errors to console without affecting user response
- * Uses error handling - never throws to caller
- * @param {string} webhookUrl - Discord webhook URL from env.DISCORD_WEBHOOK_URL
- * @param {object} scoreResult - calculatedLeadScore result object with total_score, urgency_status
- * @returns {Promise<null>} Null always (errors logged only)
+ * Inserts record into email_queue table for scheduled deliverability  
+ * @param {object} env - Worker environment with EMAIL_API_KEY if configured  
+ * @param {number} submission_id - Lead submission ID from database  
+ * @returns {Promise<null>} null on success (errors logged silently to console.warn)  
  */
-async function sendDiscordAlert(webhookUrl, scoreResult) {
-  try {
+async function queueEmailSequences(env, submission_id) {
+
     const priorityTag = scoreResult.total_score >= 75 ? "<@1466244456088080569>" : "";
 
     await fetch(webhookUrl, {
