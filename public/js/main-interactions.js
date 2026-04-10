@@ -222,5 +222,6 @@
     };
   });
 
-  let totalTasks = 0;
+let totalTasks = 0;
   let totalErrors = 0;
+})();

@@ -145,7 +145,7 @@
       <a href="#hq-section" aria-label="AI Operations section">HQ</a>
       <a href="#services" aria-label="Services section">Services</a>
       <a href="#contact" aria-label="Contact form">Contact</a>
-      <a href="/login" style="color:var(--accent-blue)">Client Portal</a>
+      <a href="/login" class="link-accent">Client Portal</a>
     </nav>
      <button class="hamburger" id="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobile-menu">
        <span></span><span></span><span></span>
@@ -154,19 +154,19 @@
 </header>
 
 <!-- Mobile Menu Overlay with role and aria attributes -->
-<div class="mobile-menu-overlay" id="mobile-menu" role="dialog" aria-labelledby="menu-heading" aria-modal="true" style="display:none;">
-  <h2 id="menu-heading" style="position:absolute;left:-9999px;">Mobile Navigation Menu</h2>
+<div class="mobile-menu-overlay" id="mobile-menu" role="dialog" aria-labelledby="menu-heading" aria-modal="true" class="style-18877">
+  <h2 id="menu-heading" class="sr-only">Mobile Navigation Menu</h2>
   <a href="#hq-canvas-wrap">Watch AI Work</a>
   <a href="#services" aria-label="Services section">Services</a>
           <a href="/portfolio.html">Portfolio</a>
   <a href="#how-it-works" aria-label="How it works section">How It Works</a>
-  <a href="/login" style="color:var(--accent-blue)">Client Portal</a>
+  <a href="/login" class="link-accent">Client Portal</a>
   <a href="#contact" aria-label="Contact form">Contact</a>
   <button id="mobile-menu-close" aria-label="Close menu" class="mobile-menu-close-btn">×</button>
 </div>
 
 <!-- ARIA live region for mobile menu announcements -->
-<div id="menu-status" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;" aria-live="polite" aria-atomic="true" role="status"></div>
+<div id="menu-status" class="sr-only" aria-live="polite" aria-atomic="true" role="status"></div>
 
 <!-- ═══════════════════════ HERO ═══════════════════════ -->
 <section id="hero">
@@ -195,11 +195,11 @@
 </section>
 
 <!-- ═══════════════════════ STATS BAR ═══════════════════════ -->
-<div class="reveal" style="display:flex; justify-content:center; gap:48px; flex-wrap:wrap; padding:32px 24px; background:rgba(17,24,39,0.5); border-top:1px solid rgba(255,255,255,0.05); border-bottom:1px solid rgba(255,255,255,0.05);">
-  <div style="text-align:center;"><div style="font-size:2rem; font-weight:800; color:#3B82F6;">50+</div><div style="font-size:0.7rem; color:#6B7280; text-transform:uppercase; letter-spacing:0.08em; margin-top:4px;">Clients Served</div></div>
-  <div style="text-align:center;"><div style="font-size:2rem; font-weight:800; color:#10B981;">5.0★</div><div style="font-size:0.7rem; color:#6B7280; text-transform:uppercase; letter-spacing:0.08em; margin-top:4px;">Google Rating</div></div>
-  <div style="text-align:center;"><div style="font-size:2rem; font-weight:800; color:#8B5CF6;">72hr</div><div style="font-size:0.7rem; color:#6B7280; text-transform:uppercase; letter-spacing:0.08em; margin-top:4px;">Avg Delivery</div></div>
-  <div style="text-align:center;"><div style="font-size:2rem; font-weight:800; color:#F59E0B;">24/7</div><div style="font-size:0.7rem; color:#6B7280; text-transform:uppercase; letter-spacing:0.08em; margin-top:4px;">AI Operations</div></div>
+<div class="reveal" class="stats-bar">
+  <div class="style-f4b3d"><div class="stat-blue">50+</div><div class="stat-label">Clients Served</div></div>
+  <div class="style-f4b3d"><div class="stat-emerald">5.0★</div><div class="stat-label">Google Rating</div></div>
+  <div class="style-f4b3d"><div class="stat-violet">72hr</div><div class="stat-label">Avg Delivery</div></div>
+  <div class="style-f4b3d"><div class="stat-amber">24/7</div><div class="stat-label">AI Operations</div></div>
 </div>
 
 <!-- ═══════════════════════ HQ VISUALIZATION ═══════════════════════ -->
@@ -218,7 +218,7 @@
      </div>
      
      <!-- ARIA live region for activity feed updates -->
-     <div class="feed-status-update" style="position:absolute;left:-9999px;" aria-live="polite" aria-atomic="true" role="status">Activity updated</div>
+     <div class="feed-status-update" class="sr-only" aria-live="polite" aria-atomic="true" role="status">Activity updated</div>
    </aside>
 </section>
 
@@ -558,10 +558,10 @@
           <h3 class="pf-step-title">Got a website or socials?</h3>
           <p class="pf-step-desc">Helps us tailor the call to your needs</p>
           <div class="pf-step-content">
-            <label for="pf-website" class="sr-only">Website URL</label><input type="url" id="pf-website" class="pf-input" placeholder="https://yourbusiness.com" autocomplete="url" style="margin-bottom:12px">
-            <label for="pf-social-google" class="sr-only">Google Business Profile URL</label><input type="text" id="pf-social-google" class="pf-input" placeholder="Google Business Profile URL" style="margin-bottom:12px">
-            <label for="pf-social-facebook" class="sr-only">Facebook page URL</label><input type="text" id="pf-social-facebook" class="pf-input" placeholder="Facebook page URL" style="margin-bottom:12px">
-            <label for="pf-social-instagram" class="sr-only">Instagram handle or URL</label><input type="text" id="pf-social-instagram" class="pf-input" placeholder="Instagram @handle or URL" style="margin-bottom:12px">
+            <label for="pf-website" class="sr-only">Website URL</label><input type="url" id="pf-website" class="pf-input" placeholder="https://yourbusiness.com" autocomplete="url" class="style-c585e">
+            <label for="pf-social-google" class="sr-only">Google Business Profile URL</label><input type="text" id="pf-social-google" class="pf-input" placeholder="Google Business Profile URL" class="style-c585e">
+            <label for="pf-social-facebook" class="sr-only">Facebook page URL</label><input type="text" id="pf-social-facebook" class="pf-input" placeholder="Facebook page URL" class="style-c585e">
+            <label for="pf-social-instagram" class="sr-only">Instagram handle or URL</label><input type="text" id="pf-social-instagram" class="pf-input" placeholder="Instagram @handle or URL" class="style-c585e">
             <label for="pf-social-yelp" class="sr-only">Yelp business page URL</label><input type="text" id="pf-social-yelp" class="pf-input" placeholder="Yelp business page URL">
           </div>
         </div>
@@ -674,23 +674,23 @@
      </form>
      
      <!-- ARIA live region for accessibility announcements -->
-     <div id="pf-status-a11y" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;" aria-live="assertive" aria-atomic="true" role="status"></div>
+     <div id="pf-status-a11y" class="sr-only" aria-live="assertive" aria-atomic="true" role="status"></div>
      
-     <p style="font-size:12px; color:var(--text-dim, #6B7280); margin-top:16px; text-align:center;">
-      Or skip the form — <a href="https://calendly.com/visualark/demo" target="_blank" rel="noopener" style="color:var(--accent-blue, #3B82F6); text-decoration:underline;">book a free 15-min demo call</a>
+     <p class="style-e2908">
+      Or skip the form — <a href="https://calendly.com/visualark/demo" target="_blank" rel="noopener" class="link-tertiary">book a free 15-min demo call</a>
      </p>
    </div>
 </section>
 
 <!-- ═══════════════════════ CTA BANNER ═══════════════════════ -->
-  <h2 style="font-size:clamp(1.8rem, 3vw, 2.4rem); font-weight:800; margin-bottom:12px;">Ready to Grow Your Business?</h2>
-  <p style="color:#9CA3AF; margin-bottom:32px; max-width:520px; margin-left:auto; margin-right:auto; line-height:1.6;">Join 50+ Orange County contractors already using Moliam to dominate local search. Book a free demo — no commitment, no pressure.</p>
-  <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
-    <a href="https://calendly.com/visualark/demo" target="_blank" rel="noopener" class="btn-primary" style="display:inline-flex;">
+  <h2 class="hero-gradient-text">Ready to Grow Your Business?</h2>
+  <p class="style-ede96">Join 50+ Orange County contractors already using Moliam to dominate local search. Book a free demo — no commitment, no pressure.</p>
+  <div class="cta-group">
+    <a href="https://calendly.com/visualark/demo" target="_blank" rel="noopener" class="btn-primary" class="style-517db">
       <span>Book Your Free Demo</span>
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </a>
-    <a href="#contact" class="btn-secondary" style="display:inline-flex;">Or Send a Message</a>
+    <a href="#contact" class="btn-secondary" class="style-517db">Or Send a Message</a>
   </div>
 </section>
 

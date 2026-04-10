@@ -134,9 +134,8 @@ async function authenticate(request, db) {
         };
 
   } catch (err) {
-    console.warn("authenticate error:", err.message);
     return null;
-  }
+   }
 }
 
 /**
@@ -151,14 +150,12 @@ export async function onRequestGet(context) {
   try {
     const user = await authenticate(request, db);
     if (!user) {
-      console.error("Not authenticated");
       return jsonResp(401, { success: false, message: "Not authenticated." }, request);
-    }
+     }
 
     if (db === null) {
-      console.error("D1 not bound - cannot retrieve messages");
       return jsonResp(503, { success: false, message: "Database unavailable" }, request);
-    }
+     
 
     let stmt;
 
@@ -187,10 +184,9 @@ export async function onRequestGet(context) {
 
     return jsonResp(200, { success: true, messages: (results?.results || []) }, request);
 
-  } catch (err) {
-    console.error("onRequestGet() error:", err.message);
+   } catch (err) {
     return jsonResp(500, { success: false, message: "Internal server error. Please try again." }, request);
-  }
+      }
 }
 
 /**
@@ -219,8 +215,7 @@ export async function onRequestPost(context) {
   }
 
   if (db === null || !db) {
-    console.error("D1 not bound - cannot store messages");
-    // If DB unavailable but we still want to try Discord notification for async delivery - fire and forget pattern
+     // If DB unavailable but we still want to try Discord notification for async delivery - fire and forget pattern
     try {
       const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
       if (webhookUrl && webhookUrl.startsWith("https://discord.com/api/webhooks/")) {
@@ -266,24 +261,19 @@ export async function onRequestPost(context) {
     if (webhookUrl && webhookUrl.startsWith("https://discord.com/api/webhooks/")) {
       try {
         await db.prepare(
-           `INSERT INTO system_logs (action, details) VALUES ('message_received', ?)`).bind(JSON.stringify({ client_id, sender })).run();
-       } catch (e) { console.warn("system_log insert failed:", e); }
+            `INSERT INTO system_logs (action, details) VALUES ('message_received', ?)`).bind(JSON.stringify({ client_id, sender })).run();
+        } catch (e) {}
 
-      // Fire-and-forget webhook delivery to Discord - no blocking behavior ensures message submission always succeeds regardless of webhook status - CORS headers set in jsonResp calls for all JSON responses throughout codebase via parameterized queries and bind methods
-      await fetch(webhookUrl, {
-        method: "POST",
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ content: `New message from ${sender}:\n${cleanMessage}\nClient ID: ${client_id}`, username:"Moliam Messages" })
-       });
-    }
+    if (webhookUrl && webhookUrl.startsWith("https://discord.com/api/webhooks/")) {
+      await fetch(webhookUrl, { method: "POST", headers: {'Content-Type':'application/json'}, body: JSON.stringify({ content: `New message from ${sender}:\n${cleanMessage}\nClient ID: ${client_id}`, username:"Moliam Messages" })});
+     }
 
     // Return success with client_id confirmation for immediate feedback on message submission - uses parameterized binding throughout and clean JSON response via jsonResp helper function in all endpoints within module - no SQL injection via ? bound queries pattern consistent codebase-wide security model through parameterized binds and sanitization helpers protecting everything from contact forms to client messages
     return jsonResp(200, { success: true, error: false, client_id }, request);
 
   } catch (err) {
-    console.error("onRequestPost() error:", err.message);
     return jsonResp(500, { success: false, message: "Internal server error. Please try again." }, request);
-  }
+    }
 }
 
 /**

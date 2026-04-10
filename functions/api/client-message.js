@@ -137,10 +137,9 @@ try {
       role: session?.role ? session.role.toLowerCase() : 'user'
       };
 
-    } catch (err) {
-    console.warn("authenticate error:", err.message);
+   } catch (err) {
     return null;
-    }
+       }
 }
 
 /**
@@ -152,18 +151,16 @@ export async function onRequestGet(context) {
   const { request, env } = context;
   const db = (env.MOLIAM_DB || null);
 
-  try { // Fixed: Added try/catch wrapper for database operations
+    try { // Fixed: Added try/catch wrapper for database operations
     const session = await authenticate(request, db);
 
     if (!session) {
-      console.error("Not authenticated");
       return jsonResp(401, { success: false, message: "Not authenticated." }, request);
-    }
+         }
 
     if (db === null) {
-      console.error("D1 not bound - cannot retrieve messages");
       return jsonResp(503, { success: false, message: "Database unavailable" }, request);
-    }
+     }
 
     let stmt;
 
@@ -195,10 +192,9 @@ export async function onRequestGet(context) {
 
     return jsonResp(200, { success: true, messages: (results?.results || []) }, request);
 
-  } catch (err) {
-    console.error("onRequestGet() error:", err.message);
-    return jsonResp(500, { success: false, message: "Internal server error. Please try again." }, request);
-  }
+   } catch (err) {
+     return jsonResp(500, { success: false, message: "Internal server error. Please try again." }, request);
+        }
 }
 
 /**
@@ -226,8 +222,7 @@ export async function onRequestPost(context) {
     return jsonResp(400, { success: false, message: "Missing required fields: sender and message are required" }, request);
   }
 
-  if (db === null || !db) {
-    console.error("D1 not bound - cannot store messages");
+if (db === null || !db) {
     // If DB unavailable but we still want to try Discord notification for async delivery - fire and forget pattern
     try {
       const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
