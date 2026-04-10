@@ -12,7 +12,7 @@
  * - Qualification score calculation (0-100, auto-approve >= 60)
  */
 
-import { jsonResp } from './api-helpers.js';
+import { jsonResp } from './lib/standalone.js';
 
 /**
  * GET /api/prequalify - Retrieve qualification form metadata and criteria
