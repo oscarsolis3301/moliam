@@ -188,9 +188,18 @@ export async function onRequestPost(context) {
 }
 
 // Handle CORS preflight requests from Calendly integration
-export async function onRequestOptions() {
-  return new Response(null, { 
-    status: 204, 
-    headers:{'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type, Calendly-Webhook-Signature'} 
-  });
+export async function onRequestOptions(context) {
+  const allowedOrigins = ['https://calendly.com', 'https://app.calendly.com'];
+  const origin = context?.request?.headers?.get('Origin');
+  
+  if (allowedOrigins.includes(origin)) {
+     return new Response(null, { 
+      status: 204, 
+       headers:{'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Methods':'POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type, Calendly-Webhook-Signature'} 
+    });
+  } else if (!origin) {
+     return new Response(null, { status: 204 });
+  } else {
+     return new Response(null, { status: 403, body: "Origin not allowed" });
+  }
 }

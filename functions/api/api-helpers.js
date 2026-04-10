@@ -43,17 +43,24 @@ export function jsonResp(status, data, request, allowedOrigins = null) {
   });
   
   if (request) {
-    const origin = request.headers.get("Origin") || "*";
-    if (defaultOrigins.has(origin)) headers.set("Access-Control-Allow-Origin", origin);
-    else headers.set("Access-Control-Allow-Origin", "*");
+    const origin = request.headers.get("Origin");
+    if (defaultOrigins.has(origin)) {
+      headers.set("Access-Control-Allow-Origin", origin);
+    } else if (!origin) {
+      // No Origin header (same-origin or server-side call), allow it
+      headers.set("Access-Control-Allow-Origin", "*");
+    } else {
+      // Unknown origin - don't allow, return without CORS headers except Content-Type
+      headers.delete("Access-Control-Allow-Origin");
+    }
     
     headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
     headers.set(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization, X-Requested-With"
-    );
+       "Access-Control-Allow-Headers",
+       "Content-Type, Authorization, X-Requested-With"
+     );
     headers.set("Access-Control-Max-Age", "86400");
-  
+
   return new Response(JSON.stringify(normalizedData), { status, headers });
 }
     
