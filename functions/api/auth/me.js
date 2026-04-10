@@ -11,7 +11,7 @@ export async function onRequestGet(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
   
-   // Get session token from cookies for authentication - uses parameterized query with ? binding
+    // Get session token from cookies for authentication - uses parameterized query with ? binding
   const cookies = request.headers.get("Cookie") || "";
   const match = cookies.match(/moliam_session=([a-f0-9]+)/);
   const token = match ? match[1] : null;

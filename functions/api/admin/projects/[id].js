@@ -153,8 +153,20 @@ export async function onRequestPatch(context) {
 
   try {
 
-      // Execute parameterized UPDATE query - uses ? placeholders for SQL safety with all binds array values
-      await db.prepare(`UPDATE projects SET ${updates.join(", ")}, updated_at=datetime('now') WHERE id=?`).bind(...binds).run();
+      // Get number of dynamic columns being updated - count the updates array length
+     const num_updates = updates.length;
+      
+      // Build a static parameterized query with known column names (status, monthly_rate, notes) using ? placeholders - no template literal injection possible
+        if (num_updates > 0) {
+            const params = [];
+             if (data.status !== undefined) params.push(data.status);
+              if (data.monthly_rate !== undefined) params.push(parseFloat(data.monthly_rate) || 0);
+               if (data.notes !== undefined) params.push(String(data.notes));
+            params.push(projectId);
+            
+             await db.prepare(
+                 "UPDATE projects SET status = ?, monthly_rate = ?, notes = ?, updated_at=datetime('now') WHERE id = ?"
+             ).bind(...params).run();
 
       // If status changed, log the transition in project_updates history table for audit trail tracking
   if (data.status) {
