@@ -108,6 +108,11 @@ if (searchQuery) {
   }
 }
 
+/**
+ * Handle POST requests to contacts endpoint - create new contact or update existing by email
+ * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
+ * @returns {Response} JSON response: 201 Created (new), 200 OK (updated), 400 Bad Request (validation errors), 500 Server Error (DB failure)
+ */
 export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
@@ -243,10 +248,12 @@ export async function onRequestPost(context) {
   }
 }
 
+/** Handle partial update/merge operations for contacts by ID
+ * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
+ * @returns {Response} JSON response: 200 OK (success), 400 Bad Request (validation errors), 500 Server Error (DB failure)
+ */
+
 export async function onRequestPut(context) {
-  const { request, env } = context;
-  const db = env.MOLIAM_DB;
-  const url = new URL(context.request.url);
   
   if (!db) {
     return jsonResp(404, { 

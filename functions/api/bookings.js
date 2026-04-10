@@ -42,7 +42,11 @@ return jsonResp(400, {success: false, message: 'Invalid request. Use /list or /i
       return jsonResp(500, {success: false, message: 'Database query failed.'}, request);
      }
      }
-/** Handle CORS preflight requests for Booking API. @param {object} context Cloudflare Pages request with env.MOLIAM_DB binding. @returns Response 204 No Content with Access-Control headers. */
+/**
+ * Handle CORS preflight requests for Booking API
+ * @param {object} context - Cloudflare Pages request with env.MOLIAM_DB binding
+ * @returns Response 204 No Content with Access-Control headers
+ */
 export async function onRequestOptions(context) {
   const { request } = context;
   const allowedOrigins = new Set(['https://moliam.pages.dev', 'https://moliam.com']);
@@ -67,6 +71,11 @@ export async function onRequestOptions(context) {
  * POST /api/appointments?action=reschedule&appointment_id=X&reschedule_date=newDate - Reschedule to new time
  * POST /api/appointments?action=completed&appointment_id=X - Mark as completed  
  * POST /api/appointments?action=no_show&appointment_id=X - Record no-show, add retry queue
+ * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
+ * @returns {Response} JSON response: 201 Created (new), 200 OK (updates), 400 Bad Request (validation errors), 500 Server Error (DB failure)
+ */
+/**
+ * Handle POST requests to Booking API endpoints - create/confirm/cancel/reschedule bookings
  * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
  * @returns {Response} JSON response: 201 Created (new), 200 OK (updates), 400 Bad Request (validation errors), 500 Server Error (DB failure)
  */
@@ -105,6 +114,7 @@ export async function onRequestPost(context) {
  * Handle PUT requests to Booking API - reschedule appointment date/time
  * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
  * @returns {Response} JSON response: 200 OK (success), 400 Bad Request (missing ID, invalid JSON), 500 Server Error (DB failure)
+ */
 export async function onRequestPut(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
