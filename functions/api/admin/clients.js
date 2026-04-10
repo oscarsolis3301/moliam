@@ -41,18 +41,19 @@ function getSessionToken(request) {
  * @returns {Response|object|null} User object, JSON error response (401/403), or null if no token provided
  */
 async function requireAdmin(request, env) {
-   // Get session token from cookies - extracts 32-char hex string for authentication via parameterized queries
+  // Get session token from cookies - extracts 32-char hex string for authentication via parameterized queries
   const token = getSessionToken(request);
 
   if (!token) return jsonResp(401, { success: false, message: "Not authenticated." }, undefined, request);
 
   const db = env.MOLIAM_DB;
 
-    // Validate admin session via parameterized SELECT with ? binding - no SQL injection possible
-      try {
-        const session = await db.prepare(
-         "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id=u.id WHERE s.token=? AND u.is_active=1 AND s.expires_at>datetime('now')"
-       ).bind(token).first();
+  // Validate admin session via parameterized SELECT with ? binding - no SQL injection possible
+  try {
+    const session = await db.prepare(
+        "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id=u.id WHERE s.token=? AND u.is_active=1 AND s.expires_at>datetime('now')").bind(token).first();
+
+
 
     if (!session) return jsonResp(401, { success: false, message: "Session invalid or expired." }, undefined, request);
     if (session.role !== "admin" && session.role !== "superadmin") return jsonResp(403, { success: false, message: "Admin only." }, undefined, request);
@@ -143,8 +144,8 @@ export async function onRequestPost(context) {
 const name = (data.name || "").trim();
       const email = (data.email || "").toLowerCase().trim();
        const company = (data.company || "").trim();
-   const phone = (data.phone || "").trim();
-       const password = data.password || "";
+const phone = (data.phone || "").trim();
+      const password = (data.password || "") || "";
 
   if (!name || !email || !password) {
      return jsonResp(400, { success: false, message: "Name, email, and password required for client creation." }, request); }
