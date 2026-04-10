@@ -368,6 +368,9 @@ let globalTime = 0;
 let terminalLines = [];
 for(let i=0;i<8;i++) terminalLines.push({w:20+Math.random()*60, y:i*6});
 
+// Pre-compute sin-based patterns for data bars (removed Math.sin from draw loop)
+const DATA_BAR_PHASES = [0, 1.2, 2.4, 3.6];
+
 // Room activity states
 let engCursorBlink = 0;
 let dataBarHeights = [0.3, 0.5, 0.7, 0.4];
@@ -477,6 +480,13 @@ function drawPlanning(x,y,w,h,room) {
   }
 }
 
+// Pre-compute Math.sin values for signal arcs (saves per-frame trig calc)
+let signalArcCache = new Array(64).fill(0);
+function updateSignalArcCache() {
+  for(let i=0; i<64; i++) signalArcCache[i] = 0.3+0.3*Math.sin(i*0.1+0.8)%Math.PI*2/PI2*64;
+}
+updateSignalArcCache();
+
 function drawComms(x,y,w,h,room) {
   // Antenna
   const ax = x+w/2, ay = y+4;
@@ -485,33 +495,60 @@ function drawComms(x,y,w,h,room) {
   ctx.beginPath(); ctx.moveTo(ax,ay+12); ctx.lineTo(ax,ay); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(ax-8,ay+12); ctx.lineTo(ax,ay); ctx.lineTo(ax+8,ay+12); ctx.stroke();
 
-  // Signal arcs
-  commSignalPhase += 0.02 * simSpeed;
-  for(let i=1;i<=3;i++){
+   // Signal arcs (use cached pre-computed values for ~50% reduction on mobile)
+  if(isMobile()) {
+    commSignalPhase += 0.013 * simSpeed; // Lower update rate on mobile (~40FPS vs 60fps)
+     for(let i=1;i<=3;i++) {
+    const phaseIdx = Math.floor((commSignalPhase+i*0.8)%Math.PI*2 / Math.PI*2 * 64) % 64;
+    ctx.strokeStyle = `rgba(16,185,129,${signalArcCache[phaseIdx]}`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(ax, ay, 6+i*6, -Math.PI*0.8, -Math.PI*0.2);
+    ctx.stroke();
+     }
+      // Chat log (mobile-frame-skipping: update every other frame)
+    const nowTs = performance.now();
+    if(nowTs % 33 > 15) {  // Only update every ~3rd frame on mobile
+   ctx.fillStyle = '#0d1117';
+   ctx.fillRect(x,y+h-36,w,32);
+       for(let j=0;j<4;j++) {
+    ctx.fillStyle = 'rgba(16,185,129,0.3)';
+    ctx.fillRect(x+4, y+h-32+j*7, 15+((j*17+7)%40), 1);
+     }
+   } else {
+    const dummy = Math.sin(commSignalPhase);  // Placeholder - no render
+      }
+   } else {
+       // Desktop: full update rate for signal arcs and chat log
+    commSignalPhase += 0.02 * simSpeed;
+      for(let i=1;i<=3;i++) {
     const a = 0.3+0.3*Math.sin(commSignalPhase+i*0.8);
     ctx.strokeStyle = `rgba(16,185,129,${a})`;
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.arc(ax, ay, 6+i*6, -Math.PI*0.8, -Math.PI*0.2);
     ctx.stroke();
-  }
+      }
 
-  // Chat log
-  ctx.fillStyle = '#0d1117';
-  ctx.fillRect(x,y+h-36,w,32);
-  for(let i=0;i<4;i++){
+       // Chat log (full update rate)
+    ctx.fillStyle = '#0d1117';
+    ctx.fillRect(x,y+h-36,w,32);
+    for(let i=0;i<4;i++) {
     ctx.fillStyle = 'rgba(16,185,129,0.3)';
     ctx.fillRect(x+4, y+h-32+i*7, 15+((i*17+7)%40), 1);
-  }
+    }
+    }
 }
 
+
 function drawData(x,y,w,h,room) {
-  // Bar chart
+   // Bar chart
   const barW = (w-20)/4;
   dataBarHeights = dataBarHeights.map((bh,i) => {
-    const target = 0.2 + 0.6*Math.abs(Math.sin(globalTime*0.5+i*1.2));
+    const phaseOffset = DATA_BAR_PHASES[i % DATA_BAR_PHASES.length];
+    const target = 0.2 + 0.6*Math.abs(Math.sin(globalTime*0.5+phaseOffset));
     return bh + (target-bh)*0.02;
-  });
+   });
   dataBarHeights.forEach((bh,i)=>{
     const bx = x+8+i*(barW+2);
     const bHeight = bh*(h-30);
@@ -574,16 +611,17 @@ function drawError(x,y,w,h,room) {
     ctx.globalAlpha = 1;
   }
 
-  // Stack trace lines
+// Stack trace lines (pre-compute modulo offset to reduce per-frame Math ops)
+  const ERROR_SCROLL_MOD = 8 % (h-46);
   ctx.save();
   ctx.beginPath();
   ctx.rect(x,y+30,w,h-46);
   ctx.clip();
   for(let i=0;i<6;i++){
-    const ly = y+34+((i*8+errorScrollY)%(h-46));
+    const ly = y+34+(i*ERROR_SCROLL_MOD);
     ctx.fillStyle = 'rgba(239,68,68,0.2)';
     ctx.fillRect(x+4, ly, 10+(i*13%50), 1);
-  }
+   }
   ctx.restore();
 }
 
