@@ -21,6 +21,7 @@ return jsonResp(503, {success: false, message: 'Database service unavailable.' }
 }
 
 const db = env.MOLIAM_DB;
+const urlPath = context.request.url.split('/api/appointments/')[1] || '';
 
 if (context.request.url.includes('/list')) {
     const data = await db.prepare(
@@ -33,10 +34,10 @@ if (context.request.url.includes('/list')) {
          }, request);
   } else {
     // Get single appointment by ID
-    const id = parseInt(path || '');
-    if (isNaN(id)) {
-      return jsonResp(400, {success: false, message: 'Invalid request. Use /list or /id endpoint.'}, request);
-    }
+const id = parseInt(urlPath || '');
+if (isNaN(id)) {
+return jsonResp(400, {success: false, message: 'Invalid request. Use /list or /id endpoint.'}, request);
+}
     const data = await db.prepare("SELECT * FROM appointments WHERE id = ?").bind(id).first();
     if (!data) {
       return jsonResp(404, {success: false, message: 'Appointment not found.'}, request);
@@ -120,10 +121,10 @@ export async function onRequestPut(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
-  const path = context.request.url.split('/api/appointments/')[1];
-  if (!path) return jsonResp(400, {success: false, message: "Appointment ID required" }, request);
+const putPath = context.request.url.split('/api/appointments/')[1] || '';
+if (!putPath) return jsonResp(400, {success: false, message: "Appointment ID required" }, request);
 
-  const appointmentId = parseInt(path);
+const appointmentId = parseInt(putPath);
   let updateBody;
   try {
     updateBody = await context.request.json();
