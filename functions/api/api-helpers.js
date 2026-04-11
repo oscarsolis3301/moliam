@@ -48,8 +48,8 @@ export function jsonResp(status, data, request, allowedOrigins = null) {
       if (defaultOrigins.has(origin)) {
         headers.set("Access-Control-Allow-Origin", origin);
       } else if (!origin) {
-        // No Origin header (same-origin or server-side call), allow it
-        headers.set("Access-Control-Allow-Origin", "*");
+        // No Origin header (same-origin or server-side call), don't set wildcard - let it fail if they need CORS
+        headers.delete("Access-Control-Allow-Origin");
       } else {
         // Unknown origin - don't allow, return without CORS headers except Content-Type
         headers.delete("Access-Control-Allow-Origin");

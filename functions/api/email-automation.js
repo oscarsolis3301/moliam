@@ -63,7 +63,21 @@ export async function onRequestOptions() {
   return new Response(null, {
     status: 204,
     headers: {
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+"Cache-Control": "no-store, no-cache"};
+    
+if (request) {
+  const origin = request.headers.get("Origin");
+  const allowedOrigins = new Set(['https://moliam.pages.dev', 'https://moliam.com']);
+  
+  if (!origin || allowedOrigins.has(origin)) {
+    headers["Access-Control-Allow-Origin"] = origin || "";
+  } else {
+    delete headers["Access-Control-Allow-Origin"];
+  }
+}
+
+return new Response(responseBody, { status, headers });
       "Access-Control-Allow-Methods": "GET, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type"
     }

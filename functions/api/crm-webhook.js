@@ -9,7 +9,7 @@ export async function onRequestPost(context) {
 
   // --- Validate DB binding exists ---
   if (!db) {
-    return jsonResp(500, { 
+    return jsonResp(500, request, { 
       error: true, 
        message: "Database not available. Please check server configuration.",
         requestId: crypto.randomUUID ? crypto.randomUUID() : undefined
@@ -26,7 +26,7 @@ export async function onRequestPost(context) {
              .bind("crm_callback", "", false).run();
        }
      } catch {}
-    return jsonResp(400, { 
+    return jsonResp(400, request, { 
       error: true, 
        message: "Webhook must be sent with application/json Content-Type",
          allowedContentTypes: ["application/json"]
@@ -56,7 +56,7 @@ export async function onRequestPost(context) {
 
          // --- Validate webhook payload structure ---
     if (!data || typeof data !== 'object' || Array.isArray(data)) {
-      return jsonResp(400, { 
+      return jsonResp(400, request, { 
          error: true, 
           message: "Invalid webhook payload. Expected JSON object.",
            receivedType: Array.isArray(data) ? "array" : typeof data 
@@ -129,7 +129,7 @@ function logPayloadToD1(db, data) {
          const submissionId = data.submission_id || data.id || data.lead_id || data.submit_id;
          
          if (!submissionId) {
-           return jsonResp(400, { 
+           return jsonResp(400, request, { 
               error: true, 
                message: "Missing submission_id in webhook payload",
                 availableFields: Object.keys(data)
@@ -169,7 +169,7 @@ function logPayloadToD1(db, data) {
                }
              }
 
-         return jsonResp(200, { 
+         return jsonResp(200, request, { 
            success: true, 
             message: "Lead status updated successfully",
              eventType,
@@ -181,7 +181,7 @@ function logPayloadToD1(db, data) {
        // Handle unknown event types (don't break - log and allow processing)
          console.log(`[CRM Webhook] Unhandled event type: ${eventType}`, JSON.stringify(data));
 
-      return jsonResp(200, { 
+      return jsonResp(200, request, { 
          success: true, 
           message: "Unhandled event type received - logged for review",
            eventType,
@@ -194,7 +194,7 @@ function logPayloadToD1(db, data) {
     console.error("Webhook handler error:", err);
     
       if (err.name === "TypeError" && (err.message.includes("json") || err.message.includes("expected"))) {
-         return jsonResp(400, { 
+         return jsonResp(400, request, { 
             error: true, 
              message: "Invalid JSON in webhook body. Must be valid JSON object.",
               timestamp: new Date().toISOString()
@@ -202,14 +202,14 @@ function logPayloadToD1(db, data) {
               }
 
        if (err.name === "Error" && err.message.includes("no such column")) {
-         return jsonResp(400, { 
+         return jsonResp(400, request, { 
             error: true, 
              message: "Database schema missing required column. Run schema-extended.sql",
               timestamp: new Date().toISOString()
                });
                }
 
-       return jsonResp(500, { 
+       return jsonResp(500, request, { 
          error: true, 
           message: "Failed to process webhook",
            errorCode: 'WEBHOOK_ERROR',
@@ -237,16 +237,24 @@ function getWebhookOrigin(request) {
        }
       }
 
-function jsonResp(status, body) {
+function jsonResp(status, body, request) {
   const responseBody = JSON.stringify(body);
-  return new Response(responseBody, {
-    status,
-    headers: { 
-        "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-           "Access-Control-Allow-Methods": "POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, X-Webhook-Signature",
-             "Cache-Control": "no-store, no-cache"
-               }
-                });
+  const headers = { 
+      "Content-Type": "application/json",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+         "Access-Control-Allow-Headers": "Content-Type, X-Webhook-Signature",
+          "Cache-Control": "no-store, no-cache"
+            };
+            
+  if (request) {
+    const origin = request.headers.get("Origin");
+    const allowedOrigins = new Set(['https://moliam.pages.dev', 'https://moliam.com']);
+    
+    if (!origin || allowedOrigins.has(origin)) {
+        headers["Access-Control-Allow-Origin"] = origin || "";
+    } else {
+        delete headers["Access-Control-Allow-Origin"];
     }
+  }
+  return new Response(responseBody, { status, headers });
+}
