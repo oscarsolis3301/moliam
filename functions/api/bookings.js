@@ -137,8 +137,7 @@ const appointmentId = parseInt(putPath);
    ).bind(scheduled_at, appointmentId).run();
   if (res.success && res.meta?.rows_changed > 0) {
     return jsonResp(200, {success: true, updated: true}, request);
-  }
-  console.error("Update failed:", res);
+   }
   return jsonResp(400, {success: false, message: "Update failed. Appointment not found."}, request);
 }
 // Helper functions
@@ -182,12 +181,11 @@ async function createAppointment(context, body, request) {
       ).bind(prequalification_id || null, clientName || null, clientEmail || null, scheduled_at, calendarLink || null).run();
     if (!res.success) {
          return jsonResp(500, {success: false, error: "Booking failed." }, request);
-       }
+        }
     return jsonResp(201, { success: true, data: { appointment_id: res.meta.last_row_id }}, request);
-   catch (err) {
-     console.error("createAppointment error:", err);
-     return jsonResp(500, {success: false, message: "Database query failed." }, request);
-     }
+      } catch (err) {
+       return jsonResp(500, {success: false, message: "Database query failed." }, request);
+       }
 }
 /**
  * Update appointment status in database and trigger follow-up actions
@@ -212,9 +210,7 @@ async function updateAppointmentStatus(context, id, status, request) {
     }
     return jsonResp(200, { success: true, data: { updated: status }}, request);
 } catch (err) {
-    console.error("updateAppointmentStatus error:", err.message);
-     return jsonResp(500, {success: false, message: "Update failed." }, request);
-     }
-}
+      return jsonResp(500, {success: false, message: "Update failed." }, request);
+         }
 
 /**
