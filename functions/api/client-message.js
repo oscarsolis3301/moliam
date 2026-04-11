@@ -102,47 +102,34 @@ async function authenticate(request, db) {
   const cookies = request.headers.get("Cookie") || "";
   const url = new URL(request.url);
 
-// Extract token from URL query params or hash as fallback when cookie is not present
-  let tokenVal;
-  try {
-      // Extract token from cookie and query params cleanly
-<<<<<<< HEAD
-    const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-    tokenVal = cookieMatch ? cookieMatch[1] : null;
+// Extract token from cookie and query params with proper error handling - uses parameterized ? binding to prevent SQL injection
+let tokenVal = null;
+const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
+if (cookieMatch && cookieMatch[1]) {
+  tokenVal = cookieMatch[1];
+}
 
-      // Also check query string if not in cookie
-    if (!tokenVal) {
-      const query = url.searchParams.get('token');
-      if (query && query.length > 20) {
-        tokenVal = query;
-      }
-    }
-=======
-  const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-  tokenVal = cookieMatch ? cookieMatch[1] : null;
+// Also check query string if not in cookie - extract 'token' parameter as fallback for moliam_session authentication
+if (!tokenVal) {
+  const query = url.searchParams.get('token');
+  if (query && query.length > 20) {
+    tokenVal = query;
+  }
+}
 
-      // Also check query string if not in cookie
-  if (!tokenVal) {
-    const query = url.searchParams.get('token');
-    if (query && query.length > 20) {
-      tokenVal = query;
-          }
-          }
->>>>>>> origin/main
-
-    if (!tokenVal) return null;
+if (!tokenVal) return null;
 
 try {
-            // Validate session with parameterized query - uses ? binding to prevent SQL injection
-    const session = await db.prepare(
-"SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
-              ).bind(tokenVal).first();
+// Validate session with parameterized query - uses ? binding to prevent SQL injection
+const session = await db.prepare(
+"SELECT s.user_id, s.expires_at, u.id, u.email, ***, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
+).bind(tokenVal).first();
 
-           // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
-    if (session && new Date(session.expires_at) < new Date()) {
-await db.prepare("DELETE FROM sessions WHERE token=?").bind(tokenVal).run();
-      return null;
-          }
+// Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
+if (session && new Date(session.expires_at) < new Date()) {
+  await db.prepare("DELETE FROM sessions WHERE token=?").bind(tokenVal).run();
+  return null;
+           }
     return {
       id: session?.user_id,
       email: session?.email,
