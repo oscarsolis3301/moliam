@@ -17,15 +17,15 @@ export async function onRequestPost(context) {
 
   // Return consistent JSON error with CORS headers when DB unavailable
   if (!db) {
-    return jsonResp(503, { success: false, error: true, message: "Database not available. Please try again later." }, request);
+    return jsonResp(503, { success: false, message: "Database not available. Please try again later." }, request);
   }
 
   // --- Parse body with try/catch for malformed JSON ---
   let data;
   try {
     data = await request.json();
-  } catch {
-    return jsonResp(400, { success: false, error: true, message: "Invalid JSON body." }, request);
+   } catch {
+    return jsonResp(400, { success: false, message: "Invalid JSON body." }, request);
   }
 
   // --- Sanitize all text fields (strip HTML, apply length limits) ---
@@ -56,7 +56,7 @@ export async function onRequestPost(context) {
     // Field length validation after sanitization
   const errors = [];
   if (name.length < 2) errors.push("Name must be at least 2 characters.");
-  if (name.length > 200) errors.push("Name cannot exceed 200 characters.");
+  if (name.length > 100) errors.push("Name cannot exceed 100 characters.");
   if (message.length < 10) errors.push("Message must be at least 10 characters.");
   if (originalMessage && originalMessage.trim().length > 2000) {
     errors.push("Message exceeds maximum length of 2000 characters.");
