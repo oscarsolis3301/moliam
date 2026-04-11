@@ -153,7 +153,6 @@ return jsonResp(200, {
        }, request);
 
 } catch (err) {
-     // removed - fire-and-forget;
      return jsonResp(500, { 
         success: false, error: true,
         message: "Something went wrong. Please email us directly at hello@moliam.com.",
@@ -227,8 +226,7 @@ function calculateLeadScore(data) {
       urgency_status,
       score_breakdown: { base_score, industry_boost, urgencyBoost }
           };
-  } catch (err) {
-    // removed - fire-and-forget;
+   } catch (err) {
     return { base_score, industry_boost, urgency_boost, budget_fit_score, total_score, urgency_status, score_breakdown };
   }
 }
@@ -264,14 +262,13 @@ async function sendDiscordAlert(webhookUrl, scoreResult = {}) {
       signal: AbortSignal.timeout(5000)
     });
     return null;
-  } catch (err) {
-    // removed - fire-and-forget;
+       } catch (err) {
     return null;
-  }
+   }
 }
 
 /**
- * Initiate CRM Sync — Fire-and-forget background task for HubSpot/Airtable integration
+ * Initiate CRM Sync— Fire-and-forget background task for HubSpot/Airtable integration
  * Non-blocking call that logs errors to console.warn without affecting user response
  * @param {object} env - Worker environment with HUBSPOT_API_KEY or AIRTABLE_API_KEY
  * @param {{name:string, email:string, phone:string, company?:string, budget?:string, scope?:string, industry?:string, urgency_level?:string, message:string, pain_points?:string[]}} data - Lead submission data to sync
@@ -319,14 +316,13 @@ const crmUrl = CRM_PROVIDER.includes('hubspot')
      }
 
     return null; // Success logged separately
-   } catch (err) {
-    // removed - fire-and-forget;
-    return null; // Fire and forget - don't propagate errors to user
-   }
+} catch (err) {
+    return null;
+}
 }
 
 /**
- * Queue email sequences for new lead submissions (fire-and-forget background task)
+ * Queue email sequences for new lead submissions
  * Non-blocking call that logs errors to console without affecting user response
  * Inserts record into email_queue table for scheduled deliverability
  * @param {object} env - Worker environment with EMAIL_API_KEY if configured
