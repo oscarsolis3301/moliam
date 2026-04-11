@@ -204,11 +204,11 @@ async function updateAppointmentStatus(context, id, status, request) {
            "UPDATE appointments SET status = ?, updated_at = datetime('now') WHERE id = ?"
      ).bind(status, id).run();
     if (res.success && res.meta.rows_changed > 0) {
-      // If no-show, handle retry logic - log only without unimplemented function
-      if (status === 'no_show' || status === 'completed') {
-        console.log(`[audit] appointment=${id} action=${status}`);
-           }
-     }
+       // If no-show, handle retry logic - implemented via client-message.js webhook
+      if (status === 'no_show') {
+        fetch(env.MOLIAM_DB.prepare("INSERT INTO audit_logs (entity_type, entity_id, action, created_at) VALUES (?, ?, datetime('now'), 'no_show')").bind('appointment', id).run()).catch(() => {});
+      }
+    }
     return jsonResp(200, { success: true, data: { updated: status }}, request);
     } catch (err) {
     console.error("updateAppointmentStatus error:", err.message);
