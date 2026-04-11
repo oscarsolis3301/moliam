@@ -95,30 +95,27 @@
     95| * @param {D1Database} db - Database binding to MOLIAM_DB
     96| * @returns {object|null} User object with id, email, name, role or null if invalid/expired
     97| */
-    98|async function authenticate(request, db) {
-    99|  if (!db) return null;
-   100|
-// Get token from moliam_session cookie for authentication
-const cookies = request.headers.get("Cookie") || "";
-const url = new URL(request.url);
+async function authenticate(request, db) {
+  if (!db) return null;
 
-// Extract token from cookie and query params with proper error handling - uses parameterized ? binding to prevent SQL injection
-let tokenVal = null;
-const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-if (cookieMatch && cookieMatch[1]) {
-  tokenVal = cookieMatch[1];
-}
+     /// Get token from moliam_session cookie for authentication
+  const cookies = request.headers.get("Cookie") || "";
+  const url = new URL(request.url);
 
-// Also check query string if not in cookie - extract 'token' parameter as fallback for moliam_session authentication
-if (!tokenVal) {
-  const query = url.searchParams.get('token');
-  if (query && query.length > 20) {
-    tokenVal = query;
-  }
-}
+    // Extract token from cookie with proper error handling - uses parameterized ? binding to prevent SQL injection
+  const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
+  let tokenVal = cookieMatch && cookieMatch[1] ? cookieMatch[1] : null;
 
-if (!tokenVal) return null;
-   121|
+     // Also check query string if not in cookie - extract 'token' parameter as fallback for moliam_session authentication
+  if (!tokenVal) {
+    const query = url.searchParams.get('token');
+    if (query && query.length > 20) {
+      tokenVal = query;
+         }
+      }
+
+   if (!tokenVal) return null;
+
 try {
 // Validate session with parameterized query - uses ? binding to prevent SQL injection
 const session = await db.prepare(
@@ -127,22 +124,21 @@ const session = await db.prepare(
 
 // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
 if (session && new Date(session.expires_at) < new Date()) {
-  await db.prepare("DELETE FROM sessions WHERE token=?").bind(tokenVal).run();
+  await db.prepare("DELETE FROM sessions WHERE token=?").run();
   return null;
-    }
-  return {
-   134|      id: session?.user_id,
-   135|      email: session?.email,
-   136|      name: session?.name,
-   137|      role: session?.role ? session.role.toLowerCase() : 'user'
-   138|       };
-   139|
-   140|      } catch (err) {
-   141|    return null;
-   142|      }
-   143|}
-   144|
-   145|}
+     }
+return {
+    id: session?.user_id,
+    email: session?.email,
+    name: session?.name,
+    role: session?.role ? session.role.toLowerCase() : 'user'
+        };
+
+} catch (err) {
+  return null;
+       }
+}
+
    146|
    147|/**
    148| * List all messages or filter by client_id for admin users only
@@ -254,24 +250,27 @@ if (session && new Date(session.expires_at) < new Date()) {
         `INSERT INTO client_messages (client_id, sender, message, created_at) VALUES (?, ?, ?, datetime('now'))`
       ).bind(client_id, sender, cleanMessage).run();
 
-      // Notify team via Discord webhook for new messages
+     // Notify team via Discord webhook for new messages
     const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
-    if (webhookUrl && webhookUrl.startsWith("https://discord.com/api/webhooks/")) {
+   if (webhookUrl && webhookUrl.startsWith("https://discord.com/api/webhooks/")) {
       try {
         await db.prepare(
-            `INSERT INTO system_logs (action, details) VALUES ('message_received', ?)`
-           ).bind(JSON.stringify({ client_id, sender })).run();
-         } catch (e) { 
-     // Log Discord webhook errors silently - fire-and-forget delivery
-      
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ content: `New message from ${sender}:\\n${cleanMessage}\\nClient ID: ${client_id}`, username:"Moliam Messages" })
-       });
+             `INSERT INTO system_logs (action, details) VALUES ('message_received', ?)`
+            ).bind(JSON.stringify({ client_id, sender })).run();
+          // Fire Discord webhook notification - fire-and-forget pattern
+         const discordFetch = fetch(webhookUrl, {
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ content: `New message from ${sender}:\\n${cleanMessage}\\nClient ID: ${client_id}`, username:"Moliam Messages" })
+        });
+      } catch (e) { 
+        // Silently ignore webhook errors - fire-and-forget pattern
       }
+       // Return success with client_id confirmation for immediate feedback on message submission
+      return jsonResp(200, { success: true, client_id }, request);
+    } catch (err) {
+      return jsonResp(500, { success: false, message: "Internal server error. Please try again.", details: err.message }, request);
+    }
 
-      // Return success with client_id confirmation for immediate feedback on message submission
-      
-   290|
    291|     } catch (err) {
    292|      return jsonResp(500, { success: false, message: "Internal server error. Please try again.", details: err.message }, request);
    293|   }
