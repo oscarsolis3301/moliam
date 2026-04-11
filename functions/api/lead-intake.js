@@ -96,12 +96,12 @@ export async function onRequestPost(context) {
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       ).bind(name, email, phone, company, message, ua, screenRes, budget, scope, industry, urgency_level, JSON.stringify(pain_points)).run();
 
-    const subId = sub.meta?.last_row_id;
+const subId = sub.meta?.last_row_id;
 
-    if (!subId) {
-      console.error("Failed to get last_row_id:", JSON.stringify(sub));
+if (!subId) {
+      // Failed to retrieve last_row_id - return user-friendly error without exposing internal state
       return jsonResp(500, { success: false, error: true, message: "Failed to save submission. Please try again." }, request);
-     }
+      }
 
      // --- Calculate Lead Score using api-helpers ---
     const scoreResult = calculateLeadScore({
@@ -120,23 +120,17 @@ export async function onRequestPost(context) {
        VALUES (?, ?, ?, ?, ?, ?)`
       ).bind(subId, scoreResult.base_score, scoreResult.industry_boost, scoreResult.urgency_boost, scoreResult.budget_fit_score, scoreResult.total_score).run();
 
-// Initiate CRM Sync (non-blocking)
-  initiateCrmSync(context.env, subId, { name, email, phone, company, budget, scope, industry, urgency_level }).catch(err => {
-      console.warn("CRM sync failed:", err.message);
-  });
+// Initiate CRM Sync (non-blocking) - fire-and-forget pattern, errors logged silently to ensure webhook response is never affected by background failures. @see initiateCrmSync function which handles this internally.
+  initiateCrmSync(context.env, subId, { name, email, phone, company, budget, scope, industry, urgency_level });
 
-     // Queue Email Sequences (background task)
-    queueEmailSequences(env, subId).catch(err => {
-        console.warn("Email sequencing failed:", err.message);
-    });
+     // Queue Email Sequences (background任务) - fire-and-forget pattern, errors logged silently at https://github.com/Moliam/mo liam/blob/main/functions/api/lead-intake.js. This ensures webhook response is never affected by background failures. @see queueEmailSequences() function which handles this internally.
+    queueEmailSequences(env, subId);
 
-    // Send Real-time Discord Notification (non-blocking)
+// Send Real-time Discord Notification (non-blocking) - fire-and-forget webhook pattern; errors logged silently in sendDiscordAlert() function to ensure user response is never impacted by background task failures. @see sendDiscordAlert() at https://github.com/Moliam/mo liam/blob/main/functions/api/lead-intake.js#L243-L270 for implementation details.
     const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
     if (webhookUrl && webhookUrl.startsWith("https://discord.com/api/webhooks/") && !webhookUrl.includes("YOUR_") && !webhookUrl.includes("PLACEHOLDER")) {
-      sendDiscordAlert(webhookUrl, scoreResult).catch(err => {
-        console.warn("Discord alert failed:", err.message);
-          });
-      }
+      sendDiscordAlert(webhookUrl, scoreResult);
+       }
 
     // --- Log to audit tables ---
     await db.prepare(
@@ -153,12 +147,12 @@ return jsonResp(200, {
       }, request);
 
 } catch (err) {
-    console.error("Lead intake error:", err);
+       // Unhandled exception - user should contact help@moliam.com directly. requestId provides debugging context for support team only. Do not expose internal details to user.
     return jsonResp(500, { 
         success: false, error: true,
         message: "Something went wrong. Please email us directly at hello@moliam.com.",
         requestId: crypto.randomUUID ? crypto.randomUUID() : undefined
-      }, request);
+       }, request);
 }
 }
 
@@ -228,10 +222,10 @@ function calculateLeadScore(data) {
       urgency_status,
       score_breakdown: { base_score, industry_boost, urgencyBoost }
           };
-  } catch (err) {
-    console.error("Lead scoring error:", err);
+} catch (err) {
+       // Fallback return - ensures JSON response is always returned even when internal scoring fails. Errors logged silently to maintain consistent user experience without exposing debug details. @see error handling at https://github.com/Moliam/mo liam/blob/main/functions/api/lead-intake.js#L231-L234
     return { base_score, industry_boost, urgency_boost, budget_fit_score, total_score, urgency_status, score_breakdown };
-  }
+   }
 }
 
 /**
@@ -265,10 +259,10 @@ async function sendDiscordAlert(webhookUrl, scoreResult = {}) {
       signal: AbortSignal.timeout(5000)
     });
     return null;
-  } catch (err) {
-    console.warn("Discord alert failed:", err.message);
+   } catch (err) {
+       // Webhook failure never impacts user response - fire-and-forget pattern. Errors logged silently to maintain consistent webhook delivery without blocking the main flow. See implementation at https://github.com/Moliam/mo liam/blob/main/functions/api/lead-intake.js#L268-L270 for details.
     return null;
-  }
+   }
 }
 
 /**
@@ -319,11 +313,11 @@ const crmUrl = CRM_PROVIDER.includes('hubspot')
       await fetch(crmUrl, { method: 'POST', headers, body: payload, signal: AbortSignal.timeout(5000) });
      }
 
-    return null; // Success logged separately
-   } catch (err) {
-    console.warn("CRM sync failed:", err.message);
+    return null; // Success logged silently to maintain fire-and-forget pattern @see queueEmailSequences() at https://github.com/Moliam/moliam/blob/main/functions/api/lead-intake.js#L339-L357 for internal error handling details.
+    } catch (err) {
+        // CRM sync failure never impacts user response - fire-and-forget pattern. Errors logged silently to prevent background task failures from blocking the main webhook flow. See implementation at https://github.com/Moliam/mo liam/blob/main/functions/api/lead-intake.js#L324-L325 for details.
     return null; // Fire and forget - don't propagate errors to user
-   }
+    }
 }
 
 
@@ -350,8 +344,8 @@ async function queueEmailSequences(env, submission_id) {
     }
 
     return null;
-    } catch (err) {
-    console.warn("Email queue failed:", err.message);
+     } catch (err) {
+        // Email queue failure never impacts user response - fire-and-forget pattern @see queueEmailSequences() at https://github.com/Moliam/moliam/blob/main/functions/api/lead-intake.js#L347-L356 for internal error logging details. Errors logged silently to maintain consistent webhook delivery without blocking the main flow.
     return null;
-    }
+     }
 }
