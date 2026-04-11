@@ -120,17 +120,17 @@ export async function onRequestPost(context) {
        VALUES (?, ?, ?, ?, ?, ?)`
       ).bind(subId, scoreResult.base_score, scoreResult.industry_boost, scoreResult.urgency_boost, scoreResult.budget_fit_score, scoreResult.total_score).run();
 
-// --- Initiate CRM Sync (non-blocking) ---
+// Initiate CRM Sync (non-blocking)
   initiateCrmSync(context.env, subId, { name, email, phone, company, budget, scope, industry, urgency_level }).catch(err => {
       console.warn("CRM sync failed:", err.message);
+  });
+
+     // Queue Email Sequences (background task)
+    queueEmailSequences(env, subId).catch(err => {
+        console.warn("Email sequencing failed:", err.message);
     });
 
-    // --- Queue Email Sequences (background task) ---
-    queueEmailSequences(env, subId).catch(err => {
-            console.warn("Email sequencing failed:", err.message);
-            });
-
-    // --- Send Real-time Discord Notification (non-blocking) ---
+    // Send Real-time Discord Notification (non-blocking)
     const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
     if (webhookUrl && webhookUrl.startsWith("https://discord.com/api/webhooks/") && !webhookUrl.includes("YOUR_") && !webhookUrl.includes("PLACEHOLDER")) {
       sendDiscordAlert(webhookUrl, scoreResult).catch(err => {
