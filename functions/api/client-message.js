@@ -132,16 +132,16 @@ return {
     email: session?.email,
     name: session?.name,
     role: session?.role ? session.role.toLowerCase() : 'user'
-        };
+};
 
 } catch (err) {
   return null;
-       }
 }
 
-   146|
-   147|/**
-   148| * List all messages or filter by client_id for admin users only
+}
+
+/**
+ * List all messages or filter by client_id for admin users only
    149| * @param {object} context - Cloudflare Pages request context
    150| * @returns {Response} JSON response with messages array for the authenticated user
    151| */

@@ -104,18 +104,21 @@
    105|
    106|    const db = env.MOLIAM_DB;
    107|
-   108|  try {
-   109|         // Superadmin sees ALL users excluding superadmin accounts themselves - no injection via ? parameterized binding
-   110|            // Regular admin only sees client-level accounts for assigned client relationships (role-based filtering enforced)
-   111|        const roleFilter = user.role === 'superadmin' ? "u.role!='superadmin'" : "u.role='client'";
-   112|
-   113|            // Get user list with joined projects data and monthly revenue calculations - all SQL uses parameterized binding
-   114|         const { results: clients } = await db.prepare(
-   115|            `SELECT u.id, u.email, u.name, u.role, u.company, u.phone, u.is_active, u.created_at, u.last_login,
-   116|              (SELECT COUNT(*) FROM projects p WHERE p.user_id=u.id) as project_count,
-   117|              (SELECT SUM(monthly_rate) FROM projects p WHERE p.user_id=u.id AND p.status IN ('active','in_progress')) as monthly_revenue
-   118|           FROM users u WHERE ${roleFilter} ORDER BY u.created_at DESC`
-   119|          ).all();
+try {
+        // Superadmin sees ALL users excluding superadmin accounts themselves - hardcoded role filtering (no SQL injection)
+         const isAdminSuper = user.role === 'superadmin';
+         
+        // Get user list with joined projects data and monthly revenue calculations - all SQL uses parameterized binding
+          const whereClause = isAdminSuper 
+            ? "u.role != 'superadmin' ORDER BY u.created_at DESC"
+             : "u.role = 'client' ORDER BY u.created_at DESC";
+         
+         const { results: clients } = await db.prepare(
+             `SELECT u.id, u.email, u.name, u.role, u.company, u.phone, u.is_active, u.created_at, u.last_login,
+               (SELECT COUNT(*) FROM projects p WHERE p.user_id=u.id) as project_count,
+               (SELECT SUM(monthly_rate) FROM projects p WHERE p.user_id=u.id AND p.status IN ('active','in_progress')) as monthly_revenue
+           FROM users u WHERE ${whereClause}`
+           ).all();
    120|
    121|
    122|      return jsonResp(200, { success: true, clients }, request);
