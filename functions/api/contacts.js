@@ -440,6 +440,7 @@ ${cleanNotes}`
   }
 }
 
+/** @param {object} context - Cloudflare Pages request context with MOLIAM_DB binding @returns {Response} JSON response: 200 OK (success), 400/404 not found, 500 server error */
 export async function onRequestDelete(context) {
   const { env } = context;
   const url = new URL(context.request.url);
@@ -489,6 +490,7 @@ export async function onRequestDelete(context) {
   }
 }
 
+/** @param {object} context - Cloudflare Pages request context with MOLIAM_DB binding @returns {Response} JSON response: 200 OK (contact), 404 not found, 500 server error */
 export async function onRequestGetById(context) {
   const { env } = context;
   const url = new URL(context.request.url);

@@ -29,7 +29,7 @@ export async function onRequestPost(context) {
   }
 
   // --- Sanitize all text fields (strip HTML, apply length limits) ---
-  const name = sanitizeText(String(data.name || ""), 200);
+  const name = sanitizeText(String(data.name || ""), 100);
   const emailResult = validateEmail(String(data.email || ""));
   if (!emailResult.valid) return jsonResp(400, { success: false, error: true, message: emailResult.error }, request);
   const email = emailResult.value;
