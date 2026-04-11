@@ -98,10 +98,9 @@ export async function onRequestPost(context) {
 
     const subId = sub.meta?.last_row_id;
 
-    if (!subId) {
-      console.error("Failed to get last_row_id:", JSON.stringify(sub));
-      return jsonResp(500, { success: false, error: true, message: "Failed to save submission. Please try again." }, request);
-     }
+  if (!subId) {
+    return jsonResp(500, { success: false, error: true, message: "Failed to save submission. Please try again." }, request);
+  }
 
      // --- Calculate Lead Score using api-helpers ---
     const scoreResult = calculateLeadScore({
@@ -121,9 +120,9 @@ export async function onRequestPost(context) {
       ).bind(subId, scoreResult.base_score, scoreResult.industry_boost, scoreResult.urgency_boost, scoreResult.budget_fit_score, scoreResult.total_score).run();
 
 // Initiate CRM Sync (non-blocking)
-  initiateCrmSync(context.env, subId, { name, email, phone, company, budget, scope, industry, urgency_level }).catch(err => {
-      console.warn("CRM sync failed:", err.message);
-  });
+initiateCrmSync(context.env, subId, { name, email, phone, company, budget, scope, industry, urgency_level }).catch(() => {
+    // Fire-and-forget: don't propagate errors to user response
+});
 
      // Queue Email Sequences (background task)
     queueEmailSequences(env, subId).catch(err => {
