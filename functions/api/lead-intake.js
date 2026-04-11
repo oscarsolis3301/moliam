@@ -150,16 +150,15 @@ return jsonResp(200, {
       submissionId: subId,
       leadScore: scoreResult.total_score,
       urgency: scoreResult.urgency_status
-      }, request);
+       }, request);
 
 } catch (err) {
-    console.error("Lead intake error:", err);
-    return jsonResp(500, { 
+     console.error("Lead intake error:", err);
+     return jsonResp(500, { 
         success: false, error: true,
         message: "Something went wrong. Please email us directly at hello@moliam.com.",
         requestId: crypto.randomUUID ? crypto.randomUUID() : undefined
-      }, request);
-}
+       }, request);
 }
 
 /**
