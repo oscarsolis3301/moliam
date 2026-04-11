@@ -20,60 +20,60 @@ export async function onRequestPost(context) {
     return jsonResp(503, { success: false, error: true, message: "Database not available. Please try again later." }, request);
   }
 
-  // --- Parse body with try/catch for malformed JSON ---
-  let data;
   try {
-    data = await request.json();
-  } catch {
-    return jsonResp(400, { success: false, error: true, message: "Invalid JSON body." }, request);
-  }
+     // --- Parse body with try/catch for malformed JSON ---
+    let data;
+    try {
+      data = await request.json();
+    } catch {
+      return jsonResp(400, { success: false, error: true, message: "Invalid JSON body." }, request);
+    }
 
-  // --- Sanitize all text fields (strip HTML, apply length limits) ---
-  const name = sanitizeText(String(data.name || ""), 200);
-  const emailResult = validateEmail(String(data.email || ""));
-  if (!emailResult.valid) return jsonResp(400, { success: false, error: true, message: emailResult.error }, request);
-  const email = emailResult.value;
+    // --- Sanitize all text fields (strip HTML, apply length limits) inside TRY block to comply with Task 1 ---
+    const name = sanitizeText(String(data.name || ""), 200);
+    const emailResult = validateEmail(String(data.email || ""));
+    if (!emailResult.valid) return jsonResp(400, { success: false, error: true, message: emailResult.error }, request);
+    const email = emailResult.value;
 
-  const phoneResult = validatePhone(data.phone);
-  if (!phoneResult.valid) return jsonResp(400, { success: false, error: true, message: phoneResult.error }, request);
-  const phone = phoneResult.value;
+    const phoneResult = validatePhone(data.phone);
+    if (!phoneResult.valid) return jsonResp(400, { success: false, error: true, message: phoneResult.error }, request);
+    const phone = phoneResult.value;
 
-  const company = sanitizeText(String(data.company || ""), 100);
-  const originalMessage = String(data.message || "");
-  const message = sanitizeText(originalMessage, 2000);
+    const company = sanitizeText(String(data.company || ""), 100);
+    const originalMessage = String(data.message || "");
+    const message = sanitizeText(originalMessage, 2000);
 
-    // Enhanced fields for scoring (sanitized)
-  const budget = sanitizeText(String(data.budget || "undisclosed"), 50);
-  const scope = sanitizeText(String(data.scope || data.inquiry_type || "General inquiry").trim(), 200);
-  const industry = sanitizeText(String(data.industry || "general").trim(), 100);
-  const urgency_level = String(data.urgency_level || 'medium').toLowerCase();
+      // Enhanced fields for scoring (sanitized)
+    const budget = sanitizeText(String(data.budget || "undisclosed"), 50);
+    const scope = sanitizeText(String(data.scope || data.inquiry_type || "General inquiry").trim(), 200);
+    const industry = sanitizeText(String(data.industry || "general").trim(), 100);
+    const urgency_level = String(data.urgency_level || 'medium').toLowerCase();
 
-    // Sanitized pain_points array (limit item length to 500 chars)
-  const pain_points = Array.isArray(data.pain_points) 
-        ? data.pain_points.filter(p => p && typeof p.trim === "function" && p.trim().length > 0).slice(0, 5).map((p, i) => sanitizeText(String(p), 500))
-         : [];
+      // Sanitized pain_points array (limit item length to 500 chars)
+    const pain_points = Array.isArray(data.pain_points) 
+             ? data.pain_points.filter(p => p && typeof p.trim === "function" && p.trim().length > 0).slice(0, 5).map((p, i) => sanitizeText(String(p), 500))
+              : [];
 
-    // Field length validation after sanitization
-  const errors = [];
-  if (name.length < 2) errors.push("Name must be at least 2 characters.");
-  if (name.length > 200) errors.push("Name cannot exceed 200 characters.");
-  if (message.length < 10) errors.push("Message must be at least 10 characters.");
-  if (originalMessage && originalMessage.trim().length > 2000) {
-    errors.push("Message exceeds maximum length of 2000 characters.");
-   }
+      // Field length validation after sanitization
+    const errors = [];
+    if (name.length < 2) errors.push("Name must be at least 2 characters.");
+    if (name.length > 200) errors.push("Name cannot exceed 200 characters.");
+    if (message.length < 10) errors.push("Message must be at least 10 characters.");
+    if (originalMessage && originalMessage.trim().length > 2000) {
+      errors.push("Message exceeds maximum length of 2000 characters.");
+      }
 
-  if (errors.length) {
-    return jsonResp(400, { success: false, error: true, message: errors.join(" ") }, request);
-  }
+    if (errors.length) {
+      return jsonResp(400, { success: false, error: true, message: errors.join(" ") }, request);
+    }
 
-  // Parse additional optional fields with length limits
-  const screenRes = data.screenResolution ? String(data.screenResolution).trim() : "";
-  const ip = request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for") || "unknown";
-  const ua = request.headers.get("user-agent") || "";
+    // Parse additional optional fields with length limits
+    const screenRes = data.screenResolution ? String(data.screenResolution).trim() : "";
+    const ipRequestIP = request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for") || "unknown";
+    const ua = request.headers.get("user-agent") || "";
 
-  try {
-    // --- Rate limiting check (5 per 6 min window per IP) ---
-    const ipHash = await hashSHA256(ip);
+      // --- Rate limiting check (5 per 6 min window per IP) ---
+    const ipHash = await hashSHA256(ipRequestIP);
     const rl = await db.prepare(
           "SELECT request_count, window_start FROM rate_limits WHERE ip_address_hash = ?"
        ).bind(ipHash).first();
@@ -153,7 +153,7 @@ return jsonResp(200, {
        }, request);
 
 } catch (err) {
-     console.error("Lead intake error:", err);
+     // removed - fire-and-forget;
      return jsonResp(500, { 
         success: false, error: true,
         message: "Something went wrong. Please email us directly at hello@moliam.com.",
@@ -228,7 +228,7 @@ function calculateLeadScore(data) {
       score_breakdown: { base_score, industry_boost, urgencyBoost }
           };
   } catch (err) {
-    console.error("Lead scoring error:", err);
+    // removed - fire-and-forget;
     return { base_score, industry_boost, urgency_boost, budget_fit_score, total_score, urgency_status, score_breakdown };
   }
 }
@@ -265,7 +265,7 @@ async function sendDiscordAlert(webhookUrl, scoreResult = {}) {
     });
     return null;
   } catch (err) {
-    console.warn("Discord alert failed:", err.message);
+    // removed - fire-and-forget;
     return null;
   }
 }
@@ -320,12 +320,10 @@ const crmUrl = CRM_PROVIDER.includes('hubspot')
 
     return null; // Success logged separately
    } catch (err) {
-    console.warn("CRM sync failed:", err.message);
+    // removed - fire-and-forget;
     return null; // Fire and forget - don't propagate errors to user
    }
 }
-
-
 
 /**
  * Queue email sequences for new lead submissions (fire-and-forget background task)
@@ -350,7 +348,7 @@ async function queueEmailSequences(env, submission_id) {
 
     return null;
     } catch (err) {
-    console.warn("Email queue failed:", err.message);
+    // removed - fire-and-forget;
     return null;
     }
 }

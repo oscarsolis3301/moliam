@@ -37,7 +37,6 @@ export function jsonResp(status, data, request, allowedOrigins = null) {
       delete extra.error;
     }
 
-
     const headers = new Headers({
        "Content-Type": "application/json",
        "Cache-Control": "no-cache, no-store, must-revalidate"
