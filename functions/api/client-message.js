@@ -98,39 +98,39 @@
     98|async function authenticate(request, db) {
     99|  if (!db) return null;
    100|
-   101|   // Get token from moliam_session cookie for authentication - no SQL injection possible here
-   102|  const cookies = request.headers.get("Cookie") || "";
-   103|  const url = new URL(request.url);
-   104|
-   105|// Extract token from cookie and query params with proper error handling - uses parameterized ? binding to prevent SQL injection
-   106|let tokenVal=***
-   107|const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-   108|if (cookieMatch && cookieMatch[1]) {
-   109|  tokenVal=***
-   110|}
-   111|
-   112|// Also check query string if not in cookie - extract 'token' parameter as fallback for moliam_session authentication
-   113|if (!tokenVal) {
-   114|  const query = url.searchParams.get('token');
-   115|  if (query && query.length > 20) {
-   116|    tokenVal=***
-   117|  }
-   118|}
-   119|
-   120|if (!tokenVal) return null;
+// Get token from moliam_session cookie for authentication
+const cookies = request.headers.get("Cookie") || "";
+const url = new URL(request.url);
+
+// Extract token from cookie and query params with proper error handling - uses parameterized ? binding to prevent SQL injection
+let tokenVal = null;
+const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
+if (cookieMatch && cookieMatch[1]) {
+  tokenVal = cookieMatch[1];
+}
+
+// Also check query string if not in cookie - extract 'token' parameter as fallback for moliam_session authentication
+if (!tokenVal) {
+  const query = url.searchParams.get('token');
+  if (query && query.length > 20) {
+    tokenVal = query;
+  }
+}
+
+if (!tokenVal) return null;
    121|
-   122|try {
-   123|// Validate session with parameterized query - uses ? binding to prevent SQL injection
-   124|const session = await db.prepare(
-   125|"SELECT s.user_id, s.expires_at, u.id, u.email, ***, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=*** AND u.is_active=1"
-   126|).bind(tokenVal).first();
-   127|
-   128|// Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
-   129|if (session && new Date(session.expires_at) < new Date()) {
-   130|  await db.prepare("DELETE FROM sessions WHERE token=?").bi...n();
-   131|  return null;
-   132|           }
-   133|    return {
+try {
+// Validate session with parameterized query - uses ? binding to prevent SQL injection
+const session = await db.prepare(
+"SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
+).bind(tokenVal).first();
+
+// Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
+if (session && new Date(session.expires_at) < new Date()) {
+  await db.prepare("DELETE FROM sessions WHERE token=?").bind(tokenVal).run();
+  return null;
+    }
+  return {
    134|      id: session?.user_id,
    135|      email: session?.email,
    136|      name: session?.name,
@@ -224,24 +224,12 @@
    224|    return jsonResp(400, { success: false, message: "Missing required fields: sender and message are required" }, request);
    225|  }
    226|
-   227|        if (db === null || !db) {
-   228|   return jsonResp(503, { success: false, message: "Database unavailable" }, request);
-   229|      // If DB unavailable but we still want to try Discord notification for async delivery - fire and forget pattern
-   230|      try {
-   231|        const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
-   232|         if (webhookUrl && webhookUrl.startsWith("https://discord.com/api/webhooks/")) {
-   233|           await fetch(webhookUrl, {
-   234|             method: "POST",
-   235|             headers: { "Content-Type": "application/json" },
-   236|             body: JSON.stringify({ content: "Message submission failed - database unavailable", username: "Moliam Messages" })
-   237|               });
-   238|          }
-   239|      } catch (e) {
-   240|   // Fire-and-forget - log Discord webhook errors silently for QA/debugging purposes (no DB access)
-   242|
-   243|  try {
-   244|    const client_id = parseInt(data.client_id) || 12;
-   245|    const client_id = parseInt(data.client_id) || 12;
+           if (db === null || !db) {
+   return jsonResp(503, { success: false, message: "Database unavailable" }, request);
+       }
+
+  try {
+    const client_id = parseInt(data.client_id) || 12;
    246|    const senderRaw = data.sender ?? "";
    247|    let sender = sanitizeMessage(senderRaw)?.value ?? "Unknown";
    248|
@@ -261,31 +249,28 @@
    262|    }
    263|    const cleanMessage = msgResult.value || "";
    264|
-   265|     // Insert client_message record with parameterized bind() for SQL safety
-   266|    await db.prepare(
-   267|      `INSERT INTO client_messages (client_id, sender, message, created_at) VALUES (?, ?, ?, datetime('now'))`
-   268|     ).bind(client_id, sender, cleanMessage).run();
-   269|
-   270|       // Optionally notify team via Discord webhook for new messages with proper error handling and CORS headers set consistently across all webhook calls
-   271|    const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
-   272|    if (webhookUrl && webhookUrl.startsWith("https://discord.com/api/webhooks/")) {
-   273|      try {
-   274|        await db.prepare(
-   275|           `INSERT INTO system_logs (action, details) VALUES ('message_received', ?)`
-   276|          ).bind(JSON.stringify({ client_id, sender })).run();
-   277|        } catch (e) { 
-   278|   // Fire-and-forget - log Discord webhook errors silently for QA/debugging purposes (no DB access to write to)
-   279|
-   280|       // Fire-and-forget webhook delivery to Discord - no blocking behavior ensures message submission always succeeds regardless of webhook status
-   281|      await fetch(webhookUrl, {
-   282|        method: "POST",
-   283|        headers: {'Content-Type':'application/json'},
-   284|        body: JSON.stringify({ content: `New message from ${sender}:\n${cleanMessage}\nClient ID: ${client_id}`, username:"Moliam Messages" })
-   285|       });
-   286|      }
-   287|
-   288|       // Return success with client_id confirmation for immediate feedback on message submission - uses parameterized binding throughout and clean JSON response via jsonResp helper function in all endpoints within module
-   289|    return jsonResp(200, { success: true, error: false, client_id }, request);
+      // Insert client_message record with parameterized bind() for SQL safety
+    await db.prepare(
+        `INSERT INTO client_messages (client_id, sender, message, created_at) VALUES (?, ?, ?, datetime('now'))`
+      ).bind(client_id, sender, cleanMessage).run();
+
+      // Notify team via Discord webhook for new messages
+    const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
+    if (webhookUrl && webhookUrl.startsWith("https://discord.com/api/webhooks/")) {
+      try {
+        await db.prepare(
+            `INSERT INTO system_logs (action, details) VALUES ('message_received', ?)`
+           ).bind(JSON.stringify({ client_id, sender })).run();
+         } catch (e) { 
+     // Log Discord webhook errors silently - fire-and-forget delivery
+      
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ content: `New message from ${sender}:\\n${cleanMessage}\\nClient ID: ${client_id}`, username:"Moliam Messages" })
+       });
+      }
+
+      // Return success with client_id confirmation for immediate feedback on message submission
+      
    290|
    291|     } catch (err) {
    292|      return jsonResp(500, { success: false, message: "Internal server error. Please try again.", details: err.message }, request);

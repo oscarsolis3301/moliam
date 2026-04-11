@@ -1,4 +1,4 @@
-     1|/**
+1|/**
      2| * GET /api/invoices/[id] - Get single invoice  
      3| * PUT /api/invoices/[id] - Update invoice status or full record
      4| */
@@ -9,16 +9,16 @@
      9|
     10|  if (!db) return jsonResp(503, { success: false, error: true, message: "Database not available." }, request);
     11|
-    12|  const token=getSes...st);
+    12|  const token=***
     13|  if (!token) return jsonResp(401, { success: false, error: true, message: "Not authenticated." }, request);
     14|
     15|  const session = await db.prepare(
-    16|      "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=*** AND s.expires_at > datetime('now')"
+    16|      "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND s.expires_at > datetime(now)"
     17|    ).bind(token).first();
     18|
     19|  if (!session) return jsonResp(401, { success: false, error: true, message: "Session invalid." }, request);
     20|
-    21|  const pathSegments = context.request.url.split('/api/invoices/');
+    21|  const pathSegments = context.request.url.split(/api/invoices/);
     22|  if (pathSegments.length < 2) {
     23|    return jsonResp(400, { success: false, error: true, message: "Invoice ID required." }, request);
     24|  }
@@ -38,7 +38,7 @@
     38|    }
     39|
     40|    // Clients can only see their own invoices (contact_id = session.id) or admin sees all
-    41|    if (session.role === 'client' && invoice.contact_id !== session.id) {
+    41|    if (session.role === client && invoice.contact_id !== session.id) {
     42|      return jsonResp(403, { success: false, error: true, message: "Access denied to this invoice." }, request);
     43|    }
     44|
@@ -55,16 +55,16 @@
     56|
     57|  if (!db) return jsonResp(503, { success: false, error: true, message: "Database not available." }, request);
     58|
-    59|  const token=getSes...st);
+    59|  const token=***
     60|  if (!token) return jsonResp(401, { success: false, error: true, message: "Not authenticated." }, request);
     61|
     62|  const session = await db.prepare(
-    63|      "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=*** AND s.expires_at > datetime('now')"
+    63|      "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND s.expires_at > datetime(now)"
     64|    ).bind(token).first();
     65|
     66|  if (!session) return jsonResp(401, { success: false, error: true, message: "Session invalid." }, request);
     67|
-    68|  const pathSegments = context.request.url.split('/api/invoices/');
+    68|  const pathSegments = context.request.url.split(/api/invoices/);
     69|  if (pathSegments.length < 2) {
     70|    return jsonResp(400, { success: false, error: true, message: "Invoice ID required." }, request);
     71|  }
@@ -83,7 +83,7 @@
     84|  }
     85|
     86|  // Clients can only update their own invoices or admins
-    87|  if (session.role === 'client' && currentInvoice.contact_id !== session.id) {
+    87|  if (session.role === client && currentInvoice.contact_id !== session.id) {
     88|    return jsonResp(403, { success: false, error: true, message: "Access denied to this invoice." }, request);
     89|  }
     90|
@@ -95,15 +95,15 @@
     96|    const params = [];
     97|
     98|    if (status) {
-    99|      if (['draft', 'sent', 'paid', 'overdue'].includes(status)) {
+    99|      if ([draft, sent, paid, overdue].includes(status)) {
    100|        query += `status = ?,`;
    101|        params.push(status);
    102|
    103|        // Auto-update timestamps for state transitions
-   104|        if (status === 'sent') {
+   104|        if (status === sent) {
    105|          query += `sent_at = ?,`;
    106|          params.push(now);
-   107|        } else if (status === 'paid') {
+   107|        } else if (status === paid) {
    108|          query += `sent_at = ?, paid_at = ?`;
    109|          params.push(currentInvoice.sent_at || null, now);
    110|        } else {
@@ -120,7 +120,7 @@
    121|    }
    122|
    123|    // Remove trailing comma and add WHERE clause - fix the logic to always handle trailing comma
-   124|    if (query.endsWith(',')) {
+   124|    if (query.endsWith(,)) {
    125|      query = query.slice(0, -1) + " WHERE id = ?";
    126|    } else {
    127|      query += " WHERE id = ?";

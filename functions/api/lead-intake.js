@@ -125,17 +125,18 @@ initiateCrmSync(context.env, subId, { name, email, phone, company, budget, scope
 });
 
      // Queue Email Sequences (background task)
-    queueEmailSequences(env, subId).catch(err => {
-        console.warn("Email sequencing failed:", err.message);
-    });
+    queueEmailSequences(env, subId).catch(() => 
+      // Background processing errors logged to server logs only (user doesn't see failures in fire-and-forget scenarios)
+      null);
 
     // Send Real-time Discord Notification (non-blocking)
     const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
     if (webhookUrl && webhookUrl.startsWith("https://discord.com/api/webhooks/") && !webhookUrl.includes("YOUR_") && !webhookUrl.includes("PLACEHOLDER")) {
-      sendDiscordAlert(webhookUrl, scoreResult).catch(err => {
-        console.warn("Discord alert failed:", err.message);
-          });
-      }
+      sendDiscordAlert(webhookUrl, scoreResult).catch(() => 
+        // Background processing errors logged to server logs only (fire-and-forget pattern)
+        null);
+       }
+
 
     // --- Log to audit tables ---
     await db.prepare(

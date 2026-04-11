@@ -1,4 +1,4 @@
-     1|/**
+1|/**
      2| * POST /api/invoices - Create new invoice
      3| */
      4|
@@ -9,19 +9,19 @@
      9|  // Authentication check via cookie token extraction and parameterized session validation
     10|  const cookies = request.headers.get("Cookie") || "";
     11|  const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-    12|  const token=*** ? cookieMatch[1] : null;
+    12|  let tokenVal = cookieMatch && cookieMatch[1] ? cookieMatch[1] : null;
     13|  if (!token) return jsonResp(401, { success: false, error: true, message: "Not authenticated." }, request);
     14|
     15|  const session = await db.prepare(
-    16|    "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=*** AND s.expires_at > datetime('now')"
+    16|    "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND s.expires_at > datetime(now)"
     17|  ).bind(token).first();
     18|
     19|  if (!session) return jsonResp(401, { success: false, error: true, message: "Session invalid." }, request);
-    20|  if (session.role !== 'admin' && session.role !== 'superadmin') return jsonResp(403, { success: false, error: true, message: "Admin required." }, request);
+    20|  if (session.role !== admin && session.role !== superadmin) return jsonResp(403, { success: false, error: true, message: "Admin required." }, request);
     21|
     22|  try {
     23|    const data = await request.json();
-    24|    const { contact_id, items, amount, due_date, status = 'draft', notes } = data;
+    24|    const { contact_id, items, amount, due_date, status = draft, notes } = data;
     25|
     26|    // Validation
     27|    if (!contact_id || !items) {
@@ -75,9 +75,9 @@
     76|function generateInvoiceNumber(prefix) {
     77|  const now = new Date();
     78|  const year = now.getFullYear();
-    79|  const month = String(now.getMonth() + 1).padStart(2, '0');
+    79|  const month = String(now.getMonth() + 1).padStart(2, 0);
     80|  const basePrefix = prefix || `INV-${year}${month}`;
-    81|  return `${basePrefix}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+    81|  return `${basePrefix}-${Math.floor(Math.random() * 10000).toString().padStart(4, 0)}`;
     82|}
     83|
     84|/**

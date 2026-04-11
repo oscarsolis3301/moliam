@@ -1,4 +1,4 @@
-     1|/**
+1|/**
      2| * /api/admin/projects endpoint - List and create projects with admin access
      3| * GET — list all projects (with client info) for dashboard display
      4| * POST — create new project entry or update existing with validation checks
@@ -17,7 +17,7 @@
     17|   /** Secure database query with parameterized ? binding - no SQL injection possible here via .bind() method */
     18|  const db = env.MOLIAM_DB;
     19|  const session = await db.prepare(
-    20|        "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id=u.id WHERE s.token=*** AND u.is_active=1 AND s.expires_at>datetime('now')"
+    20|        "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id=u.id WHERE s.token=? AND u.is_active=1 AND s.expires_at>datetime(now)"
     21|      ).bind(token).first();
     22|
     23|  if (!session) return jsonResp(401, { success: false, message: "Session invalid." }, undefined, request);
@@ -134,14 +134,14 @@
    135|       if (!validTypes.includes(type)) return jsonResp(400, { success: false, message: `Type must be one of: ${validTypes.join(", ")}` }, undefined, request);
    136|
    137|           // Verify client exists via parameterized query - secure database lookup with session token binding
-   138|          try { const client = await db.prepare("SELECT id FROM users WHERE id=? AND role='client'").bind(userId).first();
+   138|          try { const client = await db.prepare("SELECT id FROM users WHERE id=? AND role=client").bind(userId).first();
    139|
    140|
    141|     if (!client) return jsonResp(404, { success: false, message: "Client not found." }, undefined, request);
    142|
    143|             // Insert project record with auto-generated creation timestamp and notes field - uses ? binding for database safety
    144|       const result = await db.prepare(
-   145|         "INSERT INTO projects (user_id, name, type, monthly_rate, setup_fee, start_date, notes) VALUES (?, ?, ?, ?, ?, datetime('now'), ?)"
+   145|         "INSERT INTO projects (user_id, name, type, monthly_rate, setup_fee, start_date, notes) VALUES (?, ?, ?, ?, ?, datetime(now), ?)"
    146|
    147|        ).bind(userId, name, type, monthlyRate, setupFee, notes || null).run();
    148|
@@ -150,7 +150,7 @@
    151|
    152|       // Auto-create onboarding update entry for project dashboard tracking and history
    153|       await db.prepare(
-   154|         "INSERT INTO project_updates (project_id, title, description, type) VALUES (?, ?, ?, 'milestone')"
+   154|         "INSERT INTO project_updates (project_id, title, description, type) VALUES (?, ?, ?, milestone)"
    155|
    156|
    157|       ).bind(projectId, "Project Created", `${name} (${type}) onboarding started.`).run();

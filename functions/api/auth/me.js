@@ -1,11 +1,11 @@
-     1|/**
+1|/**
      2| * GET /api/auth/me
      3| * Returns current user from session cookie, validates token and auth status
      4| * @param {object} context - Cloudflare Pages function context with request and env
      5| * @returns {Response} JSON response with authenticated user data or 401 error
      6| */
      7|
-     8|import { jsonResp } from './api-helpers.js';
+     8|import { jsonResp } from ./api-helpers.js;
      9|
     10|export async function onRequestGet(context) {
     11|  const { request, env } = context;
@@ -23,7 +23,7 @@
     23|  try {
     24|       // Get user session with proper ? parameterized binding - no SQL injection possible here
     25|    const session = await db.prepare(
-    26|         "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role, u.company, u.phone, u.avatar_url FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=*** AND u.is_active=1"
+    26|         "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role, u.company, u.phone, u.avatar_url FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
     27|       ).bind(token).first();
     28|    
     29|    if (!session) {
@@ -32,12 +32,12 @@
     32|    
     33|     // Check session expiry - delete stale tokens to prevent orphan data accumulation
     34|    if (new Date(session.expires_at) < new Date()) {
-    35|      await db.prepare("DELETE FROM sessions WHERE token=?").bi...n();
+    35|      await db.prepare("DELETE FROM sessions WHERE token=***
     36|      return jsonResp(401, { success: false, message: "Session expired." }, request);
     37|     }
     38|    
     39|     // Normalize superadmin -> admin for frontend routing and display
-    40|    const displayRole = session.role === 'superadmin' ? 'admin' : session.role;
+    40|    const displayRole = session.role === superadmin ? admin : session.role;
     41|    
     42|    return jsonResp(200, {
     43|       success: true,

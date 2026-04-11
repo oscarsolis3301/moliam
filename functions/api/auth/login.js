@@ -1,4 +1,4 @@
-     1|/**
+1|/**
      2| * Login API Endpoint
      3| * POST /api/auth/login
      4| * Authenticates user, creates session, sets cookie
@@ -6,7 +6,7 @@
      6| * @returns {Response} JSON response with success/error status and authentication token
      7| */
      8|
-     9|import { corsResponse, jsonResp, getAllowedOrigin, hashPassword, generateToken } from './api-helpers.js';
+     9|import { corsResponse, jsonResp, getAllowedOrigin, hashPassword, generateToken } from ./api-helpers.js;
     10|
     11|export async function onRequestPost(context) {
     12|  const { request, env } = context;
@@ -71,7 +71,7 @@
     71|
     72|     // Update last login timestamp with parameterized query
     73|    await db.prepare(
-    74|       "UPDATE users SET last_login=datetime('now') WHERE id=?"
+    74|       "UPDATE users SET last_login=datetime(now) WHERE id=?"
     75|     ).bind(user.id).run();
     76|
     77|     // Set cookie + return user data with consistent success structure
@@ -88,7 +88,7 @@
     88|     );
     89|
     90|     // Normalize superadmin → admin for frontend routing
-    91|    const displayRole = user.role === 'superadmin' ? 'admin' : user.role;
+    91|    const displayRole = user.role === superadmin ? admin : user.role;
     92|
     93|    return new Response(JSON.stringify({
     94|      success: true,
