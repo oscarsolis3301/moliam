@@ -7,14 +7,20 @@
      7|
      8|import { jsonResp } from './api-helpers.js';
      9|
-    10|export async function onRequestGet(context) {
-    11|  try {
-    12|    const { request, env } = context;
-    13|    const db = env.MOLIAM_DB;
-    14|
-    15|    if (!db) {
-    16|      return jsonResp(503, { success: false, message: 'Database service unavailable.' }, request);
-    17|    }
+/**
+ * GET /api/dashboard -- Enhanced v3
+ * Returns current user's projects + recent updates + optional leads/pipeline data
+ * @param {object} context - Cloudflare Pages function context
+ * @returns {Response} JSON response with dashboard data or error
+ */
+export async function onRequestGet(context) {
+  try {
+    const { request, env } = context;
+    const db = env.MOLIAM_DB;
+
+    if (!db) {
+      return jsonResp(503, { success: false, message: 'Database service unavailable.' }, request);
+    }
     18|
     19|// --- Parse token from query params or cookies ---
     20|const url = new URL(request.url);
