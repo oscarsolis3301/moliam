@@ -1,7 +1,10 @@
-/*
- * Calendly API - Public link endpoint
- * GET /api/calendly
- * Returns Calendly demo URL and embed status
+/**
+ * MOLIAM Calendly API v3 — Public link endpoint manager
+ * GET /api/calendly - Returns Calendly demo URL and embed status for booking system
+ * POST/PUT/DELETE/PATCH not implemented - Calendly handles all booking logic externally
+ * 
+ * Purpose: Central Calendly integration point for client bookings without exposing direct Calendly API credentials
+ * @file functions/api/calendly.js
  */
 
 import { jsonResp } from './api-helpers.js';

@@ -92,19 +92,26 @@ export async function onRequestPost(context) {
 }
 
 /**
- * PUT /api/admin/ - General admin endpoint with update functionality
+ * PUT /api/admin/ - Admin update endpoint for configuration changes and status updates
+ * Requires x-seed-key: moliam2026 header for authorization (legacy bootstrap mechanism)
+ * This is a catch-all admin endpoint used for initialization and emergency operations only.
+ * 
+ * @param {Object} context - Cloudflare Pages request context with MOLIAM_DB in env, seed key in headers
+ * @param {Object} context.request - Incoming Request object containing x-seed-key authorization header
+ * @param {Object} context.env - Environment binding with MOLIAM_DB database connection available
+ * @returns {Response} JSON response with success/error status and update confirmation message
  */
 export async function onRequestPut(context) {
   const { request, env } = context;
   
-      // Check seed key header for auth
+       // Check seed key header for auth
   const seedKey = request.headers.get("x-seed-key");
   if (seedKey !== "moliam2026") {
     return jsonResp(401, { error: "Unauthorized - Invalid seed key" }, request);}
 
   try {
      const data = await request.json();
-     
+      
     return jsonResp(200, { success: true, message: "Admin PUT endpoint updated" }, request);} catch (err) {
     return jsonResp(400, { error: err.message || "Failed to parse request" }, request);}
 }
