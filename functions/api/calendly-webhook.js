@@ -69,9 +69,8 @@ async function sendDiscordWebhook(env, embed) {
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ username:'Moliam Bookings', embeds: [{ ...embed, timestamp: new Date().toISOString() }] })
     });
-   } catch (whErr) {
-    // Discord webhook failure is silently handled - non-blocking fire-and-forget pattern
-     }
+    } catch (whErr) {
+      }
 }
 
 /**

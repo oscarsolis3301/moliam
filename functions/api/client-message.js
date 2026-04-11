@@ -263,18 +263,17 @@ return {
         await db.prepare(
              `INSERT INTO system_logs (action, details) VALUES ('message_received', ?)`
             ).bind(JSON.stringify({ client_id, sender })).run();
-          // Fire Discord webhook notification - fire-and-forget pattern
          const discordFetch = fetch(webhookUrl, {
             headers: {'Content-Type':'application/json'},
             body: JSON.stringify({ content: `New message from ${sender}:\\n${cleanMessage}\\nClient ID: ${client_id}`, username:"Moliam Messages" })
-        });
-      } catch (e) { 
-        // Silently ignore webhook errors - fire-and-forget pattern
-      }
+         });
+       } catch (e) { 
+       }
        // Return success with client_id confirmation for immediate feedback on message submission
       return jsonResp(200, { success: true, client_id }, request);
-    } catch (err) {
+      } catch (err) {
       return jsonResp(500, { success: false, message: "Internal server error. Please try again.", details: err.message }, request);
+    
     }
 
    291|     } catch (err) {
