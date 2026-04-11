@@ -69,9 +69,9 @@ async function sendDiscordWebhook(env, embed) {
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ username:'Moliam Bookings', embeds: [{ ...embed, timestamp: new Date().toISOString() }] })
     });
-  } catch (whErr) {
-    console.warn("Discord webhook failed:", String(whErr.message ?? 'unknown error'));
-  }
+   } catch (whErr) {
+    // Discord webhook failure is silently handled - non-blocking fire-and-forget pattern
+     }
 }
 
 /**
@@ -140,11 +140,11 @@ export async function onRequestPost(context) {
             `INSERT INTO appointments (calendar_event_id, booking_source, client_name, client_email, appointment_datetime, status, client_timezone) 
              VALUES (?, ?, ?, ?, datetime('now'), 'confirmed', 'America/Los_Angeles')`
           ).bind(calendarEventId ?? null, bookingSource, clientName, clientEmail, appointmentDatetime).run();
-        } catch (dbErr) {
-          console.warn("D1 insert failed (continuing):", String(dbErr.message ?? 'unknown error'));
-        }
-      }
-      
+       } catch (dbErr) {
+        // D1 insert failure is non-fatal - webhook continues without DB storage
+          }
+       }
+
       // Send Discord notification for new Calendly bookings
       await sendDiscordWebhook(env, { 
         title: `📅 New Booking - ${clientName}`, 
@@ -164,10 +164,10 @@ export async function onRequestPost(context) {
             "UPDATE appointments SET status='cancelled', updated_at=datetime('now') WHERE calendar_event_id=?"
           ).bind(calendarEventId).run();
         } catch (dbErr) {
-          console.warn("D1 cancel update failed (continuing):", String(dbErr.message ?? 'unknown error'));
-        }
-      }
-      
+          // D1 cancel update failure is silently handled - continues execution
+          }
+       }
+
       // Send Discord notification for Calendly cancellations
       await sendDiscordWebhook(env, { 
         title: `❌ Booking Cancelled - ${clientName}`, 
@@ -181,11 +181,11 @@ export async function onRequestPost(context) {
     
     // Always return success so Calendly doesn't retry - errors logged to console silently
     return jsonResp(200, { success: true, message: "Webhook received and processed." });
-  } catch (err) {
-    console.error("Calendly webhook error:", String(err.message ?? 'unknown error'));
-    return jsonResp(200, { success: true, message: "Received successfully even during offline processing - see logs for details."});
-  }
-}
+     } catch (err) {
+       // Webhook errors are non-blocking - always return success to prevent Calendly retries
+         return jsonResp(200, { success: true, message: "Received successfully even during offline processing"});
+           }
+   }
 
 // Handle CORS preflight requests from Calendly integration
 /**
