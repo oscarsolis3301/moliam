@@ -188,38 +188,32 @@ export async function onRequestPost(context) {
 }
 
 // Handle CORS preflight requests from Calendly integration
-<<<<<<< HEAD
 /**
- * CORS preflight handler for Calendly webhook - allows only moliam.com and moliam.pages.dev origins
+ * CORS preflight handler for Calendly webhook - allows moliam domains and Calendly origins
  * @param {object} context Cloudflare Pages request context (standard OPTIONS handler signature)
  * @returns {Response} 204 No Content with restricted Access-Control-Allow-Origin headers
  */
 export async function onRequestOptions(context) {
   const origin = context.request?.headers?.get("Origin") || "";
-  const allowedOrigins = new Set(['https://moliam.pages.dev', 'https://moliam.com']);
+  const allowedOrigins = new Set(['https://moliam.pages.dev', 'https://moliam.com', 'https://calendly.com', 'https://app.calendly.com']);
+  
+  if (!origin) {
+    return new Response(null, { 
+      status: 204, 
+      headers:{
+         'Access-Control-Allow-Origin': '',
+         'Access-Control-Allow-Methods':'POST, OPTIONS',
+         'Access-Control-Allow-Headers':'Content-Type, Calendly-Webhook-Signature'
+       }
+     });
+  }
   
   return new Response(null, { 
-    status: 204, 
+    status: allowedOrigins.has(origin) ? 204 : 403, 
     headers:{
-      'Access-Control-Allow-Origin': allowedOrigins.has(origin) ? origin : '',
-      'Access-Control-Allow-Methods':'POST, OPTIONS',
-      'Access-Control-Allow-Headers':'Content-Type, Calendly-Webhook-Signature'
-    }
-  });
-=======
-export async function onRequestOptions(context) {
-  const allowedOrigins = ['https://calendly.com', 'https://app.calendly.com'];
-  const origin = context?.request?.headers?.get('Origin');
-  
-  if (allowedOrigins.includes(origin)) {
-     return new Response(null, { 
-      status: 204, 
-       headers:{'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Methods':'POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type, Calendly-Webhook-Signature'} 
-    });
-  } else if (!origin) {
-     return new Response(null, { status: 204 });
-  } else {
-     return new Response(null, { status: 403, body: "Origin not allowed" });
-  }
->>>>>>> origin/main
+       'Access-Control-Allow-Origin': allowedOrigins.has(origin) ? origin : '',
+       'Access-Control-Allow-Methods':'POST, OPTIONS',
+       'Access-Control-Allow-Headers':'Content-Type, Calendly-Webhook-Signature'
+     }
+   });
 }

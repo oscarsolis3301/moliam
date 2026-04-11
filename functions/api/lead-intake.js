@@ -170,84 +170,124 @@ return jsonResp(200, {
  * @returns {{base_score:number,intustry_boost:int,urgency_boost:int,budget_fit_score:int,total_score:int,urgency_status:string,score_breakdown:{base_score:number,industry_boost:number,urgencyBoost:number}}} Scoring result with components (total_score capped at 100)
  */
 function calculateLeadScore(data) {
-  const { email, name, company, budget, scope, industry, urgency_level, message } = data;
-  let base_score = 40; // Base score for any qualified lead
+  try {
+    const { email, name, company, budget, scope, industry, urgency_level, message } = data;
+    let base_score = 40; // Base score for any qualified lead
 
-   // Budget scoring (0-25 points)
-  let budgetFit = 50;
-  if (budget.includes("under $10") || budget === "undisclosed") {
-    base_score += 5;
-    budgetFit = 30;
-     } else if (/\\d+\\.\\d+/.test(budget) && /\\d+$/.exec(budget)[0] > 5) {
-    base_score += 15;
-    budgetFit = 75;
-     } else if (/^\\w+\\s?\\$[5-9k]?|^\\d+[$,]?\\d{3,}/.test(budget)) {
-         // Check for $5k-$10k matches
-    base_score += 12;
-    budgetFit = 65;
-     }
+      // Budget scoring (0-25 points)
+    let budgetFit = 50;
+    if (budget.includes("under $10") || budget === "undisclosed") {
+      base_score += 5;
+      budgetFit = 30;
+        } else if (/\\d+\\.\\d+/.test(budget) && /\\d+$/.exec(budget)[0] > 5) {
+      base_score += 15;
+      budgetFit = 75;
+        } else if (/^\\w+\\s?\\$[5-9k]?|^\\d+[$,]?\\d{3,}/.test(budget)) {
+            // Check for $5k-$10k matches
+      base_score += 12;
+      budgetFit = 65;
+        }
 
-      // Industry scoring (0-20 points) - boost priority for priority industries
-  const industryBoost = 
-       /tech|saas|software|ai|startup/i.test(industry) ? 18 :
-       /finance|financial|fintech/i.test(industry) ? 16 :
-       /health|medical|healthcare/i.test(industry) ? 14 :
-       /education|academia|university/i.test(industry) ? 10 :
-       /manufacturing|retail|ecommerce/i.test(industry) ? 12 :
-       8;
+         // Industry scoring (0-20 points) - boost priority for priority industries
+    const industryBoost = 
+          /tech|saas|software|ai|startup/i.test(industry) ? 18 :
+          /finance|financial|fintech/i.test(industry) ? 16 :
+          /health|medical|healthcare/i.test(industry) ? 14 :
+          /education|academia|university/i.test(industry) ? 10 :
+          /manufacturing|retail|ecommerce/i.test(industry) ? 12 :
+          8;
 
-      // Urgency scoring (0-25 points) - higher urgency = higher score
-  const urgencyBoostMap = {
-        'critical': 30,
-        'high': 20,
-        'medium': 10,
-        'low': 5
-      };
-  let urgencyBoost = urgencyBoostMap[urgency_level?.toLowerCase()] || 10;
+         // Urgency scoring (0-25 points) - higher urgency = higher score
+    const urgencyBoostMap = {
+           'critical': 30,
+           'high': 20,
+           'medium': 10,
+           'low': 5
+         };
+    let urgencyBoost = urgencyBoostMap[urgency_level?.toLowerCase()] || 10;
 
-      // Keyword matches in message for additional scoring
-  if (/immediate|urgent|deadline|asap|quickly|fast|\\b30\\s*days\\b/i.test(message)) {
-    base_score += 8;
-    urgencyBoost += 10;
-    }
+         // Keyword matches in message for additional scoring
+    if (/immediate|urgent|deadline|asap|quickly|fast|\\b30\\s*days\\b/i.test(message)) {
+      base_score += 8;
+      urgencyBoost += 10;
+       }
 
-  const total_score = Math.min(100, base_score + industryBoost + urgencyBoost);
-  
-      // Determine overall urgency status
-  let urgency_status = 'normal';
-  if (total_score >= 75) urgency_status = 'hot';
-  else if (total_score >= 60) urgency_status = 'moderate';
+    const total_score = Math.min(100, base_score + industryBoost + urgencyBoost);
+    
+         // Determine overall urgency status
+    let urgency_status = 'normal';
+    if (total_score >= 75) urgency_status = 'hot';
+    else if (total_score >= 60) urgency_status = 'moderate';
 
-  return {
-    base_score,
-    industry_boost: industryBoost,
-    urgency_boost: urgencyBoost,
-    budget_fit_score: budgetFit,
-    total_score,
-    urgency_status,
-    score_breakdown: { base_score, industry_boost, urgencyBoost }
-      };
+    return {
+      base_score,
+      industry_boost: industryBoost,
+      urgency_boost: urgencyBoost,
+      budget_fit_score: budgetFit,
+      total_score,
+      urgency_status,
+      score_breakdown: { base_score, industry_boost, urgencyBoost }
+          };
+  } catch (err) {
+    console.error("Lead scoring error:", err);
+    return { base_score, industry_boost, urgency_boost, budget_fit_score, total_score, urgency_status, score_breakdown };
+  }
 }
 
 /**
- * CRM Sync - Push to HubSpot/Airtable/Pipedrive (fire-and-forget)
- * Sends lead data to external CRM systems asynchronously without blocking response
- * Uses error handling with console.warn only - non-blocking to user  
- * @param {object} env - Worker environment variables with HUBSPOT_API_KEY, AIRTABLE_API_KEY  
- * @param {number} submission_id - Lead submission ID from database   
- * @param {object} data - Lead object with name, email, phone, company, budget, scope, industry, urgency_level, message  
- * @returns {Promise<null>} Null on success (errors logged to console only)  
+ * Send Discord Alert — Webhook notification with embed for new submissions
+ * Non-blocking, fire-and-forget pattern - errors logged to console.warn
+ * @param {string} webhookUrl - Discord webhook URL from env.DISCORD_WEBHOOK_URL
+ * @param {{base_score:number,industry_boost:int,urgency_boost:int,budget_fit_score:int,total_score:int,urgency_status:string,score_breakdown:{}}} scoreResult - Lead scoring result object
+ * @returns {Promise<null>} null (errors logged silently)
  */
-async function initiateCrmSync(env, submission_id, data) {
+async function sendDiscordAlert(webhookUrl, scoreResult = {}) {
+  try {
+    if (!webhookUrl || !webhookUrl.startsWith("https://discord.com/api/webhooks/")) {
+      return null;
+    }
+    const payload = JSON.stringify({
+      embeds: [{
+        title: `🔔 New Lead - Score ${scoreResult.total_score}/100`,
+        color: scoreResult.total_score >= 75 ? 0x10B981 : scoreResult.total_score >= 60 ? 0xF59E0B : 0x3B82F6,
+        fields: [
+          { name: '📊 Total Score', value: `**${scoreResult.total_score}/100**`, inline: true },
+          { name: '⚠️ Urgency', value: scoreResult.urgency_status || 'unknown', inline: true }
+        ],
+        timestamp: new Date().toISOString(),
+        footer: { text: 'Moliam Lead Intake' }
+      }]
+    });
+    await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload,
+      signal: AbortSignal.timeout(5000)
+    });
+    return null;
+  } catch (err) {
+    console.warn("Discord alert failed:", err.message);
+    return null;
+  }
+}
 
+/**
+ * Initiate CRM Sync — Fire-and-forget background task for HubSpot/Airtable integration
+ * Non-blocking call that logs errors to console.warn without affecting user response
+ * @param {object} env - Worker environment with HUBSPOT_API_KEY or AIRTABLE_API_KEY
+ * @param {{name:string, email:string, phone:string, company?:string, budget?:string, scope?:string, industry?:string, urgency_level?:string, message:string, pain_points?:string[]}} data - Lead submission data to sync
+ * @returns {Promise<null>} null on success (errors logged silently)
+ */
+async function initiateCrmSync(env, data = {}) {
+  try {
     const CRM_PROVIDER = env.HUBSPOT_API_KEY || env.AIRTABLE_API_KEY;
-    
-    // Skip if no CRM configured
+
+      // Skip if no CRM configured
     if (!CRM_PROVIDER) return null;
 
-    const crmUrl = CRM_PROVIDER.includes('hubspot') 
-         ? 'https://api.hubapi.com/crm/v3/objects/contacts'
-         : (env.AIRTABLE_API_KEY ? 'https://api.airtable.com/v0/' + env.AIRTABLE_APP_ID + '/Leads' : null);
+const crmUrl = CRM_PROVIDER.includes('hubspot') 
+           ? 'https://api.hubapi.com/crm/v3/objects/contacts'
+           : (env.AIRTABLE_API_KEY ? 'https://api.airtable.com/v0/' + env.AIRTABLE_APP_ID + '/Leads' : null);
 
     if (!crmUrl) return null;
 
@@ -266,25 +306,26 @@ async function initiateCrmSync(env, submission_id, data) {
         lead_score: 50, // Placeholder - actual scoring done in main function
         source: "moliam-web-intake",
         submitted_at: new Date().toISOString()
-      }
-    });
+        }
+      });
 
     const headers = { 'Content-Type': 'application/json' };
 
     if (CRM_PROVIDER.includes('hubspot') && env.HUBSPOT_API_KEY) {
       headers['Authorization'] = `Bearer ${env.HUBSPOT_API_KEY}`;
       await fetch(crmUrl, { method: 'POST', headers, body: payload, signal: AbortSignal.timeout(5000) });
-      } else if (CRM_PROVIDER.includes('airtable') && env.AIRTABLE_API_KEY) {
+     } else if (CRM_PROVIDER.includes('airtable') && env.AIRTABLE_API_KEY) {
       headers['Authorization'] = `Bearer ${env.AIRTABLE_API_KEY}`;
       await fetch(crmUrl, { method: 'POST', headers, body: payload, signal: AbortSignal.timeout(5000) });
-      }
+     }
 
     return null; // Success logged separately
-} catch (err) {
-  console.warn("CRM sync failed:", err.message);
-  return null; // Fire and forget - don't propagate errors to user
+   } catch (err) {
+    console.warn("CRM sync failed:", err.message);
+    return null; // Fire and forget - don't propagate errors to user
+   }
 }
-}
+
 
 
 /**

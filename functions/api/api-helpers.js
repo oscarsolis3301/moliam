@@ -255,11 +255,12 @@ export function balanceSuccessError(response) {
   if (!response || typeof response !== 'object') return { success: false, error: "Invalid response format" };
   
   const normalized = { ...response };
-  delete normalized.error;  // Remove boolean error flag if present
   
-  // If original had string error, keep it; otherwise remove error field entirely
+  // If original had string error, keep it; otherwise remove error field entirely from copy
   if (typeof response.error === 'string') {
     normalized.error = response.error;
+  } else {
+    delete normalized.error;   // Remove boolean/cleaned error flag from normalized object
   }
   
   // Always ensure success field exists
