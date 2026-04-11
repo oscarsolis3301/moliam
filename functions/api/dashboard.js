@@ -67,17 +67,17 @@ try {
     57|    56|
     58|    57|     /******  ADDITIONAL: Leads Pipeline Data (v3 requirement) ******/
     59|    if (action === 'leads') {
-    60|        // Return all submissions with lead_score, category, follow_up_status
-    61|        // SECURITY FIX: Use separate parameterized queries for admin vs client to prevent SQL injection
-    62|      const result = isAdmin
-    63|          ? await db.prepare(`SELECT s.id, s.name, s.email, s.phone, s.company, s.message,
-    64|                 s.lead_score, s.category, s.created_at,
-    65|                 s.follow_up_status, s.follow_up_at, l.status as lead_status
-    66|           FROM submissions s LEFT JOIN leads l ON l.submission_id = s.id ORDER BY s.created_at DESC LIMIT 100`).all()
-    67|          : await db.prepare(`SELECT s.id, s.name, s.email, s.company, s.message,
-    68|                 s.lead_score, s.category, s.created_at,
-    69|                 s.follow_up_status, s.follow_up_at
-    70|           FROM submissions s WHERE s.email=? ORDER BY s.created_at DESC LIMIT 50`).bind(session.email).all();
+         // Return all submissions with lead_score, category, follow_up_status
+         // SECURITY FIX: Use separate parameterized queries for admin vs client to prevent SQL injection
+      const result = isAdmin
+            ? await db.prepare(`SELECT s.id, s.name, s.email, s.phone, s.company, s.message,
+                  s.lead_score, s.category, s.created_at,
+                  s.follow_up_status, s.follow_up_at, l.status as lead_status
+              FROM submissions s LEFT JOIN leads l ON l.submission_id = s.id ORDER BY s.created_at DESC LIMIT 100`).all()
+            : await db.prepare(`SELECT s.id, s.name, s.email, s.company, s.message,
+                  s.lead_score, s.category, s.created_at,
+                  s.follow_up_status, s.follow_up_at
+              FROM submissions s WHERE s.email=? ORDER BY s.created_at DESC LIMIT 50`).bind(session.email).all();
     71|
     72|      return jsonResp(200, {
     73|          success: true,
