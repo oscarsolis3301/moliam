@@ -42,11 +42,11 @@ export async function onRequestPost(context) {
   // --- Sanitize all text fields (strip HTML, apply length limits) ---
   const name = sanitizeText(String(data.name || ""), 100);
   const emailResult = validateEmail(String(data.email || ""));
-  if (!emailResult.valid) return jsonResp(400, { success: false, error: true, message: emailResult.error }, request);
+  if (!emailResult.valid) return jsonResp(400, { success: false, message: emailResult.error }, request);
   const email = emailResult.value;
 
   const phoneResult = validatePhone(data.phone);
-  if (!phoneResult.valid) return jsonResp(400, { success: false, error: true, message: phoneResult.error }, request);
+  if (!phoneResult.valid) return jsonResp(400, { success: false, message: phoneResult.error }, request);
   const phone = phoneResult.value;
 
   const company = sanitizeText(String(data.company || ""), 100);
@@ -73,9 +73,9 @@ export async function onRequestPost(context) {
     errors.push("Message exceeds maximum length of 2000 characters.");
    }
 
-  if (errors.length) {
-    return jsonResp(400, { success: false, error: true, message: errors.join(" ") }, request);
-  }
+if (errors.length) {
+    return jsonResp(400, { success: false, message: errors.join(" ") }, request);
+   }
 
   // Parse additional optional fields with length limits
   const screenRes = data.screenResolution ? String(data.screenResolution).trim() : "";
@@ -131,13 +131,10 @@ if (!subId) {
        VALUES (?, ?, ?, ?, ?, ?)`
       ).bind(subId, scoreResult.base_score, scoreResult.industry_boost, scoreResult.urgency_boost, scoreResult.budget_fit_score, scoreResult.total_score).run();
 
-// Initiate CRM Sync (non-blocking) - fire-and-forget pattern, errors logged silently to ensure webhook response is never affected by background failures. @see initiateCrmSync function which handles this internally.
-  initiateCrmSync(context.env, subId, { name, email, phone, company, budget, scope, industry, urgency_level });
-
-     // Queue Email Sequences (background任务) - fire-and-forget pattern, errors logged silently at https://github.com/Moliam/mo liam/blob/main/functions/api/lead-intake.js. This ensures webhook response is never affected by background failures. @see queueEmailSequences() function which handles this internally.
+      // Queue Email Sequences (fire-and-forget) - non-blocking, errors logged silently @see queueEmailSequences() function
     queueEmailSequences(env, subId);
 
-// Send Real-time Discord Notification (non-blocking) - fire-and-forget webhook pattern; errors logged silently in sendDiscordAlert() function to ensure user response is never impacted by background task failures. @see sendDiscordAlert() at https://github.com/Moliam/mo liam/blob/main/functions/api/lead-intake.js#L243-L270 for implementation details.
+      // Send Discord Alert (fire-and-forget) - errors logged in sendDiscordAlert() @see function definition at line 249-276
     const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
     if (webhookUrl && webhookUrl.startsWith("https://discord.com/api/webhooks/") && !webhookUrl.includes("YOUR_") && !webhookUrl.includes("PLACEHOLDER")) {
       sendDiscordAlert(webhookUrl, scoreResult);
