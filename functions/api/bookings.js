@@ -136,8 +136,8 @@ const appointmentId = parseInt(putPath);
 /**
  * Create appointment record in database for prequalified leads
  * Non-exported helper that executes DB insert with parameterized queries, logs to audit trail, and returns JSON response
- * @param {object} context - Cloudflare Pages context with env.MOLIAM_DB and env.ADMIN_EMAIL  
- * @param {object} body - Request body with prequalification_id, client_name, client_email, scheduled_at, calendar_link, duration_minutes  
+ * @param {object} context - Cloudflare Pages context with env.MOLIAM_DB    
+ * @param {object} body - Request body with prequalification_id, client_name, client_email, scheduled_at, calendar_link, duration_minutes    
  * @param {Response} request - Original fetch request for CORS headers
  * @returns {Response} JSON response with appointment_id on success or error message
  */
