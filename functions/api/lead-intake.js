@@ -92,11 +92,7 @@ if (errors.length) {
     if (rl) {
       const windowAge = Date.now() - new Date(rl.window_start).getTime();
       if (windowAge < 360000 && rl.request_count >= 5) {
-        return jsonResp(429, { 
-            success: false, error: true,
-            message: "Too many submissions. Please wait a few minutes.",
-            retryAfter: Math.ceil((360000 - windowAge) / 1000)
-           }, request);
+        return jsonResp(429, { success: false, message: "Too many submissions. Please wait a few minutes.", retryAfter: Math.ceil((360000 - windowAge) / 1000) }, request);
       }
     }
 
@@ -110,9 +106,9 @@ if (errors.length) {
 const subId = sub.meta?.last_row_id;
 
 if (!subId) {
-      // Failed to retrieve last_row_id - return user-friendly error without exposing internal state
-      return jsonResp(500, { success: false, error: true, message: "Failed to save submission. Please try again." }, request);
-      }
+       // Failed to retrieve last_row_id - return user-friendly error without exposing internal state
+      return jsonResp(500, { success: false, message: "Failed to save submission. Please try again." }, request);
+       }
 
      // --- Calculate Lead Score using api-helpers ---
     const scoreResult = calculateLeadScore({
@@ -155,12 +151,8 @@ return jsonResp(200, {
       }, request);
 
 } catch (err) {
-       // Unhandled exception - user should contact help@moliam.com directly. requestId provides debugging context for support team only. Do not expose internal details to user.
-    return jsonResp(500, { 
-        success: false, error: true,
-        message: "Something went wrong. Please email us directly at hello@moliam.com.",
-        requestId: crypto.randomUUID ? crypto.randomUUID() : undefined
-       }, request);
+        // Unhandled exception - user should contact help@moliam.com directly. requestId provides debugging context for support team only. Do not expose internal details to user.
+    return jsonResp(500, { success: false, message: "Something went wrong. Please email us directly at hello@moliam.com.", requestId: crypto.randomUUID ? crypto.randomUUID() : undefined }, request);
 }
 }
 
