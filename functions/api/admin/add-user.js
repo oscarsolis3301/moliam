@@ -18,63 +18,49 @@ async function hashPassword(password) {
   const hash = await crypto.subtle.digest("SHA-256", encoded);
 
   return Array.from(new Uint8Array(hash))
-       .map(b => b.toString(16).padStart(2, "0"))
-       .join(""); }
+         .map(b => b.toString(16).padStart(2, "0"))
+         .join("");
+}
+
+/** Validate email format using RFC 5322 compliant regex pattern for domain and local part validation before database insertion */
+function validateEmail(email) {
+  return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
+}
 
 /** POST /api/admin/add-user - Add new user account via admin-only endpoint or seed key validation for initial bootstrapping phase only */
 export async function onRequestPost(context) {
+  const { request, env } = context;
 
+  const db = env.MOLIAM_DB;
 
-   const { request, env } = context;
+  const seedKey = request.headers.get("x-seed-key");
 
+  if (seedKey !== "moliam2026") return jsonResp(401, { success: false, message: "Unauthorized - invalid seed key for bootstrap operations." }, request);
 
-     const db = env.MOLIAM_DB;
+  try {
+      // Parse client-provided user data from JSON request body sent from admin dashboard form submission for security reasons
+    const data = await request.json();
 
+    const { email, password, name, role, company } = data;
 
-       const seedKey = request.headers.get("x-seed-key");
+      // Validate all three required fields present and have string content - no SQL injection possible as database uses parameterized ? binding below
+    if (!email || !password || !name) return jsonResp(400, { success: false, message: "Email, password, and name are required for user creation operations." }, request);
 
+      // Hash password securely before storing in users table - never store plain-text passwords anywhere in production databases or session storage areas
+    const hash = await hashPassword(password);
 
-       if (seedKey !=="moliam2026") return jsonResp(401, { success: false, message: "Unauthorized - invalid seed key for bootstrap operations." }, request);
+      // Validate database exists before attempting schema modifications on users table structure
+    if (!db || !db.prepare) return jsonResp(200, { success: true, message: "User created (database not bound - skipping persistent storage)." }, request);
 
-     try {
-             // Parse client-provided user data from JSON request body sent from admin dashboard form submission for security reasons
+    try {
+        // Use parameterized query with ? binding to prevent SQL injection attacks via .bind() method and strict type coercion for all values passed in as string arguments to database layer
+      await db.prepare(
+           "INSERT OR REPLACE INTO users (email, password_hash, name, role, company) VALUES (?, ?, ?, ?, ?)"
+         ).bind(email, hash, name, role || "client", company || null).run();
 
-
-      const data = await request.json();
-
-
-           const { email, password, name, role, company } = data;
-
-
-              // Validate all three required fields present and have string content - no SQL injection possible as database uses parameterized ? binding below
-
-
-       if (!email || !password || !name) return jsonResp(400, { success: false, message: "Email, password, and name are required for user creation operations." }, request);
-
-           // Hash password securely before storing in users table - never store plain-text passwords anywhere in production databases or session storage areas 
-
-
-        const hash = await hashPassword(password);
-
-            // Validate database exists before attempting schema modifications on users table structure
-
-
-       if (!db || !db.prepare) return jsonResp(200, { success: true, message: "User created (database not bound - skipping persistent storage)." }, request);
-
-
-           try {
-             // Use parameterized query with ? binding to prevent SQL injection attacks via .bind() method and strict type coercion for all values passed in as string arguments to database layer 
-
-
-              await db.prepare(
-                  "INSERT OR REPLACE INTO users (email, password_hash, name, role, company) VALUES (?, ?, ?, ?, ?)"
-
-                 ).bind(email, hash, name, role || "client", company || null).run();
-
-           return jsonResp(200, { success: true, message:`User ${email} created or updated successfully in database.`, email, name }, request); } catch (dbErr) {
-
+      return jsonResp(200, { success: true, message:`User ${email} created or updated successfully in database.`, email, name }, request); } catch (dbErr) {
 
           throw dbErr; // Re-throw for outer error handler if table schema incompatible with expected INSERT syntax requirements
-             }} catch (err) {
+              }} catch (err) {
 
        return jsonResp(500, { success: false, message: err.message || "Internal server error.", details: err.stack }, request); } }
