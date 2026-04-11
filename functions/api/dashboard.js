@@ -196,24 +196,35 @@ try {
    186| * @param {object} context - Cloudflare Pages function context
    187| * @returns {Response} 204 No Content with proper Access-Control headers
    188| */
-   189|export async function onRequestOptions(context) {
-   190|  const allowedOrigins = ['https://moliam.com', 'https://www.moliam.com', 'https://moliam.pages.dev'];
-   191|  const origin = context.request.headers.get('Origin');
-   192|  
-   193|  if (allowedOrigins.includes(origin)) {
-   194|    return new Response(null, {
-   195|      headers: {
-   196|        'Access-Control-Allow-Origin': origin,
-   197|        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-   198|        'Access-Control-Allow-Headers': 'Content-Type, Authorization, moliam_session',
-   199|        'Access-Control-Max-Age': '86400',
-   200|        'Vary': 'Origin'
-   201|      }
-   202|    });
-   203|  }
-   204|  
-   205|  return new Response(null, { status: 204 });
-   206|}
+export async function onRequestOptions(context) {
+  try {
+    const allowedOrigins = ['https://moliam.com', 'https://www.moliam.com', 'https://moliam.pages.dev'];
+    const origin = context.request.headers.get('Origin');
+    
+    if (allowedOrigins.includes(origin)) {
+      return new Response(null, {
+        headers: {
+          'Access-Control-Allow-Origin': origin,
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization, moliam_session',
+          'Access-Control-Max-Age': '86400',
+          'Vary': 'Origin'
+        }
+      });
+    }
+    
+    return new Response(null, { status: 204 });
+  } catch (err) {
+    console.error('onRequestOptions error:', err.message);
+    const headers = {
+      'Access-Control-Allow-Origin': (context.request?.headers?.get('Origin') || '*'),
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Vary': 'Origin'
+    };
+    return new Response(null, { status: 204, headers });
+  }
+}
    207|
    208|   186|/**
    209|   187| * Handle dashboard data fetch with pagination and filtering capabilities.
