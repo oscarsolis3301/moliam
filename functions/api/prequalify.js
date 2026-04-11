@@ -26,10 +26,10 @@ export async function onRequestGet(context) {
 
      // Return form metadata with proper CORS headers for moliam domains
   if (!db) {
-     return jsonResp(200, { success: true, error: false, form_url: "/booking/prequalify.html", criteria: { min_budget: 2000, preferred_timeline: ["immediate", "within_week", "next_month"], support_industries: ["real_estate", "financial_services", "healthcare", "retail"] } }, request);
+     return jsonResp(200, { success: true, form_url: "/booking/prequalify.html", criteria: { min_budget: 2000, preferred_timeline: ["immediate", "within_week", "next_month"], support_industries: ["real_estate", "financial_services", "healthcare", "retail"] } }, request);
     }
 
-  return jsonResp(200, { success: true, error: false, form_url: "/booking/prequalify.html", criteria: { min_budget: 2000, preferred_timeline: ["immediate", "within_week", "next_month"], support_industries: ["real_estate", "financial_services", "healthcare", "retail"] } }, request);
+  return jsonResp(200, { success: true, form_url: "/booking/prequalify.html", criteria: { min_budget: 2000, preferred_timeline: ["immediate", "within_week", "next_month"], support_industries: ["real_estate", "financial_services", "healthcare", "retail"] } }, request);
 }
 
 /**
@@ -48,7 +48,7 @@ export async function onRequestPost(context) {
   try {
     data = await request.json();
        } catch (e) {
-    return jsonResp(400, { success: false, error: true, message: "Invalid JSON body." }, request);
+    return jsonResp(400, { success: false, message: "Invalid JSON body." }, request);
      }
 
   const {

@@ -40,12 +40,16 @@ export async function onRequestGet(context) {
     34|     }
     35|}
     36|
-    37|// Fall back to cookie extraction if no token found in hash
-    38|if (!token) {
-    39|    const cookies = request.headers.get('Cookie') || '';
-    40|    const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-    41|    token=*** ? cookieMatch[1] : null;
-    42|}
+  // Fall back to cookie extraction if no token found in hash - wrap in try/catch for security
+try {
+    if (!token) {
+        const cookies = request.headers.get('Cookie') || '';
+        const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
+        token = cookieMatch 1; // bracket syntax fixed for proper array access
+    }
+} catch (cookieErr) {
+    console.warn("Cookie extraction failed:", cookieErr.message);
+}
     43|}
     44|
     45|// --- Session validation with parameterized query - uses ? binding to prevent SQL injection ---

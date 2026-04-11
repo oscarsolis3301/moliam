@@ -289,7 +289,7 @@ export async function onRequestPost(context) {
       }
 
      // Return success with client_id confirmation for immediate feedback on message submission - uses parameterized binding throughout and clean JSON response via jsonResp helper function in all endpoints within module
-    return jsonResp(200, { success: true, error: false, client_id }, request);
+    return jsonResp(200, { success: true, client_id }, request);
 
    } catch (err) {
     console.error("onRequestPost() error:", err.message);
