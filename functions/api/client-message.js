@@ -89,12 +89,18 @@
     89|  return { valid: true, value: trimmed };
     90|}
     91|
-    92|/**
-    93| * Session authentication helper - extracts token from cookie and validates via parameterized query with ? binding
-    94| * @param {Request} request - Cloudflare Pages Request Object with Cookie header
-    95| * @param {D1Database} db - Database binding to MOLIAM_DB
-    96| * @returns {object|null} User object with id, email, name, role or null if invalid/expired
-    97| */
+/**
+ * Session authentication helper - extracts token from cookie and validates via parameterized query with ? binding
+ * @param {Request} request - Cloudflare Pages Request Object with Cookie header
+ * @param {D1Database} db - Database binding to MOLIAM_DB  
+ * @returns {object|null} User object with id, email, name, role or null if invalid/expired
+ */
+/**
+ * Session authentication helper - extracts token from cookie and validates via parameterized query with ? binding
+ * @param {Request} request - Cloudflare Pages Request Object with Cookie header
+ * @param {D1Database} db - Database binding to MOLIAM_DB
+ * @returns {Promise<object|null>} User object with id, email, name, role or null if invalid/expired async promise
+ */
 async function authenticate(request, db) {
   if (!db) return null;
 
