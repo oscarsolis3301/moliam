@@ -17,14 +17,15 @@
     17| * @param {Request} request - Optional Cloudflare Pages Request object for origin header extraction
     18| * @returns {Response} JSON response with application/json content type
     19| */
-    20|function jsonResp(status, body, request) {
-    21|  const headers = new Headers({
-    22|     "Content-Type": "application/json",
-    23|      "Access-Control-Allow-Origin": request ? ("https://moliam.pages.dev") : "https://moliam.pages.dev",
-    24|      "Access-Control-Allow-Credentials": "true"
-    25|     });
-    26|
-    27|   return new Response(JSON.stringify(body), { status, headers }); }
+function jsonResp(status, body, request) {
+  const headers = new Headers({
+     "Content-Type": "application/json",
+       "Access-Control-Allow-Origin": request ? ("https://moliam.pages.dev") : "https://moliam.pages.dev",
+       "Access-Control-Allow-Credentials": "true"
+      });
+
+  return new Response(JSON.stringify(body), { status, headers });
+}
     28|
     29|/** Get session token from cookies - extracts 32-char hex string for authentication via parameterized queries */
     30|function getSessionToken(request) {
@@ -40,18 +41,18 @@
     40| * @param {object} env - Worker environment variables including MOLIAM_DB binding and DISCORD webhook URL
     41| * @returns {Response|object|null} User object, JSON error response (401/403), or null if no token provided
     42| */
-    43|async function requireAdmin(request, env) {
-    44|  // Get session token from cookies - extracts 32-char hex string for authentication via parameterized queries
-    45|  const token=getSes...st);
-    46|
-    47|  if (!token) return jsonResp(401, { success: false, message: "Not authenticated." }, undefined, request);
-    48|
-    49|  const db = env.MOLIAM_DB;
-    50|
-    51|  // Validate admin session via parameterized SELECT with ? binding - no SQL injection possible
-    52|  try {
-    53|    const session = await db.prepare(
-    54|        "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id=u.id WHERE s.token=*** AND u.is_active=1 AND s.expires_at>datetime('now')").bind(token).first();
+async function requireAdmin(request, env) {
+    // Get session token from cookies - extracts 32-char hex string for authentication via parameterized queries
+  const token = getSessionToken(request);
+
+  if (!token) return jsonResp(401, { success: false, message: "Not authenticated." }, undefined, request);
+
+  const db = env.MOLIAM_DB;
+
+    // Validate admin session via parameterized SELECT with ? binding - no SQL injection possible
+  try {
+    const session = await db.prepare(
+         "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id=u.id WHERE s.token=? AND u.is_active=1 AND s.expires_at>datetime('now')").bind(token).first();
     55|
     56|
     57|
