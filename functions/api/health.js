@@ -21,6 +21,12 @@ function normalizeHealthResult(result) {
   return balanceSuccessError({ ...result, success: true });
 }
 
+/**
+ * GET /api/health -- Health check endpoint
+ * Returns API version, D1 connectivity, table row counts, integrity checks
+ * @param {object} context - Cloudflare Pages function context
+ * @returns {Response} JSON response with health status or error
+ */
 export async function onRequestGet(context) {
   try {
     const { env } = context;
