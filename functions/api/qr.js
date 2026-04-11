@@ -1,53 +1,48 @@
 /**
- * MOLIAM QR Code Generator — CloudFlare Pages Function   
+ * MOLIAM QR Code Generator — CloudFlare Pages Function  
  * GET /api/qr?url=...&size=...&color=...
  * Pure JS QR code generation using bit matrix algorithm, no npm deps
  */
 
-import { jsonResp } from './api-helpers.js';
+/**\n * MOLIAM QR Code Generator — CloudFlare Pages Function   * GET /api/qr?url=...&size=...&color=... * Pure JS QR code generation using bit matrix algorithm, no npm deps\n */
 
-/**
- * GET /api/qr - QR Code generation handler
- * Generates SVG QR codes from URL, size, and color parameters.
- * Rate-limited by IP hash, uses D1 for rate limiting tracking.
- * @param {Object} context - Cloudflare Pages request context with env.MOLIAM_DB
- * @returns {Response} SVG image response or JSON error
- */
+import { jsonResp } from '../lib/api-helpers.js';
+
 export async function onRequestGet(context) {
   try {
     const { request, env } = context;
     const urlObj = new URL(request.url);
     const db = env.MOLIAM_DB;
 
-       // --- Get and validate query params ---
+      // --- Get and validate query params ---
     let inputUrl = urlObj.searchParams.get("url");
     const sizeStr = urlObj.searchParams.get("size") || "256";
     let colorHex = urlObj.searchParams.get("color") || "#000000";
 
         // Validate URL is present and not empty
     if (!inputUrl) {
-      return jsonResp(400, { success: false, message: "Missing 'url' query parameter" }, request);
-     }
+      return jsonResp(400, { success: false, error: true, message: "Missing 'url' query parameter" }, request);
+    }
 
     inputUrl = inputUrl.trim();
     if (inputUrl.length < 1 || inputUrl.length > 2000) {
-      return jsonResp(400, { success: false, message: "URL must be between 1 and 2000 characters" }, request);
-         }
+      return jsonResp(400, { success: false, error: true, message: "URL must be between 1 and 2000 characters" }, request);
+        }
 
         // Validate size
     let modulesPerSide;
     if (!/^\d+$/.test(sizeStr)) {
-      return jsonResp(400, { success: false, message: "Invalid 'size' parameter — must be a positive integer" }, request);
-         }
+      return jsonResp(400, { success: false, error: true, message: "Invalid 'size' parameter — must be a positive integer" }, request);
+        }
     const size = parseInt(sizeStr, 10);
     if (size < 128 || size > 2048) {
-      return jsonResp(400, { success: false, message: "Size must be between 128 and 2048 pixels" }, request);
-         }
+      return jsonResp(400, { success: false, error: true, message: "Size must be between 128 and 2048 pixels" }, request);
+        }
 
-          // Parse and validate color - convert hex to proper format
+         // Parse and validate color - convert hex to proper format
     if (!/^[#]?[0-9a-fA-F]{6}$/.test(colorHex)) {
-      return jsonResp(400, { success: false, message: "Invalid 'color' parameter — must be 6-digit hex like #3B82F6" }, request);
-          }
+      return jsonResp(400, { success: false, error: true, message: "Invalid 'color' parameter — must be 6-digit hex like #3B82F6" }, request);
+         }
 
          // --- Rate limiting (D1) ---
     if (db) {
@@ -86,19 +81,28 @@ export async function onRequestGet(context) {
     return new Response(svgCode, {
       status: 200,
       headers: {
-          "Content-Type": "image/svg+xml",
-          "Cache-Control": "public, max-age=86400",
-          "Access-Control-Allow-Origin": "*",
-         },
-       });
-    } catch (err) {
-      // Outer error wrapper for request processing - never fail with raw errors to clients
-      console.error("QR generate error:", String(err.message ?? 'unknown'));
+         "Content-Type": "image/svg+xml",
+         "Cache-Control": "public, max-age=86400",
+         "Access-Control-Allow-Origin": "*",
+        },
+      });
+  } catch (err) {
+    // Outer error wrapper for request processing - never fail with raw errors to clients
+    console.error("QR generate error:", String(err.message ?? 'unknown'));
       
-      return jsonResp(500, { success: false, message: "Internal server error", requestId: crypto.randomUUID ? crypto.randomUUID() : undefined }, request);
+    if (!context.request) {
+      return jsonResp(500, { success: false, error: true, message: "Internal server error", requestId: crypto.randomUUID ? crypto.randomUUID() : undefined });
     }
+    
+    const urlObj = new URL(context.request.url);
+    return jsonResp(500, { 
+      success: false, 
+      error: true, 
+      message: "Failed to generate QR code. Please try again later.", 
+      requestId: crypto.randomUUID ? crypto.randomUUID() : undefined 
+    }, context.request);
+  }
 }
-
 
 /**
  * Rate limited response - reset counter and return same QR
@@ -106,39 +110,34 @@ export async function onRequestGet(context) {
 export async function sendRateLimited(url, size, colorHex, db, ipHash) {
   try {
     await db.prepare("UPDATE rate_limits SET request_count = 1, window_start = datetime('now') WHERE hash_ip = ?").bind(ipHash).run();
-  } catch (err) {
+   } catch (err) {
     console.error("sendRateLimited() update error:", err.message);
-  }
+   }
 
   return new Response(
     generateQRCodeSVG(url, size, colorHex),
-    {
-      "Content-Type": "image/svg+xml",
-      "Cache-Control": "public, max-age=86400",
-      "Access-Control-Allow-Origin": "*",
+      headers: {
+        "Content-Type": "image/svg+xml",
+        "Cache-Control": "public, max-age=86400",
+        "Access-Control-Allow-Origin": "*",
+      },
     }
   );
 }
 
 /**
  * Error response using jsonResp helper from api-helpers
- * Creates consistent JSON error responses with proper HTTP status codes
  * @param {number} status - HTTP status code for error response (400-599)
- * @param {string} message - Human-readable error message describing the issue
- * @param {Request?} request - Optional original request context for CORS headers
- * @returns {Response} JSON formatted error response with Content-Type: application/json header
+ * @param {string} message - Human-readable error message
+ * @param {Request?} request - Original request context for CORS parameters
+ * @returns {Response} JSON formatted error response with proper headers
  */
 function sendError(status, message, request) {
   return jsonResp(status, { success: false, error: true, message }, request);
 }
 
 /**
- * Pure JS QR Code generator using bit matrix algorithm - no dependencies required
- * Generates SVG QR code output from input URL with customizable size and color
- * @param {string} data - URL or text content to encode in QR code
- * @param {number} size - Output image dimensions in pixels (128-2048 recommended)
- * @param {string} colorHex - Hex color code for QR code modules (#RRGGBB format)
- * @returns {string} SVG code string ready for browser display or download
+ * Pure JS QR Code generator — generates SVG output from URL string using bit matrix
  */
 function generateQRCodeSVG(data, size, colorHex) {
   // Parse hex to numeric RGB for use in CSS fill colors

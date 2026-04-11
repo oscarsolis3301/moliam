@@ -1,7 +1,9 @@
+
 const COLORS = {
   bgDeep:'#0B0E14', bgBuilding:'#111827', bgRoom:'#1F2937', borderRoom:'#374151',
   blue:'#3B82F6', purple:'#8B5CF6', green:'#10B981', amber:'#F59E0B',
   red:'#EF4444', cyan:'#06B6D4', textPri:'#F9FAFB', textSec:'#9CA3AF', textDim:'#6B7280'
+
 };
 
 const ROOM_DEFS = [
@@ -58,9 +60,9 @@ function calcLayout() {
     const seats = [];
     for(let s=0; s<4; s++) {
       seats.push({x: x + 20 + s * (rw-40)/3, y: y + rh - 50, taken:null});
-      }
+     }
     return {...def, x, y, w:rw, h:rh, seats, eventLog:[]};
-    });
+   });
 }
 
 function getRoomById(id) { return rooms.find(r=>r.id===id); }
@@ -73,7 +75,7 @@ function initBots() {
     const startRoom = rooms[i % rooms.length];
     const seat = startRoom.seats[0];
     return {
-       ...def,
+      ...def,
       x: seat.x, y: seat.y,
       targetX: seat.x, targetY: seat.y,
       room: startRoom.id,
@@ -94,14 +96,14 @@ function initBots() {
       rateLimitDuration: 0,
       dimmed: false
     };
-   });
+  });
   // Assign seats
   bots.forEach((b,i) => {
     const room = getRoomById(b.room);
     if(room && room.seats[i%room.seats.length]) {
       room.seats[i%room.seats.length].taken = b.id;
-     }
-   });
+    }
+  });
 }
 
 // ═══════════════════════════════════════
@@ -156,11 +158,11 @@ function updateBotMovement(bot, dt) {
     if(bot.pathIdx >= bot.path.length) {
       bot.moving = false;
       bot.path = [];
-     }
-   } else {
+    }
+  } else {
     bot.x += (dx/dist) * step;
     bot.y += (dy/dist) * step;
-   }
+  }
 
   bot.legPhase += dt * 10 * simSpeed;
 }
@@ -202,7 +204,7 @@ const DEMO_SEQUENCE = [
   {type:'idle',agent:'ada',target_room:'planning',payload:{}},
   {type:'task_complete',agent:'mavrick',target_room:'engineering',payload:{task_name:'Refactor auth flow'}},
   {type:'idle',agent:'mavrick',target_room:'engineering',payload:{}},
-  {type:'task_start','agent':'yagami',target_room:'planning',payload:{task_name:'Generate social report'}},
+  {type:'task_start',agent:'yagami',target_room:'planning',payload:{task_name:'Generate social report'}},
   {type:'api_call',agent:'yagami',target_room:'engineering',payload:{endpoint:'/api/v1/agents'}},
   {type:'message_send',agent:'yagami',target_room:'comms',payload:{recipient:'ada',message:'Report complete'}},
   {type:'idle',agent:'yagami',target_room:'data',payload:{}}
@@ -230,12 +232,14 @@ function processEvent(evt) {
   if(room) {
     room.eventLog.unshift(logEntry);
     if(room.eventLog.length > 50) room.eventLog.pop();
-   }
+  }
 
   switch(evt.type) {
     case 'task_start':
       bot.state = 'active';
       bot.task = evt.payload.task_name || 'Unknown task';
+      bot.dimmed = false;
+
       bot.dimmed = false;
       break;
 
@@ -283,7 +287,7 @@ function processEvent(evt) {
 
     default:
       break;
-   }
+  }
 }
 function describeEvent(evt) { return evt.payload?.task_name || evt.payload?.message || evt.type; }
 

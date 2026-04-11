@@ -32,7 +32,14 @@ export async function onRequestGet(context) {
     // Get all submissions pending follow-up (submitted > 5min, no follow_up_at timestamp)
     const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     
-    const results = await db.prepare("SELECT s.id, s.name, s.email, s.phone, s.company, s.message, s.lead_score, s.category, s.created_at, s.follow_up_status, s.follow_up_at, l.status as lead_status FROM submissions s LEFT JOIN leads l ON l.submission_id = s.id WHERE (julianday(?) - julianday(s.created_at)) * 86400 > 300 AND s.follow_up_at IS NULL ORDER BY s.created_at ASC").bind(fiveMinsAgo).all();
+    const results = await db.prepare(
+        "SELECT s.id, s.name, s.email, s.phone, s.company, s.message, s.lead_score, s.category, s.created_at, " +
+            "s.follow_up_status, s.follow_up_at, l.status as lead_status " +
+        "FROM submissions s " +
+        "LEFT JOIN leads l ON l.submission_id = s.id " +
+        "WHERE (julianday(?) - julianday(s.created_at)) * 86400 > 300 AND s.follow_up_at IS NULL " +
+        "ORDER BY s.created_at ASC"
+      ).bind(new Date().toISOString()).all();
 
     return jsonResp(200, {
       success: true,
@@ -113,18 +120,10 @@ export async function onRequestPost(context) {
   }
 }
 
-/**
- * CORS preflight handler for Followup API - responds to OPTIONS requests with allowed headers
- * @param {Request} request - Cloudflare Pages request object with origin header
- * @returns {Response} 204 No Content with CORS headers for moliam.com and moliam.pages.dev
- */
-export async function onRequestOptions(request) {
-  const origin = request.headers.get('Origin') || '*';
-   // Restrict to moliam domains for production security, allow * for dev/testing
-  const allowedOrigins = ['https://moliam.com', 'https://moliam.pages.dev'];
-  const effectiveOrigin = allowedOrigins.includes(origin) ? origin : (process.env.NODE_ENV === 'production' ? '*' : origin);
+// CORS preflight handler for all endpoints
+export async function onRequestOptions() {
   const headers = new Headers({
-     "Access-Control-Allow-Origin": effectiveOrigin,
+     "Access-Control-Allow-Origin": "*",
      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
      "Access-Control-Allow-Headers": "Content-Type"
    });

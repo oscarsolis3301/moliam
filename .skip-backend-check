@@ -1,3 +1,0 @@
-# Skip backend build check for frontend-only tasks. 
-# Backend JS errors (functions/api/*.js) are known issues, not introduced by agent.
-# Frontend scope: public/index.html, public/js/*.js, public/css/*.css

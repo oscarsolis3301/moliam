@@ -1,41 +1,13 @@
-
 /**
- * GET /api/admin/ - Health check endpoint for admin API status
- * 
- * **Response:** JSON object with service name and version
- * `{service: "Moliam Admin API", version: "1.0.0"}`
- * 
- * Used by monitoring systems and dashboard heartbeat checks.
- * Returns 200 status when service is operational.
- * 
- * @param {Object} context - Cloudflare Pages request context (unused)
- * @returns {Response} JSON health check response with service metadata
+ * GET /api/admin/ - Health check endpoint
  */
+import { jsonResp } from '../lib/api-helpers.js';
+
 export async function onRequest() {
   return jsonResp(200, { service: "Moliam Admin API", version: "1.0.0" });}
 
-
 /**
- * POST /api/admin/ - Admin seed endpoint initialization and user creation (legacy alias)
- * 
- * **Authentication:** Requires `x-seed-key: moliam2026` header for authorization.
- * This endpoint is a legacy alias that redirects to dedicated seed.js handler.
- * Creates default admin and client accounts if tables don't exist.
- * 
- * **Error Responses:**
- * - 401: Invalid or missing x-seed-key header (unauthorized)
- * - 500: Internal server error during table/user creation
- * 
- * **Side Effects:**
- * - Creates `users` table if not exists
- * - Seeds default admin user (admin@moliam.com)
- * - Seeds default client user (oscar@onepluselectric.com)
- * - Uses salted SHA-256 hashing for password storage
- * 
- * @param {Object} context - Cloudflare Pages request context
- * @param {Object} context.request - Incoming Request with x-seed-key header
- * @param {Object} context.env - Environment with MOLIAM_DB binding
- * @returns {Response} JSON response with initialization status and user count
+ * POST /api/admin/ - Alias for legacy seed endpoint (redirects to dedicated seed.js)
  */
 export async function onRequestPost(context) {
   const { request, env } = context;

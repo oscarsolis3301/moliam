@@ -9,16 +9,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<<<<<<< HEAD
      <meta name="keywords" content="login, client portal, moliam, ai marketing, contractor services, google business profile, local seo">
      <link rel="canonical" href="https://moliam.com/login">
      <meta property="og:title" content="Login — Moliam Client Portal">
-=======
-      <meta name="keywords" content="login, client portal, moliam, ai marketing, contractor services, google business profile, local seo">
-      <link rel="canonical" href="https://moliam.com/login">
-      <link rel="stylesheet" href="/css/login.css">
-<meta property="og:title" content="Login — Moliam Client Portal">
->>>>>>> origin/main
      <meta property="og:description" content="Sign in to the Moliam Client Portal to access your account dashboard and management tools.">
      <meta property="og:url" content="https://moliam.com/login">
      <meta property="og:type" content="website">
@@ -46,7 +39,6 @@
       "item": "https://moliam.com/login"
      }
   ]
-<<<<<<< HEAD
 }
 </script>
 <style>
@@ -470,19 +462,10 @@ h1,h2,h3,h4,h5,h6{ font-family:'Inter',system-ui,-apple-system, sans-serif ;} h1
 </style>
 
 <!-- ARIA live region for dynamic alerts -->
-=======
-}</script>
-
-<!-- Add ARIA live region for dynamic alerts -->
->>>>>>> origin/main
 <div id="aria-live-region" aria-live="polite" aria-atomic="true" class="sr-only"></div>
 
 <div class="logo" aria-hidden="false">
 
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/main
     <h2 id="login-heading">Welcome back</h2>
     <p class="subtitle" id="login-desc">Sign in to your dashboard</p>
 
@@ -513,19 +496,11 @@ h1,h2,h3,h4,h5,h6{ font-family:'Inter',system-ui,-apple-system, sans-serif ;} h1
             </svg>
           </button>
         </div>
-<<<<<<< HEAD
-<div class="field-footer">
-  <a href="https://calendly.com/visualark/demo" class="forgot-link" tabindex="4" target="_blank" rel="noopener">Need password reset? Book a demo call.</a>
-</div>
-      </div>
-      <button type="submit" class="btn-login" id="loginBtn" tabindex="5" aria-label="Sign in to your client portal">
-=======
         <div class="field-footer">
           <a href="#" class="forgot-link" tabindex="4" onclick="event.preventDefault(); showAlert('Contact hello@moliam.com to reset your password.', 'error');">Forgot password?</a>
         </div>
       </div>
-      <button type="submit" class="btn-login" id="loginBtn" tabindex="5" aria-label="Sign in to your account">
->>>>>>> origin/main
+      <button type="submit" class="btn-login" id="loginBtn" tabindex="5" aria-label="Sign in to your client portal">
         <span class="btn-text">Sign In</span>
         <div class="spinner" aria-hidden="true"></div>
       </button>
@@ -534,126 +509,9 @@ h1,h2,h3,h4,h5,h6{ font-family:'Inter',system-ui,-apple-system, sans-serif ;} h1
 
   <div class="back-link">
     <a href="/" tabindex="6">← Back to Moliam.com</a>
-<<<<<<< HEAD
 </div>
 
 <!-- Mobile focus behavior extracted to login-mobile-focus.js -->
 <script src="/js/login-mobile-focus.js"></script>
 <script src="/js/login.js"></script>
 </body></html>
-=======
-  </div>
-</main>
-
-<script>
-const form = document.getElementById('loginForm');
-const btn = document.getElementById('loginBtn');
-const alertEl = document.getElementById('alert');
-const passwordInput=docume...d');
-const passwordToggle=docume...e');
-
-// Password show/hide toggle
-passwordToggle.addEventListener('click', () => {
-  const isPassword=passwo...type === 'password';
-  passwordInput.type = isPassword ? 'text' : 'password';
-  passwordToggle.classList.toggle('active', isPassword);
-  passwordToggle.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
-  passwordToggle.setAttribute('aria-pressed', isPassword ? 'true' : 'false');
-  passwordInput.focus();
-});
-
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  alertEl.className = 'alert';
-  alertEl.style.display = 'none';
-  alertEl.textContent = '';
-
-  const email = document.getElementById('email').value.trim();
-  const password=passwo...lue;
-
-  if (!email || !password) {
-    showAlert('Please fill in all fields.', 'error');
-    if (!email) document.getElementById('email').focus();
-    else passwordInput.focus();
-    return;
-  }
-
-  btn.classList.add('loading');
-  btn.disabled = true;
-  btn.setAttribute('aria-busy', 'true');
-
-  try {
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      showAlert('Signing in...', 'success');
-      // Redirect based on role
-      if (data.user.role === 'admin') {
-        window.location.href = '/admin';
-      } else {
-        window.location.href = '/dashboard';
-      }
-    } else {
-      showAlert(data.message || 'Login failed.', 'error');
-      btn.classList.remove('loading');
-      btn.disabled = false;
-      btn.removeAttribute('aria-busy');
-      passwordInput.focus();
-    }
-  } catch (err) {
-    showAlert('Connection error. Please try again.', 'error');
-    btn.classList.remove('loading');
-    btn.disabled = false;
-    btn.removeAttribute('aria-busy');
-  }
-});
-
-function showAlert(msg, type) {
-  alertEl.textContent = msg;
-  alertEl.className = `alert ${type}`;
-  alertEl.style.display = 'block';
-}
-
-// Mobile: collapse branding when form is focused (keyboard pushes content up)
-const formInputs = document.querySelectorAll('#loginForm input');
-let focusTimeout;
-formInputs.forEach(input => {
-  input.addEventListener('focus', () => {
-    clearTimeout(focusTimeout);
-    document.body.classList.add('form-focused');
-    // Scroll form into view on mobile
-    setTimeout(() => {
-      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 300);
-  });
-  input.addEventListener('blur', () => {
-    focusTimeout = setTimeout(() => {
-      // Only remove if no other input is focused
-      if (!document.activeElement || !document.activeElement.closest('#loginForm input')) {
-        document.body.classList.remove('form-focused');
-      }
-    }, 200);
-  });
-});
-
-// If already logged in, redirect
-(async () => {
-  try {
-    const res = await fetch('/api/auth/me', { credentials: 'include' });
-    const data = await res.json();
-    if (data.success) {
-      window.location.href = data.user.role === 'admin' ? '/admin' : '/dashboard';
-    }
-  } catch {}
-})();
-</script>
-</body>
-</html>
->>>>>>> origin/main

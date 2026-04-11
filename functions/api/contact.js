@@ -6,15 +6,10 @@
 
 import { jsonResp, validateEmail, validatePhone, sanitizeText, calculateLeadScore } from './api-helpers.js';
 
-/** Helper: consistent JSON error wrapper for all API responses - returns proper {success, error, message|data} format */
-function ensureError(status, message, request) {
-  return jsonResp(status, { success: false, error: message }, request);
-}
-
 /**
  * Handle POST requests to contact form endpoint
- * @param {object} context - Cloudflare Pages function context with {request, env}, includes MOLIAM_DB binding
- * @returns {Response} JSON response with success/error status containing submissionId, leadScore, category
+ * @param {object} context - Cloudflare Pages function context with request and env
+ * @returns {Response} JSON response with success/error status
  */
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -25,95 +20,90 @@ export async function onRequestPost(context) {
   try {
     data = await request.json();
   } catch {
-    return jsonResp(400, { success: false, message: "Invalid JSON body." }, request);
+    return jsonResp(400, { success: false, error: true, message: "Invalid JSON body." }, undefined, request);
   }
 
-  // --- Validate & Sanitize Input Fields ---
+   // --- Validate & Sanitize Input Fields ---
   const name = sanitizeText(String(data.name || ""), 100);
   const emailResult = validateEmail(String(data.email || ""));
-  if (!emailResult.valid) return jsonResp(400, { success: false, message: emailResult.error }, request);
+  if (!emailResult.valid) return jsonResp(400, { success: false, error: true, message: emailResult.error }, undefined, request);
   const email = emailResult.value;
 
   const phoneResult = validatePhone(data.phone);
-  if (!phoneResult.valid) return jsonResp(400, { success: false, message: phoneResult.error }, request);
+  if (!phoneResult.valid) return jsonResp(400, { success: false, error: true, message: phoneResult.error }, undefined, request);
   const phone = phoneResult.value;
 
   const company = sanitizeText(String(data.company || ""), 100);
-  const originalMessage = String(data.message || "");
-  const message = sanitizeText(originalMessage, 2000);
+  const message = sanitizeText(String(data.message || ""), 2000);
 
-  // --- Field Length Validation (after sanitization) ---
+     // --- Field Length Validation (after sanitization) ---
   const errors = [];
   if (name.length < 2) errors.push("Name must be at least 2 characters.");
-  if (name.length > 100) errors.push("Name cannot exceed 100 characters.");
   if (message.length < 10) errors.push("Message must be at least 10 characters long.");
-  if (originalMessage && originalMessage.trim().length > 2000) {
-    errors.push("Message exceeds maximum length of 2000 characters.");
-  }
 
-  if (errors.length) return jsonResp(400, { success: false, message: errors.join(" ") }, request);
+  if (errors.length) return jsonResp(400, { success: false, error: true, message: errors.join(" ") }, undefined, request);
 
-  // --- Check D1 availability ---
+    // --- Check D1 availability ---
   if (!db) {
-    // D1 not bound — still send webhook and return success
+      // D1 not bound — still send webhook and return success
     await sendWebhook(env, { name, email, phone, company, message, service: data.service, score: 0, category: "cold", subId: 0 });
-    return jsonResp(200, { success: true, message: "Thanks! We'll be in touch within 1 business day.", submissionId: 0 }, request);
+    return jsonResp(200, { success: true, message: "Thanks! We'll be in touch within 1 business day.", submissionId: 0 }, undefined, request);
   }
 
   try {
-    // --- Rate limiting (best effort) ---
-    try {
-      const rawIP = request.headers.get("CF-Connecting-IP") || "unknown";
-      const ipHash = await hashSHA256(rawIP);
-      const endpoint = "/api/contact";
+       // --- Rate limiting (best effort) ---
+     try {
+       const rawIP = request.headers.get("CF-Connecting-IP") || "unknown";
+       const ipHash = await hashSHA256(rawIP);
+       const endpoint = "/api/contact";
 
-      // Cleanup old rate limit rows (older than 1 hour before checking/inserting)
-      try {
-        await db.prepare(
-          "DELETE FROM rate_limits WHERE timestamp < datetime('now', '-1 hour')"
-        ).run();
-      } catch {}
+          // Cleanup old rate limit rows (older than 1 hour before checking/inserting)
+        try {
+           await db.prepare(
+                "DELETE FROM rate_limits WHERE timestamp < datetime('now', '-1 hour')"
+            ).run();
+          } catch {}
 
       const countResult = await db.prepare(
-        "SELECT COUNT(*) as cnt FROM rate_limits WHERE ip = ? AND endpoint = ? AND timestamp > datetime('now', '-1 hour')"
-      ).bind(ipHash, endpoint).first();
+         "SELECT COUNT(*) as cnt FROM rate_limits WHERE ip = ? AND endpoint = ? AND timestamp > datetime('now', '-1 hour')"
+       ).bind(ipHash, endpoint).first();
       const count = countResult?.cnt || 0;
 
       if (count >= 5) {
-        return jsonResp(429, { success: false, message: "Too many submissions. Please try again later." }, request);
-      }
+        return jsonResp(429, { success: false, error: true, message: "Too many submissions. Please try again later." }, undefined, request);
+       }
 
-      // Under limit - insert rate record and proceed
+        // Under limit - insert rate record and proceed
       await db.prepare(
-        "INSERT INTO rate_limits (ip, endpoint, timestamp) VALUES (?, ?, datetime('now'))"
-      ).bind(ipHash, endpoint).run();
+         "INSERT INTO rate_limits (ip, endpoint, timestamp) VALUES (?, ?, datetime('now'))"
+       ).bind(ipHash, endpoint).run();
     } catch {
       // Rate limiting table might not exist — skip, don't fail the submission
     }
 
-    // --- Insert submission with parameterized queries to prevent SQL injection ---
+     // --- Insert submission with parameterized queries to prevent SQL injection ---
     const ua = request.headers.get("user-agent") || "";
     const screenRes = data.screenResolution || "";
     let subId = 0;
 
     try {
       const sub = await db.prepare(
-        "INSERT INTO submissions (name, email, phone, company, message, user_agent, screen_resolution, lead_score, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-      ).bind(name, email, phone, company, message, ua, screenRes, 0, "cold").run();
+         "INSERT INTO submissions (name, email, phone, company, message, user_agent, screen_resolution, lead_score, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+       ).bind(name, email, phone, company, message, ua, screenRes, 0, "cold").run();
       subId = sub.meta.last_row_id;
     } catch {
       // If submissions table schema is wrong, try minimal insert without new columns
       try {
-        const sub = await db.prepare(
-          "INSERT INTO submissions (name, email, phone, message) VALUES (?, ?, ?, ?)"
-        ).bind(name, email, phone, message).run();
-        subId = sub.meta.last_row_id;
-      } catch {
-        // Table might not exist at all — continue without DB
-      }
+         const sub = await db.prepare(
+             "INSERT INTO submissions (name, email, phone, message) VALUES (?, ?, ?, ?)"
+         ).bind(name, email, phone, message).run();
+         subId = sub.meta.last_row_id;
+       } catch {
+         // Table might not exist at all — continue without DB
+       }
     }
 
-    // --- Lead scoring with clear service-based tiers ---
+     // --- Lead scoring with clear service-based tiers ---
     const scoreResult = calculateLeadScore({
       email,
       company,
@@ -126,26 +116,26 @@ export async function onRequestPost(context) {
     const score = scoreResult.score;
     const category = scoreResult.category; // hot (80+), warm (40-79), cold (<40)
 
-    // --- Update submission with lead_score and category if we have a valid subId ---
+     // --- Update submission with lead_score and category if we have a valid subId ---
     if (subId > 0) {
       try {
-        await db.prepare("UPDATE submissions SET lead_score = ?, category = ? WHERE id = ?")
-          .bind(score, category, subId).run();
-      } catch {
-        // Ignore update failures
-      }
+         await db.prepare("UPDATE submissions SET lead_score = ?, category = ? WHERE id = ?")
+            .bind(score, category, subId).run();
+       } catch {
+         // Ignore update failures
+       }
     }
 
-    // --- Create lead (best effort) ---
+     // --- Create lead (best effort) ---
     try {
       await db.prepare(
-        "INSERT INTO leads (submission_id, email, first_name, last_name, phone, company, source, created_at, is_active) VALUES (?, '', '', ?, ?, 'webform', datetime('now'), 1)"
-      ).bind(subId, email, phone, data.company || null).run();
+         "INSERT INTO leads (submission_id, email, first_name, last_name, phone, company, source, created_at, is_active) VALUES (?, '', '', ?, ?, 'webform', datetime('now'), 1)"
+       ).bind(subId, email, phone, data.company || null).run();
     } catch {
       // leads table might not exist — skip
     }
 
-    // --- Discord webhook with lead score + priority tag ---
+     // --- Discord webhook with lead score + priority tag ---
     const socials = {
       website: (data.website || "").trim(),
       gbp: (data.gbp || "").trim(),
@@ -161,17 +151,17 @@ export async function onRequestPost(context) {
       submissionId: subId,
       leadScore: score,
       category: category,
-    }, request);
+     }, undefined, request);
 
-  } catch (err) {
-    // Even if D1 completely fails, still send webhook and return success to user
+   } catch (err) {
+     // Even if D1 completely fails, still send webhook and return success to user
     await sendWebhook(env, { name, email, phone, company, message, service: data.service, score: 0, category: "cold", subId: 0 });
     return jsonResp(200, {
       success: true,
       message: "Thanks! We'll be in touch within 1 business day.",
       submissionId: 0,
-    }, request);
-  }
+     }, undefined, request);
+   }
 }
 
 /**
@@ -184,7 +174,7 @@ async function sendWebhook(env, { name, email, phone, company, message, service,
   const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
   if (!webhookUrl || !webhookUrl.startsWith("https://discord.com/api/webhooks/")) return;
 
-  // Skip test/debug submissions — only real leads get webhooks
+   // Skip test/debug submissions — only real leads get webhooks
   const skipEmails = ["test@test.com", "test@moliam.com", "debug@moliam.com", "preview@moliam.com", "roman@moliam.com"];
   if (skipEmails.includes(email) || email.endsWith("@example.com")) return;
 
@@ -192,27 +182,27 @@ async function sendWebhook(env, { name, email, phone, company, message, service,
     const svcRaw = (service || "").toLowerCase();
     const svcLabel = { website: "Website Build", gbp: "GBP Optimization", lsa: "Google LSA", retainer: "Full Retainer", other: "Other" }[svcRaw] || service || "—";
 
-    // Determine priority tag based on lead_score and category
+     // Determine priority tag based on lead_score and category
     let priorityTag = "";
     if (category === "hot") {
-      priorityTag = "<@1466244456088080569>";     // Ada - hot leads
-    } else if (category === "warm") {
-      priorityTag = "<@1486921534441259098>";     // Ultra - warm leaves      
-    } else {
-      priorityTag = "";     // cold leads don't need immediate attention tag
-    }
+      priorityTag = "<@1466244456088080569>";    // Ada - hot leads
+     } else if (category === "warm") {
+      priorityTag = "<@1486921534441259098>";    // Ultra - warm leaves     
+     } else {
+      priorityTag = "";    // cold leads don't need immediate attention tag
+     }
 
-    // Build fields array with lead score and category
+     // Build fields array with lead score and category
     const fields = [
-      { name: "📧 Email", value: email, inline: true },
-      { name: "📱 Phone", value: phone || "—", inline: true },
-      { name: "🏢 Company", value: company || "—", inline: true },
-      { name: "🎯 Service", value: svcLabel, inline: true },
-      { name: "📊 Lead Score", value: `**${score}/100**`, inline: true },
-      { name: "🏷️ Category", value: `**${category.toUpperCase()}**`, inline: true }
+       { name: "📧 Email", value: email, inline: true },
+       { name: "📱 Phone", value: phone || "—", inline: true },
+       { name: "🏢 Company", value: company || "—", inline: true },
+       { name: "🎯 Service", value: svcLabel, inline: true },
+       { name: "📊 Lead Score", value: `**${score}/100**`, inline: true },
+       { name: "🏷️ Category", value: `**${category.toUpperCase()}**`, inline: true }
     ];
 
-    // Add social media fields if provided
+     // Add social media fields if provided
     const s = socials || {};
     const socialLines = [];
     if (s.website) socialLines.push(`🌐 [Website](${s.website})`);
@@ -223,7 +213,7 @@ async function sendWebhook(env, { name, email, phone, company, message, service,
 
     if (socialLines.length > 0) {
       fields.push({ name: "🔗 Online Presence", value: socialLines.join("\n") });
-    }
+     }
 
     fields.push({ name: "💬 Message", value: (message || "—").length > 300 ? message.slice(0, 297) + "…" : (message || "—") });
 
@@ -242,9 +232,9 @@ async function sendWebhook(env, { name, email, phone, company, message, service,
            timestamp: new Date().toISOString()
          }]
        })
-    } catch {
-      // Webhook failure is never fatal
-    }
+     } catch {
+       // Webhook failure is never fatal
+     }
 }
 
 /**
@@ -258,3 +248,4 @@ async function hashSHA256(str) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
+

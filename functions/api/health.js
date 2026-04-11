@@ -12,7 +12,7 @@
 /**
  * API Helpers import for standardized error handling and response formatting
  */
-import { jsonResp, balanceSuccessError } from './api-helpers.js';
+import { jsonResp, balanceSuccessError } from '../lib/api-helpers.js';
 
 const API_VERSION = "1.0.0";
 
@@ -21,12 +21,6 @@ function normalizeHealthResult(result) {
   return balanceSuccessError({ ...result, success: true });
 }
 
-/**
- * GET /api/health -- Health check endpoint
- * Returns API version, D1 connectivity, table row counts, integrity checks
- * @param {object} context - Cloudflare Pages function context
- * @returns {Response} JSON response with health status or error
- */
 export async function onRequestGet(context) {
   try {
     const { env } = context;
@@ -43,32 +37,42 @@ export async function onRequestGet(context) {
 
     // 1) D1 connectivity check
     let databaseStatus = "connected";
+    let dbError = null;
     try {
       const check = await db.prepare("SELECT 1 AS ping").first();
       databaseStatus = check?.ping === 1 ? "connected" : "unexpected_result";
     } catch (err) {
       databaseStatus = "error";
+      dbError = err.message;
     }
 
     // 2) Table list with row counts
+    let tables = [];
+    let tableCount = 0;
+    let tablesError = null;
     try {
-const { results: tablesRaw } = await db.prepare(
-         "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' ORDER BY name"
-       ).all();
+      const { results: tablesRaw } = await db.prepare(
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' ORDER BY name"
+      ).all();
 
       const tableInfo = [];
       for (const t of tablesRaw) {
         try {
           const row = await db.prepare(
-             "SELECT COUNT(*) AS cnt FROM ?"
-           ).bind(t.name).first();
+            "SELECT COUNT(*) AS cnt FROM ?"
+          ).bind(t.name).first();
           tableInfo.push({ name: t.name, row_count: row?.cnt ?? 0 });
-         } catch {
+        } catch {
           tableInfo.push({ name: t.name, row_count: "error" });
-         }
-       }
+        }
+      }
+      tables = tableInfo;
+      tableCount = tableInfo.length;
+    } catch (err) {
+      tablesError = err.message;
+    }
 
-     // 3) Quick data integrity checks
+    // 3) Quick data integrity checks
     const integrity = {};
     try {
       // Admin exists?
@@ -92,17 +96,19 @@ const { results: tablesRaw } = await db.prepare(
       // Non-fatal — tables may not exist yet
     }
 
-const result = balanceSuccessError({ 
+    const result = balanceSuccessError({ 
       success: true, 
       api_version: API_VERSION,
       status: databaseStatus === "error" ? "degraded" : "ok",
       timestamp: new Date().toISOString(),
       database: databaseStatus,
-      tables: tableInfo,
-      table_count: tableInfo.length,
+      tables,
+      table_count: tableCount,
+      db_error: dbError,
+      tables_error: tablesError,
       integrity,
       uptime_note: "Serverless — no persistent uptime"
-     });
+    });
 
     return jsonResp(databaseStatus === "error" ? 503 : 200, result);
   } catch (err) {
@@ -115,11 +121,10 @@ const result = balanceSuccessError({
 }
 
 /**
- * Handle CORS preflight requests to Health Check endpoint   
- * @param {Request} request - Cloudflare Pages request object (unused, standard signature)
- * @returns {Response} 204 No Content with CORS headers for moliam.com and moliam.pages.dev
+ * Handle CORS preflight requests to Health Check endpoint  
+ * @returns {Response} 204 No Content with Access-Control headers for moliam.com and moliam.pages.dev
  */
-export async function onRequestOptions(request) {
+export async function onRequestOptions() {
   return new Response(null, {
     status: 204,
     headers: {

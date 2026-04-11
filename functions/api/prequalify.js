@@ -26,10 +26,10 @@ export async function onRequestGet(context) {
 
      // Return form metadata with proper CORS headers for moliam domains
   if (!db) {
-     return jsonResp(200, { success: true, form_url: "/booking/prequalify.html", criteria: { min_budget: 2000, preferred_timeline: ["immediate", "within_week", "next_month"], support_industries: ["real_estate", "financial_services", "healthcare", "retail"] } }, request);
+     return jsonResp(200, { success: true, error: false, form_url: "/booking/prequalify.html", criteria: { min_budget: 2000, preferred_timeline: ["immediate", "within_week", "next_month"], support_industries: ["real_estate", "financial_services", "healthcare", "retail"] } }, request);
     }
 
-  return jsonResp(200, { success: true, form_url: "/booking/prequalify.html", criteria: { min_budget: 2000, preferred_timeline: ["immediate", "within_week", "next_month"], support_industries: ["real_estate", "financial_services", "healthcare", "retail"] } }, request);
+  return jsonResp(200, { success: true, error: false, form_url: "/booking/prequalify.html", criteria: { min_budget: 2000, preferred_timeline: ["immediate", "within_week", "next_month"], support_industries: ["real_estate", "financial_services", "healthcare", "retail"] } }, request);
 }
 
 /**
@@ -48,7 +48,7 @@ export async function onRequestPost(context) {
   try {
     data = await request.json();
        } catch (e) {
-    return jsonResp(400, { success: false, message: "Invalid JSON body." }, request);
+    return jsonResp(400, { success: false, error: true, message: "Invalid JSON body." }, request);
      }
 
   const {
@@ -83,8 +83,8 @@ export async function onRequestPost(context) {
    }
 
   if (errors.length) {
-    return jsonResp(400, { success: false, message: "Validation failed.", errors }, request);
-     }
+    return jsonResp(400, { success: false, error: true, message: "Validation failed.", errors }, request);
+    }
 
      // Calculate qualification score (0-100) with weighted scoring algorithm
    // Factors: budget(50) + urgency(30) + industry(20) = max 100 points
@@ -138,20 +138,23 @@ export async function onRequestPost(context) {
    }
 
   try {
-    const res = await db.prepare(
-      "INSERT INTO prequalifications (submission_id, budget_range, max_budget, timeline_urgency, project_start_date, primary_industry, current_stack, pain_points, qualification_score, calendar_access_granted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-    ).bind(
-      submission_id || null,
-      budget_range || 'unknown',
-      max_budget || null,
-      timeline_urgency || 'flexible',
-      project_start_date || null,
-      primary_industry || 'unknown',
-      current_stack || '',
-      sanitizedPainPoints,
-      score,
-      calendarAccessGranted 
-    ).run();
+    const res = await db.prepare(`
+       INSERT INTO prequalifications 
+         (submission_id, budget_range, max_budget, timeline_urgency, project_start_date, 
+          primary_industry, current_stack, pain_points, qualification_score, calendar_access_granted)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(
+        submission_id || null,
+        budget_range || 'unknown',
+        max_budget || null,
+        timeline_urgency || 'flexible',
+        project_start_date || null,
+        primary_industry || 'unknown',
+        current_stack || '',
+        pain_points: sanitizedPainPoints,
+        score,
+        calendarAccessGranted 
+      ).run());
 
     const prequalId = res.meta.last_row_id;
 
@@ -164,8 +167,8 @@ export async function onRequestPost(context) {
 
     } catch (err) {
     console.error("Pre-qualify error:", err);
-    return jsonResp(500, { success: false, message: "Something went wrong. Please try again later." }, request);
-     }
+    return jsonResp(500, { success: false, error: true, message: "Something went wrong. Please try again later." }, request);
+    }
 }
 
 /**
@@ -277,19 +280,14 @@ console.error("Email error:", e);
 
  */
 export async function onRequestOptions(context) {
-      // Return response based on origin header - prefer moliam domains but allow * for dev/testing
-  const { request } = context || {};
-  const origin = request?.headers?.get('Origin') || '';
-  const allowedOrigins = ['https://moliam.com', 'https://moliam.pages.dev'];
-    const effectiveOrigin = allowedOrigins.includes(origin) ? origin : (process.env.NODE_ENV === 'production' ? '*' : origin);
   return new Response(null, {
     status: 204,
-    headers:{
-        "Access-Control-Allow-Origin": effectiveOrigin,
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type"
-       }
-    });
+    headers: {
+       "Access-Control-Allow-Origin": "*",
+       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+       "Access-Control-Allow-Headers": "Content-Type"
+      }
+   });
 }
 
 /**

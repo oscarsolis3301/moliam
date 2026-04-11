@@ -26,13 +26,6 @@ function jsonResp(status, body, request) {
 
    return new Response(JSON.stringify(body), { status, headers }); }
 
-/** Get session token from cookies - extracts 32-char hex string for authentication via parameterized queries */
-function getSessionToken(request) {
-  const cookies = request.headers.get("Cookie") || "";
-  const match = cookies.match(/moliam_session=([a-f0-9]+)/);
-  return match ? match[1] : null;
-}
-
 /**
  * Extract session token from cookies and validate admin credentials via parameterized query - no SQL injection
  * Returns user object with id, role if authenticated and authorized for admin-level operations
@@ -41,29 +34,30 @@ function getSessionToken(request) {
  * @returns {Response|object|null} User object, JSON error response (401/403), or null if no token provided
  */
 async function requireAdmin(request, env) {
-  // Get session token from cookies - extracts 32-char hex string for authentication via parameterized queries
+         // Get token from moliam_session cookie - uses secure parameterized binding with ? placeholders for safety
   const token = getSessionToken(request);
-
   if (!token) return jsonResp(401, { success: false, message: "Not authenticated." }, undefined, request);
 
-  const db = env.MOLIAM_DB;
+    const db = env.MOLIAM_DB;
 
-  // Validate admin session via parameterized SELECT with ? binding - no SQL injection possible
-  try {
-    const session = await db.prepare(
-        "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id=u.id WHERE s.token=? AND u.is_active=1 AND s.expires_at>datetime('now')").bind(token).first();
-
+         // Validate admin session via parameterized SELECT with ? binding - no SQL injection possible
+  const session = await db.prepare(
+       "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id=u.id WHERE s.token=? AND u.is_active=1 AND s.expires_at>datetime('now')"
 
 
-    if (!session) return jsonResp(401, { success: false, message: "Session invalid or expired." }, undefined, request);
-    if (session.role !== "admin" && session.role !== "superadmin") return jsonResp(403, { success: false, message: "Admin only." }, undefined, request);
+    ).bind(token).first();
 
-    return session; 
-      } catch (err) {
-        console.error("Session validation error:", err.message);
-        return jsonResp(401, { success: false, message: "Database error during session check." }, undefined, request);
-      }
-}
+  if (!session) return jsonResp(401, { success: false, message: "Session invalid or expired." }, undefined, request);
+  if (session.role !== "admin" && session.role !== "superadmin") return jsonResp(403, { success: false, message: "Admin only." }, undefined, request);
+
+  return session; }
+
+/** Get session token from cookies - extracts 32-char hex string for authentication via parameterized queries */
+function getSessionToken(request) {
+  const cookies = request.headers.get("Cookie") || "";
+  const match = cookies.match(/moliam_session=([a-f0-9]+)/);
+
+  return match ? match[1] : null;}
 
 /** Hash user password with SHA-256 and fixed salt for secure storage comparison against database records */
 async function hashPassword(password) {
@@ -141,11 +135,12 @@ export async function onRequestPost(context) {
   try { data = await request.json(); } catch {
      return jsonResp(400, { success: false, message: "Invalid JSON." }, request); }
 
-const name = (data.name || "").trim();
+      const name = (data.name || "").trim();
       const email = (data.email || "").toLowerCase().trim();
        const company = (data.company || "").trim();
-const phone = (data.phone || "").trim();
-      const password = (data.password || "") || "";
+   const phone = (data.phone || "").trim();
+       const password = data.password || "";
+
 
   if (!name || !email || !password) {
      return jsonResp(400, { success: false, message: "Name, email, and password required for client creation." }, request); }

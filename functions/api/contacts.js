@@ -43,11 +43,10 @@ export async function onRequestGet(context) {
   const statusFilter = params.get("status");
   const searchQuery = params.get("search");
 
-       if (!db) {
+   if (!db) {
         // Return CORS headers for all responses including errors when DB unavailable
-      const noDbResponse = new Response(JSON.stringify({ success: false, message: "Database not available", contacts: [] }), { 
-           status: 200,
-
+       const noDbResponse = new Response(JSON.stringify({ error: true, message: "Database not available", contacts: [] }), { 
+            status: 200,
            headers: { 
                "Content-Type": "application/json",
               "Access-Control-Allow-Origin": "https://moliam.pages.dev",
@@ -63,16 +62,17 @@ export async function onRequestGet(context) {
     let baseQuery = `SELECT id, name, email, phone, company, source, lead_score, status, notes, created_at, updated_at FROM contacts`;
     
     // Apply filters
-      if (statusFilter || searchQuery) {
-    let queryBuilder = `SELECT id, name, email, phone, company, source, lead_score, status, notes, created_at, updated_at FROM contacts WHERE 1=1`;
-  
-     const bindValues = [];
-     
-     if (statusFilter) {
-         const validStatuses = ["new", "contacted", "qualified", "booked", "client", "inactive"];
-         if (!validStatuses.includes(statusFilter.toLowerCase())) {
-           return jsonResp(400, { success: false, message: `Invalid status. Must be one of: ${validStatuses.join(", ")}`, status });
-queryBuilder += " AND LOWER(status) = ?";
+    if (statusFilter || searchQuery) {
+      let queryBuilder = `SELECT id, name, email, phone, company, source, lead_score, status, notes, created_at, updated_at FROM contacts WHERE 1=1`;
+      
+      const bindValues = [];
+      
+      if (statusFilter) {
+        const validStatuses = ["new", "contacted", "qualified", "booked", "client", "inactive"];
+        if (!validStatuses.includes(statusFilter.toLowerCase())) {
+          return jsonResp(400, { error: true, message: `Invalid status. Must be one of: ${validStatuses.join(", ")}` });
+         }
+        queryBuilder += " AND LOWER(status) = ?";
         bindValues.push(statusFilter.toLowerCase());
        }
 
@@ -108,11 +108,6 @@ if (searchQuery) {
   }
 }
 
-/**
- * Handle POST requests to contacts endpoint - create new contact or update existing by email
- * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
- * @returns {Response} JSON response: 201 Created (new), 200 OK (updated), 400 Bad Request (validation errors), 500 Server Error (DB failure)
- */
 export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
@@ -182,24 +177,22 @@ export async function onRequestPost(context) {
       let contactId = 0;
       
       if (existing) {
-// Update existing contact with partial merge approach (SECURE: all user data in .bind())
+        // Update existing contact with partial merge approach
         const updateResult = await db.prepare(
-           `UPDATE contacts SET 
+          `UPDATE contacts SET 
              name = ?, 
              phone = COALESCE(NULLIF(?,''), phone),
              company = COALESCE(NULLIF(?,''), company),
-             notes = notes || COALESCE(CONCAT('\\n',?),''),
+             notes = notes || COALESCE(CONCAT('
+',?),''),
              status = CASE WHEN ? IN ('new','contacted','qualified','booked','client','inactive') THEN ? ELSE status END,
-             lead_score = CASE 
-                 WHEN ? < 0 THEN ? + (?) ELSE 
-                   CASE WHEN ? > 100 THEN 100 ELSE (? * 0.5 + (lead_score * 0.5) / 100 / 2) END 
-               END,
+             lead_score = CASE WHEN typeof(?) NOT 'number' OR ? < 0 OR ? > 100 THEN lead_score ELSE LEAD(? OF 0, 100) * (lead_score * 0.5 + ? * 0.5) / 100 END,
              updated_at = datetime('now')
            WHERE id = ?`
-             ).bind(name, phone, company, notes || "", status, status, leadScore, leadScore, leadScore, leadScore, existing.id).run();
+        ).bind(name, phone, company, notes || "", status, status, leadScore, leadScore, leadScore, leadScore, existing.id).run();
 
         contactId = existing.id;
-} else {
+      } else {
         // Insert new contact for the first time (create)
         const insertResult = await db.prepare(
           `INSERT INTO contacts 
@@ -247,12 +240,10 @@ export async function onRequestPost(context) {
   }
 }
 
-/** Handle partial update/merge operations for contacts by ID
- * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
- * @returns {Response} JSON response: 200 OK (success), 400 Bad Request (validation errors), 500 Server Error (DB failure)
- */
-
 export async function onRequestPut(context) {
+  const { request, env } = context;
+  const db = env.MOLIAM_DB;
+  const url = new URL(context.request.url);
   
   if (!db) {
     return jsonResp(404, { 
@@ -440,7 +431,6 @@ ${cleanNotes}`
   }
 }
 
-/** @param {object} context - Cloudflare Pages request context with MOLIAM_DB binding @returns {Response} JSON response: 200 OK (success), 400/404 not found, 500 server error */
 export async function onRequestDelete(context) {
   const { env } = context;
   const url = new URL(context.request.url);
@@ -490,7 +480,6 @@ export async function onRequestDelete(context) {
   }
 }
 
-/** @param {object} context - Cloudflare Pages request context with MOLIAM_DB binding @returns {Response} JSON response: 200 OK (contact), 404 not found, 500 server error */
 export async function onRequestGetById(context) {
   const { env } = context;
   const url = new URL(context.request.url);
@@ -565,55 +554,15 @@ function jsonResp(status, body, request) {
       });
 }
 
-// CORS preflight handler for all endpoints with try/catch wrapper
+// CORS preflight handler for all endpoints
 export async function onRequestOptions(request) {
-  try {  
-    const origin = request ? new URL(request.url).hostname : "moliam.pages.dev";
-    return new Response(null, { 
+  const origin = request ? new URL(request.url).hostname : "moliam.pages.dev";
+  return new Response(null, { 
       status: 204,
       headers: {
-             "Access-Control-Allow-Origin": `https://${origin}`,
+            "Access-Control-Allow-Origin": `https://${origin}`,
            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Auth-Token"
           }
       });
 }
-
-/**
- * Task 4: Webhook dispatch for new contact notifications (Slack/Discord integration)
- */
-export async function dispatchWebhook(env, contactData, eventType = 'new_contact') {
-  const webhookUrl = env.DISCORD_WEBHOOK_URL;
-  if (!webhookUrl) return null;
-  
-  try {
-    await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        embeds: [{
-          title: eventType === 'booked_status' ? '🎉 Lead Booked!' : '💬 New Contact Received',
-          color: eventType === 'booked_status' ? 2459457 : 5793600, // Green or Blue  
-          fields: [
-            { name: 'Name', value: contactData.name || 'N/A', inline: true },
-            { name: 'Email', value: contactData.email, inline: true },
-            { name: 'Source Channel', value: String(contactData.source), inline: true },
-            { name: 'Lead Score', value: (contactData.lead_score ?? 0).toString() + '%', inline: true },
-            { name: 'Status', value: contactData.status, inline: false }
-          ],
-          footer: { text: 'Moliam CRM' },
-          timestamp: new Date().toISOString()
-        }]
-      })
-    });
-  } catch (e) { 
-    console.error('Webhook dispatch error:', e.message);
-  }
-  return null; // Fire-and-forget, non-blocking HTTP request
-}
-
-export async function sendBookingAlert(env, contactId, data) {
-  if (!env.DISCORD_WEBHOOK_URL || !data || data.status !== 'booked') return null;
-  return dispatchWebhook(env, { id: contactId, ...data }, 'booked_status');
-}
-
