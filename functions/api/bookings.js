@@ -37,10 +37,10 @@ return jsonResp(400, {success: false, message: 'Invalid request. Use /list or /i
     if (!data) {
       return jsonResp(404, {success: false, message: 'Appointment not found.'}, request);
     }
-    return jsonResp(200, { success: true, data: data }, request);} catch (err) {
-      console.error('GET bookings error:', err);
-      return jsonResp(500, {success: false, message: 'Database query failed.'}, request);
-     }
+       return jsonResp(200, { success: true, data: data }, request);
+  } catch (err) {
+      return jsonResp(500, { success: false, error: "Database query failed.", details: err.message }, request);
+       }
      }
 /**
  * Handle CORS preflight requests for Booking API

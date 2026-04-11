@@ -26,17 +26,11 @@ export async function onRequestGet(context) {
       error: false 
         };
     return jsonResp(200, result, request);
-  } catch (error) {
-    console.error("ERROR [calendly.js GET]:", error.message);
-    const response = { 
-      success: false, 
-      error: error.message || "Internal server error", 
-      data: null 
-       };
-    return jsonResp(500, response, context.request);
-  }
-}
+   } catch (error) {
+      return jsonResp(500, { success: false, error: error.message || "Internal server error", data: null }, context.request);
+      }
 
+/**
 /**
  * CORS preflight handler for Calendly API - responds to OPTIONS requests with allowed headers
  * @param {Request} request - Cloudflare Pages request object (unused, standard signature)

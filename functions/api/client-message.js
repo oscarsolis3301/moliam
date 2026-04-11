@@ -137,10 +137,9 @@ if (session && new Date(session.expires_at) < new Date()) {
       role: session?.role ? session.role.toLowerCase() : 'user'
        };
 
-     } catch (err) {
-    console.warn("authenticate error:", err.message);
+      } catch (err) {
     return null;
-     }
+      }
 }
 
 }
@@ -157,15 +156,13 @@ export async function onRequestGet(context) {
   try { // Fixed: Added try/catch wrapper for database operations
     const session = await authenticate(request, db);
 
-    if (!session) {
-      console.error("Not authenticated");
+       if (!session) {
       return jsonResp(401, { success: false, message: "Not authenticated." }, request);
-    }
+       }
 
-    if (db === null) {
-      console.error("D1 not bound - cannot retrieve messages");
+        if (db === null) {
       return jsonResp(503, { success: false, message: "Database unavailable" }, request);
-    }
+           }
 
     let stmt;
 
@@ -197,10 +194,9 @@ export async function onRequestGet(context) {
 
     return jsonResp(200, { success: true, messages: (results?.results || []) }, request);
 
-  } catch (err) {
-    console.error("onRequestGet() error:", err.message);
-    return jsonResp(500, { success: false, message: "Internal server error. Please try again." }, request);
-  }
+       } catch (err) {
+      return jsonResp(500, { success: false, message: "Internal server error. Please try again.", details: err.message }, request);
+       }
 }
 
 /**
@@ -228,24 +224,24 @@ export async function onRequestPost(context) {
     return jsonResp(400, { success: false, message: "Missing required fields: sender and message are required" }, request);
   }
 
-  if (db === null || !db) {
-    console.error("D1 not bound - cannot store messages");
-    // If DB unavailable but we still want to try Discord notification for async delivery - fire and forget pattern
-    try {
-      const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
-      if (webhookUrl && webhookUrl.startsWith("https://discord.com/api/webhooks/")) {
-        await fetch(webhookUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content: "Message submission failed - database unavailable", username: "Moliam Messages" })
-        });
-      }
-    } catch (e) { console.error("Discord webhook error:", e); }
-
-    return jsonResp(503, { success: false, message: "Database unavailable. Try again later." }, request);
-  }
+        if (db === null || !db) {
+   return jsonResp(503, { success: false, message: "Database unavailable" }, request);
+      // If DB unavailable but we still want to try Discord notification for async delivery - fire and forget pattern
+      try {
+        const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
+         if (webhookUrl && webhookUrl.startsWith("https://discord.com/api/webhooks/")) {
+           await fetch(webhookUrl, {
+             method: "POST",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify({ content: "Message submission failed - database unavailable", username: "Moliam Messages" })
+               });
+          }
+      } catch (e) {
+   // Fire-and-forget - log Discord webhook errors silently for QA/debugging purposes (no DB access)
+        console.warn("Discord webhook error:", e.message);
 
   try {
+    const client_id = parseInt(data.client_id) || 12;
     const client_id = parseInt(data.client_id) || 12;
     const senderRaw = data.sender ?? "";
     let sender = sanitizeMessage(senderRaw)?.value ?? "Unknown";
@@ -271,14 +267,15 @@ export async function onRequestPost(context) {
       `INSERT INTO client_messages (client_id, sender, message, created_at) VALUES (?, ?, ?, datetime('now'))`
      ).bind(client_id, sender, cleanMessage).run();
 
-      // Optionally notify team via Discord webhook for new messages with proper error handling and CORS headers set consistently across all webhook calls
+       // Optionally notify team via Discord webhook for new messages with proper error handling and CORS headers set consistently across all webhook calls
     const webhookUrl = env.DISCORD_WEBHOOK_URL || "";
     if (webhookUrl && webhookUrl.startsWith("https://discord.com/api/webhooks/")) {
       try {
         await db.prepare(
-          `INSERT INTO system_logs (action, details) VALUES ('message_received', ?)`
-         ).bind(JSON.stringify({ client_id, sender })).run();
-       } catch (e) { console.warn("system_log insert failed:", e); }
+           `INSERT INTO system_logs (action, details) VALUES ('message_received', ?)`
+          ).bind(JSON.stringify({ client_id, sender })).run();
+        } catch (e) { 
+   // Fire-and-forget - log Discord webhook errors silently for QA/debugging purposes (no DB access to write to)
 
        // Fire-and-forget webhook delivery to Discord - no blocking behavior ensures message submission always succeeds regardless of webhook status
       await fetch(webhookUrl, {
@@ -288,13 +285,12 @@ export async function onRequestPost(context) {
        });
       }
 
-     // Return success with client_id confirmation for immediate feedback on message submission - uses parameterized binding throughout and clean JSON response via jsonResp helper function in all endpoints within module
+       // Return success with client_id confirmation for immediate feedback on message submission - uses parameterized binding throughout and clean JSON response via jsonResp helper function in all endpoints within module
     return jsonResp(200, { success: true, error: false, client_id }, request);
 
-   } catch (err) {
-    console.error("onRequestPost() error:", err.message);
-    return jsonResp(500, { success: false, message: "Internal server error. Please try again." }, request);
-  }
+     } catch (err) {
+      return jsonResp(500, { success: false, message: "Internal server error. Please try again.", details: err.message }, request);
+   }
 }
 
 /**
