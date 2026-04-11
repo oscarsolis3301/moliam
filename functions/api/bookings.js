@@ -7,8 +7,12 @@
 import { jsonResp } from './api-helpers.js';
 /**
  * Handle GET requests to Booking API - list all appointments or get single by ID
- * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
+ * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding, request URL
  * @returns {Response} JSON response: 200 OK (list/data), 400 Bad Request (invalid format), 500 Server Error (DB failure)
+ * 
+ * Endpoints:
+ * - GET /api/appointments/list - Returns array of appointments with optional JOINs to prequalifications/submissions
+ * - GET /api/appointments/:id - Returns single appointment by ID
  */
 export async function onRequestGet(context) {
   try {
@@ -189,28 +193,32 @@ async function createAppointment(context, body, request) {
 }
 /**
  * Update appointment status in database and trigger follow-up actions
- * Non-exported helper that executes DB UPDATE with parameterized queries, handles no-show retry logic (error logging only), logs to audit trail  
- * @param {object} context - Cloudflare Pages context with env.MOLIAM_DB
+ * Non-exported helper that executes DB UPDATE with parameterized queries, handles no-show retry logic (error logging only), logs to audit trail   
+ * @param {object} context - Cloudflare Pages context with env.MOLIAM_DB, request URL
  * @param {number} id - Appointment ID to update
- * @param {string} status - Status value ('rescheduled', 'completed', 'cancelled', 'no_show')
+ * @param {string} status - Status value ('rescheduled', 'completed', 
+ *   'cancelled', 'no_show')
  * @param {Response} request - Original fetch request for CORS headers   
- * @returns {Promise<Response>} JSON response with updated status on success or error message  
+ * @returns {Promise<Response>} JSON response with updated status on success or error message   
+ * 
+ * Validated queries: WHERE id = ? uses parameter binding, no inline SQL construction
  */
 async function updateAppointmentStatus(context, id, status, request) {
-  const db = context.env.MOLIAM_DB;
   try {
+    const db = context.env.MOLIAM_DB;
     const res = await db.prepare(
-           "UPDATE appointments SET status = ?, updated_at = datetime('now') WHERE id = ?"
-     ).bind(status, id).run();
+            "UPDATE appointments SET status = ?, updated_at = datetime('now') WHERE id = ?"
+      ).bind(status, id).run();
     if (res.success && res.meta.rows_changed > 0) {
-       // If no-show, handle retry logic - implemented via client-message.js webhook
+        // If no-show, handle retry logic - implemented via client-message.js webhook
       if (status === 'no_show') {
         fetch(env.MOLIAM_DB.prepare("INSERT INTO audit_logs (entity_type, entity_id, action, created_at) VALUES (?, ?, datetime('now'), 'no_show')").bind('appointment', id).run()).catch(() => {});
       }
     }
     return jsonResp(200, { success: true, data: { updated: status }}, request);
-} catch (err) {
+  } catch (err) {
       return jsonResp(500, {success: false, message: "Update failed." }, request);
-         }
+  }
+}
 
 /**

@@ -213,44 +213,51 @@
    218|      }
    219|    }
    220|
-   221|/** Get webhook origin (for logging/debugging) */
-   222|function getWebhookOrigin(request) {
-   223|  try {
-   224|     const cf = request.headers.get("CF-Connecting-IP");
-   225|       if (cf && typeof cf === "string") return `ip:${cf}`;
-   226|
-   227|        const userAgent = request.headers.get("User-Agent");
-   228|         if (userAgent && typeof userAgent === "string") {
-   229|           if (userAgent.includes("HubSpot")) return "hubspot";
-   230|             if (userAgent.includes("Airtable")) return "airtable";
-   231|               if (userAgent.includes("Pipedrive")) return "pipedrive";
-   232|                  }
-   233|
-   234|    return "unknown";
-   235|     } catch {
-   236|     return "unknown";
-   237|       }
-   238|      }
+  /** Get webhook origin (for logging/debugging) - determines CRM provider from User-Agent or CF-IP */
+/** @param {Request} request - Cloudflare Pages Request object with headers */
+/** @returns {string} Origin label: ip:* | hubspot | airtable | pipedrive | unknown */
+function getWebhookOrigin(request) {
+  try {
+     const cf = request.headers.get("CF-Connecting-IP");
+       if (cf && typeof cf === "string") return `ip:${cf}`;
+
+        const userAgent = request.headers.get("User-Agent");
+         if (userAgent && typeof userAgent === "string") {
+           if (userAgent.includes("HubSpot")) return "hubspot";
+             if (userAgent.includes("Airtable")) return "airtable";
+               if (userAgent.includes("Pipedrive")) return "pipedrive";
+                   }
+
+    return "unknown";
+      } catch {
+     return "unknown";
+        }
+}
    239|
-   240|function jsonResp(status, body, request) {
-   241|  const responseBody = JSON.stringify(body);
-   242|  const headers = { 
-   243|      "Content-Type": "application/json",
-   244|        "Access-Control-Allow-Methods": "POST, OPTIONS",
-   245|         "Access-Control-Allow-Headers": "Content-Type, X-Webhook-Signature",
-   246|          "Cache-Control": "no-store, no-cache"
-   247|            };
-   248|            
-   249|  if (request) {
-   250|    const origin = request.headers.get("Origin");
-   251|    const allowedOrigins = new Set(['https://moliam.pages.dev', 'https://moliam.com']);
-   252|    
-   253|    if (!origin || allowedOrigins.has(origin)) {
-   254|        headers["Access-Control-Allow-Origin"] = origin || "";
-   255|    } else {
-   256|        delete headers["Access-Control-Allow-Origin"];
-   257|    }
-   258|  }
-   259|  return new Response(responseBody, { status, headers });
-   260|}
+   /** Helper: JSON response wrapper with CORS - NOT the shared jsonResp from lib */
+/** @param {number} status - HTTP status code */
+/** @param {object} body - Response payload object */
+/** @param {Request} [request] - Optional Request for CORS headers */
+/** @returns {Response} JSON Response with all headers set */
+function jsonResp(status, body, request) {
+  const responseBody = JSON.stringify(body);
+  const headers = { 
+       "Content-Type": "application/json",
+         "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, X-Webhook-Signature",
+           "Cache-Control": "no-store, no-cache"
+              
+    
+  if (request) {
+    const origin = request.headers.get("Origin");
+    const allowedOrigins = new Set(['https://moliam.pages.dev', 'https://moliam.com']);
+    
+    if (!origin || allowedOrigins.has(origin)) {
+        headers["Access-Control-Allow-Origin"] = origin || "";
+    } else {
+        delete headers["Access-Control-Allow-Origin"];
+    }
+  }
+  return new Response(responseBody, { status, headers });
+}
    261|
