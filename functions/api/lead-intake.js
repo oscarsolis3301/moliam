@@ -8,8 +8,8 @@ import { jsonResp, calculateLeadScore, sanitizeText, validateEmail, validatePhon
 
 /**
  * Handle POST requests to lead intake endpoint with email validation, phone validation, HTML stripping, and lead scoring
- * @param {object} context - Cloudflare Pages function context with request and env
- * @returns {Response} JSON response with success/error status and proper CORS headers
+ * @param {object} context - Cloudflare Pages function context with {request, env}, includes MOLIAM_DB binding and CRM integration keys
+ * @returns {Response} JSON response with success/error status, submissionId, leadScore, urgency
  */
 export async function onRequestPost(context) {
   const { request, env } = context;

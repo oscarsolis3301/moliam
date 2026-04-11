@@ -8,7 +8,7 @@ import { jsonResp } from './api-helpers.js';
 /**
  * Handle GET requests to Booking API - list all appointments or get single by ID
  * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding
- * @returns {Response} JSON response: 200 OK (list/data), 400 Bad Request (invalid format), 500 Server Error (DB failure)
+ * @returns {Response} JSON response: 200 OK (list/data), 400 Bad Request (invalid format), 500 Server Error (DB failure) containing success:true or error message
  */
 export async function onRequestGet(context) {
   try {

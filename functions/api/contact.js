@@ -13,8 +13,8 @@ function ensureError(status, message, request) {
 
 /**
  * Handle POST requests to contact form endpoint
- * @param {object} context - Cloudflare Pages function context with request and env
- * @returns {Response} JSON response with success/error status
+ * @param {object} context - Cloudflare Pages function context with {request, env}, includes MOLIAM_DB binding
+ * @returns {Response} JSON response with success/error status containing submissionId, leadScore, category
  */
 export async function onRequestPost(context) {
   const { request, env } = context;
