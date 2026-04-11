@@ -6,6 +6,17 @@
 
 import { jsonResp, calculateLeadScore, sanitizeText, validateEmail, validatePhone } from './api-helpers.js';
 
+/** Helper: SHA-256 hash for IP/user identification in rate limiting - returns hex string (lowercase, 64 chars) */
+async function hashSHA256(str) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+/** Helper: Slice text to limit length for CRM storage - max 1024 chars */
+function sliceText(text, maxLength = 1024) {
+  return String(text || "").length > maxLength ? String(text).substring(0, maxLength) : String(text);
+}
+
 /**
  * Handle POST requests to lead intake endpoint with email validation, phone validation, HTML stripping, and lead scoring
  * @param {object} context - Cloudflare Pages function context with {request, env}, includes MOLIAM_DB binding and CRM integration keys
