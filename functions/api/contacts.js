@@ -43,10 +43,11 @@ export async function onRequestGet(context) {
   const statusFilter = params.get("status");
   const searchQuery = params.get("search");
 
-   if (!db) {
+       if (!db) {
         // Return CORS headers for all responses including errors when DB unavailable
-       const noDbResponse = new Response(JSON.stringify({ error: true, message: "Database not available", contacts: [] }), { 
-            status: 200,
+      const noDbResponse = new Response(JSON.stringify({ success: false, message: "Database not available", contacts: [] }), { 
+           status: 200,
+
            headers: { 
                "Content-Type": "application/json",
               "Access-Control-Allow-Origin": "https://moliam.pages.dev",
@@ -62,17 +63,16 @@ export async function onRequestGet(context) {
     let baseQuery = `SELECT id, name, email, phone, company, source, lead_score, status, notes, created_at, updated_at FROM contacts`;
     
     // Apply filters
-    if (statusFilter || searchQuery) {
-      let queryBuilder = `SELECT id, name, email, phone, company, source, lead_score, status, notes, created_at, updated_at FROM contacts WHERE 1=1`;
-      
-      const bindValues = [];
-      
-      if (statusFilter) {
-        const validStatuses = ["new", "contacted", "qualified", "booked", "client", "inactive"];
-        if (!validStatuses.includes(statusFilter.toLowerCase())) {
-          return jsonResp(400, { error: true, message: `Invalid status. Must be one of: ${validStatuses.join(", ")}` });
-         }
-        queryBuilder += " AND LOWER(status) = ?";
+      if (statusFilter || searchQuery) {
+    let queryBuilder = `SELECT id, name, email, phone, company, source, lead_score, status, notes, created_at, updated_at FROM contacts WHERE 1=1`;
+  
+     const bindValues = [];
+     
+     if (statusFilter) {
+         const validStatuses = ["new", "contacted", "qualified", "booked", "client", "inactive"];
+         if (!validStatuses.includes(statusFilter.toLowerCase())) {
+           return jsonResp(400, { success: false, message: `Invalid status. Must be one of: ${validStatuses.join(", ")}`, status });
+queryBuilder += " AND LOWER(status) = ?";
         bindValues.push(statusFilter.toLowerCase());
        }
 

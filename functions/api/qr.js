@@ -26,28 +26,28 @@ export async function onRequestGet(context) {
 
         // Validate URL is present and not empty
     if (!inputUrl) {
-      return jsonResp(400, { success: false, error: true, message: "Missing 'url' query parameter" }, request);
-    }
+      return jsonResp(400, { success: false, message: "Missing 'url' query parameter" }, request);
+     }
 
     inputUrl = inputUrl.trim();
     if (inputUrl.length < 1 || inputUrl.length > 2000) {
-      return jsonResp(400, { success: false, error: true, message: "URL must be between 1 and 2000 characters" }, request);
-        }
+      return jsonResp(400, { success: false, message: "URL must be between 1 and 2000 characters" }, request);
+         }
 
         // Validate size
     let modulesPerSide;
     if (!/^\d+$/.test(sizeStr)) {
-      return jsonResp(400, { success: false, error: true, message: "Invalid 'size' parameter — must be a positive integer" }, request);
-        }
+      return jsonResp(400, { success: false, message: "Invalid 'size' parameter — must be a positive integer" }, request);
+         }
     const size = parseInt(sizeStr, 10);
     if (size < 128 || size > 2048) {
-      return jsonResp(400, { success: false, error: true, message: "Size must be between 128 and 2048 pixels" }, request);
-        }
-
-         // Parse and validate color - convert hex to proper format
-    if (!/^[#]?[0-9a-fA-F]{6}$/.test(colorHex)) {
-      return jsonResp(400, { success: false, error: true, message: "Invalid 'color' parameter — must be 6-digit hex like #3B82F6" }, request);
+      return jsonResp(400, { success: false, message: "Size must be between 128 and 2048 pixels" }, request);
          }
+
+          // Parse and validate color - convert hex to proper format
+    if (!/^[#]?[0-9a-fA-F]{6}$/.test(colorHex)) {
+      return jsonResp(400, { success: false, message: "Invalid 'color' parameter — must be 6-digit hex like #3B82F6" }, request);
+          }
 
          // --- Rate limiting (D1) ---
     if (db) {
@@ -95,18 +95,17 @@ export async function onRequestGet(context) {
     // Outer error wrapper for request processing - never fail with raw errors to clients
     console.error("QR generate error:", String(err.message ?? 'unknown'));
       
-    if (!context.request) {
-      return jsonResp(500, { success: false, error: true, message: "Internal server error", requestId: crypto.randomUUID ? crypto.randomUUID() : undefined });
-    }
-    
+      return jsonResp(500, { success: false, message: "Internal server error", requestId: crypto.randomUUID ? crypto.randomUUID() : undefined }, request);
+         }
+
+         
     const urlObj = new URL(context.request.url);
     return jsonResp(500, { 
       success: false, 
-      error: true, 
       message: "Failed to generate QR code. Please try again later.", 
       requestId: crypto.randomUUID ? crypto.randomUUID() : undefined 
-    }, context.request);
-  }
+     }, context.request);
+
 }
 
 /**

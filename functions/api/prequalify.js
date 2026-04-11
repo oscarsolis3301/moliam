@@ -83,8 +83,8 @@ export async function onRequestPost(context) {
    }
 
   if (errors.length) {
-    return jsonResp(400, { success: false, error: true, message: "Validation failed.", errors }, request);
-    }
+    return jsonResp(400, { success: false, message: "Validation failed.", errors }, request);
+     }
 
      // Calculate qualification score (0-100) with weighted scoring algorithm
    // Factors: budget(50) + urgency(30) + industry(20) = max 100 points
@@ -164,8 +164,8 @@ export async function onRequestPost(context) {
 
     } catch (err) {
     console.error("Pre-qualify error:", err);
-    return jsonResp(500, { success: false, error: true, message: "Something went wrong. Please try again later." }, request);
-    }
+    return jsonResp(500, { success: false, message: "Something went wrong. Please try again later." }, request);
+     }
 }
 
 /**
