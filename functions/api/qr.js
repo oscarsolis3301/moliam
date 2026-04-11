@@ -86,27 +86,19 @@ export async function onRequestGet(context) {
     return new Response(svgCode, {
       status: 200,
       headers: {
-         "Content-Type": "image/svg+xml",
-         "Cache-Control": "public, max-age=86400",
-         "Access-Control-Allow-Origin": "*",
-        },
-      });
-  } catch (err) {
-    // Outer error wrapper for request processing - never fail with raw errors to clients
-    console.error("QR generate error:", String(err.message ?? 'unknown'));
+          "Content-Type": "image/svg+xml",
+          "Cache-Control": "public, max-age=86400",
+          "Access-Control-Allow-Origin": "*",
+         },
+       });
+    } catch (err) {
+      // Outer error wrapper for request processing - never fail with raw errors to clients
+      console.error("QR generate error:", String(err.message ?? 'unknown'));
       
       return jsonResp(500, { success: false, message: "Internal server error", requestId: crypto.randomUUID ? crypto.randomUUID() : undefined }, request);
-         }
-
-         
-    const urlObj = new URL(context.request.url);
-    return jsonResp(500, { 
-      success: false, 
-      message: "Failed to generate QR code. Please try again later.", 
-      requestId: crypto.randomUUID ? crypto.randomUUID() : undefined 
-     }, context.request);
-
+    }
 }
+
 
 /**
  * Rate limited response - reset counter and return same QR
@@ -114,17 +106,16 @@ export async function onRequestGet(context) {
 export async function sendRateLimited(url, size, colorHex, db, ipHash) {
   try {
     await db.prepare("UPDATE rate_limits SET request_count = 1, window_start = datetime('now') WHERE hash_ip = ?").bind(ipHash).run();
-   } catch (err) {
+  } catch (err) {
     console.error("sendRateLimited() update error:", err.message);
-   }
+  }
 
   return new Response(
     generateQRCodeSVG(url, size, colorHex),
-      headers: {
-        "Content-Type": "image/svg+xml",
-        "Cache-Control": "public, max-age=86400",
-        "Access-Control-Allow-Origin": "*",
-      },
+    {
+      "Content-Type": "image/svg+xml",
+      "Cache-Control": "public, max-age=86400",
+      "Access-Control-Allow-Origin": "*",
     }
   );
 }

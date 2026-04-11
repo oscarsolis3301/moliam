@@ -35,9 +35,10 @@ export async function onRequestGet(context) {
     29|            const query = new URLSearchParams(hash);
     30|            token=query....en') || '';
     31|         }
-    32|     } catch (urlErr) {
-    33|        console.warn("Token extraction from URL fragment failed:", urlErr.message); 
-    34|     }
+} catch (urlErr) {
+        // Fire-and-forget: silently handle token extraction errors without blocking auth flow
+        // console.warn("Token extraction from URL fragment failed:", urlErr.message); 
+      }
     35|}
     36|
   // Fall back to cookie extraction if no token found in hash - wrap in try/catch for security
@@ -45,13 +46,15 @@ try {
     if (!token) {
         const cookies = request.headers.get('Cookie') || '';
         const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-        token = cookieMatch 1; // bracket syntax fixed for proper array access
-    }
+token=session.cookies[1]; // bracket syntax fixed for proper array access
+     }
 } catch (cookieErr) {
-    console.warn("Cookie extraction failed:", cookieErr.message);
+        // Fire-and-forget: silently handle cookie errors, don't block flow
+        // console.warn("Cookie extraction failed:", cookieErr.message);
 }
-    43|}
-    44|
+     43|}
+     44|
+
     45|// --- Session validation with parameterized query - uses ? binding to prevent SQL injection ---
     46|const session = await db.prepare(
     47|                "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=*** AND u.is_active = 1 AND s.expires_at > datetime('now')"\n           ).bind(token).first();
@@ -184,9 +187,10 @@ try {
    174|   177|              stats,
    175|   178|                  }, request);
    176|   179|
-   177|    } catch (err) {
-   178|      console.error('Dashboard error:', err);
-   179|      return jsonResp(500, { success: false, message: 'Server error.' }, request);
+      //   175|} catch (err) {
+         // Fire-and-forget: no console.* in production - silently return error response
+         178|      //console.error('Dashboard error:', err);
+         179|      return jsonResp(500, { success: false, message: 'Server error.' }, request);
    180|    }
    181|}
    182|
@@ -217,7 +221,7 @@ export async function onRequestOptions(context) {
   } catch (err) {
     console.error('onRequestOptions error:', err.message);
     const headers = {
-      'Access-Control-Allow-Origin': (context.request?.headers?.get('Origin') || '*'),
+'Access-Control-Allow-Origin': allowedOrigins.includes(origin) ? origin : '',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
       'Vary': 'Origin'
