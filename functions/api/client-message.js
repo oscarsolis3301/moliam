@@ -124,9 +124,9 @@ const session = await db.prepare(
 
 // Check session expiry timestamp and delete stale tokens to prevent orphan data accumulation
 if (session && new Date(session.expires_at) < new Date()) {
-  await db.prepare("DELETE FROM sessions WHERE token=?").run();
+  await db.prepare("DELETE FROM sessions WHERE token=?").bind(tokenVal).first();
   return null;
-     }
+      }
 return {
     id: session?.user_id,
     email: session?.email,
