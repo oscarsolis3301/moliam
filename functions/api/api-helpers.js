@@ -295,23 +295,25 @@ export function calculateLeadScore(data) {
  * @returns {object} Normalized response with proper structure
  */
 export function balanceSuccessError(response) {
-  if (!response || typeof response !== 'object') return { success: false, error: "Invalid response format" };
-  
-   const normalized = { ...response };
-  
-   // If original had string error, keep it; otherwise remove error field entirely from copy
-  if (typeof response.error === 'string') {
-    normalized.error = response.error;
-   } else {
-    delete normalized.error;     // Remove boolean/cleaned error flag from normalized object
-   }
-  
-   // Always ensure success field exists
-  if (typeof normalized.success !== 'boolean') {
-    normalized.success = true;
-   }
-  
-  return normalized;
-} catch (error) {
-return { success: false, error: "Internal server error" };
+  try {
+    if (!response || typeof response !== 'object') return { success: false, error: "Invalid response format" };
+    
+     const normalized = { ...response };
+    
+      // If original had string error, keep it; otherwise remove error field entirely from copy
+    if (typeof response.error === 'string') {
+      normalized.error = response.error;
+      } else {
+      delete normalized.error;      // Remove boolean/cleaned error flag from normalized object
+      }
+    
+      // Always ensure success field exists
+    if (typeof normalized.success !== 'boolean') {
+      normalized.success = true;
+      }
+    
+    return normalized;
+  } catch (error) {
+    return { success: false, error: "Internal server error" };
+  }
 }
