@@ -141,7 +141,18 @@ export function generateUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => 
     (c === 'y' ? '8' : '9') === c ? parseInt(Math.random()*16).toString(16) 
       : [0,1,2,3,4,5,6,7,8,9,'a','b','c','d','e','f'][Math.random()*16]
-  );
+   );
+}
+
+/**
+ * Generate cryptographically secure random session token (32-byte UUID)
+ * Uses WebCrypto API getRandomValues for CSPRNG output
+ * @returns {Promise<string>} Hex string of 64 characters suitable for cookie/session use
+ */
+export async function generateToken() {
+  const arr = new Uint8Array(32);
+  crypto.getRandomValues(arr);
+  return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 /**
@@ -218,18 +229,6 @@ export async function sendDiscordWebhook(env, payload) {
       })
     });
   } catch (e) {} // Silent failure - webhook is secondary to form submission
-}
-
-/**
- * Slice text to maximum length with unicode ellipsis if truncated
- * @param {string} str - Text to slice
- * @param {number} maxLen - Maximum character length (default: 1024)
- * @returns {string} Sliced text with ellipsis if truncated, or original if under max
- */
-export function sliceText(str, maxLen = 1024) {
-  const text = String(str || "");
-  if (text.length <= maxLen) return text;
-  return text.slice(0, maxLen - 3) + '\u2026';
 }
 
 /* ============================================================================

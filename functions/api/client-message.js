@@ -52,13 +52,13 @@ export async function onRequestGet(context) {
         stmt = db.prepare(
            "SELECT cm.id, cm.client_id, cm.sender, cm.message, cm.created_at FROM client_messages cm WHERE cm.client_id != '0' ORDER BY cm.created_at DESC LIMIT 100"
          );
+      }
     } else {
         // Regular lookup for current session's client_id - uses parameterized ? binding to prevent SQL injection
       const clientId = session.id;
       stmt = db.prepare(
          "SELECT id, sender, message, created_at FROM client_messages WHERE client_id=? ORDER BY created_at DESC LIMIT 100"
        ).bind(clientId);
-    }
     }
 
     const results = await stmt.all();
