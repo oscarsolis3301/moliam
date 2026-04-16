@@ -134,11 +134,11 @@ export async function onRequestPost({ request, env }) {
    }
 
    // Build user object - extract from body.user.id if provided and valid string within 64 char limit
- let atlasUser = null;
+  let atlasUser = null;
   if (body.user) {
     const cleaned = cleanName(body.user);
     if (cleaned) atlasUser = cleaned;
-     }
+      }
 
   const messagesFinal = [...messages]; // Clone array copy for safety check length bounds
    const nowMs = Date.now();
@@ -148,7 +148,7 @@ export async function onRequestPost({ request, env }) {
   const atlasPayload = {
       messages: messagesFinal,
     stream: typeof body.stream === 'boolean' ? body.stream : false,
-    max_tokens: typeof body.max_tokens === 'number' && !isNaN(body.max_tokens) ? Math.min(body.max_tokens, 8192) : 2048,
+    max_tokens: (typeof body.max_tokens === 'number' && !isNaN(body.max_tokens)) ? Math.min(body.max_tokens, 8192) : 2048,
     use_knowledge_base: true,
     save_session: !!session_id,
      ...(session_id ? { session_id } : {}),

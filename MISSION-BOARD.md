@@ -31,10 +31,14 @@ Every API function should:
 3. Remove dead code, unused imports, commented-out blocks
 4. Ensure consistent error response format across all endpoints
 
-## Task 5: Bookings Audit (IN PROGRESS)
+## Task 5: Bookings Audit (COMPLETE) ✓
 Completed logAudit() TODO fix - now accepts context.env.MOLIAM_DB as originally requested in comments, backward compatible with existing callers that pass just ID string.
 
-See commit 44bdd56 for details.
+Fixed toby.js syntax corruption (line 151: typeof check corrected from =*** to ===)
+
+Verified bookings.js has no TODOs, proper parameterized queries throughout, 11 helper functions all properly structured.
+
+See commit 132b214 for latest fixes.
 
 ## Rules
 - ⚠️ NEVER edit files in public/ — you are BACKEND ONLY
