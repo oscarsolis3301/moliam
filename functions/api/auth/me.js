@@ -5,7 +5,7 @@
 * @returns {Response} JSON response with authenticated user data or 401 error
 */
 
-import { jsonResp } from './api-helpers.js';
+import { jsonResp } from '../lib/api-helpers.js';
 
 export async function onRequestGet(context) {
   const { request, env } = context;
