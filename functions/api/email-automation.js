@@ -59,30 +59,23 @@
     59|* @param {object} context Not used in this handler but required by Cloudflare Pages function signature
     60|* @returns {Response} 204 response with appropriate CORS headers for cross-origin requests
     61|*/
-    62|export async function onRequestOptions() {
-    63|  return new Response(null, {
-    64|    status: 204,
-    65|    headers: {
-    66|      "Access-Control-Allow-Methods": "POST, OPTIONS",
-    67|"Cache-Control": "no-store, no-cache"};
-    68|    
-    69|if (request) {
-    70|  const origin = request.headers.get("Origin");
-    71|  const allowedOrigins = new Set(['https://moliam.pages.dev', 'https://moliam.com']);
-    72|  
-    73|  if (!origin || allowedOrigins.has(origin)) {
-    74|    headers["Access-Control-Allow-Origin"] = origin || "";
-    75|  } else {
-    76|    delete headers["Access-Control-Allow-Origin"];
-    77|  }
-    78|}
-    79|
-    80|return new Response(responseBody, { status, headers });
-    81|      "Access-Control-Allow-Methods": "GET, OPTIONS",
-    82|      "Access-Control-Allow-Headers": "Content-Type"
-    83|    }
-    84|  });
-    85|}
+
+export async function onRequestOptions(request) {
+  const allowedOrigins = new Set(['https://moliam.pages.dev', 'https://moliam.com']);
+  const origin = request?.headers?.get('Origin') || '';
+  const corsOrigin = origin && allowedOrigins.has(origin) ? origin : '*';
+  
+  return new Response(null, { 
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": corsOrigin,
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Cache-Control": "no-store, no-cache"
+    }
+  });
+}
+
     86|
     87|/**
     88|* Cron-triggered Automation - Fires daily to send queued emails for lead nurturing via scheduled tasks
