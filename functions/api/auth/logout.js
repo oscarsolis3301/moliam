@@ -5,24 +5,24 @@
 * @returns {Response} JSON response with success status or authentication error
 */
 
-import { jsonResp } from './api-helpers.js';
+import { jsonResp } from './lib/standalone.js';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
   // Get token from session cookie for deletion
-const cookies = request.headers.get('Cookie') || '';
+  const cookies = request.headers.get('Cookie') || '';
   const match = cookies.match(/moliam_session=([a-f0-9]+)/);
   const token = match ? match[1] : null;
 
   if (token && db) {
     try {
-           // Delete session from database using parameterized query with ? binding - no SQL injection
-      await db.prepare('DELETE FROM sessions WHERE token=?').bind().run();
-     } catch (err) {
-       // Ignore delete errors for logout flow - cookie clearance is what matters
-     }
+      // Delete session from database using parameterized query with ? binding - no SQL injection
+      await db.prepare('DELETE FROM sessions WHERE token=?').bind(token).run();
+    } catch (err) {
+      // Ignore delete errors for logout flow - cookie clearance is what matters
+    }
   }
 
   // Clear cookie by expiring it with HttpOnly attribute

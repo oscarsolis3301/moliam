@@ -5,7 +5,7 @@
  * @file email-automation.js
  */
 
-import { jsonResp } from './api-helpers.js';
+import { jsonResp } from './lib/standalone.js';
 
 /**
  * Generate HTML text template with basic string replacement for variables like {{name}}, {{scope}}
@@ -40,12 +40,12 @@ export async function onRequestOptions(request) {
   return new Response(null, { 
       status: 204,
       headers: {
-         "Access-Control-Allow-Origin": corsOrigin,
-         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-         'Access-Control-Allow-Headers': 'Content-Type',
-         'Cache-Control': 'no-store, no-cache'
-      }
-     });
+          "Access-Control-Allow-Origin": corsOrigin,
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+          'Cache-Control': 'no-store, no-cache'
+       }
+      });
 }
 
 /**
@@ -57,7 +57,7 @@ export async function onCron(event) {
   
   if (!db) return jsonResp(503, { success: false, message: "Database not bound.", data: { requestId: crypto.randomUUID() } });
   
-  // Fetch all queued emails awaiting processing via secure parameterized query with ? bind for safety
+      // Fetch all queued emails awaiting processing via secure parameterized query with ? bind for safety
   let sentCount = 0;
   
   try {
@@ -67,27 +67,27 @@ export async function onCron(event) {
       FROM email_sequences es
       LEFT JOIN submissions s ON es.submission_id=s.id
       WHERE es.email_status='queued' AND es.scheduled_at<=datetime('now')
-    `).all();
+     `).all();
 
     for (const row of result.results || []) {
       const submission = row?.submission ?? null;
 
       if (!submission || !submission.email) {
         await db.prepare(
-           "UPDATE email_sequences SET error_message=?, email_status='failed' WHERE id=?"
-         ).bind('Missing submission record or email', row.id).run();
+            "UPDATE email_sequences SET error_message=?, email_status='failed' WHERE id=?"
+          ).bind('Missing submission record or email', row.id).run();
         continue;
-      }
+       }
 
       try {
         const subject = `Your inquiry to Moliam - ${submission.lead_score}/100 lead score`;
         
         if (!event.env.EMAIL_API_KEY) {
           await db.prepare(
-             "UPDATE email_sequences SET email_status='skipped', sent_at=datetime('now') WHERE id=?"
-           ).bind(row.id).run();
+              "UPDATE email_sequences SET email_status='skipped', sent_at=datetime('now') WHERE id=?"
+            ).bind(row.id).run();
           continue;
-        }
+         }
 
         const response = await fetch(`${event.env.EMAIL_SERVICE || 'https://api.mailchannels.net'}/tx/v1/send`, {
           method: "POST",
@@ -97,27 +97,27 @@ export async function onCron(event) {
             from: { email: 'hello@moliam.com' },
             subject,
             htmlBody: renderTemplate(`Hello ${submission.name},\n\nYour inquiry to Moliam was scored as **${submission.lead_score}/100**. We'll respond within 5 minutes for hot leads or 1 business day.\n\nBest,\nThe Moliam Team`, { name: submission.name })
-           })
-         });
+            })
+          });
 
         const emailSent = response?.ok || response.status === 201;
         
         await db.prepare(
-           "UPDATE email_sequences SET email_status=?, sent_at=datetime('now'), email_sent=? WHERE id=?"
-         ).bind(emailSent ? 'sent' : 'failed', emailSent ? 1 : 0, row.id).run();
+            "UPDATE email_sequences SET email_status=?, sent_at=datetime('now'), email_sent=? WHERE id=?"
+          ).bind(emailSent ? 'sent' : 'failed', emailSent ? 1 : 0, row.id).run();
 
         if (emailSent) sentCount++;
-      } catch (err) {
+       } catch (err) {
         await db.prepare(
-           "UPDATE email_sequences SET error_message=?, email_status='failed', sent_at=datetime('now') WHERE id=?"
-         ).bind(String(err.message).replace(/'/g, "''"), row.id).run();
-      }
-    }
+            "UPDATE email_sequences SET error_message=?, email_status='failed', sent_at=datetime('now') WHERE id=?"
+          ).bind(String(err.message).replace(/'/g, "''"), row.id).run();
+       }
+     }
 
     return jsonResp(200, { success: true, queued_emails_sent: sentCount, total_attempted: (result.results?.length ?? 0) });
-  } catch (err) {
+   } catch (err) {
     return jsonResp(503, { success: false, message: err.message || "Server error.", data: { requestId: crypto.randomUUID() } });
-  }
+   }
 }
 
 /**
@@ -131,13 +131,13 @@ export async function onLeadMonitor(event) {
 
   if (!db) return jsonResp(503, { success: false, message: "Database not bound.", data: { requestId: crypto.randomUUID() } });
 
-  // Find all hot leads (score>=75) with no response in last hour for priority handling - secure parameterized query below
+      // Find all hot leads (score>=75) with no response in last hour for priority handling - secure parameterized query below
   const result = await db.prepare(`
     SELECT s.*, l.status as lead_status 
     FROM submissions s 
     LEFT JOIN leads l ON s.id=l.submission_id 
     WHERE s.lead_score>=75 AND s.status='new'
-  `).all();
+   `).all();
 
   let hotLeadsProcessed = 0;
 
@@ -155,18 +155,18 @@ export async function onLeadMonitor(event) {
               title: `🚨 High-Priority Lead - ${lead.lead_score}/100`,
               color: 0x22c55e,
               fields: [
-                 { name: "Name", value: String(lead.name), inline: true },
-                 { name: "Email", value: String(lead.email), inline: true }
-               ]
-             }]
-           })
-         });
+                   { name: "Name", value: String(lead.name), inline: true },
+                   { name: "Email", value: String(lead.email), inline: true }
+                  ]
+                }]
+            })
+          });
 
         hotLeadsProcessed++;
-      }
-    } catch (err) {
-    }
-  }
+       }
+     } catch (err) {
+     }
+   }
 
   return jsonResp(200, { success: true, hot_leads_processed: hotLeadsProcessed });
 }
