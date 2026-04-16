@@ -6,64 +6,15 @@
  * @returns {Response} JSON response with success/error flags and optional project data array
  */
 
-/** Validate admin sessions from cookies and return authenticated user object for authorized requests only */
-async function requireAdmin(request, env) {
-  const cookies = request.headers.get("Cookie") || "";
-  const match = cookies.match(/moliam_session=([a-f0-9]+)/);
-  const token = match ? match[1] : null;
-
-  if (!token) return jsonResp(401, { success: false, message: "Not authenticated." }, request);
-
-  const db = env.MOLIAM_DB;
-  const session = await db.prepare(
-            "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id=u.id WHERE s.token=? AND u.is_active=1 AND s.expires_at>datetime(now)"
-           ).bind(token).first();
-
-  if (!session) return jsonResp(401, { success: false, message: "Session invalid." }, undefined, request);
-  if (session.role !== "admin" && session.role !== "superadmin") return jsonResp(403, { success: false, message: "Admin only." }, undefined, request);
-
-  return session;
-}
-
-/** Extract 32-character hex session token from Cookie header for authentication checks and validations */
-function getSessionToken(request) {
-  const cookies = request.headers.get("Cookie") || "";
-  const match = cookies.match(/moliam_session=([a-f0-9]+)/);
-  return match ? match[1] : null;
-}
-
-/** Get allowed CORS origin domain from request Origin header or default to moliam.pages.dev */
-function getAllowedOrigin(request) {
-  const origin = request.headers.get("Origin") || "";
-  if (origin.includes("moliam.pages.dev") || origin.includes("moliam.com") || origin.includes("localhost")) return origin;
-  return "https://moliam.pages.dev";
-}
-
-/** Create JSON response with CORS headers and proper HTTP status code for API endpoint */
-function corsResponse(status, request) {
-  return new Response(null, { status, headers: {
-        "Access-Control-Allow-Origin": getAllowedOrigin(request),
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Allow-Credentials": "true"
-      } });
-}
-
-/** Standard JSON response helper with CORS header addition and proper status handling for API endpoints */
-function jsonResp(status, body, request) {
-  return new Response(JSON.stringify(body), { status, headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": getAllowedOrigin(request),
-        "Access-Control-Allow-Credentials": "true"
-      } });
-}
+// Import consolidated from standard library - eliminates duplicate auth code in projects.js
+import { authenticate } from '../lib/standalone.js';
 
 /** GET /api/admin/projects - List all projects with client information for admin dashboard display */
 export async function onRequestGet(context) {
   const { request, env } = context;
 
-  const user = await requireAdmin(request, env);
-  if (user instanceof Response) return user; // Early return if unauthorized or missing session token in cookies
+  const session = await getAdminSessionToken(request, env);
+  if (!session) return new Response(JSON.stringify({ success: false, message: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" }, });
 
   const db = env.MOLIAM_DB;
   try {
@@ -82,8 +33,8 @@ export async function onRequestGet(context) {
 export async function onRequestPost(context) {
   const { request, env } = context;
 
-  const user = await requireAdmin(request, env);
-  if (user instanceof Response) return user; // Early return if unauthorized admin or no session token found in cookies
+  const session = await getAdminSessionToken(request, env);
+  if (!session) return new Response(JSON.stringify({ success: false, message: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" }, });
 
   const db = env.MOLIAM_DB;
   let data;
