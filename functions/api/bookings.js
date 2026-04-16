@@ -26,11 +26,11 @@ export async function onRequestGet(context) {
       return new Response(JSON.stringify({ error: true, message: "Too many requests. Please wait before trying again." }), {
         status: 429,
         headers: { "Content-Type": "application/json" }
-      });
-    }
-  }
+       });
+     }
+   }
 
-  // List all appointments for Ada's dashboard
+   // List all appointments for Ada's dashboard</result>
   if (context.request.url.includes('/list')) {
     try {
       if (!db) {
