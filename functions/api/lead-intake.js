@@ -3,8 +3,8 @@
  * Enhanced contact form with scoring and automation triggers
  * POST /api/lead-intake — Uses api-helpers for consistent validation and JSON responses
 /* eslint no-irregular-whitespace: "off" */
-// Import centralized helpers from lib/standalone.js - eliminates duplicate auth/message logic across messages.js & client-message.js
-import { jsonResp, sanitizeText, validateEmail, validatePhone, hashSHA256, calculateLeadScore, sendDiscordWebhook } from '../lib/standalone.js';
+// Import centralized helpers from api-helpers.js - eliminates duplicate auth/message logic across messages.js & client-message.js
+import { jsonResp, sanitizeText, validateEmail, validatePhone, hashSHA256, calculateLeadScore, sendDiscordWebhook } from './api-helpers.js';
 
 /**
  * Handle POST requests to lead intake endpoint with email validation, phone validation, HTML stripping, and lead scoring
