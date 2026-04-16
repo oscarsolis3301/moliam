@@ -6,6 +6,9 @@
  */
 
 import { jsonResp } from './lib/standalone.js';
+/** NEW: Rate limiter middleware for booking endpoints - prevents abuse on appointment CRUD operations and calendar sync hooks with auto-generated clientId tracking */
+import { createRateLimiterMiddleware } from '../lib/rate-limiter.js';
+
 
 /**
  * Handle GET requests for appointment listing and retrieval
@@ -16,12 +19,23 @@ export async function onRequestGet(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
+  // Apply rate limiting - check client before any DB operations
+  if (env && env.MOLIAM_DB) {
+    const rateResult = await createRateLimiterMiddleware(request, "bookings", env);
+    if (typeof rateResult === 'object' && (rateResult.statusCode === 429 || rateResult.error)) {
+      return new Response(JSON.stringify({ error: true, message: "Too many requests. Please wait before trying again." }), {
+        status: 429,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+  }
+
   // List all appointments for Ada's dashboard
   if (context.request.url.includes('/list')) {
     try {
       if (!db) {
         return jsonResp(503, { error: true, message: "Database unavailable" }, request);
-      }
+       }
 
       const data = await db.prepare(`
           SELECT a.*, p.qualification_score, p.budget_range, 

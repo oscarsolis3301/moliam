@@ -6,6 +6,10 @@
  */
 
 import { jsonResp } from './lib/standalone.js';
+/** NEW: Import rate limiter middleware for automated endpoints - prevents abuse on cron/jobs API and provides auto-generated clientId tracking for email sequence operations
+*/
+import { createRateLimiterMiddleware, getGlobalRateLimitMemory } from '../lib/rate-limiter.js';
+
 
 /**
  * Generate HTML text template with basic string replacement for variables like {{name}}, {{scope}}
