@@ -7,9 +7,9 @@
 import { 
   jsonResp, validateEmail, validatePhone, sanitizeText, hashSHA256,
   calculateLeadScore, sendDiscordWebhook, parseJsonBody, balanceSuccessError
-} from '../lib/api-helpers.js';
+} from '../lib/standalone.js';
 
-// Import consolidate from standalone.js - reduces duplication from 312KB total backend size
+// Import consolidated from standalone.js - reduces duplication from 312KB total backend size
 
 
 /* ===========================================================================
