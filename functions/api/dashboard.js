@@ -18,7 +18,7 @@ export async function onRequestGet(context) {
 
 // --- Parse token from query params or cookies ---
     const url = new URL(request.url);
-    let token = url.searchParams.get('token') || '';
+    let token=url.searchParams.get('token') || '';
 
 // Try to get token from URL hash fragment if query param not found
     try {
@@ -27,32 +27,30 @@ export async function onRequestGet(context) {
             const hash = request.url.substring(hashIdx + 1);
             const query = new URLSearchParams(hash.split('&')[0]);
             token=query.get('token') || '';
-            }
-        } catch (urlErr) {
+         }
+    } catch (urlErr) {
         console.warn("Token extraction from URL fragment failed:", urlErr.message);
-      }
+    }
 
 // Fall back to cookie extraction if no token found in hash
     if (!token) {
         const cookies = request.headers.get('Cookie') || '';
         const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-        token = cookieMatch ? cookieMatch[1] : null;
-      }
+         token=cookieMatch ? cookieMatch[1] : null;
+       }
 
 // --- Session validation with parameterized query - uses ? binding to prevent SQL injection ---
     const session = await db.prepare(
              "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1 AND s.expires_at > datetime('now')"
-         ).bind(token).first();
+      .bind(token).first();
 
     if (!session) {
-      return jsonResp(401, { success: false, message: "Session invalid or expired." }, request);
-     }
+        return jsonResp(401, { success: false, message: "Session invalid or expired." }, request);
+       }
 
-     const isAdmin = session.role === 'admin' || session.role === 'superadmin';
+    const isAdmin = session.role === 'admin' || session.role === 'superadmin';
 
-     // Get action from query parameters (v3 feature)
-    const action = url.searchParams.get('action');
-
+      
      /******  ADDITIONAL: Leads Pipeline Data (v3 requirement) ******/
     if (action === 'leads') {
        // Return all submissions with lead_score, category, follow_up_status
