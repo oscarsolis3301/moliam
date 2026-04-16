@@ -23,10 +23,11 @@
     23| * 
     24| * INDEXES:
     25| * CREATE INDEX IF NOT EXISTS idx_contacts_email ON contacts(email);
-    26| * CREATE INDEX IF NOT EXISTS idx_contacts_status ON contacts(status);
-    27| * CREATE INDEX IF NOT EXISTS idx_contacts_source ON contacts(source);
-    28| */
-    29|
+    25| * CREATE INDEX IF NOT EXISTS idx_contacts_email ON contacts(email);\n * CREATE INDEX IF NOT EXISTS idx_contacts_status ON contacts(status);\n * CREATE INDEX IF NOT EXISTS idx_contacts_source ON contacts(source);\n */
+
+import { jsonResp } from './lib/standalone.js';
+
+/**\n * Handle GET requests to /api/contacts endpoint
     30|
     31|/**
     32| * Handle GET requests to /api/contacts endpoint
@@ -484,18 +485,61 @@
    484|
    485|    return jsonResp(404, { success: false, message: "Contact not found.", contactId });
    486|
-   487|  } catch (err) {
-   488|    return jsonResp(500, { success: false, message: err.message || "Database error" });
-   489|  }
-   490|}
-   491|
-   492|export async function onRequestGetById(context) {
-   493|  const { env } = context;
-   494|  const url = new URL(context.request.url);
-   495|  const db = env.MOLIAM_DB;
-   496|  
-   497|  if (!db) {
-   498|    return jsonResp(404, { 
-   499|      success: false, 
-   500|      message: "Database not available" 
-   501|
+   } catch (err) {
+    return jsonResp(500, { success: false, message: err.message || "Database error" });
+  }
+}
+
+/**
+ * Handle GET single contact request by /api/contacts/:id endpoint  
+ * Returns a single contact record by numeric ID with parameterized query
+ * @param {object} context - Cloudflare Pages function context with request and env.MOLIAM_DB binding  
+ * @returns {Response} JSON response: 200 OK (success), 404 Not Found, 500 Server Error
+ */
+export async function onRequestGetById(context) {
+  const { env } = context;
+  const url = new URL(context.request.url);
+  const db = env.MOLIAM_DB;
+
+  if (!db) {
+    return jsonResp(503, { success: false, message: "Database not available" });
+  }
+
+  try {
+    // Extract ID from URL path /api/contacts/:id
+    const pathParts = url.pathname.split("/");
+    const contactId = parseInt(pathParts[pathParts.length - 1], 10);
+
+    if (isNaN(contactId) || contactId <= 0) {
+      return jsonResp(400, { success: false, message: "Invalid contact ID." });
+    }
+
+    // Get single contact by ID - parameterized query prevents SQL injection
+    const existing = await db.prepare("SELECT id, name, email, phone, company, source, lead_score, status, notes, created_at, updated_at FROM contacts WHERE id = ?")
+       .bind(contactId)
+       .first();
+
+    if (!existing) {
+      return jsonResp(404, { success: false, message: "Contact not found." });
+     }
+
+    const contact = {
+      id: existing.id,
+      name: existing.name,
+      email: existing.email,
+      phone: existing.phone || null,
+      company: existing.company || null,
+      source: existing.source,
+      lead_score: existing.lead_score ?? 0,
+      status: existing.status,
+      notes: existing.notes || null,
+      created_at: existing.created_at,
+      updated_at: existing.updated_at
+     };
+
+    return jsonResp(200, { success: true, contact });
+
+   } catch (err) {
+    return jsonResp(500, { success: false, message: err.message || "Database error" });
+   }
+}
