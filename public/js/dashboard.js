@@ -207,47 +207,9 @@
         };
     }
 
-    // Add hover animations for project cards - throttled + scroll-optimized for mobile/tablet
-    let mouseTimeout;
-    
-    document.addEventListener('mousemove', function(e) {
-        clearTimeout(mouseTimeout);
-        
-        mouseTimeout = setTimeout(function() {
-            const cards = Array.from(document.querySelectorAll('.project-grid .project-card'));
-            
-            if (cards.length > 1) {
-                const visibleCard = cards.find(card => {
-                    const rect = card.getBoundingClientRect();
-                    return e.clientX >= rect.left && e.clientX <= rect.right &&
-                           e.clientY >= rect.top && e.clientY <= rect.bottom;
-                 });
-                
-                if (visibleCard) {
-                    const rect = visibleCard.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    
-                     // Subtle parallax effect (optimized to 100ms debounce for scrollable container)
-                    visibleCard.style.transform = 
-                         'translateY(-3px) translateX(' + (x - rect.width/2) * 0.01 + 'px)';
-                 } else {
-                     // Reset all cards when mouse leaves project area
-                    cards.forEach(c => c.style.transform = '');
-                }
-             } else if (cards.length === 1) {
-                const card = cards[0];
-                const rect = card.getBoundingClientRect();
-                if (e.clientX >= rect.left && e.clientX <= rect.right &&
-                   e.clientY >= rect.top && e.clientY <= rect.bottom) {
-                    const x = e.clientX - rect.left;
-                    card.style.transform = 'translateY(-3px) translateX(' + (x - rect.width/2) * 0.01 + 'px)';
-                 } else {
-                    cards.forEach(c => c.style.transform = '');
-                 }
-             } else {
-                cards.forEach(c => c.style.transform = '');
-             }
-         }, 100); // ~100ms debounce for scrollable container (saves ~83% event firings)
-     });
+    // Disable mouse-only parallax on mobile - replace with tap feedback via CSS :active states
+    // Mouse move listener removed for mobile-first UX - desktop users get hover effects in CSS
+    // Added: tap/click active state animations for touch devices (dashboard-mobile.css)
+
 })();
 
