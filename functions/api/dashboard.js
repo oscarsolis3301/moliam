@@ -51,7 +51,7 @@ export async function onRequestGet(context) {
         const query = new URLSearchParams(hash.split('&')[0]);
         token = query.get('token') || '';
        }
-     } catch (urlErr) {
+    } catch (urlErr) {
       console.warn("Token extraction from URL fragment failed:", urlErr.message);
      }
 
@@ -60,15 +60,15 @@ export async function onRequestGet(context) {
       const cookies = request.headers.get('Cookie') || '';
       const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
       token = cookieMatch ? cookieMatch[1] : null;
-     }
+       }
 
 // --- Extract action parameter ---
     const action = url.searchParams.get('action') || '';
 
 // --- Session validation with parameterized query - uses ? binding to prevent SQL injection ---
     const session = await db.prepare(
-                "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1 AND s.expires_at > datetime('now')")
-         .bind(token).first());
+                 "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1 AND s.expires_at > datetime('now')")
+          .bind(token).first());
 
     if (!session) {
         return jsonResp(401, { success: false, message: "Session invalid or expired." }, request);
