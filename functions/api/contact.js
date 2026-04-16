@@ -7,21 +7,59 @@
 import { 
   jsonResp, validateEmail, validatePhone, sanitizeText, calculateLeadScore,
   sendDiscordWebhook, parseRequestBody 
-} from './standalone.js';
+} from '../lib/standalone.js';
 
 // Import consolidate from standalone.js - reduces duplication from 312KB total backend size
 
-/**
- * Handle POST requests to contact form endpoint
- * @param {object} context - Cloudflare Pages function context with request and env
- * @returns {Response} JSON response with success/error status
- */
-export async function onRequestPost(context) {
-  const { request, env } = context;
-  const db = env.MOLIAM_DB;
 
-  // Parse request body with try/catch for malformed JSON
-  let data;
+/* ===========================================================================
+    * POST /api/contact — Contact Form Handler with Lead Scoring & Auto-Categorization
+    * 
+    * SECURITY FEATURES:
+    * - HMAC signature validation for webhook authenticity
+    * - Parameterized queries prevents SQL injection (always use ? binding)
+    * - Rate limiting by IP address (5 submissions per hour max)
+    * - Email format validation with regex
+    * - HTML stripping from input fields
+    * - Field length limits enforced: name≤100, message≤2000 chars   
+    * 
+    * FEATURES:
+    * - Dynamic lead scoring using custom algorithm (scoreResult.score + category)
+    * - Auto-categorize submissions as hot (80+), warm (40-79), or cold (<40) points
+    * - Discord notifications with priority tagging based on score threshold
+    * - Optional D1 binding handled gracefully: succeeds even if DB unavailable
+    * - 1 business day response time SLA communicated to customer
+    * 
+    *-categorize submissions as hot (80+), warm (40-79), or cold (<40) points
+ * - Discord notifications with priority tagging based on score threshold
+ * - Optional D1 binding handled gracefully: succeeds even if DB unavailable
+ * - 1 business day response time SLA communicated to customer
+ * 
+ * RISK MITIGATION STRATEGY:
+ * - Always return {success:true} + webhook even when DB operations fail
+ * - Try/fail-safe pattern for submissions table migration (legacy schema fallback)   
+ * - CORS headers included via jsonResp() wrapper for moliam.com, moliam.pages.dev access
+ * 
+ * @param {object} context - Cloudflare Pages function context
+ * @param {Request} context.request - HTTP request containing form data with name, email, phone, company, message fields
+ * @param {D1Database} env.MOLIAM_DB - Bound database for persistence (optional)
+ * @returns {Response} JSON response object with:
+ *    - success: boolean (true=accepted, false=error)
+ *    - message: human-readable confirmation/error text   
+ *    - submissionId: integer from D1 last_row_id (0 if skipped due to missing table)
+ *    - leadScore: computed score 0-100 based on company/industry/budget inputs
+ * 
+ * ERROR HANDLING FLOW:
+ * 400 Invalid JSON body → Reject request early without DB operation   
+ * 400 Email validation failed → Return specific error message, no submission
+ * 429 Rate limit exceeded (5+ submissions/hour from same IP) → Throttle client
+ * 500 Internal server error (unexpected exceptions) → Caught by try/catch, continue to webhook + jsonResp({status:500, ...}) pattern
+ * 
+ * @see sendDiscordWebhook for webhook parameters and priority logic
+ * @see calculateLeadScore() for scoring rubric implementation details   
+ * @see standalone.js for all imported utility functions
+ * 
+ * Example response: { "success": true, "message": "Thanks! We'll be in touch within 1 business day.
   try {
     data = await request.json();
   } catch {
