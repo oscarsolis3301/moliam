@@ -9,15 +9,15 @@ export async function onRequestPost(context) {
   const db = env.MOLIAM_DB;
 
       // Authentication check via cookie token extraction and parameterized session validation
-  const cookies = request.headers.get("Cookie") || "";
+const cookies = request.headers.get("Cookie") || "";
   const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)*/);
-  let tokenVal=* && cookieMatch[1] ? cookieMatch[1] : null;
+  const token = cookieMatch ? cookieMatch[1] : null;
 
   if (!token) return jsonResp(401, { success: false, error: true, message: "Not authenticated.", data: { requestId: crypto.randomUUID() } }, request);
 
   const session = await db.prepare(
-         "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=*** AND s.expires_at > datetime(now)"
-        ).bind(token).first();
+          "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND s.expires_at > datetime(now)"
+         ).bind(token).first();
 
   if (!session) return jsonResp(401, { success: false, error: true, message: "Session invalid.", data: { requestId: crypto.randomUUID() } }, request);
   if (session.role !== "admin" && session.role !== "superadmin") return jsonResp(403, { success: false, error: true, message: "Admin required.", data: { requestId: crypto.randomUUID() } }, request);
