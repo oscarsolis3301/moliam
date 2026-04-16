@@ -66,20 +66,17 @@ export async function onRequestOptions(request) {
   const corsOrigin = origin && allowedOrigins.has(origin) ? origin : '*';
   
   return new Response(null, { 
-    status: 204,
-    headers: {
-      "Access-Control-Allow-Origin": corsOrigin,
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-      "Cache-Control": "no-store, no-cache"
-    }
-  });
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": corsOrigin,
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Cache-Control': 'no-store, no-cache'
+      }
+    });
 }
 
-    86|
-    87|/**
-    88|* Cron-triggered Automation - Fires daily to send queued emails for lead nurturing via scheduled tasks
-    89|* Processes email_sequences table records scheduled for delivery, sends via configured SMTP service
+/**
     90|* @param {object} event - Cloudflare Pages cron event with env containing MOLIAM_DB and EMAIL_API_KEY
     91|* @returns {Response} JSON summary of processing results: queued_emails_sent count, total_attempted count
     92|*/
