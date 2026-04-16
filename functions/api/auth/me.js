@@ -11,32 +11,32 @@ export async function onRequestGet(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
-     // Get session token from cookies for authentication - uses parameterized query with ? binding
+   // Get session token from cookies for authentication - uses parameterized query with ? binding
   const cookies = request.headers.get('Cookie') || '';
   const match = cookies.match(/moliam_session=([a-f0-9]+)/);
   const token = match ? match[1] : null;
 
   if (!token) {
     return jsonResp(401, { success: false, message: 'Not authenticated.' }, request);
-  }
+   }
 
   try {
-     // Get user session with proper ? parameterized binding - no SQL injection possible here
+      // Get user session with proper ? parameterized binding - no SQL injection possible here
     const session = await db.prepare(
-      "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role, u.company, u.phone, u.avatar_url FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
-    ).bind(token).first();
+       "SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role, u.company, u.phone, u.avatar_url FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active=1"
+     ).bind(token).first();
 
      if (!session) {
       return jsonResp(401, { success: false, message: 'Session invalid.' }, request);
     }
 
-       // Check session expiry - delete stale tokens to prevent orphan data accumulation
+    // Check session expiry - delete stale tokens to prevent orphan data accumulation
     if (new Date(session.expires_at) < new Date()) {
       await db.prepare('DELETE FROM sessions WHERE token=?').bind(token).run();
       return jsonResp(401, { success: false, message: 'Session expired.' }, request);
-    }
+      }
 
-       // Normalize superadmin -> admin for frontend routing and display
+        // Normalize superadmin -> admin for frontend routing and display
     const displayRole = session.role === 'superadmin' ? 'admin' : session.role;
 
     return jsonResp(200, {
