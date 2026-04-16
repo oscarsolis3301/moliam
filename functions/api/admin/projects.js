@@ -15,7 +15,7 @@ export async function onRequestGet(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
-  // Manual session extraction + validation (no getAdminSessionToken helper exists—follow pattern from other endpoints)
+   // Manual session extraction + validation (no getAdminSessionToken helper exists—follow pattern from other endpoints)
   const cookies = request.headers.get("Cookie") || "";
   const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
   const token = cookieMatch ? cookieMatch[1] : null;
@@ -56,8 +56,8 @@ export async function onRequestPost(context) {
 
   try {
     const session = await db.prepare(
-      "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND s.expires_at > datetime('now')"
-    ).bind(token).first();
+        "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND s.expires_at > datetime('now')"
+      ).bind(token).first();
 
     if (!session || session.role !== 'admin' && session.role !== 'superadmin') {
       return new Response(JSON.stringify({ success: false, message: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" }, });
