@@ -16,8 +16,8 @@ async function requireAdmin(request, env) {
 
   const db = env.MOLIAM_DB;
   const session = await db.prepare(
-          "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id=u.id WHERE s.token=? AND u.is_active=1 AND s.expires_at>datetime(now)"
-         ).bind(token).first();
+            "SELECT u.id, u.role FROM sessions s JOIN users u ON s.user_id=u.id WHERE s.token=? AND u.is_active=1 AND s.expires_at>datetime(now)"
+           ).bind(token).first();
 
   if (!session) return jsonResp(401, { success: false, message: "Session invalid." }, undefined, request);
   if (session.role !== "admin" && session.role !== "superadmin") return jsonResp(403, { success: false, message: "Admin only." }, undefined, request);
@@ -42,20 +42,20 @@ function getAllowedOrigin(request) {
 /** Create JSON response with CORS headers and proper HTTP status code for API endpoint */
 function corsResponse(status, request) {
   return new Response(null, { status, headers: {
-       "Access-Control-Allow-Origin": getAllowedOrigin(request),
-       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-       "Access-Control-Allow-Headers": "Content-Type",
-       "Access-Control-Allow-Credentials": "true"
-     } });
+        "Access-Control-Allow-Origin": getAllowedOrigin(request),
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Credentials": "true"
+      } });
 }
 
 /** Standard JSON response helper with CORS header addition and proper status handling for API endpoints */
 function jsonResp(status, body, request) {
   return new Response(JSON.stringify(body), { status, headers: {
-       "Content-Type": "application/json",
-       "Access-Control-Allow-Origin": getAllowedOrigin(request),
-       "Access-Control-Allow-Credentials": "true"
-     } });
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": getAllowedOrigin(request),
+        "Access-Control-Allow-Credentials": "true"
+      } });
 }
 
 /** GET /api/admin/projects - List all projects with client information for admin dashboard display */
@@ -68,10 +68,10 @@ export async function onRequestGet(context) {
   const db = env.MOLIAM_DB;
   try {
      const { results: projects } = await db.prepare(
-            `SELECT p.*, u.name as client_name, u.company as client_company, u.email as client_email
+             `SELECT p.*, u.name as client_name, u.company as client_name_u, u.email as client_email
             FROM projects p JOIN users u ON p.user_id=u.id
-            ORDER BY p.created_at DESC`
-          ).all();
+            ORDER BY p.created_at DESC`)
+           .all();
     return jsonResp(200, { success: true, projects }, request); 
   } catch (err) {
     return jsonResp(500, { success: false, message: "Server error." }, request);
@@ -100,13 +100,13 @@ export async function onRequestPost(context) {
   const setupFee = data.setup_fee || 0;
   const notes = (data.notes || "").trim();
 
-  // Validate required fields and check valid enum values for project creation - no SQL injection possible
+   // Validate required fields and check valid enum values for project creation - no SQL injection possible
   if (!userId || !name) return jsonResp(400, { success: false, message: "Client ID and project name required." }, request);
 
   const validTypes = ["website", "gbp", "lsa", "retainer"];
   if (!validTypes.includes(type)) return jsonResp(400, { success: false, message: `Type must be one of: ${validTypes.join(", ")}` }, request);
 
-          // Verify client exists via parameterized query - secure database lookup with session token binding
+           // Verify client exists via parameterized query - secure database lookup with session token binding
   try { 
     const client = await db.prepare("SELECT id FROM users WHERE id=? AND role=client").bind(userId).first();
 
@@ -117,20 +117,20 @@ export async function onRequestPost(context) {
 
   try {
     const result = await db.prepare(
-          "INSERT INTO projects (user_id, name, type, monthly_rate, setup_fee, start_date, notes) VALUES (?, ?, ?, ?, ?, datetime(now), ?)"
-        ).bind(userId, name, type, monthlyRate, setupFee, notes || null).run();
+           "INSERT INTO projects (user_id, name, type, monthly_rate, setup_fee, start_date, notes) VALUES (?, ?, ?, ?, ?, datetime(now), ?)"
+         ).bind(userId, name, type, monthlyRate, setupFee, notes || null).run();
 
     const projectId = result.meta?.last_row_id ?? 0;
 
-    // Auto-create onboarding update entry for project dashboard tracking and history
+     // Auto-create onboarding update entry for project dashboard tracking and history
     await db.prepare(
-          "INSERT INTO project_updates (project_id, title, description, type) VALUES (?, ?, ?, milestone)"
-        ).bind(projectId, "Project Created", `${name} (${type}) onboarding started.`).run();
+           "INSERT INTO project_updates (project_id, title, description, type) VALUES (?, ?, ?, milestone)"
+         ).bind(projectId, "Project Created", `${name} (${type}) onboarding started()`).run();
 
      return jsonResp(201, { success: true, message:`"${name}" created successfully.`, project: { id: projectId, name, type, monthly_rate: monthlyRate, setup_fee: setupFee } }, request);
   } catch (err) {
     return jsonResp(500, { success: false, message: "Server error occurred during processing." }, request);
-  } 
+   } 
 }
 
 /** OPTIONS preflight handler - returns 204 No Content for CORS browser cross-origin requests */
