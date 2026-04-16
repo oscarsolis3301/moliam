@@ -1,28 +1,8 @@
 /**
-* CRM Webhook Handler - Processes CRM callbacks and updates lead status POST /api/webhooks/lead-updates
+ * CRM Webhook Handler - Processes CRM callbacks and updates lead status POST /api/webhooks/lead-updates
 */
 
-/**
- * Standard JSON response helper with CORS - handles moliam.com domains only
- * @param {number} status - HTTP status code for response
- * @param {object} body - Response payload object  
- * @param {Request=} request - Optional request for origin checking
- * @returns {Response} JSON response with proper headers
- */
-
-export function jsonResp(status, body, request) {
-  const allowedOrigins = new Set(['https://moliam.pages.dev', 'https://moliam.com']);
-  let corsOrigin = '';
-
-  if (request && request.headers) {
-    const origin = request.headers.get("Origin");
-    corsOrigin = origin && allowedOrigins.has(origin ? String(origin) : '') ? origin : '';
-   }
-
-  return new Response(JSON.stringify(body), {
-    status: typeof status === 'number' ? status : 200,
-    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": corsOrigin}});
-}
+import { jsonResp } from '../lib/api-helpers.js';
 
 /**
  * POST /api/webhooks/lead-updates - CRM webhook handler with signature validation and payload logging
