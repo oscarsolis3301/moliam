@@ -3,7 +3,7 @@
  * POST /api/admin/seed with X-Seed-Key: moliam2026
  * @returns {Response} JSON response with success/error and CORS handling
  */
-import { jsonResp } from '../lib/api-helpers.js';
+import { jsonResp } from './lib/standalone.js';
 
 const SALT = "_moliam_salt_2026";
 

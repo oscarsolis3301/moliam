@@ -5,7 +5,7 @@
  * @returns {Response} JSON response with invoice list and pagination metadata
  */
 
-import { jsonResp } from '../lib/api-helpers.js';
+import { jsonResp } from './lib/standalone.js';
 
 export async function onRequestGet(context) {
   const { env, request } = context;
