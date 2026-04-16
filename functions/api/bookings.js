@@ -5,267 +5,326 @@
  * PUT /api/appointments/:id - Update/confirm/reschedule/cancel
  */
 
+import { jsonResp } from './lib/standalone.js';
+
+/**
+ * Handle GET requests for appointment listing and retrieval
+ * @param {object} context Cloudflare Pages request context with env.MOLIAM_DB binding
+ * @returns {Response} JSON response with appointments data or error status
+ */
 export async function onRequestGet(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
-  
-    // List all appointments for Ada's dashboard
-if (context.request.url.includes('/list')) {
-    const data = await db.prepare(`
-      SELECT a.*, p.qualification_score, p.budget_range, 
-             s.name AS lead_name, s.email AS lead_email
-      FROM appointments a
-      LEFT JOIN prequalifications p ON a.prequalification_id = p.id
-       LEFT JOIN submissions s ON p.submission_id = s.id
-      ORDER BY a.scheduled_at DESC
-      LIMIT 50
-       `).all({ limit: 50 });
 
-    return new Response(JSON.stringify({ success: true, appointments: data.results }), { 
-      status: 200, 
-      headers: { 'Content-Type': 'application/json', 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY' }
-      });
-   }
+  // List all appointments for Ada's dashboard
+  if (context.request.url.includes('/list')) {
+    try {
+      if (!db) {
+        return jsonResp(503, { error: true, message: "Database unavailable" }, request);
+      }
 
-    // Get specific appointment
+      const data = await db.prepare(`
+          SELECT a.*, p.qualification_score, p.budget_range, 
+                 s.name AS lead_name, s.email AS lead_email
+          FROM appointments a
+          LEFT JOIN prequalifications p ON a.prequalification_id = p.id
+          LEFT JOIN submissions s ON p.submission_id = s.id
+          ORDER BY a.scheduled_at DESC
+          LIMIT 50
+        `).all({ limit: 50 });
+
+      return jsonResp(200, { success: true, appointments: data.results }, request);
+    } catch (err) {
+      console.error("List appointments error:", err);
+      return jsonResp(500, { error: true, message: "Database query failed" }, request);
+    }
+  }
+
+  // Get specific appointment by ID
   const path = context.request.url.split('/api/appointments/')[1];
   if (path) {
-    const id = parseInt(path);
-    const data = await db.prepare(
-      "SELECT * FROM appointments WHERE id = ?"
-     ).bind(id).first();
+    try {
+      if (!db) {
+        return jsonResp(503, { error: true, message: "Database unavailable" }, request);
+      }
 
-    if (!data) return new Response(JSON.stringify({ error: true, message: "Appointment not found" }), { status: 404, headers: { 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY' }});
-    
-    return new Response(JSON.stringify({ success: true, appointment: data }), { 
-      status: 200, 
-      headers: { 'Content-Type': 'application/json', 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY' }
-      });
-   }
+      const id = parseInt(path);
+      const data = await db.prepare(
+        "SELECT * FROM appointments WHERE id = ?"
+      ).bind(id).first();
 
-  return json({ error: true, message: "Invalid request" }, 400);
-  return json({ error: true, message: "Invalid request" }, 400);
+      if (!data) return jsonResp(404, { error: true, message: "Appointment not found" }, request);
+
+      return jsonResp(200, { success: true, appointment: data }, request);
+    } catch (err) {
+      console.error("Get appointment error:", err);
+      return jsonResp(500, { error: true, message: "Database query failed" }, request);
+    }
+  }
+
+  return jsonResp(400, { error: true, message: "Invalid request" }, request);
 }
 
 export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
-  
+
+  if (!db) {
+    return jsonResp(503, { error: true, message: "Database unavailable" }, request);
+  }
+
   let body;
   try {
     body = await context.request.json();
   } catch {
-    return new Response(JSON.stringify({ error: true, message: "Invalid JSON" }), { status: 400 });
+    return jsonResp(400, { error: true, message: "Invalid JSON in request body" }, request);
   }
 
   const { action, appointment_id, reschedule_date } = body;
 
-   switch (action) {
-     case 'create':
-       return createAppointment(context, body);
+  switch (action) {
+    case 'create':
+      return createAppointment(context, body, db);
 
-     case 'confirm':
-       return updateAppointmentStatus(context, appointment_id, 'confirmed');
+    case 'confirm':
+      return updateAppointmentStatus(context, appointment_id, 'confirmed', db);
 
-     case 'cancel':
-       return updateAppointmentStatus(context, appointment_id, 'cancelled');
+    case 'cancel':
+      return updateAppointmentStatus(context, appointment_id, 'cancelled', db);
 
-     case 'reschedule':
-       if (!reschedule_date) {
-        return new Response(JSON.stringify({ error: true, message: "Reschedule date required" }), { status: 400 });
-       }
-       return rescheduleAppointment(context, appointment_id, reschedule_date);
+    case 'reschedule':
+      if (!reschedule_date) {
+        return jsonResp(400, { error: true, message: "Reschedule date required" }, request);
+      }
+      return rescheduleAppointment(context, appointment_id, reschedule_date, db);
 
-     case 'completed':
-       return updateAppointmentStatus(context, appointment_id, 'completed');
+    case 'completed':
+      return updateAppointmentStatus(context, appointment_id, 'completed', db);
 
-     case 'no_show':
-       return handleNoShow(context, appointment_id);
+    case 'no_show':
+      return handleNoShow(context, appointment_id, db);
 
-     default:
-       return new Response(JSON.stringify({ error: true, message: "Unknown action" }), { status: 400 });
-    }
+    default:
+      return jsonResp(400, { error: true, message: "Unknown action" }, request);
+  }
 }
 
 export async function onRequestPut(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
-  const path = context.request.url.split('/api/appointments/')[1];
-  if (!path) return new Response(JSON.stringify({ error: true, message: "Appointment ID required" }), { status: 400 });
+  if (!db) {
+    return jsonResp(503, { error: true, message: "Database unavailable" }, request);
+  }
 
-  const appointmentId = parseInt(path);
+  const pathParts = context.request.url.split('/api/appointments/');
+  if (!pathParts[1]) {
+    return jsonResp(400, { error: true, message: "Appointment ID required" }, request);
+  }
+
+  const appointmentId = parseInt(pathParts[1]);
   let body;
+
   try {
     body = await context.request.json();
   } catch {
-    return new Response(JSON.stringify({ error: true, message: "Invalid JSON" }), { status: 400 });
+    return jsonResp(400, { error: true, message: "Invalid JSON in request body" }, request);
   }
 
-  const { scheduled_at, client_timezone } = body;
+  const { scheduled_at } = body;
 
-  const res = await db.prepare(
-     "UPDATE appointments SET scheduled_at = ?, updated_at = datetime('now') WHERE id = ?"
-   ).bind(scheduled_at, appointmentId).run();
+  try {
+    const res = await db.prepare(
+      "UPDATE appointments SET scheduled_at = ?, updated_at = datetime('now') WHERE id = ?"
+    ).bind(scheduled_at, appointmentId).run();
 
-  if (!res.success) {
-    console.error("Update failed:", res);
-    return new Response(JSON.stringify({ error: true, message: "Update database failed" }), { status: 500 });
+    if (!res.success) {
+      console.error("Update failed:", res);
+      return jsonResp(500, { error: true, message: "Update database failed" }, request);
+    }
+
+    return jsonResp(200, { success: true, updated: true }, request);
+  } catch (err) {
+    console.error("PUT error:", err);
+    return jsonResp(500, { error: true, message: "Database update failed" }, request);
   }
-
-  if (res.success) {
-    return new Response(JSON.stringify({ success: true, updated: true }), { status: 200 });
-  }
-
-  return new Response(JSON.stringify({ error: true, message: "Update failed" }), { status: 400 });
 }
 
 // Helper functions
-async function createAppointment(context, body) {
-  const db = context.env.MOLIAM_DB;
+async function createAppointment(context, body, db) {
+  if (!db) {
+    return jsonResp(503, { error: true, message: "Database unavailable" }, context.request);
+  }
 
-  const { 
-    prequalification_id,
-    client_name, 
-    client_email,
-    scheduled_at,
-    duration_minutes = 30,
-    calendar_link 
-   } = body;
+  const prequalification_id = body.prequalification_id;
+  const client_name = (body.client_name || "").trim();
+  const client_email = (body.client_email || "")?.toLowerCase().trim();
+  const scheduled_at = body.scheduled_at;
+  const duration_minutes = body.duration_minutes || 30;
+  const calendar_link = (body.calendar_link || "").trim();
 
-if (!prequalification_id || !scheduled_at) {
-     return new Response(JSON.stringify({ error: true, message: "Pre-qual ID and scheduled date required" }), { status: 400 });
-   }
+  if (!prequalification_id || !scheduled_at) {
+    return jsonResp(400, { error: true, message: "Pre-qual ID and scheduled date required" }, context.request);
+  }
 
   // Input validation
-  const clientName = (client_name || "").trim();
-  if (clientName.length > 254) {
-    return new Response(JSON.stringify({ error: true, message: "Client name cannot exceed 254 characters" }), { status: 400 });
+  if (client_name.length > 254) {
+    return jsonResp(400, { error: true, message: "Client name cannot exceed 254 characters" }, context.request);
   }
-  const clientEmail = (client_email || "")?.toLowerCase().trim();
-  if (clientEmail && (clientEmail.length > 254 || !/^[^\\s@]+@[^\s@]+\.[^\s@]+$/.test(clientEmail))) {
-     return new Response(JSON.stringify({ error: true, message: "Valid email required" }), { status: 400 });
-   }
-  const calendarLink = (calendar_link || "").trim();
-  if (calendarLink && calendarLink.length > 254) {
-    return new Response(JSON.stringify({ error: true, message: "Calendar link cannot exceed 254 characters" }), { status: 400 });
-   }
 
-  const res = await db.prepare(
-    "INSERT INTO appointments (prequalification_id, client_name, client_email, scheduled_at, calendar_link) VALUES (?, ?, ?, ?, ?)"
-   
-).bind(prequalification_id || null, clientName || null, clientEmail || null, scheduled_at, calendarLink || null).run();
+  if (client_email && (client_email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(client_email))) {
+    return jsonResp(400, { error: true, message: "Valid email required" }, context.request);
+  }
 
-if (!res.success) {
-     return new Response(JSON.stringify({ error: true, message: "Booking failed" }), { status: 500 });
-   }
+  if (calendar_link && calendar_link.length > 254) {
+    return jsonResp(400, { error: true, message: "Calendar link cannot exceed 254 characters" }, context.request);
+  }
 
-     // Log to audit
-await logAudit(res.meta.last_row_id, 'booked');
+  try {
+    const res = await db.prepare(
+       "INSERT INTO appointments (prequalification_id, client_name, client_email, scheduled_at, calendar_link) VALUES (?, ?, ?, ?, ?)"
+     ).bind(prequalification_id || null, client_name || null, client_email || null, scheduled_at, calendar_link || null).run();
 
-return new Response(JSON.stringify({ success: true, appointment_id: res.meta.last_row_id }), { status: 201 });
-}
-
-async function updateAppointmentStatus(context, id, status) {
-  const db = context.env.MOLIAM_DB;
-
-  const res = await db.prepare(
-    "UPDATE appointments SET status = ?, updated_at = datetime('now') WHERE id = ?"
-  ).bind(status, id).run();
-
-  if (res.success && res.meta.rows_changed > 0) {
-    await logAudit(id, status);
-
-     // If no-show, handle retry logic
-    if (status === 'no_show') {
-      await handleNoShow(context, id);
+    if (!res.success) {
+      return jsonResp(500, { error: true, message: "Booking failed" }, context.request);
     }
-     else if (status === 'completed') {
-       await logAudit(id, 'completed');
-      }
-   }
 
-  return new Response(JSON.stringify({ success: true, updated: status }), { status: 200 });
+    // Log to audit
+    await logAudit(res.meta.last_row_id, 'booked', db);
+
+    return jsonResp(201, { success: true, appointment_id: res.meta.last_row_id }, context.request);
+  } catch (err) {
+    console.error("Create appointment error:", err);
+    return jsonResp(500, { error: true, message: "Database operation failed" }, context.request);
+  }
 }
 
-async function rescheduleAppointment(context, id, newDate) {
-  const db = context.env.MOLIAM_DB;
+async function updateAppointmentStatus(context, id, status, db) {
+  if (!id || !db) {
+    return jsonResp(400, { error: true, message: "Invalid appointment ID or database" }, context.request);
+  }
 
-  const res = await db.prepare(
+  try {
+    const res = await db.prepare(
+      "UPDATE appointments SET status = ?, updated_at = datetime('now') WHERE id = ?"
+    ).bind(status, id).run();
+
+    if (res.success && res.meta.rows_changed > 0) {
+      await logAudit(id, status, db);
+
+      // If no-show, handle retry logic
+      if (status === 'no_show') {
+        return handleNoShow(context, id, db);
+      } else if (status === 'completed') {
+        await logAudit(id, 'completed', db);
+      }
+    }
+
+    return jsonResp(200, { success: true, updated: status }, context.request);
+  } catch (err) {
+    console.error("Update status error:", err);
+    return jsonResp(500, { error: true, message: "Database operation failed" }, context.request);
+  }
+}
+
+async function rescheduleAppointment(context, id, newDate, db) {
+  if (!id || !newDate || !db) {
+    return jsonResp(400, { error: true, message: "Invalid parameters for rescheduling" }, context.request);
+  }
+
+  try {
+    const res = await db.prepare(
       "UPDATE appointments SET scheduled_at = ?, status = 'rescheduled', updated_at = datetime('now'), reschedule_attempts = reschedule_attempts + 1 WHERE id = ?"
     ).bind(newDate, id).run();
 
-  if (!res.success) {
-    console.error("Rescheduling failed:", res);
-    return new Response(JSON.stringify({ error: true, message: "Database update failed" }), { status: 500 });
+    if (!res.success) {
+      console.error("Rescheduling failed:", res);
+      return jsonResp(500, { error: true, message: "Database update failed" }, context.request);
+    }
+
+    await logAudit(id, 'rescheduled', db);
+
+    // Send reschedule confirmation email
+    const appointment = await db.prepare("SELECT * FROM appointments WHERE id = ?").bind(id).first();
+    if (appointment && appointment.client_email) {
+      await sendRescheduleEmail(appointment, context);
+    }
+
+    return jsonResp(200, { success: true, updated_date: newDate }, context.request);
+  } catch (err) {
+    console.error("Reschedule error:", err);
+    return jsonResp(500, { error: true, message: "Database operation failed" }, context.request);
   }
-
-  await logAudit(id, 'rescheduled');
-
-  // Send reschedule confirmation email
-  const appointment = await db.prepare("SELECT * FROM appointments WHERE id = ?").bind(id).first();
-  if (appointment && appointment.client_email) {
-    await sendRescheduleEmail(appointment);
-   }
-
-  return new Response(JSON.stringify({ success: true, updated_date: newDate }), { status: 200 });
 }
 
-async function handleNoShow(context, id) {
-  const db = context.env.MOLIAM_DB;
+async function handleNoShow(context, id, db) {
+  if (!id || !db) {
+    return jsonResp(400, { error: true, message: "Invalid appointment ID or database" }, context.request);
+  }
 
-  // Increment no-show count and check against max retries
-  const appointment = await db.prepare("SELECT * FROM appointments WHERE id = ?").bind(id).first();
-  
-  if (!appointment) return;
+  try {
+    const appointment = await db.prepare("SELECT * FROM appointments WHERE id = ?").bind(id).first();
 
-  const rescheduleAttempts = (appointment.reschedule_attempts || 0);
-  
-     if (rescheduleAttempts >= 2) {
-        // Auto-denial after max attempts
+    if (!appointment) {
+      return jsonResp(404, { error: true, message: "Appointment not found" }, context.request);
+    }
+
+    const rescheduleAttempts = (appointment.reschedule_attempts || 0);
+
+    if (rescheduleAttempts >= 2) {
+      // Auto-denial after max attempts
       try {
         const updateRes = await db.prepare(
-           "UPDATE prequalifications SET calendar_access_granted = 0, update_time = datetime('now') WHERE id = ?"
-         ).bind(appointment.prequalification_id).run();
+          "UPDATE prequalifications SET calendar_access_granted = 0, update_time = datetime('now') WHERE id = ?"
+        ).bind(appointment.prequalification_id).run();
 
         if (!updateRes.success) {
           console.error("Auto-denial DB update failed:", updateRes);
         }
       } catch (dbErr) {
         console.error("Auto-denial exception:", dbErr);
-       }
+      }
 
-      await logAudit(id, 'auto_denied');
-       return new Response(JSON.stringify({ success: true, message: "Lead auto-denied after multiple no-shows" }), { status: 200 });
-     }
+      await logAudit(id, 'auto_denied', db);
+      return jsonResp(200, { success: true, message: "Lead auto-denied after multiple no-shows" }, context.request);
+    }
 
-  // Auto-reschedule into retry queue
-  const now = new Date();
-  const nextRetry = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000); // Retry in 3 days
+    // Auto-reschedule into retry queue
+    const now = new Date();
+    const nextRetry = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000); // Retry in 3 days
 
-  await db.prepare(
-    "INSERT INTO reschedule_queue (appointment_id, retry_count, next_retry_at, max_retries, status) VALUES (?, 1, ?, 2, 'active')"
-  ).bind(id, nextRetry.toISOString()).run();
+    await db.prepare(
+      "INSERT INTO reschedule_queue (appointment_id, retry_count, next_retry_at, max_retries, status) VALUES (?, 1, ?, 2, 'active')"
+    ).bind(id, nextRetry.toISOString()).run();
 
-  // Send rescheduling email
-  if (appointment.client_email) {
-    await sendAutoRetryNotice(appointment);
-   }
+    // Send rescheduling email
+    if (appointment.client_email) {
+      await sendAutoRetryNotice(appointment, context);
+    }
 
-  return new Response(JSON.stringify({ 
-    success: true, 
-    message: "Lead added to reschedule queue",
-    retry_count: rescheduleAttempts + 1
-  }), { status: 200 });
+    return jsonResp(200, { success: true, message: "Lead added to reschedule queue", retry_count: rescheduleAttempts + 1 }, context.request);
+  } catch (err) {
+    console.error("Handle no-show error:", err);
+    return jsonResp(500, { error: true, message: "Database operation failed" }, context.request);
+  }
 }
-async function logAudit(contextOrId, action) {
-    // Support both forms: backward compatible classic pattern, plus new API with context.env.MOLIAM_DB
-    if (typeof contextOrId !== 'object' || !contextOrId || !('env' in contextOrId)) {
-         return console.log(`[audit] appointment=${contextOrId} action=${action}`);      } 
-    else {
-         const appointmentId = String(action);
-       if (contextOrId.env.MOLIAM_DB) { try { await contextOrId.env.MOLIAM_DB.prepare("INSERT INTO audit_logs (appointment_id, message, ts) VALUES (?, ?, datetime('now'))").bind(appointmentId, 'refactoring_done').run(); console.log(`[audit] ID=${appointmentId} wrote to D1`); } catch(e) { /* silent fail - no table exists yet */ } else { console.error('[audit NO DB]', appointmentId);}    }
-   }
+
+async function logAudit(appointmentId, action, db = null) {
+  // Support both D1 database logging and backward-compatible file-based logging
+  if (db && typeof db.prepare === 'function') {
+    try {
+      await db.prepare("INSERT INTO audit_logs (appointment_id, message, ts) VALUES (?, ?, datetime('now'))").bind(String(appointmentId), action).run();
+      console.log(`[audit] ID=${appointmentId} action=${action} written to D1`);
+    } catch (e) {
+      // silent fail - no audit_logs table exists yet
+      console.log('[audit] no audit_logs table yet, skipped');
+    }
+  } else {
+    // Fallback: file-based logging for non-D1 environments
+    console.log(`[audit] appointment=${appointmentId} action=${action}`);
+  }
+}
+
 async function sendRescheduleEmail(appointment) {
   try {
     const subject = "Your appointment has been rescheduled";
@@ -279,8 +338,8 @@ async function sendRescheduleEmail(appointment) {
         subject,
         content: [{ type: "text/html", value: `<h3>Your demo call has been rescheduled to a new time.</h3>` }]
       })
-     });
-   } catch (e) {
+    });
+  } catch (e) {
     console.error("Reschedule email error:", e);
   }
 }
@@ -294,36 +353,28 @@ async function sendAutoRetryNotice(appointment) {
         personalizations: [{ to: [{ email: appointment.client_email }] }],
         from: { email: "hello@moliam.com" },
         subject: "Let's Reschedule Your Demo",
-        content: [{ 
-          type: "text/html", 
-          value: "<p>We missed you, no worries! Reply to schedule new time or use your calendar link.</p>"
-         }]
-       })
-     });
-   } catch (e) {
+        content: [{ type: "text/html", value: "<p>We missed you, no worries! Reply to schedule new time or use your calendar link.</p>" }]
+      })
+    });
+  } catch (e) {
     console.error("Retry email error:", e);
   }
+
 }
 
-function json(body, status = 200) {
-  return new Response(JSON.stringify(body), { 
-    status, 
-    headers: { 
-      'Content-Type': 'application/json',
-      'X-Content-Type-Options': 'nosniff',
-      'X-Frame-Options': 'DENY'
-    } 
-  });
-}
+// CORS preflight handler
+export async function onRequestOptions(context) {
+  const { request } = context || {};
+  const origin = request?.headers?.get('Origin') || '';
+  const allowedOrigins = ['https://moliam.com', 'https://moliam.pages.dev'];
+  const effectiveOrigin = allowedOrigins.includes(origin) ? origin : (process.env.NODE_ENV === 'production' ? '*' : origin);
 
-// Wrapper for Responses without json() helper to add security headers consistently
-function jsonResponse(status, body) {
-  return new Response(JSON.stringify(body), { 
-    status, 
-    headers: { 
-      'Content-Type': 'application/json',
-      'X-Content-Type-Options': 'nosniff',
-      'X-Frame-Options': 'DENY'
-    } 
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": effectiveOrigin,
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization"
+    }
   });
 }
