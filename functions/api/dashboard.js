@@ -4,29 +4,29 @@
    Returns current user's projects + recent updates with admin overrides.
    
    SECURITY FEATURES:
-   - Token extraction from URL params, hash fragment, or cookies (fallback chain)
-   - Parameterized queries prevent SQL injection - uses ? binding throughout
-   - Session validation with expiry checking and is_active flag
-   - Role-based access: client vs admin/superadmin views
+     - Token extraction from URL params, hash fragment, or cookies (fallback chain)
+     - Parameterized queries prevent SQL injection - uses ? binding throughout
+     - Session validation with expiry checking and is_active flag
+     - Role-based access: client vs admin/superadmin views
    
    QUERY PARAMETERS:
-   - action=leads: Return submissions with lead_score, category, follow_up_status
-   - action=pipeline: Return pipeline summary counts by hot/warm/cold
+     - action=leads: Return submissions with lead_score, category, follow_up_status
+     - action=pipeline: Return pipeline summary counts by hot/warm/cold
    
    RESPONSES:
-   - 401 Invalid/expired session → {success:false, message:"Session invalid or expired."}
-   - 503 Database unavailable → {success:false, message:"Database service unavailable."}
-   - 200 Success → {success:true, data:{...}, projects:[], updates:[], stats:[]}
-   
-   @param {Object} context - Request context from Cloudflare Pages
-   @param {Request} context.request - Incoming request with query params and cookies
-   @param {MOLIAM_DB} context.env.MOLIAM_DB - Bound D1 database
-   @returns {Response} JSON response with dashboard data or status 401/503
-   
+     - 401 Invalid/expired session → {success:false, message:"Session invalid or expired."}
+     - 503 Database unavailable → {success:false, message:"Database service unavailable."}
+     - 200 Success → {success:true, data:{...}, projects:[], updates:[], stats:[]}
+    
+    @param {Object} context - Request context from Cloudflare Pages
+    @param {Request} context.request - Incoming request with query params and cookies
+    @param {MOLIAM_DB} context.env.MOLIAM_DB - Bound D1 database
+    @returns {Response} JSON response with dashboard data or status 401/503
+    
    EXAMPLES:
    GET /api/dashboard?action=leads → All submissions (admin) or user's only (client)
    GET /api/dashboard?action=pipeline → Pipeline summary counts hot/warm/cold
-   ============================================================================== */
+     ========================================================================= */
 
 import { jsonResp } from './lib/standalone.js';
 
@@ -37,7 +37,7 @@ export async function onRequestGet(context) {
 
     if (!db) {
       return jsonResp(503, { success: false, message: 'Database service unavailable.' }, request);
-    }
+     }
 
 // --- Parse token from query params or cookies ---
     const url = new URL(request.url);
@@ -50,75 +50,77 @@ export async function onRequestGet(context) {
         const hash = request.url.substring(hashIdx + 1);
         const query = new URLSearchParams(hash.split('&')[0]);
         token = query.get('token') || '';
-      }
-    } catch (urlErr) {
+       }
+     } catch (urlErr) {
       console.warn("Token extraction from URL fragment failed:", urlErr.message);
-    }
+     }
 
 // Fall back to cookie extraction if no token found in hash
     if (!token) {
       const cookies = request.headers.get('Cookie') || '';
       const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
       token = cookieMatch ? cookieMatch[1] : null;
-    }
+     }
+
+// --- Extract action parameter ---
+    const action = url.searchParams.get('action') || '';
 
 // --- Session validation with parameterized query - uses ? binding to prevent SQL injection ---
     const session = await db.prepare(
-              "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1 AND s.expires_at > datetime('now')"
-       .bind(token).first());
+                "SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1 AND s.expires_at > datetime('now')")
+         .bind(token).first());
 
     if (!session) {
         return jsonResp(401, { success: false, message: "Session invalid or expired." }, request);
-       }
+     }
 
     const isAdmin = session.role === 'admin' || session.role === 'superadmin';
 
-      
-     /******  ADDITIONAL: Leads Pipeline Data (v3 requirement) ******/
+      /******  ADDITIONAL: Leads Pipeline Data (v3 requirement)******/  
     if (action === 'leads') {
-       // Return all submissions with lead_score, category, follow_up_status
+         // Return all submissions with lead_score, category, follow_up_status
       let query;
       if (isAdmin) {
         query = `SELECT s.id, s.name, s.email, s.phone, s.company, s.message,
                  s.lead_score, s.category, s.created_at,
                  s.follow_up_status, s.follow_up_at, l.status as lead_status
            FROM submissions s LEFT JOIN leads l ON l.submission_id = s.id ORDER BY s.created_at DESC LIMIT 100`;
-      } else {
+       } else {
         query = `SELECT s.id, s.name, s.email, s.company, s.message,
                  s.lead_score, s.category, s.created_at,
                  s.follow_up_status, s.follow_up_at
            FROM submissions s WHERE s.email=? ORDER BY s.created_at DESC LIMIT 50`;
-       }
+      }
 
       const result = isAdmin
-         ? await db.prepare(query).all()
-         : await db.prepare(query).bind(session.email).all();
+           ? await db.prepare(query).all()
+           : await db.prepare(query).bind(session.email).all();
 
       return jsonResp(200, {
           success: true,
           action: 'leads',
           data: (result?.results || []),
           fetchAt: new Date().toISOString()
-             }, request);
+              }, request);
      }
 
     if (action === 'pipeline') {
-         // Return pipeline summary: count by hot/warm/cold, follow-up stats
+           // Return pipeline summary: count by hot/warm/cold, follow-up stats
       const coldCount = await db.prepare(
         isAdmin ? 'SELECT COUNT(*) as c FROM submissions WHERE category=\'cold\'' : 'SELECT COUNT(*) as c FROM submissions WHERE email=? AND category=\'warm\''
-      ).bind(session.email).all().then(r => r.results?.[0]?.c || 0);
+       ).bind(session.email).all().then(r => r.results?.[0]?.c || 0);
       const warmCount = await db.prepare(
         isAdmin ? 'SELECT COUNT(*) as c FROM submissions WHERE category=\'warm\'' : 'SELECT COUNT(*) as c FROM submissions WHERE email=? AND category=\'warm\''
-      ).bind(session.email).all().then(r => r.results?.[0]?.c || 0);
+       ).bind(session.email).all().then(r => r.results?.[0]?.c || 0);
       const hotCount = await db.prepare(
         isAdmin ? 'SELECT COUNT(*) as c FROM submissions WHERE category=\'hot\'' : 'SELECT COUNT(*) as c FROM submissions WHERE email=? AND category=\'hot\''
-      ).bind(session.email).all().then(r => r.results?.[0]?.c || 0);
+       ).bind(session.email).all().then(r => r.results?.[0]?.c || 0);
       const followedCount = await db.prepare(
         isAdmin ? 'SELECT COUNT(*) as c FROM submissions WHERE follow_up_status=\'completed\'' : 'SELECT COUNT(*) as c FROM submissions WHERE email=? AND follow_up_status=\'pending\'')
-      .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
+       .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
       const pendingCount = await db.prepare(
         isAdmin ? 'SELECT COUNT(*) as c FROM submissions WHERE follow_up_status=\'completed\'' : 'SELECT COUNT(*) as c FROM submissions WHERE email=? AND follow_up_status=\'pending\'')
-      .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
+       .bind(session.email).all().then(r => r.results?.[0]?.c || 0);
 
       return jsonResp(200, {
            success: true,
@@ -128,46 +130,46 @@ export async function onRequestGet(context) {
                byFollowUp: { completed: followedCount, pending: pendingCount },
                totalSubmissions: (hotCount + warmCount + coldCount),
                followUpRate: ((hotCount + warmCount + coldCount) > 0)
-                   ? Math.round((followedCount / (hotCount + warmCount + coldCount)) * 100)
-                  : 0,
-               },
+                     ? Math.round((followedCount / (hotCount + warmCount + coldCount)) * 100)
+                    : 0,
+                 },
            fetchAt: new Date().toISOString()
-                   }, request);
+              }, request);
      }
 
-     /******  ORIGINAL DASHBOARD CONTENTS ******/
+        /******  ORIGINAL DASHBOARD CONTENTS******/
 
-     // Get projects
+       // Get projects
       let projects;
       if (isAdmin) {
         const result = await db.prepare(
                        `SELECT p.*, u.name as client_name, u.company as client_company
            FROM projects p JOIN users u ON p.user_id = u.id
            ORDER BY p.updated_at DESC`)
-                     .all();
+                      .all();
         projects = (result?.results || []);
-      } else {
+       } else {
         const result = await db.prepare(
-                         'SELECT * FROM projects WHERE user_id = ? ORDER BY updated_at DESC')
-                       .bind(session.id).all();
+                           'SELECT * FROM projects WHERE user_id = ? ORDER BY updated_at DESC')
+                         .bind(session.id).all();
         projects = (result?.results || []);
      }
 
-       // Get recent updates for user's projects
+         // Get recent updates for user's projects
       const projectIds = projects.map(p => p.id);
       let updates = [];
       if (projectIds.length > 0) {
         const placeholders = projectIds.map(() => '?').join(',');
         const result = await db.prepare(
-                      `SELECT pu.*, p.name as project_name FROM project_updates pu
+                       `SELECT pu.*, p.name as project_name FROM project_updates pu
            JOIN projects p ON pu.project_id = p.id
            WHERE pu.project_id IN (${placeholders})
            ORDER BY pu.created_at DESC LIMIT 20`)
-                    .bind(...projectIds).all();
+                      .bind(...projectIds).all();
         updates = (result?.results || []);
      }
 
-       // Stats
+         // Stats
       const activeProjects = projects.filter(p => ['active', 'in_progress'].includes(p.status)).length;
       const totalMonthly = projects.reduce((sum, p) => sum + (p.monthly_rate || 0), 0);
 
@@ -181,7 +183,7 @@ export async function onRequestGet(context) {
               monthly_revenue: totalMonthly,
                new_leads: (leadCount?.c || 0),
                    };
-      } else {
+       } else {
         stats = {
                  active_projects: activeProjects,
              total_projects: projects.length,
@@ -195,12 +197,12 @@ export async function onRequestGet(context) {
               projects,
               updates,
               stats,
-                  }, request);
+                   }, request);
 
-} catch (err) {
+  } catch (err) {
     console.error('Dashboard error:', err);
       return jsonResp(500, { success: false, message: 'Server error.' }, request);
-  }
+     }
 }
 
 /**
@@ -213,7 +215,7 @@ export async function onRequestGet(context) {
  * - filter: string (status, category, date range, etc.)
  * 
  * **Returns JSON Response with proper error handling:**
- * - Success: `{success: true, data: {...}, fetchAt: 'ISO-8601'}`
+ * - Success: `{success: true, data: {...}}, fetchAt: 'ISO-8601'`
  * - Error: `{error: 'message'}` with appropriate HTTP status code
  * 
  * **Security Features:**
@@ -226,4 +228,3 @@ export async function onRequestGet(context) {
  * @param {Object} context.env - Environment variables including MOLIAM_DB binding
  * @returns {Response} JSON response with dashboard data or error
  */
-
