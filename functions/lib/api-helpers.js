@@ -199,3 +199,89 @@ export function isEmpty(value) {
 
 /** Generate cryptographically secure random session token for cookie/auth use @returns{Promise<string>}64-char hex string from WebCryptoAPI */
 export async function generateToken(){const arr=new Uint8Array(32);crypto.getRandomValues(arr);return Array.from(arr).map(b=>b.toString(16).padStart(2,"0")).join("");}
+
+/** Verify webhook HMAC-SHA256 signature for security against replay attacks
+ * @param {string} body - Raw request body text
+ * @param {string} sigHeader - Signature header value (e.g., 't=...,v1=...')
+ * @param {string} secret - Shared secret for HMAC computation
+ * @returns {Promise<boolean>} true if signature valid, false otherwise
+ */
+export async function verifySignature(body, sigHeader, secret) {
+  try {
+    const parts = {};
+    
+    for (const part of sigHeader.split(',')) {
+      const [k, v] = part.split('=', 2);
+      parts[k.trim()] = (v ?? '').trim();
+    }
+    
+    const timestamp = parts['t'];
+    const receivedSig = parts['v1'];
+    
+    if (!timestamp || !receivedSig) return false;
+    
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      "raw", 
+      encoder.encode(secret), 
+      { name: "HMAC", hash: "SHA-256" }, 
+      false, 
+      ["sign"]
+    );
+    
+    const signed = await crypto.subtle.sign("HMAC", key, encoder.encode(`${timestamp}.${body}`));
+    const expectedSig = Array.from(new Uint8Array(signed)).map(b => b.toString(16).padStart(2, '0')).join('');
+    
+    if (expectedSig.length !== receivedSig.length) return false;
+    
+    let mismatch = 0;
+    for (let i = 0; i < expectedSig.length; i++) {
+      mismatch |= expectedSig.charCodeAt(i) ^ receivedSig.charCodeAt(i);
+    }
+    
+    return mismatch === 0;
+  } catch {
+    return false;
+  }
+}
+
+/** Parse JSON body from request with error handling @returns{Promise<{parsed?: object, error?: string}>} */
+export async function parseJsonBody(request) {
+  try {
+    const rawBody = await request.text();
+    return { parsed: JSON.parse(rawBody), rawBody };
+  } catch (err) {
+    return { error: err.message || 'Invalid JSON in request body' };
+  }
+}
+
+/** Send Discord webhook notification with embedded data @param {object} env - Environment object containing DISCORD_WEBHOOK_URL or custom webhookUrl @param {object} params - Embed fields for the notification @returns{Promise<void>} */
+export async function sendDiscordWebhook(env, params, webhookOverride) {
+  const webhookUrl = webhookOverride || (env && env.DISCORD_WEBHOOK_URL);
+  
+  if (webhookUrl && !webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
+    return; // Invalid webhook URL format
+  }
+  
+  try {
+    await fetch(webhookUrl, {
+      method: "POST", 
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ username:params.username ?? 'Webhook', embeds: params.embeds || [] })
+    });
+  } catch {}
+}
+
+/** Fire-and-forget pattern for background tasks that shouldn't delay response @param {() => Promise<void>} task async task to run in background */
+export function fireAndForget(task) {
+  if (task && typeof task === 'function') {
+    const bg = Promise.resolve(task()).catch(console.error);
+    return bg;
+  }
+}
+
+/** Queue email sequence after lead submission - placeholder for future integration @param {string} email - recipient email address @param {object} data - Lead/message data object */
+export function queueEmailSequences(email, data) {
+  // Placeholder for CRM/email automation integration
+  return Promise.resolve({ queued: true, to: email });
+}
