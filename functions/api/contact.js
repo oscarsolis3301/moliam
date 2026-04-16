@@ -5,9 +5,9 @@
  */
 
 import { 
-  jsonResp, validateEmail, validatePhone, sanitizeText, calculateLeadScore,
-  sendDiscordWebhook, parseRequestBody 
-} from '../lib/standalone.js';
+  jsonResp, validateEmail, validatePhone, sanitizeText, hashSHA256,
+  calculateLeadScore, sendDiscordWebhook, parseJsonBody, balanceSuccessError
+} from '../lib/api-helpers.js';
 
 // Import consolidate from standalone.js - reduces duplication from 312KB total backend size
 
