@@ -3,6 +3,10 @@
 */
 
 import { jsonResp } from '../lib/api-helpers.js';
+import { createRateLimiterMiddleware, parseRateLimitedJsonBody } from '../lib/rate-limiter.js';
+
+/** Rate Limiter: CRM webhook endpoint protection (10 requests/min, 20 burst - conservative for external Webhooks). */
+const crmWebhookRateLimiter = createRateLimiterMiddleware('crm-webhook', 10, 20);
 
 /**
  * POST /api/webhooks/lead-updates - CRM webhook handler with signature validation and payload logging
@@ -14,8 +18,14 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const db = env.MOLIAM_DB;
 
+// --- Rate limit check before any DB operation - protects from external webhook abuse. Returns 429 when exceeded with retry_after field. ---
+const rateLimitCheck = await crmWebhookRateLimiter(request, env);
+if (rateLimitCheck && 'status' in rateLimitCheck && rateLimitCheck.status === 429) {
+  return rateLimitCheck; // Already returns proper 429 Response with retry_after field.
+}
+
 // --- Validate DB binding exists ---
-if (!db) { 
+if (!db) {
   return jsonResp(500, { success: false, error: true, message: "Database not available. Please check server configuration.", requestId: crypto.randomUUID ? crypto.randomUUID() : undefined }, request);
 }
 
