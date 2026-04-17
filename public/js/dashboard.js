@@ -153,8 +153,8 @@ let impersonatedUserId = urlParams.get('impersonate');
 
     }).catch(err => { 
          console.error('Dashboard init error:', err); 
-         showAuthError(); 
-    });
+// Load activity feed from new backend API (Task 21)
+loadActivityFeed();
 
 // ============================================================================
 // ACTIVITY FEED LOADER - Task 21: Connect to /api/activity backend endpoint
@@ -163,14 +163,17 @@ let impersonatedUserId = urlParams.get('impersonate');
 async function loadActivityFeed() {
     try {
         const sessionToken = getSessionToken();
-        if (!sessionToken) return;
+        if (!sessionToken) {
+            console.warn('No session token available for activity feed');
+            return;
+        }
 
         const response = await fetch(`/api/activity?action=list&token=${sessionToken}`);
-        
-        if (!response.ok) throw new Error('Failed to load activity feed');
-        
-            const result = await response.json();
-            
+
+        if (!response.ok) throw new Error(`Failed to load activity feed: ${response.status}`);
+
+        const result = await response.json();
+
         if (result.success && result.data && Array.isArray(result.data)) {
             if (result.data.length > 0) {
                 console.log(`Loaded ${result.data.length} activities from backend`);
@@ -180,25 +183,25 @@ async function loadActivityFeed() {
                         title: 'Activity Update',
                         description: activity.details || 'No details provided',
                         timestamp: activity.created_at || new Date().toISOString()
-                      });
-                  }
-              } else {
+                    });
+                }
+            } else {
                 const feedContainer = document.getElementById('activity-feed');
                 if (feedContainer) {
                     feedContainer.innerHTML = '<div class="empty-state" style="font-size:14px;margin-top:24px">No recent activity yet. Your project updates will appear here automatically.</div>';
-                 }
-              }
+                }
+            }
         } else {
             console.warn('Activity load failed:', result.message || result.error);
-              }
+        }
 
-          } catch (err) {
-            console.warn('Activity feed error:', err.message);
-             // Graceful degradation - don't fail dashboard if activity API unavailable
-           }
+    } catch (err) {
+        console.warn('Activity feed error:', err.message);
+        // Graceful degradation - don't fail dashboard if activity API unavailable
+    }
 }
 
-// Helper to get session token from available sources
+/** Helper to get session token from available sources */
 function getSessionToken() {
     if (session_token) return session_token;
     try {
@@ -214,33 +217,51 @@ function getSessionToken() {
 // Export for external use if needed
 window.loadActivityFeed = loadActivityFeed;
 
-
-
 /** Load activity history from backend API */
 window.loadActivityHistory = async function(loadLimit = 20) {
     try {
-            const response = await fetch(`/api/activity?token=${session_token}`, {
+        const sessionToken = getSessionToken();
+        if (!sessionToken) return [];
+
+        const response = await fetch(`/api/activity?action=list&limit=${loadLimit}&token=${sessionToken}`, {
             method: 'GET',
             credentials: 'include'
-          });
+        });
 
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const result = await response.json();
 
         const feedContainer = document.getElementById('activity-feed');
-        
+
         if (result.success && Array.isArray(result.data)) {
-              // Clear empty state and rebuild from data
+            // Clear empty state and rebuild from data
             feedContainer.innerHTML = '';
-            
+
             for (const activity of result.data) {
-                addActivityItem(activity);  // false = don't auto-scroll on history items
-              }
+                addActivityItem(activity);   // false = don't auto-scroll on history items
+            }
 
             console.log(`✓ Loaded ${result.data.length} activities to feed`);
-            
+            return result.data;
+        } else {
+            throw new Error(result.error || 'Unknown error loading activity');
+        }
 
+    } catch (error) {
+        console.warn('Activity API load failed:', error.message);
+
+        // Show friendly empty state instead of technical errors
+        const feedContainer = document.getElementById('activity-feed');
+        if (feedContainer) {
+            feedContainer.innerHTML = '<div class="empty-state" style="color:var(--accent-amber)">Recent activity unavailable. Your dashboard will update automatically when new events occur.</div>';
+        }
+
+        return [];
+    }
+}
+
+// Stat cards with staggered animation - enhanced design patterns from Linear/Vercel/Supabase dashboards
 // Stat cards with staggered animation - enhanced design patterns from Linear/Vercel/Supabase dashboards
 function renderStats(data, isAdmin, stats, currentUserId) {
     const statsGrid = document.getElementById('stats-grid');
