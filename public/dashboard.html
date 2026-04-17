@@ -41,11 +41,21 @@
 
 <!-- Invoice Summary -->
 <div class="invoice-summary">
-     <div class="section-title">Billing Overview</div>
-     <div class="invoice-stats" id="invoice-stats">Loading invoices...</div>
+      <div class="section-title">Billing Overview</div>
+      <div class="invoice-stats" id="invoice-stats">Loading invoices...</div>
 <div class="invoice-actions">
     <a class="btn" href="/api/invoices?export=pdf">Download PDFs</a>
-    <a class="btn secondary" onclick="window.showInvoices()">View Details</a>
+     <a class="btn secondary" onclick="window.showInvoiceList()">View Details</a>
+       </div>
+</div>
+
+<!-- Invoice List Section -->
+<div class="section invoice-section">
+      <div class="section-title">Your Invoices</div>
+      <div class="invoice-list" id="invoice-list"></div>
+      <div class="invoice-actions-secondary">
+          <button class="btn primary" onclick="window.loadInvoicesData()">Refresh Invoices</button>
+          <a class="btn secondary" href="/api/invoices?action=create&return=dashboard">Create New Invoice</a>
       </div>
 </div>
 
