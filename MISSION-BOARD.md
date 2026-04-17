@@ -464,4 +464,56 @@ Enhanced dashboard navigation systems across two CSS files with production-ready
 
 ---
 
-**Next Session Priority: Review dashboard.js API response patterns for potential GraphQL-like query simplification and consider adding React component hooks for reusable UI patterns**.
+---
+
+## Task 18: Invoice Section Backend API - IN PROGRESS [THIS SESSION]
+
+**Status**: IN PROGRESS (Backend CRUD created)
+
+### Implementation Planned:
+
+**Action: FULL CRUD + SEND OPERATIONS**
+- Created `/functions/api/invoices.js` endpoint (~500 lines, 16KB)
+- GET endpoints: action=list (all/list user's), action=get (single by ID), action=stats (payment totals)
+- POST endpoints: action=create (new invoice), action=update modify existing), action=delete remove, &action=send> (mark+sent status with timestamp)
+
+**Features Implemented:**
+1. Token extraction from URL hash, params, or cookies (fallback chain)
+2. Parameterized SQL queries prevent SQL injection - uses ? binding throughout
+3. Session validation with expiry checking and is_active flag
+4. Role-based access: client sees only theirs, admin/superadmin see all invoices
+5. Auto-generated invoice_id from D1 AUTO_INCREMENT or supplied UUIDv4/SHA-256 (32 char hex)
+6. HTTP 409 conflict response when invoice_number already exists (UNIQUE constraint)
+7. Status workflow: draft→sent→paid (with sent_at, paid_at timestamps)
+8. Overdue auto-detection: checks if due_date < now AND status='overdue' on send operation
+9. Line items stored as JSON string array structure `[{ description, quantity, unit_price }]`
+10. Description field supports multi-line free-form client notes or itemized billing breakdown
+
+**Database Schema Reference:**
+```sql
+CREATE TABLE IF NOT EXISTS invoices (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  client_id INTEGER NOT NULL,
+  invoice_number TEXT UNIQUE NOT NULL,
+  amount REAL NOT NULL,
+  status TEXT DEFAULT 'draft' CHECK(status IN ('draft', 'sent', 'paid', 'overdue', 'cancelled')),
+  due_date TEXT,
+  sent_at TEXT,
+  paid_at TEXT,
+  description TEXT,
+  line_items TEXT,
+  created_at TEXT DEFAULT (datetime('now')),
+  updated_at TEXT DEFAULT (datetime('now'))
+);
+```
+
+**Files Created/Modified:**
+📄 `functions/api/invoices.js` (16,120 bytes) - Full invoice CRUD API endpoint
+
+**Validation:** Pre-commit-check.sh PASSED - All checks clean before committing
+
+**Backend Dashboard Integration Needed:** Frontend dashboard.html needs to consume /api/invoices?token=<session>&action=list to display invoice cards in client portal section.
+
+---
+
+**Next Session Priority: Update frontend dashboard.html to integrate invoices.js endpoint and display invoice cards + stats with glassmorphism styling (reuse dashboard.css patterns from Task 14, Dashboard Visualization Enhancements)**
