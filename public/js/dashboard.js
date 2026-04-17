@@ -172,9 +172,11 @@ async function loadActivityFeed() {
         if (!sessionToken) {
             console.warn('No session token available for activity feed');
             return;
-         }
+          }
 
-        const response = await fetch(`/api/activity?action=list&token=${encodeURIComponent(sessionToken)}`, {credentials: 'include'});
+        const response = await fetch(`/api/activity?action=list&token=${encodeURIComponent(sessionToken)}`, {
+            credentials: 'include'
+          });
 
         if (!response.ok) throw new Error(`Failed to load activity feed: ${response.status}`);
 
@@ -224,7 +226,7 @@ function getSessionToken() {
 window.loadActivityFeed = loadActivityFeed;
 
 /** Load activity history from backend API */
-window.loadActivityHistory = async function(loadLimit = 20) {
+      window.loadActivityHistory = async function(loadLimit = 20) {
     try {
         const sessionToken = getSessionToken();
         if (!sessionToken) return [];
@@ -232,7 +234,7 @@ window.loadActivityHistory = async function(loadLimit = 20) {
         const response = await fetch(`/api/activity?action=list&limit=${loadLimit}&token=${encodeURIComponent(sessionToken)}`, {
             method: 'GET',
             credentials: 'include'
-         });
+          });
 
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
@@ -356,11 +358,14 @@ function calculateInvoiceStats(invoices) {
       }
 
        
-   // Enhanced invoice list rendering with glassmorphism design patterns and WCAG touch targets 44px minimum
+// Enhanced invoice list rendering with glassmorphism design patterns and WCAG touch targets 44px minimum
     window.loadInvoicesData = async function() {
         try {
-            const response = await fetch('/api/invoices?action=list&credential=none');
+            const response = await fetch('/api/invoices?action=list', {
+                credentials: 'include'
+           });
             if (!response.ok) throw new Error('Failed to load invoices');
+
             const result = await response.json();
             
             if (result.success && result.data && Array.isArray(result.data)) {
