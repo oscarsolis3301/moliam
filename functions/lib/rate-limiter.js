@@ -18,38 +18,41 @@ export function createRateLimiterMiddleware(request, endpointName, env, baseRate
   let requestCount = 0;
   let nextResetSeconds = 60;
 
+  // Rate limit memory store for this request scope (moved before usage)
+  const rateLimitMemory = new Map();
+
   async function checkRateLimit(clientId, baseRate, burstFactor) {
     if (env && env.MOLIAM_DB) {
       try {
         const limitStateStmt = env.MOLIAM_DB.prepare(
           `SELECT count, expires_at, updated_at FROM rate_limits WHERE client_id = ? AND expires_at > ?`
-        );
+         );
         const limitStateResult = await limitStateStmt.bind(clientId, now).first();
 
         if (limitStateResult && limitStateResult.expires_at && limitStateResult.expires_at > now) {
           requestCount = limitStateResult.count || 0;
           nextResetSeconds = Math.ceil((limitStateResult.expires_at - now) / 1000);
-        } else {
+         } else {
           const baseLimit = parseInt(baseRate, 10) || 50;
           const burstLimit = baseLimit * (parseInt(burstFactor, 10) || 2);
 
           if (requestCount >= burstLimit) {
             return {success: false, error: "Rate limit exceeded", status: 429, retryAfter: nextResetSeconds};
-          }
+           }
 
           const expiresAt = now + 60000;
           await env.MOLIAM_DB.prepare(
             `INSERT OR REPLACE INTO rate_limits (client_id, count, expires_at, updated_at) VALUES (?, ?, ?, ?)`
-          ).bind(clientId, requestCount > 0 ? requestCount + 1 : 1, expiresAt, now).run();
+           ).bind(clientId, requestCount > 0 ? requestCount + 1 : 1, expiresAt, now).run();
           
           requestCount += 1;
           nextResetSeconds = 60;
-        }
+         }
 
         const currentRateLimit = parseInt(baseRate, 10) || 50;
         if (requestCount >= currentRateLimit * (parseInt(burstFactor, 10) || 2)) {
           return {success: false, error: "Rate limit exceeded", status: 429, retryAfter: nextResetSeconds};
-        }
+         }
 
         const stats = getRateLimitStats(clientId, env.MOLIAM_DB);
 
@@ -58,7 +61,7 @@ export function createRateLimiterMiddleware(request, endpointName, env, baseRate
         headers.set("X-RateLimit-Reset", nextResetSeconds.toString());
 
         return {success: true, count: requestCount, clientId, stats, headers};
-      } catch (dbError) {
+       } catch (dbError) {
         console.warn("[rate-limiter] D1 DB not available, using memory fallback for client:", clientId);
 
         const memoryState = rateLimitMemory.get(clientId);
@@ -141,8 +144,6 @@ export function createRateLimiterMiddleware(request, endpointName, env, baseRate
       }
     }
   }
-
-  const rateLimitMemory = new Map();
 
   return checkRateLimit(clientId, baseRate, burstFactor);
 }

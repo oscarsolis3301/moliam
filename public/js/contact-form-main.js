@@ -239,6 +239,14 @@
     statusEl.textContent = '';
     statusEl.className = 'pf-form-status';
 
+    // Spam Check: Validate honeypot field - if filled, reject as spam
+    var honeyVal = getValue('pf-honey') || '';
+    if (honeyVal && honeyVal.length > 3) {
+      // Likely a bot - silently fail (don't reveal honeypot exists)
+      showError('❌ Submission rejected. Please try again.');
+      return; // Silently reject without showing honeypot mechanism
+    }
+
     var payload = {
       name: getValue('pf-name'),
       email: getValue('pf-email'),
@@ -250,11 +258,12 @@
         facebook: getValue('pf-social-facebook'),
         instagram: getValue('pf-social-instagram'),
         yelp: getValue('pf-social-yelp')
-       },
+        },
       service: getSelectedService(),
       message: getValue('pf-message'),
-      screenResolution: window.screen.width + 'x' + window.screen.height
-     };
+      screenResolution: window.screen.width + 'x' + window.screen.height,
+      honeypotCheck: 'passed' // Flag sent to backend for verification
+      };
 
     fetch('/api/contact', {
       method: 'POST',

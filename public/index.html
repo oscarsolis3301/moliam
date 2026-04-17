@@ -1387,10 +1387,21 @@ footer {
     color: var(--muted);
     margin-top: 6px;
     font-family: var(--mono);
+}.contact-form .honey-field {
+    display: none !important;
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    left: -9999px;
+    height: 1px;
+    width: 1px;
 }
-.contact-actions {
+.contact-form .honey-field label {
+    display: none !important;
+}.contact-actions {
     margin-top: 22px;
     display: flex;
+}
 }
 .contact-actions .btn-primary {
     width: 100%;
@@ -2062,13 +2073,18 @@ footer {
             <p>Tell us about your project. We'll reach out within 24 hours with an API key and onboarding details.</p>
         </div>
         <form class="contact-form" id="contact-form" novalidate>
+            <!-- Honeypot field - hidden from humans, traps bots -->
+            <div class="field honey-field">
+                <label for="cf-honey">Website</label>
+                <input id="cf-honey" name="honey" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" value="">
+            </div>
             <div class="field">
                 <label for="cf-name">Your Name</label>
                 <input id="cf-name" name="name" type="text" required maxlength="80" autocomplete="name" placeholder="Jane Doe">
             </div>
             <div class="field">
                 <label for="cf-email">Email</label>
-                <input id="cf-email" name="email" type="email" required maxlength="120" autocomplete="email" placeholder="you@company.com">
+                <input id="cf-email" name="email" type="email" required maxlength="120" autocomplete="email" plaintext="true" placeholder="you@company.com">
             </div>
             <div class="field">
                 <label for="cf-company">Company <span class="opt">(optional)</span></label>
