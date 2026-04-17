@@ -164,10 +164,10 @@ window.clearActivityFeed = function() {
  */
 window.loadActivityHistory = async function(limit = 20) {
     try {
-        const response = await fetch(`/api/activity?limit=${limit}&token=***`, {
+        const response = await fetch(`/api/activity?limit=${limit}&token=${session_token}`, {
             method: 'GET',
             credentials: 'include'
-        });
+         });
 
         if (!response.ok) throw new Error('Failed to load activities');
 

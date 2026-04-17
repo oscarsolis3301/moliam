@@ -4,10 +4,10 @@
 (async function() {
     'use strict';
 
-// Define session token for API authentication (needed by fetch calls in Activity Feed)  
+// Define session token for API authentication (needed by fetch calls in Activity Feed)   
 let session_token;
-try { const urlParams = new URLSearchParams(window.location.search); session_token = urlParams.get('token'); } catch(e) {}
-if (!session_token && document.cookie) { const match = document.cookie.match(/session=([^;]+)/); if (match) session_token = match[1]; }
+try { const urlParams = new URLSearchParams(window.location.search); session_token=urlParams.get('token'); } catch(e) {}
+if (!session_token && document.cookie) { const match = document.cookie.match(/session=([^;]+)/); if (match) session_token=match[1]; }
 
 const urlParams = new URLSearchParams(window.location.search);
 let impersonatedUserId = urlParams.get('impersonate');
@@ -139,19 +139,107 @@ let impersonatedUserId = urlParams.get('impersonate');
           // Render project cards - enhance with hover effects and animations
     renderProjects(data.projects || []);
 
-        // Render milestone updates/timeline
+// Render milestone updates/timeline
     renderTimeline(data.updates || []);
 
-     // Calculate invoice summary for stats display
+      // Load activity feed from new backend API (Task 21)
+    loadActivityFeed();
+
+       // Calculate invoice summary for stats display
     calculateInvoiceStats(data.invoices || []);
 
-      // Initialize visualizations if data available
+        // Initialize visualizations if data available
     await initializeCharts(data, isAdmin);
 
     }).catch(err => { 
          console.error('Dashboard init error:', err); 
          showAuthError(); 
     });
+
+// ============================================================================
+// ACTIVITY FEED LOADER - Task 21: Connect to /api/activity backend endpoint
+
+/** Load activity feed from backend API and render items in #activity-feed section */
+async function loadActivityFeed() {
+    try {
+        const sessionToken = getSessionToken();
+        if (!sessionToken) return;
+
+        const response = await fetch(`/api/activity?action=list&token=${sessionToken}`);
+        
+        if (!response.ok) throw new Error('Failed to load activity feed');
+        
+            const result = await response.json();
+            
+        if (result.success && result.data && Array.isArray(result.data)) {
+            if (result.data.length > 0) {
+                console.log(`Loaded ${result.data.length} activities from backend`);
+                for (const activity of result.data.slice(0, 20)) {
+                    addActivityItem({
+                        type: activity.action_type || 'info',
+                        title: 'Activity Update',
+                        description: activity.details || 'No details provided',
+                        timestamp: activity.created_at || new Date().toISOString()
+                      });
+                  }
+              } else {
+                const feedContainer = document.getElementById('activity-feed');
+                if (feedContainer) {
+                    feedContainer.innerHTML = '<div class="empty-state" style="font-size:14px;margin-top:24px">No recent activity yet. Your project updates will appear here automatically.</div>';
+                 }
+              }
+        } else {
+            console.warn('Activity load failed:', result.message || result.error);
+              }
+
+          } catch (err) {
+            console.warn('Activity feed error:', err.message);
+             // Graceful degradation - don't fail dashboard if activity API unavailable
+           }
+}
+
+// Helper to get session token from available sources
+function getSessionToken() {
+    if (session_token) return session_token;
+    try {
+        const cookies = document.cookie.split(';');
+        for (const cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'session') return value;
+        }
+    } catch(e) {}
+    return null;
+}
+
+// Export for external use if needed
+window.loadActivityFeed = loadActivityFeed;
+
+
+
+/** Load activity history from backend API */
+window.loadActivityHistory = async function(loadLimit = 20) {
+    try {
+            const response = await fetch(`/api/activity?token=${session_token}`, {
+            method: 'GET',
+            credentials: 'include'
+          });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const result = await response.json();
+
+        const feedContainer = document.getElementById('activity-feed');
+        
+        if (result.success && Array.isArray(result.data)) {
+              // Clear empty state and rebuild from data
+            feedContainer.innerHTML = '';
+            
+            for (const activity of result.data) {
+                addActivityItem(activity);  // false = don't auto-scroll on history items
+              }
+
+            console.log(`✓ Loaded ${result.data.length} activities to feed`);
+            
 
 // Stat cards with staggered animation - enhanced design patterns from Linear/Vercel/Supabase dashboards
 function renderStats(data, isAdmin, stats, currentUserId) {
@@ -505,6 +593,6 @@ function escapeHtml(str) {
 }
 
 // Add global helper for testing/demo purposes
-window.addActivityItem = addActivityItem;   // for inline onclick use from HTML
+window.addActivityItem = addActivityItem;     // for inline onclick use from HTML
 
-);         // Close async IIFE
+})();  // Close main IIFE
