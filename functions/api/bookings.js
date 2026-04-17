@@ -165,10 +165,18 @@ export async function onRequestPut(context) {
 }
 
 // Helper functions
+
+/**
+ * Create a new appointment/booking with validation and audit logging
+ * @param {object} context Cloudflare Pages request context  
+ * @param {object} body Request body containing appointment data
+ * @param {MOLIAM_DB} db D1 database instance for persistence
+ * @returns {Response} 201 Created with appointment_id or error response
+ */
 async function createAppointment(context, body, db) {
   if (!db) {
     return jsonResp(503, { error: true, message: "Database unavailable" }, context.request);
-  }
+   }
 
   const prequalification_id = body.prequalification_id;
   const client_name = (body.client_name || "").trim();
@@ -213,10 +221,19 @@ async function createAppointment(context, body, db) {
   }
 }
 
+/**
+ * Update appointment status (confirm/cancel/reschedule/completed) with audit logging
+ * @param {object} context Cloudflare Pages request context
+ * @param {number|string} id Appointment ID to update
+ * @param {string} status Status change: 'confirmed', 'cancelled', 'rescheduled', 'completed'
+ * @param {MOLIAM_DB} db D1 database instance for persistence  
+ * @returns {Response} 200 OK with updated status or error response
+ */
 async function updateAppointmentStatus(context, id, status, db) {
   if (!id || !db) {
     return jsonResp(400, { error: true, message: "Invalid appointment ID or database" }, context.request);
-  }
+}
+
 
   try {
     const res = await db.prepare(
@@ -241,10 +258,19 @@ async function updateAppointmentStatus(context, id, status, db) {
   }
 }
 
+/**
+ * Reschedule an appointment to a new date/time with email notification
+ * @param {object} context Cloudflare Pages request context  
+ * @param {number|string} id Appointment ID to reschedule  
+ * @param {string} newDate ISO-8601 datetime for rescheduling
+ * @param {MOLIAM_DB} db D1 database instance for persistence
+ * @returns {Response} 200 OK with updated_date or error response  
+ */
 async function rescheduleAppointment(context, id, newDate, db) {
   if (!id || !newDate || !db) {
     return jsonResp(400, { error: true, message: "Invalid parameters for rescheduling" }, context.request);
-  }
+}
+
 
   try {
     const res = await db.prepare(
@@ -271,10 +297,18 @@ async function rescheduleAppointment(context, id, newDate, db) {
   }
 }
 
+/**
+ * Handle no-show workflow for missed appointments with auto-retry logic
+ * @param {object} context Cloudflare Pages request context  
+ * @param {number|string} id Appointment ID that was a no-show  
+ * @param {MOLIAM_DB} db D1 database instance for persistence
+ * @returns {Response} 200 OK with retry_count or auto-denial status after max attempts
+ */
 async function handleNoShow(context, id, db) {
   if (!id || !db) {
     return jsonResp(400, { error: true, message: "Invalid appointment ID or database" }, context.request);
-  }
+}
+
 
   try {
     const appointment = await db.prepare("SELECT * FROM appointments WHERE id = ?").bind(id).first();
@@ -323,11 +357,19 @@ async function handleNoShow(context, id, db) {
   }
 }
 
+/**
+ * Log audit trail entry for appointment lifecycle events (booked, cancelled, rescheduled, etc.)
+ * @param {number|string} appointmentId The appointment ID to log  
+ * @param {string} action Action type: 'booked', 'cancelled', 'rescheduled', 'expired'
+ * @param {MOLIAM_DB|null} db D1 database instance (can be null for fallback logging)
+ * @returns {void} No return value, logs to D1 or console depending on DB availability
+ */
 async function logAudit(appointmentId, action, db = null) {
   // Support both D1 database logging and backward-compatible file-based logging
   if (db && typeof db.prepare === 'function') {
     try {
       await db.prepare("INSERT INTO audit_logs (appointment_id, message, ts) VALUES (?, ?, datetime('now'))").bind(String(appointmentId), action).run();
+
       console.log(`[audit] ID=${appointmentId} action=${action} written to D1`);
     } catch (e) {
       // silent fail - no audit_logs table exists yet
@@ -339,25 +381,36 @@ async function logAudit(appointmentId, action, db = null) {
   }
 }
 
+/**
+ * Send automated reschedule confirmation email to client after appointment change
+ * @param {object} appointment Appointment object containing client_email and scheduled_with fields
+ * @returns {void} Fire-and-forget email delivery, logs errors to console  
+ */
 async function sendRescheduleEmail(appointment) {
   try {
     const subject = "Your appointment has been rescheduled";
 
     await fetch("https://api.mailchannels.net/tx/v1/send", {
-      method: "POST",
+      method: "POST", 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        personalizations: [{ to: [{ email: appointment.client_email, name: appointment.scheduled_with }] }],
-        from: { email: "hello@moliam.com" },
+        personalizations: [{ to: [{ email: appointment.client_email, name: appointment.scheduled_with }] }], 
+        from: { email: "hello@moliam.com" }, 
         subject,
         content: [{ type: "text/html", value: `<h3>Your demo call has been rescheduled to a new time.</h3>` }]
       })
-    });
-  } catch (e) {
+      });
+    } catch (e) {
     console.error("Reschedule email error:", e);
-  }
+   }
 }
 
+
+/**
+ * Send automated retry notice email for no-show appointments  
+ * @param {object} appointment Appointment object containing client_email field  
+ * @returns {void} Fire-and-forget email notification, logs errors to console
+ */
 async function sendAutoRetryNotice(appointment) {
   try {
     await fetch("https://api.mailchannels.net/tx/v1/send", {
