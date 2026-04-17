@@ -2,7 +2,7 @@
  * CRM Webhook Handler - Processes CRM callbacks and updates lead status POST /api/webhooks/lead-updates
 */
 
-import { jsonResp } from '../lib/api-helpers.js';
+import { jsonResp } from './lib/standalone.js';
 import { createRateLimiterMiddleware, parseRateLimitedJsonBody } from '../lib/rate-limiter.js';
 
 /** Rate Limiter: CRM webhook endpoint protection (10 requests/min, 20 burst - conservative for external Webhooks). */

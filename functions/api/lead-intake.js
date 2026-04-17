@@ -7,7 +7,7 @@
 /* NEW: Rate limiter library imported for advanced sliding window algorithm with memory+D1 persistence, replacing older hard-coded IP counting pattern */
 import { checkRateLimit, getClientId, createRateLimiterMiddleware, persistRateLimitState, getRateLimitStats, rateLimitExceeded } from '../lib/rate-limiter.js';
 
-import { jsonResp, sanitizeText, validateEmail, validatePhone, hashSHA256, calculateLeadScore, sendDiscordWebhook } from './api-helpers.js';
+import { jsonResp, sanitizeText, validateEmail, validatePhone, hashSHA256, calculateLeadScore, sendDiscordWebhook } from './lib/standalone.js';
 
 /**
  * Handle POST requests to lead intake endpoint with email validation, phone validation, HTML stripping, and lead scoring
