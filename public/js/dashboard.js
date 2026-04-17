@@ -4,10 +4,10 @@
 (async function() {
     'use strict';
 
-// Define session token for API authentication (needed by fetch calls in Activity Feed)  
+// Define session token for API authentication (needed by fetch calls in Activity Feed)   
 let session_token;
-try { const urlParams = new URLSearchParams(window.location.search); session_token=urlParam('session'); } catch(e) {}
-if (!session_token && document.cookie) { const match = document.cookie.match(/session=([^;]+)/); if (match) session_token=match[1]; }
+try { const urlParams = new URLSearchParams(window.location.search); session_token=urlParams.get('token') || ''; } catch(e) {}
+if (!session_token && document.cookie) { const match = document.cookie.match(/moliam_session=([^;]+)/); if (match) session_token=match[1]; }
 
 // Helper: Extract session parameter from URL - simplified version of existing code above  
 function urlParam(name) {
@@ -216,7 +216,7 @@ function getSessionToken() {
             const [name, value] = cookie.trim().split('=');
             if (name === 'session') return value;
         }
-    } catch(e) {}
+     } catch(e) { return null; }
     return null;
 }
 
@@ -229,10 +229,10 @@ window.loadActivityHistory = async function(loadLimit = 20) {
         const sessionToken = getSessionToken();
         if (!sessionToken) return [];
 
-        const response = await fetch(`/api/activity?action=list&limit=${loadLimit}&token=${sessionToken}`, {
+        const response = await fetch(`/api/activity?action=list&limit=${loadLimit}&token=${encodeURIComponent(sessionToken)}`, {
             method: 'GET',
             credentials: 'include'
-        });
+         });
 
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
