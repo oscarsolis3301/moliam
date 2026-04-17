@@ -7,5 +7,14 @@ binding = "MOLIAM_DB"
 database_name = "moliam-db"
 database_id = "c0f36156-312c-47c0-846f-249fd56ab8b6"
 
+# KV namespace for performance metrics caching (Task 16: Performance Monitoring & Analytics)
+[vars]
+MOLIAM_METRICS_ID = "moliam-metrics-kv"
+
+[[kv_namespaces]]
+binding = "MOLIAM_METRICS"
+id = "moliam-metrics-id"
+preview_id = "moliam-metrics-preview-id"
+
 # DISCORD_WEBHOOK_URL is set as a Pages secret (wrangler pages secret put)
 # Staging uses same D1 for now but deploys to moliam-staging.pages.dev
