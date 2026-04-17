@@ -66,15 +66,6 @@
       </div>
 </div>
 
-<!-- Appointments Calendar - Task 23 start -->
-<div class="section appointment-section">
-  <div class="section-title">Upcoming Appointments</div>
-  <div id="appointments-list" style="--stagger:0.1s"></div>
-  <div class="appointment-actions">
-    <a class="btn primary" href="https://calendly.com/visualark/demo" target="_blank">➕ Book New Call</a>
-  </div>
-</div><br style-preserve-spacing/>
-
 <!-- Visualization Panel -->
 <div class="section viz-section"><h2 class="viz-title">Pipeline Analytics</h2><div class="viz-grid" id="viz-grid"><div class="viz-card"><canvas id="funnel-chart" style="height:350px;width:100%;"></canvas></div><div class="viz-card"><canvas id="revenue-chart" style="height:350px;width:100%;"></canvas></div></div></div>
 

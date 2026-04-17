@@ -279,3 +279,25 @@
            color: black !important;
               }
      }
+
+/* Appointment Mobile - Task 23 start */
+.appointment-section { margin: 32px 16px; padding: 20px 16px;}
+
+.appointment-list-item { flex-direction: column; align-items: stretch; gap: 8px; min-height: auto; }
+
+.appointment-actions { position: relative; top: 0; justify-content: center; width: 100%; margin-top: 8px;}
+
+.calendar-link { font-size: 12px; padding: 6px 10px; display: inline-block; text-align: center; min-height: 44px; border-radius: 8px;}
+
+@media (min-width: 481px) and (max-width: 768px) {
+    .appointment-section { margin: 32px 20px; padding: 24px 20px; }
+    .calendar-link { font-size: 13px ; padding: 8px 14px;}
+}
+
+@media (max-width: 480px) {
+    .appointment-title { font-size: 15px; letter-spacing: 0.01em;}
+    .appointment-meta { font-size: 12px; margin-top: -4px; }
+    .calendar-link { padding: 6px 10px; font-size: 11px;}
+}
+
+.card { border-radius: 12px; background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 16px; margin-bottom: 16px;}
