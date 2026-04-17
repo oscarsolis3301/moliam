@@ -4,14 +4,14 @@
 (async function() {
     'use strict';
 
-// Define session token for API authentication (needed by fetch calls in Activity Feed)    
+// Define session token for API authentication (needed by fetch calls in Activity Feed)
 let session_token;
-try { session_token=urlParam('token') || ''; } catch(e) {}
-if (!session_token && document.cookie) { const match = document.cookie.match(/moliam_session=([^;]+)/); if (match) session_token=match[1]; }
+try { session_token = '***' || ''; } catch(e) {}
+if (!session_token && document.cookie) { const match = document.cookie.match(/moliam_session=([^;]+)/); if (match) session_token = match[1]; }
 
-// Helper: Extract session parameter from URL - simplified version of existing code above  
+// Helper: Extract session parameter from URL - simplified version of existing code above
 function urlParam(name) {
-    try { return new URLSearchParams(window.location.search).get(name); } 
+    try { return new URLSearchParams(window.location.search).get(name); }
     catch(e) { return null; }
 }
 
@@ -43,7 +43,7 @@ let impersonatedUserId = urlParams.get('impersonate');
                .then(r => r.json())
                .catch(e => []);
       };
-        
+
          // Initialize charts using ChartViz module
     async function initializeCharts(data, isAdmin) {
             if (typeof Chart === 'undefined' || !window.ChartViz) return;
@@ -89,9 +89,9 @@ let impersonatedUserId = urlParams.get('impersonate');
         fetchDashboard()
       ]);
 
-    if (auth.status === 'rejected' || !auth.value?.success) { 
-        window.location.href = '/login.html'; 
-        return; 
+    if (auth.status === 'rejected' || !auth.value?.success) {
+        window.location.href = '/login.html';
+        return;
       }
 
     if (dashboard.status === 'rejected' || !dashboard.value?.success) {
@@ -135,9 +135,9 @@ let impersonatedUserId = urlParams.get('impersonate');
         fetch('/api/admin/clients', { credentials: 'include' })
                .then(r => r.json())
                .then(c => {
-                if (c.clients && c.clients.length > 0) { 
+                if (c.clients && c.clients.length > 0) {
                     const el = document.getElementById('total-clients');
-                    if(el)el.textContent = c.clients.length; 
+                    if(el)el.textContent = c.clients.length;
                    }
                });
          }
@@ -157,8 +157,8 @@ let impersonatedUserId = urlParams.get('impersonate');
         // Initialize visualizations if data available
     await initializeCharts(data, isAdmin);
 
-    }).catch(err => { 
-         console.error('Dashboard init error:', err); 
+    }).catch(err => {
+         console.error('Dashboard init error:', err);
 // Load activity feed from new backend API (Task 21)
 loadActivityFeed();
 
@@ -168,11 +168,11 @@ loadActivityFeed();
 /** Load activity feed from backend API and render items in #activity-feed section */
 async function loadActivityFeed() {
     try {
-        const sessionToken = getSessionToken();
+        const sessionToken=getSessionToken();
         if (!sessionToken) {
             console.warn('No session token available for activity feed');
             return;
-          }
+            }
 
         const response = await fetch(`/api/activity?action=list&token=${encodeURIComponent(sessionToken)}`, {
             credentials: 'include'
@@ -228,7 +228,7 @@ window.loadActivityFeed = loadActivityFeed;
 /** Load activity history from backend API */
       window.loadActivityHistory = async function(loadLimit = 20) {
     try {
-        const sessionToken = getSessionToken();
+        const sessionToken=getSessionToken();
         if (!sessionToken) return [];
 
         const response = await fetch(`/api/activity?action=list&limit=${loadLimit}&token=${encodeURIComponent(sessionToken)}`, {
@@ -274,7 +274,7 @@ window.loadActivityFeed = loadActivityFeed;
 function renderStats(data, isAdmin, stats, currentUserId) {
     const statsGrid = document.getElementById('stats-grid');
     let html = '';
-    
+
     if (isAdmin) {
         html += '<div class="stat-card" style="--stagger:0.1s"><div class="label">Clients</div><div class="value" id="total-clients">0</div></div>';
         html += '<div class="stat-card" style="--stagger:0.15s"><div class="label">Active Projects</div><div class="value">'+stats.active_projects+'</div></div>';
@@ -299,7 +299,7 @@ function renderProjects(projects) {
             const typeClass = 'type-'+(project.type||'website').toLowerCase();
             const statusClass = 'status-'+((project.status||'active').toLowerCase().replace(' ','_'));
             let typeDisplay = project.type ? project.type.charAt(0).toUpperCase() + project.type.slice(1) : 'Website';
-            let statusDisplay = (project.status==='active') ? 'Active' : 
+            let statusDisplay = (project.status==='active') ? 'Active' :
                                 (project.status ? project.status.charAt(0).toUpperCase() + project.status.slice(1) : 'Completed');
 
             projHtml += '<div class="project-card" style="--stagger:'+(delayCounter+=0.05)+'s">';
@@ -342,7 +342,7 @@ function renderTimeline(updates) {
 // Invoice summary calculation and list rendering with WCAG touch targets 44px minimum
 function calculateInvoiceStats(invoices) {
     let totalBilled=0, totalPaid=0, outstanding=0;
-    
+
     for (const inv of invoices) {
         const amt = inv.amount||0;
         totalBilled += amt;
@@ -357,7 +357,7 @@ function calculateInvoiceStats(invoices) {
               '<div style="margin-top:8px"><span class="sub-label">Outstanding</span><span class="value pending">$'+(outstanding||0).toLocaleString()+'</span></div>';
       }
 
-       
+
 // Enhanced invoice list rendering with glassmorphism design patterns and WCAG touch targets 44px minimum
     window.loadInvoicesData = async function() {
         try {
@@ -367,7 +367,7 @@ function calculateInvoiceStats(invoices) {
             if (!response.ok) throw new Error('Failed to load invoices');
 
             const result = await response.json();
-            
+
             if (result.success && result.data && Array.isArray(result.data)) {
                 renderInvoiceCards(result.data);
               } else {
@@ -375,7 +375,7 @@ function calculateInvoiceStats(invoices) {
               }
          } catch (e) {
             console.error('Invoice load error:', e);
-            document.getElementById('invoice-list').innerHTML = 
+            document.getElementById('invoice-list').innerHTML =
                   '<div class="empty-state" style="color:var(--accent-red)">Failed to load invoices. Please try again.</div>';
           }
        };
@@ -396,7 +396,7 @@ function calculateInvoiceStats(invoices) {
      // Render invoices as interactive cards with status badges, amounts, due dates, and actions
     function renderInvoiceCards(invoices) {
         const listContainer = document.getElementById('invoice-list');
-        
+
         if (!invoices || invoices.length === 0) {
             listContainer.innerHTML = '<div class="empty-state">No invoices yet. Create your first invoice to get started.</div>';
             return;
@@ -407,7 +407,7 @@ function calculateInvoiceStats(invoices) {
             const statusClass = (inv.status||'draft').toLowerCase().replace(' ','_');
             const formattedAmount = '$'+(inv.amount||0).toLocaleString();
             const invoiceDate = inv.due_date ? new Date(inv.due_date + Date.now()).toLocaleDateString() : 'N/A';
-            
+
             cardsHTML += '<div class="invoice-card" data-id="'+(inv.id||'')+'">';
             cardsHTML += '<div class="invoice-header">';
             cardsHTML += '<div class="invoice-number">#'+(inv.invoice_number||'N/A').toUpperCase()+'</div>';
@@ -415,12 +415,12 @@ function calculateInvoiceStats(invoices) {
             cardsHTML += '</div>';
             cardsHTML += '<div class="invoice-amount">'+formattedAmount+'</div>';
             cardsHTML += '<div class="invoice-meta"><div>Due: '+invoiceDate+'</div>';
-            
+
             if (inv.line_items && JSON.parse(inv.line_items||'[]').length > 0) {
                 const items = JSON.parse(inv.line_items);
                 cardsHTML += '<div style="margin-top:8px;font-size:12px;color:var(--text-secondary)">line items: '+items.length+'</div>';
                    }
-              
+
               // Action buttons with WCAG 44px minimum touch targets on mobile
             const btnClass = 'btn primary';
             const ariaLabel = 'View invoice '+ (inv.invoice_number || inv.id);
@@ -451,16 +451,16 @@ console.log('Rendered '+cards.length+' invoice cards');
 // Initialize activity feed when dashboard loads
 function initializeClientActivity() {
     const feedContainer = document.getElementById('activity-feed');
-    
+
     if (!feedContainer) return;
 
      // Show loading state initially
     feedContainer.innerHTML = '<div class="activity-empty"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2v-5a2 2 0 012-2h7.5l2.5 1.5V19a2 2 0 01-2 2z" /></svg><div class="empty-title">Activity Feed</div><div class="empty-text">Recent project updates and milestones will appear here automatically.</div></div>';
-    
+
      // Connect to activity feed if module exists
     if (typeof ActivityFeed !== 'undefined') {
         console.log('✓ Activating Client Activity Feed Widget (Task 20)');
-        
+
          // Load any past activities from API
         loadActivityHistory(10).then(history => {
             console.log(`Loaded ${history.length} historical activities`);
@@ -490,23 +490,26 @@ function initializeClientActivity() {
 }
 
 /** Load activity history from backend API */
-window.loadActivityHistory = async function(loadLimit = 20) {
+      window.loadActivityHistory = async function(loadLimit = 20) {
     try {
-            const response = await fetch(`/api/activity?token=${session_token}`, {
+            const sessionToken=getSessionToken();
+            if (!sessionToken) return [];
+
+            const response = await fetch(`/api/activity?token=${encodeURIComponent(sessionToken)}&limit=${loadLimit}`, {
             method: 'GET',
             credentials: 'include'
-         });
+          });
 
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const result = await response.json();
 
         const feedContainer = document.getElementById('activity-feed');
-        
+
         if (result.success && Array.isArray(result.data)) {
              // Clear empty state and rebuild from data
             feedContainer.innerHTML = '';
-            
+
             for (const activity of result.data) {
                 ActivityFeed.addItem(activity, false);  // false = don't auto-scroll on history items
              }
@@ -519,7 +522,7 @@ window.loadActivityHistory = async function(loadLimit = 20) {
 
      } catch (error) {
         console.warn('Activity API load failed:', error.message);
-        
+
          // Show friendly empty state instead of technical errors
         const feedContainer = document.getElementById('activity-feed');
         if (feedContainer) {
@@ -533,7 +536,7 @@ window.loadActivityHistory = async function(loadLimit = 20) {
 /** Helper to auto-initialize activity feed on page load
  * Waits for ActivityFeed module to be ready before activating */
 window.addEventListener('load', function() {
-    // Check if ActivityFeed module loaded successfully  
+    // Check if ActivityFeed module loaded successfully
     if (typeof ActivityFeed !== 'undefined') {
          initializeClientActivity();
      } else {
@@ -553,7 +556,7 @@ function addSampleActivities(count = 3) {
     ];
 
     const itemsToCreate = samples.slice(0, count);
-    
+
     for (const sample of itemsToCreate) {
         addActivityItem({
             type: sample.type,
@@ -584,7 +587,7 @@ function addActivityItem(itemObj, autoScroll) {
     // Fallback card rendering if ActivityFeed module not loaded yet
     const now = new Date(itemObj.timestamp || Date.now());
     const formattedTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
+
     const itemHTML = `<article class="activity-item status-${itemObj.type || 'info'} stagger-1" data-type="${itemObj.type}">` +
                      `<div class="activity-icon-container"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2v-5a2 2 0 012-2h7.5l2.5 1.5V19a2 2 0 01-2 2z" /></svg></div>` +
                      `<div class="activity-content">` +
