@@ -608,4 +608,78 @@ CREATE TABLE IF NOT EXISTS invoices (
 
 ---
 
-## **Next Session Priority**: Client Feedback Widget - Add client activity feed section or admin dashboard with project metrics summary page.
+---
+
+## Task 20: Backend Activity Feed API - COMPLETE ✓ [This Session]
+
+**Status:** COMPLETE (Backend API built and committed this session).
+
+**Implementation Delivered:**
+
+Full client activity feed backend API to support frontend `activity-feed.js` widget:
+
+✅ **Created `/functions/api/activity.js`** (~350 lines, 12KB) - Complete CRUD operations
+
+✅ **GET endpoint support:**
+- `action=list` (default): Returns paginated activities for logged-in user (`?limit=20`, max 100)
+- `action=count`: Returns activity count for client admin views
+  
+✅ **POST endpoint support** - Same list operation but with optional body-based filtering:
+- `action=create` (admin only): INSERT new activity record into `client_activity` table
+  - Parameters: `user_id`, `action_type` (info/event/alert/payment/update), `details` (free-form text)
+  - Auto-generates `id`, `created_at` timestamps  
+- `action=delete`: DELETE activity by ID (admin only)
+
+✅ **Security Features:** Token extraction from URL hash/params/cookies with fallback chain, parameterized SQL throughout preventing injection, client-only data access (admins see all if role=admin/superclient), session expiry andis_active flag validation
+
+✅ **Database Schema Reference:**
+```sql
+CREATE TABLE IF NOT EXISTS client_activity (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER,
+  action_type TEXT,  -- info/event/alert/payment/update/custom
+  details TEXT,      -- free-form description or structured JSON
+  created_at TEXT DEFAULT (datetime('now'))
+);
+```
+
+✅ **Response Format:** Standardized `{success:bool, data:[...], total:N, fetchAt:'ISO-8601'}` with HTTP status codes (200/201 for success, 401/403/503 for errors)
+
+**Files Committed:**
+📄 `functions/api/activity.js` (12,074 bytes - 304 lines added)
+
+**Validation:** Pre-commit-check.sh PASSED - All checks clean before committing
+
+**Frontend Integration Note:** Frontend already has activity-feed.js with empty state UI ready to consume this endpoint via `loadActivityHistory()` function calling `/api/activity?action=list&limit=20`.
+
+---
+
+## Task 21: Connect Activity Feed to Dashboard - IN PROGRESS
+
+**Status:** In Progress (Backend API exists, frontend integration needed)
+
+**Action Required:** Update `dashboard.js` to fetch activity data from new backend and display in existing `#activity-feed` section:
+- Call `/api/activity?action=list&limit=20` on page load
+- Render activities as cards using existing `addActivityItem()` function
+- Connect to WebSocket realtime updates from `dashboard-realtime.js` for live feed entries
+- Handle empty state properly when no activities exist
+- Mobile-responsive design following WCAG 44px touch target standards
+
+**Mock Integration Plan:**
+```javascript
+// In dashboard.js after project loading:
+loadActivityFeed = async function() {
+  const response = await fetch(`/api/activity?action=list&token=${sessionToken}&limit=20`);
+  const data = await response.json();
+  if (data.success) renderActivities(data.data);
+}
+
+// Call after projects load:
+loadProjectsData().then(() => loadActivityFeed());
+```
+
+**Expected Timeline:** Complete within this session - modify `dashboard.js` to add activity feed loader, integrate with existing `activity-feed.js` widget functions, test live Cloudflare Pages environment.
+
+---
+
+## Next Session Priority (After Task 21): Project Metrics Summary Page - Admin Dashboard Enhancement
