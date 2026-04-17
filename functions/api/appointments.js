@@ -11,9 +11,10 @@ function getSessionTokenFromRequest(request) {
   const url = new URL(request.url);
   
   if (url.hash && !/^#$/.test(url.hash)) {
-    const match = url.hash.match(/token=([^&]+)/i);
+    const match = url.hash.match(/token=([^&]*)/);
     if (match && match[1]) return decodeURIComponent(match[1]);
-     }
+  }
+
   const tokenFromParam = url.searchParams.get('token');
   if (tokenFromParam) return decodeURIComponent(tokenFromParam);
   
@@ -24,17 +25,17 @@ function getSessionTokenFromRequest(request) {
   return null;
 }
 
-function corsResponse(body, method='GET',token=null){
-  const headers=new Headers();
-  headers.set("Content-Type","text/plain");
-  headers.set("Access-Control-Allow-Origin","https://moliam.pages.dev");
-  headers.set("Access-Control-Allow-Methods","GET,POST,OPTIONS");
-  headers.set("Access-Control-Allow-Headers","Content-Type,Authorization,X-Requested-With");
+function corsResponse(body, method='GET', token=null) {
+  const headers = new Headers();
+  headers.set("Content-Type", "application/json");
+  headers.set("Access-Control-Allow-Origin", "https://moliam.pages.dev");
+  headers.set("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  headers.set("Access-Control-Allow-Headers", "Content-Type,Authorization");
   
-  if(token){
-    headers.set("Set-Cookie","m="+encodeURIComponent(token)+";Path=/;SameSite=Strict;HttpOnly");
-     }
-  return new Response(body,{status:200,headers});
+  if (token) {
+    headers.set("Set-Cookie", "moliam_session=" + encodeURIComponent(token) + "; Path=/; SameSite=Strict; HttpOnly");
+  }
+  return new Response(body, { status: 200, headers });
 }
 
 export async function frontend(request){
@@ -43,7 +44,7 @@ export async function frontend(request){
   if(request.method==="OPTIONS"){return corsResponse(null,"OPTIONS");}
   
   const sessionToken=getSessionTokenFromRequest(request);
-  const authResult=await validateSessionToken(sessionToken,request);
+  const authResult=validateSessionToken(sessionToken,request);
   const action=url.searchParams.get("action")||"list";
 
   if(action=="list"){return await handleList(request,authResult);}
@@ -54,12 +55,12 @@ export async function frontend(request){
   if(action=="reschedule") {
     const body=await parseRequestBody(request,false);
     return await handleReschedule(request,body,authResult);
-  }
+   }
   if(action=="cancel") {
     const body=await parseRequestBody(request,false);
     return await handleCancel(request,body,authResult);}
 
-  return corsResponse(JSON.stringify(jsonResp(400,null,"Unknown: "+action)),request.method/sessionToken);}
+  return corsResponse(JSON.stringify(jsonResp(400,null,"Unknown: "+action)),request.method,sessionToken);}
 
 // Listing user's appointments with pagination and optional filters
 async function handleList(request,authResult){
