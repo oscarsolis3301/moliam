@@ -13,6 +13,24 @@
  */
 
 import { jsonResp } from './lib/standalone.js';
+import { createRateLimiterMiddleware } from './lib/rate-limiter.js';
+
+const rateLimitGet = createRateLimiterMiddleware('prequalify-get', 60, 120); // Public GET: 60/min, 120 burst
+const rateLimitPost = createRateLimiterMiddleware('prequalify-post', 30, 60); // Form submissions: 30/min, 60 burst
+
+/** Wrapper: GET handler with rate limiter middleware for public qualification form access */
+async function prequalifyRateLimitedGet(context) {
+  const rlResponse = await rateLimitGet(context.request, context.env);
+  if (rlResponse) return rlResponse; // Return 429 if rate limited
+  return null; // Continue to handler after passing rate limit check
+}
+
+/** Wrapper: POST handler with rate limiter middleware for form submissions */
+async function prequalifyRateLimitedPost(context, env) {
+  const rlResponse = await rateLimitPost(context.request, env);
+  if (rlResponse) return rlResponse; // Return 429 if rate limited
+  return null; // Continue to handler after passing rate limit check
+}
 
 /**
  * GET /api/prequalify - Retrieve qualification form metadata and criteria
@@ -20,36 +38,40 @@ import { jsonResp } from './lib/standalone.js';
  * @param {object} context - Cloudflare Pages request context with env containing MOLIAM_DB
  * @returns {Response} JSON response with form_url, min_budget, preferred_timeline, support_industries
  */
-export async function onRequestGet(context) {
+export async function onRequestGet(context) { 
+  const rlResult = await prequalifyRateLimitedGet(context);
+  if (rlResult) return rlResult; // Rate limited - skip handler and return 429
+  
   const { env, request } = context;
   const db = env.MOLIAM_DB;
 
-     // Return form metadata with proper CORS headers for moliam domains
+      // Return form metadata with proper CORS headers for moliam domains
   if (!db) {
      return jsonResp(200, { success: true, error: false, form_url: "/booking/prequalify.html", criteria: { min_budget: 2000, preferred_timeline: ["immediate", "within_week", "next_month"], support_industries: ["real_estate", "financial_services", "healthcare", "retail"] } }, request);
-    }
-
-  return jsonResp(200, { success: true, error: false, form_url: "/booking/prequalify.html", criteria: { min_budget: 2000, preferred_timeline: ["immediate", "within_week", "next_month"], support_industries: ["real_estate", "financial_services", "healthcare", "retail"] } }, request);
-}
+     }
 
 /**
  * POST /api/prequalify - Submit client self-qualification data and receive booking authorization
  * Scores leads on budget(50pts), urgency(30pts), industry fit(20pts) = total 100 max
  * Auto-approves calendar access for score >= 60 AND budget >= $2k threshold
- * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding  
+ * @param {object} context - Cloudflare Pages request context with env.MOLIAM_DB binding   
  * @returns {Response} JSON response with score, calendar_access_granted flag, next_step
  */
-export async function onRequestPost(context) {
-  const { request, env } = context;
+export async function onRequestPost(context) { 
+   // Apply rate limiter middleware first
+  const rlResult = await prequalifyRateLimitedPost(context, context.env);
+  if (rlResult) return rlResult; // Rate limited - skip handler and return 429
+  
+  const { request, env } = context; 
   const db = env.MOLIAM_DB;
 
-  // Parse request body with try/catch for malformed JSON and return consistent error format
-  let data;
-  try {
+   // Parse request body with try/catch for malformed JSON and return consistent error format
+  let data; 
+  try { 
     data = await request.json();
-       } catch (e) {
+       } catch (e) { 
     return jsonResp(400, { success: false, error: true, message: "Invalid JSON body." }, request);
-     }
+      }
 
   const {
       submission_id,
@@ -60,7 +82,7 @@ export async function onRequestPost(context) {
     primary_industry, 
     current_stack,
     pain_points 
-   } = data || {};
+    } = data || {};
 
     // Sanitize and validate pain_points field (optional) - strip HTML, limit to 2000 chars if provided
   let sanitizedPainPoints = '';
