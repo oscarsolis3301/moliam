@@ -4,8 +4,13 @@
 (async function() {
     'use strict';
 
-    const urlParams = new URLSearchParams(window.location.search);
-    let impersonatedUserId = urlParams.get('impersonate');
+// Define session token for API authentication (needed by fetch calls in Activity Feed)  
+let session_token;
+try { const urlParams = new URLSearchParams(window.location.search); session_token = urlParams.get('token'); } catch(e) {}
+if (!session_token && document.cookie) { const match = document.cookie.match(/session=([^;]+)/); if (match) session_token = match[1]; }
+
+const urlParams = new URLSearchParams(window.location.search);
+let impersonatedUserId = urlParams.get('impersonate');
 
          // Check if user is authenticated (cookie-based)
     function checkAuth() {
@@ -318,7 +323,188 @@ function calculateInvoiceStats(invoices) {
             cards[i].style.setProperty('--stagger', (i * 0.05).toFixed(2)+'s');
           }
 
-        console.log('Rendered '+cards.length+' invoice cards');
-      }
+console.log('Rendered '+cards.length+' invoice cards');
+       }
 
+/** Client Activity Feed Widget - Task 20 Integration **/
+
+// Initialize activity feed when dashboard loads
+function initializeClientActivity() {
+    const feedContainer = document.getElementById('activity-feed');
+    
+    if (!feedContainer) return;
+
+     // Show loading state initially
+    feedContainer.innerHTML = '<div class="activity-empty"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2v-5a2 2 0 012-2h7.5l2.5 1.5V19a2 2 0 01-2 2z" /></svg><div class="empty-title">Activity Feed</div><div class="empty-text">Recent project updates and milestones will appear here automatically.</div></div>';
+    
+     // Connect to activity feed if module exists
+    if (typeof ActivityFeed !== 'undefined') {
+        console.log('✓ Activating Client Activity Feed Widget (Task 20)');
+        
+         // Load any past activities from API
+        loadActivityHistory(10).then(history => {
+            console.log(`Loaded ${history.length} historical activities`);
+         });
+
+         // Subscribe to realtime WebSocket messages if available
+        if (typeof window.addEventListener === 'function') {
+            window.addEventListener('activity-update', function(e) {
+                if (e.detail && e.detail.activity) {
+                    ActivityFeed.addItem(e.detail.activity, true);
+                 }
+             }, false);
+         }
+
+         // Auto-refresh activity feed every 30 seconds for desktop users
+        setInterval(() => {
+            const statusIndicator = findStatusIndicators();
+            if (statusIndicator && document.hidden === false) {
+                // Only refresh when user is on this page and session active
+                loadActivityHistory(5).catch(e => console.warn('Activity feed auto-refresh failed:', e));
+             }
+         }, 30000);   // 30 second interval
+
+      } else {
+        console.log('Activity Feed module not loaded yet');
+     }
 }
+
+/** Load activity history from backend API */
+window.loadActivityHistory = async function(loadLimit = 20) {
+    try {
+            const response = await fetch(`/api/activity?token=${session_token}`, {
+            method: 'GET',
+            credentials: 'include'
+         });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const result = await response.json();
+
+        const feedContainer = document.getElementById('activity-feed');
+        
+        if (result.success && Array.isArray(result.data)) {
+             // Clear empty state and rebuild from data
+            feedContainer.innerHTML = '';
+            
+            for (const activity of result.data) {
+                ActivityFeed.addItem(activity, false);  // false = don't auto-scroll on history items
+             }
+
+            console.log(`✓ Loaded ${result.data.length} activities to feed`);
+            return result.data;
+         } else {
+            throw new Error(result.error || 'Unknown error loading activity');
+         }
+
+     } catch (error) {
+        console.warn('Activity API load failed:', error.message);
+        
+         // Show friendly empty state instead of technical errors
+        const feedContainer = document.getElementById('activity-feed');
+        if (feedContainer) {
+            feedContainer.innerHTML = '<div class="empty-state" style="color:var(--accent-amber)">Recent activity unavailable. Your dashboard will update automatically when new events occur.</div>';
+         }
+
+        return [];
+     }
+}
+
+/** Helper to auto-initialize activity feed on page load
+ * Waits for ActivityFeed module to be ready before activating */
+window.addEventListener('load', function() {
+    // Check if ActivityFeed module loaded successfully  
+    if (typeof ActivityFeed !== 'undefined') {
+         initializeClientActivity();
+     } else {
+        console.warn('ActivityFeed module was not loaded from activity-feed.js');
+     }
+}, false);
+
+/** Sample data for demo purposes - can be used to test feed rendering */
+function addSampleActivities(count = 3) {
+    const feeds = document.getElementById('activity-feed');
+    if (!feeds) return;
+
+    const samples = [
+        {type: 'project_update', title: 'Project Progress Update', description: 'Web development phase completed, moving to testing stage.', timestamp: new Date(Date.now() - 3600000).toISOString()},
+        {type: 'message', title: 'Client Message', description: 'Thanks for the quick turnaround on this project!', timestamp: new Date(Date.now() - 7200000).toISOString()},
+        {type: 'milestone', title: 'Deliverable Submitted', description: 'First prototype delivered, awaiting client review.', timestamp: new Date(Date.now() - 14400000).toISOString()}
+    ];
+
+    const itemsToCreate = samples.slice(0, count);
+    
+    for (const sample of itemsToCreate) {
+        addActivityItem({
+            type: sample.type,
+            title: sample.title,
+            description: sample.description,
+            timestamp: sample.timestamp || new Date().toISOString()
+         });
+     }
+}
+
+function findStatusIndicators() {
+    const indicators = document.querySelectorAll('.status-badge, .indicator-dot');
+    return indicators.length > 0 ? true : false;
+}
+
+window.ActivityFeed = ActivityFeed;   // export for external use if needed
+
+/** Simple activity item creation (fallback if module not available) */
+function addActivityItem(itemObj, autoScroll) {
+    const feeds = document.getElementById('activity-feed');
+    if (!feeds) return;
+
+     const emptyState = feeds.querySelector('.activity-empty, .empty-state');
+    if (emptyState) {
+        emptyState.remove();
+     }
+
+    // Fallback card rendering if ActivityFeed module not loaded yet
+    const now = new Date(itemObj.timestamp || Date.now());
+    const formattedTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    const itemHTML = `<article class="activity-item status-${itemObj.type || 'info'} stagger-1" data-type="${itemObj.type}">` +
+                     `<div class="activity-icon-container"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2v-5a2 2 0 012-2h7.5l2.5 1.5V19a2 2 0 01-2 2z" /></svg></div>` +
+                     `<div class="activity-content">` +
+                     `<h4 class="activity-title">${escapeHtml(itemObj.title || 'Update')}</h4>` +
+                     `<p class="activity-description">${escapeHtml(itemObj.description || '')}</p>` +
+                     `<time class="activity-timestamp" datetime="${now.toISOString()}">${formattedTime}</time>` +
+                     `</div>`;
+
+    feeds.insertAdjacentHTML('afterbegin', itemHTML);
+
+     if (autoScroll && feeds) {
+        feeds.scrollTop = 0;
+     }
+
+     // Limit to last 50 items
+    const allItems = feeds.querySelectorAll('.activity-item:not(.activity-placeholder)');
+    if (allItems.length > 50) {
+        for (let i = 0; i < allItems.length - 50; i++) {
+            allItems[i].remove();
+         }
+     }
+
+     const liveRegion = document.getElementById('activity-live-region');
+    if (liveRegion && itemObj.title) {
+        liveRegion.textContent = `${itemObj.type} update: ${itemObj.title}`;
+        setTimeout(() => { liveRegion.textContent = ''; }, 5000);
+     }
+
+    console.log(`Added activity: ${itemObj.type || 'update'}`, itemObj.title);
+}
+
+/** HTML escape for XSS prevention */
+function escapeHtml(str) {
+    if (typeof str !== 'string') return '';
+    const safe = document.createElement('div');
+    safe.textContent = str;
+    return safe.innerHTML;
+}
+
+// Add global helper for testing/demo purposes
+window.addActivityItem = addActivityItem;   // for inline onclick use from HTML
+
+);         // Close async IIFE

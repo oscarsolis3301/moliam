@@ -14,6 +14,7 @@
 <!-- PDF Export Module for Invoices/Reports -->
 <script src="/js/pdf-export.js" defer></script>
 <script src="/js/dashboard.js" defer></script>
+<script src="/js/activity-feed.js" defer></script>
 </head>
 <body>
 
@@ -39,14 +40,20 @@
      <div class="timeline" id="timeline"></div>
 </div>
 
+<!-- Client Activity Feed - Task 20: Real-time updates widget -->  
+<div class="section activity-section"><div class="section-title">Client Activity Feed</div><div id="activity-feed" class="activity-feed-container"></div></div>
+
+<!-- ARIA live region for screen reader announcements -->
+<div id="activity-live-region" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);"></div>
+
 <!-- Invoice Summary -->
 <div class="invoice-summary">
-      <div class="section-title">Billing Overview</div>
-      <div class="invoice-stats" id="invoice-stats">Loading invoices...</div>
+       <div class="section-title">Billing Overview</div>
+       <div class="invoice-stats" id="invoice-stats">Loading invoices...</div>
 <div class="invoice-actions">
-    <a class="btn" href="/api/invoices?export=pdf">Download PDFs</a>
-     <a class="btn secondary" onclick="window.showInvoiceList()">View Details</a>
-       </div>
+     <a class="btn" href="/api/invoices?export=pdf">Download PDFs</a>
+       <a class="btn secondary" onclick="window.showInvoiceList()">View Details</a>
+        </div>
 </div>
 
 <!-- Invoice List Section -->

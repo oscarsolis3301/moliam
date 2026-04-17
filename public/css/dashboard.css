@@ -705,6 +705,362 @@
     }
 }
 
+/** Activity Feed Widget - Task 20 Styling**/
+
+#activity-feed {
+    height: auto;
+    max-height: 480px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 4px 0;
+}
+
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 16px;
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    animation: cardReveal var(--stagger, 0s) ease-out both;
+    position: relative;
+}
+
+.activity-item:hover {
+    border-color: rgba(59, 130, 246, 0.4);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 8px 30px rgba(59, 130, 246, 0.15);
+}
+
+@keyframes cardReveal {
+    from {
+        opacity: 0;
+        transform: scaleY(0.96) translateY(-12px);
+    }
+    to {
+        opacity: 1;
+        transform: scaleY(1) translateY(0);
+    }
+}
+
+.activity-icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    flex-shrink: 0;
+    position: relative;
+}
+
+.activity-icon-container svg {
+    width: 24px;
+    height: 24px;
+    stroke: var(--accent-blue);
+    stroke-width: 1.5;
+    position: relative;
+    z-index: 2;
+}
+
+.activity-icon-container .status-dot {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    z-index: 1;
+}
+
+.activity-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+    line-height: 1.3;
+}
+
+.activity-description {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0 0 8px 0;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.activity-timestamp {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.02em;
+    display: block;
+    margin-top: 4px;
+}
+
+.activity-action {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-blue);
+    text-decoration: none;
+    border-radius: 8px;
+    margin-left: auto;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+}
+
+.activity-action:hover {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.2);
+}
+
+.activity-action:focus-visible {
+    outline: 3px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+/* Empty state for activity feed */
+.activity-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 48px 24px;
+    text-align: center;
+}
+
+.activity-empty svg {
+    width: 64px;
+    height: 64px;
+    stroke: var(--text-dim);
+    stroke-width: 1.5;
+    opacity: 0.4;
+}
+
+.activity-empty .empty-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.activity-empty .empty-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    max-width: 320px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Status badges and colors */
+.status-success, .status-green {
+    --status-color: var(--accent-green);
+}
+
+.status-accent, .status-blue {
+    --status-color: var(--accent-blue);
+}
+
+.status-error, .status-red {
+    --status-color: var(--accent-red);
+}
+
+.status-warning, .status-amber {
+    --status-color: var(--accent-amber);
+}
+
+.activity-item.status-success .activity-icon-container,
+.activity-item.status-green .activity-icon-container {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.activity-item.status-success .activity-icon-container svg,
+.activity-item.status-green .activity-icon-container svg {
+    stroke: var(--accent-green);
+}
+
+.activity-item.status-success .status-dot,
+.activity-item.status-green .status-dot {
+    background: var(--accent-green);
+}
+
+.activity-item.status-accent .activity-icon-container,
+.activity-item.status-blue .activity-icon-container {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.activity-item.status-accent .activity-icon-container svg,
+.activity-item.status-blue .activity-icon-container svg {
+    stroke: var(--accent-blue);
+}
+
+.activity-item.status-accent .status-dot,
+.activity-item.status-blue .status-dot {
+    background: var(--accent-blue);
+}
+
+.activity-item.status-error .activity-icon-container,
+.activity-item.status-red .activity-icon-container {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    animation: shake 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.activity-item.status-error .activity-icon-container svg,
+.activity-item.status-red .activity-icon-container svg {
+    stroke: var(--accent-red);
+}
+
+.activity-item.status-error .status-dot,
+.activity-item.status-red .status-dot {
+    background: var(--accent-red);
+}
+
+.activity-item.status-warning .activity-icon-container,
+.activity-item.status-amber .activity-icon-container {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.activity-item.status-warning .activity-icon-container svg,
+.activity-item.status-amber .activity-icon-container svg {
+    stroke: var(--accent-amber);
+}
+
+.activity-item.status-warning .status-dot,
+.activity-item.status-amber .status-dot {
+    background: var(--accent-amber);
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+}
+
+/* Scrollbar styling for activity feed */
+.activity-feed-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.activity-feed-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.activity-feed-container::-webkit-scrollbar-thumb {
+    background: var(--glass-border);
+    border-radius: 3px;
+}
+
+.activity-feed-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(59, 130, 246, 0.3);
+}
+
+/** Mobile Touch Patterns for Activity Feed */
+
+@media (max-width: 480px) {
+    #activity-feed {
+        max-height: calc(100vh - 200px);
+        padding: 4px 12px;
+        gap: 12px;
+    }
+
+    .activity-item {
+        padding: 12px;
+        gap: 12px;
+        animation-duration: 300ms;
+    }
+
+    .activity-icon-container {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        min-height: 40px;
+    }
+
+    .activity-icon-container svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .activity-icon-container .status-dot {
+        width: 12px;
+        height: 12px;
+        top: -4px;
+        right: -4px;
+    }
+
+    .activity-title {
+        font-size: 15px;
+    }
+
+    .activity-description {
+        font-size: 13px;
+    }
+
+    .activity-timestamp {
+        font-size: 10px;
+    }
+
+    .activity-action {
+        padding: 8px 12px;
+        font-size: 12px;
+        min-height: 44px;         /* WCAG touch target minimum */
+        min-width: 44px;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .activity-action svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .activity-empty {
+        padding: 32px 16px;
+    }
+
+    .activity-empty svg {
+        width: 48px;
+        height: 48px;
+    }
+
+    .activity-empty .empty-title {
+        font-size: 16px;
+    }
+
+    .activity-empty .empty-text {
+        font-size: 13px;
+        max-width: 260px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .activity-item {
+        animation: none;
+        transition: none;
+    }
+}
+
 /* Focus states for accessibility */
 .nav .back:focus-visible {
   outline: 3px solid var(--accent-blue);
