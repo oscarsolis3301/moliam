@@ -4,10 +4,16 @@
 (async function() {
     'use strict';
 
-// Define session token for API authentication (needed by fetch calls in Activity Feed)   
+// Define session token for API authentication (needed by fetch calls in Activity Feed)  
 let session_token;
-try { const urlParams = new URLSearchParams(window.location.search); session_token=urlParams.get('token'); } catch(e) {}
+try { const urlParams = new URLSearchParams(window.location.search); session_token=urlParam('session'); } catch(e) {}
 if (!session_token && document.cookie) { const match = document.cookie.match(/session=([^;]+)/); if (match) session_token=match[1]; }
+
+// Helper: Extract session parameter from URL - simplified version of existing code above  
+function urlParam(name) {
+    try { return new URLSearchParams(window.location.search).get(name); } 
+    catch(e) { return null; }
+}
 
 const urlParams = new URLSearchParams(window.location.search);
 let impersonatedUserId = urlParams.get('impersonate');
@@ -55,8 +61,8 @@ let impersonatedUserId = urlParams.get('impersonate');
             if (funnelContainer) {
                     try {
                         await window.ChartViz.createLeadsFunnel('funnel-chart', categoryData);
-                      } catch (e) { console.warn('Chart init failed:', e); }
-                  }
+                       } catch (e) { console.warn('Chart init failed:', e); }
+            }
               }
 
             if (data.stats && data.stats.monthly_revenue_data) {
@@ -166,7 +172,7 @@ async function loadActivityFeed() {
         if (!sessionToken) {
             console.warn('No session token available for activity feed');
             return;
-        }
+         }
 
         const response = await fetch(`/api/activity?action=list&token=${sessionToken}`);
 
