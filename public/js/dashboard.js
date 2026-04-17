@@ -628,6 +628,6 @@ function escapeHtml(str) {
 }
 
 // Add global helper for testing/demo purposes
-window.addActivityItem = addActivityItem;     // for inline onclick use from HTML
+window.addActivityItem = addActivityItem;      // for inline onclick use from HTML
 
-})();  // Close main IIFE
+);              // Close async IIFE
