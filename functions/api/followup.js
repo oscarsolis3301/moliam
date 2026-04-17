@@ -7,7 +7,7 @@
  * Task 10 (This Session): Added rate limiter middleware for DDoS protection on public lead queue access.
  */
 
-import { jsonResp } from './lib/standalone.js';
+import { jsonResp, generateRequestId } from './lib/standalone.js';
 import { createRateLimiterMiddleware, getClientId, parseRateLimitedJsonBody } from '../lib/rate-limiter.js';
 
 /** Helper: Ensure consistent error response format - wraps errors with success:false and proper error string */

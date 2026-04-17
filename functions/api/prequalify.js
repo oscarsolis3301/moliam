@@ -12,7 +12,7 @@
  * - Qualification score calculation (0-100, auto-approve >= 60)
  */
 
-import { jsonResp } from './lib/standalone.js';
+import { jsonResp, generateRequestId } from './lib/standalone.js';
 import { createRateLimiterMiddleware } from './lib/rate-limiter.js';
 
 const rateLimitGet = createRateLimiterMiddleware('prequalify-get', 60, 120); // Public GET: 60/min, 120 burst

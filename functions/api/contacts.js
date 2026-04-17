@@ -25,7 +25,7 @@
     25| * CREATE INDEX IF NOT EXISTS idx_contacts_email ON contacts(email);
     25| * CREATE INDEX IF NOT EXISTS idx_contacts_email ON contacts(email);\n * CREATE INDEX IF NOT EXISTS idx_contacts_status ON contacts(status);\n * CREATE INDEX IF NOT EXISTS idx_contacts_source ON contacts(source);\n */
 
-import { jsonResp } from './lib/standalone.js';
+import { jsonResp, generateRequestId } from './lib/standalone.js';
 
 /**\n * Handle GET requests to /api/contacts endpoint
     30|

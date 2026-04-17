@@ -3,7 +3,7 @@
 
  */
 
-import { jsonResp } from './lib/standalone.js';
+import { jsonResp, generateRequestId } from './lib/standalone.js';
 
 /** Rate Limiter Integration - protects toby-health endpoint (120/min, 240 burst since this is a public health check) */
 async function tobyHealthRateLimiterMiddleware(request, env) {

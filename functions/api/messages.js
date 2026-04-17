@@ -1,7 +1,7 @@
 /**
  * Client Messaging API - CloudFlare Pages Function
  */
-import { jsonResp, sanitizeText, validateEmail, authenticate, sanitizeMessage, sanitizeAdminMessage } from './lib/standalone.js';
+import { jsonResp, generateRequestId, sanitizeText, validateEmail, authenticate, sanitizeMessage, sanitizeAdminMessage } from './lib/standalone.js';
 
 export async function onRequestGet(context) {
   const { request, env } = context;

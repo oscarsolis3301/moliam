@@ -9,21 +9,42 @@
    ========================================================================== */
 
 /**
- * Create standardized JSON response with proper headers
+ * Generate unique request ID for tracing/debugging all API requests
+ * Uses crypto.randomUUID() when available, falls back to SHA-256 hash of timestamp + random bytes
+ * @returns {string} UUID v4 format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx or hex string (32 chars)
+ */
+export function generateRequestId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+  const arr = new Uint8Array(16);
+  while (true) {
+    crypto.getRandomValues(arr);
+    let hash = Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+    if (hash.length === 32) return hash;
+  }
+}
+
+/**
+ * Create standardized JSON response with proper headers and request tracking
  * @param {number} status - HTTP status code (200, 400, 404, 500, etc.)
- * @param {object} data - Response payload with structured {success, error, data}
+ * @param {object} data - Response payload with structured {success, error, data, request_id}
  * @param {Request} [request] - Optional request object for CORS headers
- * @returns {Response} Valid JSON response with all security headers
+ * @returns {Response} Valid JSON response with all security headers and X-API-Version header
  */
 export function jsonResp(status, data, request) {
-  const normalized = { success: data.success };
+  const requestId = generateRequestId();
+  
+  // Build normalized payload with standard structure: {success, error?, data?, request_id}
+  const normalized = { success: data.success, request_id: requestId };
   if (data.error && typeof data.error === 'string') normalized.error = data.error;
-  const extra = Object.fromEntries(Object.entries(data).filter(([k]) => k !== 'success' && k !== 'error'));
-  if (Object.keys(extra).length > 0) normalized.data = extra;
+  const extra = Object.fromEntries(Object.entries(data).filter(([k]) => k !== 'success' && k !== 'error' && k !== 'request_id'));
+  if (Object.keys(extra).length > 0 || Object.keys(normalized).length > 2) {
+    normalized.data = Object.assign({}, normalized.data?.data, extra);
+  }
 
   const headers = new Headers({
-    "Content-Type": "application/json",
-    "Cache-Control": "no-cache, no-store, must-revalidate"
+     "Content-Type": "application/json",
+     "X-API-Version": "1.0.0",
+     "Cache-Control": "no-cache, no-store, must-revalidate"
   });
 
   if (request) {
@@ -34,7 +55,7 @@ export function jsonResp(status, data, request) {
     headers.set("Access-Control-Allow-Credentials", "true");
   }
 
-  return new Response(JSON.stringify(normalized), { status, headers });
+  return new Response(JSON.stringify({success: normalized.success, request_id, error: data?.error, ...Object.keys(data).filter(k => k !== 'success' && k !== 'error').reduce((a,k) => (a[k]=data[k],a), {})}), { status, headers });
 }
 
 /* ============================================================================

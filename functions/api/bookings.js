@@ -5,7 +5,7 @@
  * PUT /api/appointments/:id - Update/confirm/reschedule/cancel
  */
 
-import { jsonResp } from './lib/standalone.js';
+import { jsonResp, generateRequestId } from './lib/standalone.js';
 /** NEW: Rate limiter middleware for booking endpoints - prevents abuse on appointment CRUD operations and calendar sync hooks with auto-generated clientId tracking */
 import { createRateLimiterMiddleware } from '../lib/rate-limiter.js';
 

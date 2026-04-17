@@ -13,7 +13,7 @@
  */
 
 // Import centralized helpers from lib/standalone.js - eliminates duplicate auth/message logic across messages.js & client-message.js
-import { jsonResp, sanitizeText, validateEmail, authenticate, sanitizeMessage, sanitizeAdminMessage } from './lib/standalone.js';
+import { jsonResp, generateRequestId, sanitizeText, validateEmail, authenticate, sanitizeMessage, sanitizeAdminMessage } from './lib/standalone.js';
 
 /**
  * List all messages or filter by client_id for admin users only

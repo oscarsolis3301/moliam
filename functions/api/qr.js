@@ -6,7 +6,7 @@
 
 /**\n * MOLIAM QR Code Generator — CloudFlare Pages Function   * GET /api/qr?url=...&size=...&color=... * Pure JS QR code generation using bit matrix algorithm, no npm deps\n */
 
-import { jsonResp, hashSHA256 } from './lib/standalone.js';
+import { jsonResp, generateRequestId, hashSHA256 } from './lib/standalone.js';
 
 /**
  * GET /api/qr - QR Code generation handler

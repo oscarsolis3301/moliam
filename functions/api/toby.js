@@ -12,7 +12,7 @@
  *   - ATLAS_BASE_URL: Optional custom base URL for Atlas
  */
 
-import { jsonResp } from './lib/standalone.js';
+import { jsonResp, generateRequestId } from './lib/standalone.js';
 
 const MAX_MESSAGE_LEN = 600;            // chars per user message
 const MAX_HISTORY = 10;                 // trailing turns kept

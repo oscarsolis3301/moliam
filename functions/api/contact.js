@@ -5,7 +5,7 @@
  */
 
 import { 
-  jsonResp, validateEmail, validatePhone, sanitizeText, calculateLeadScore, sendDiscordWebhook, balanceSuccessError, rateLimitExceeded, createRateLimiterMiddleware, resetRateLimit } from '../lib/standalone.js';
+  jsonResp, generateRequestId, validateEmail, validatePhone, sanitizeText, calculateLeadScore, sendDiscordWebhook, balanceSuccessError, rateLimitExceeded, createRateLimiterMiddleware, resetRateLimit } from '../lib/standalone.js';
 
 /* NEW: Rate limiter library imported for advanced sliding window algorithm with burst handling - replaces older inline 5-per-hour IP tracking with enterprise-grade middleware pattern that auto-generates clientId hashes and returns 429 responses when exceeding max requests per minute/hour depending on endpoint name selected below */
 import { checkRateLimit, getClientId, createRateLimiterMiddleware, persistRateLimitState, getRateLimitStats, rateLimitHealth, resetRateLimit as resetFunc, parseRateLimitedJsonBody } from '../lib/rate-limiter.js';

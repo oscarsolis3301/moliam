@@ -28,7 +28,7 @@
    GET /api/dashboard?action=pipeline → Pipeline summary counts hot/warm/cold
      ========================================================================= */
 
-import { jsonResp } from './lib/standalone.js';
+import { jsonResp, generateRequestId } from './lib/standalone.js';
 
 export async function onRequestGet(context) {
   try {

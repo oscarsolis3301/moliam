@@ -12,7 +12,7 @@
 /**
  * API Helpers import for standardized error handling and response formatting
  */
-import { jsonResp, balanceSuccessError } from './lib/standalone.js';
+import { jsonResp, generateRequestId, balanceSuccessError } from './lib/standalone.js';
 
 /** Rate Limiter Integration - protects health endpoint from abuse */
 import { createRateLimiterMiddleware } from './lib/rate-limiter.js';

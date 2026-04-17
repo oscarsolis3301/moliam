@@ -5,7 +5,7 @@
  * Returns Calendly demo URL and embed status
  */
 
-import { jsonResp } from './lib/standalone.js';
+import { jsonResp, generateRequestId } from './lib/standalone.js';
 import { createRateLimiterMiddleware } from './lib/rate-limiter.js';
 
 const rateLimit = createRateLimiterMiddleware('calendly-public', 100, 200); // Public endpoint: 100/min, 200 burst

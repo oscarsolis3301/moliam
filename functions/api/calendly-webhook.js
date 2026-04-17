@@ -4,7 +4,7 @@
  * Uses Web Crypto API (CF Workers runtime) for HMAC-SHA256 signature verification
  */
 
-import { jsonResp, verifySignature } from './lib/standalone.js';
+import { jsonResp, generateRequestId, verifySignature } from './lib/standalone.js';
 
 /**
  * Verify Calendly webhook signature using HMAC-SHA256 for security against replay attacks
