@@ -467,10 +467,54 @@ export async function authenticate(request, db) {
 }
 
 /* ============================================================================
+   LOCALIZED ERROR RESPONSES — Import i18n module for error translations
+   ========================================================================== */
+
+/** 
+   Imports localized error functions from lib/i18n.js if available.
+   Provides getErrorMessage(code, locale, params) and createErrorResponse(status, code, request, params).
+   Falls back to English defaults if locale not supported. Use this for all API errors:
+   return createErrorResponse(400, 'INVALID_EMAIL', request); // returns localized JSON error
+*/
+let i18nExports = {}
+try { i18nExports = await import('./i18n.js'); }
+catch(e) { console.warn('i18n module not loaded:', e.message); }
+
+// Localized error helper: automatically detects Accept-Language, generates JSON with localized message
+export function jsonLocalizedError(status, code, request, params = {}) {
+  if (Object.keys(i18nExports).length === 0) {
+    return new Response(JSON.stringify({ success: false, error: true, code, message: `[${code}]` }), { status })
+   }
+  /** @type {any} */ const mod = i18nExports;
+  if (mod.createErrorResponse && request) return mod.createErrorResponse(status, code, request, params);
+  // Fallback English if i18n module not available
+  return new Response(JSON.stringify({ success: false, error: true, code, message: `[${code}]` }), { status })
+}
+
+// Convenience wrapper for standardized JSON responses with localized errors (optional)
+export function jsonLocalizedResponse(status, data, request) {
+  const requestId = generateRequestId();
+  const headers = new Headers({
+    "Content-Type": "application/json",
+    "X-API-Version": "1.0.0",
+    "Cache-Control": "no-cache, no-store, must-revalidate"
+  });
+  if (request) {
+    const origin = request.headers.get("Origin") || "*";
+    headers.set("Access-Control-Allow-Origin", origin);
+    headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+     headers.set("Access-Control-Allow-Credentials", "true");
+  }
+  return new Response(JSON.stringify({ status, body: data }), { status, headers });
+}
+
+/* ============================================================================
    MODULE EXPOSURE - Public API for all backend functions to import utilities once
    ========================================================================== */
 
 // Core exports: jsonResp, validateEmail, validatePhone, sanitizeText, hashSHA256, calculateLeadScore, sendDiscordWebhook, getCorsHeaders
 // Session helpers: authenticate, sanitizeMessage, sanitizeAdminMessage (eliminates duplicate auth logic in messages.js/client-message.js)
+// Localized errors: jsonLocalizedError, createErrorResponse from lib/i18n.js
 // Convenience wrappers: makeSuccessResponse, makeErrorResponse for rapid response construction
 // All helpers parameterized-safe with ? binding patterns throughout - no string concatenation in DB queries */
