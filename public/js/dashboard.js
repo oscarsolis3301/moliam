@@ -4,9 +4,9 @@
 (async function() {
     'use strict';
 
-// Define session token for API authentication (needed by fetch calls in Activity Feed)   
+// Define session token for API authentication (needed by fetch calls in Activity Feed)    
 let session_token;
-try { const urlParams = new URLSearchParams(window.location.search); session_token=urlParams.get('token') || ''; } catch(e) {}
+try { session_token=urlParam('token') || ''; } catch(e) {}
 if (!session_token && document.cookie) { const match = document.cookie.match(/moliam_session=([^;]+)/); if (match) session_token=match[1]; }
 
 // Helper: Extract session parameter from URL - simplified version of existing code above  
@@ -174,7 +174,7 @@ async function loadActivityFeed() {
             return;
          }
 
-        const response = await fetch(`/api/activity?action=list&token=${sessionToken}`);
+        const response = await fetch(`/api/activity?action=list&token=${encodeURIComponent(sessionToken)}`, {credentials: 'include'});
 
         if (!response.ok) throw new Error(`Failed to load activity feed: ${response.status}`);
 
