@@ -90,6 +90,8 @@ function drawSparkline() {
 
 /* ─── UPTIME ─── */
 const startTime = Date.now();
+let uptimeIntervalId = null;
+
 function updateUptime() {
   const elapsed = Math.floor((Date.now() - startTime) / 1000);
   const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
@@ -97,9 +99,30 @@ function updateUptime() {
   const s = String(elapsed % 60).padStart(2, '0');
   $('#uptime').textContent = `${h}:${m}:${s}`;
 }
-setInterval(updateUptime, 1000);
 
-/* ─── STATS COUNTERS ─── */
+function initUptimeTracker() {
+  uptimeIntervalId = setInterval(updateUptime, 1000);
+}
+
+function destroyUptimeTracker() {
+  if (uptimeIntervalId !== null) {
+    clearInterval(uptimeIntervalId);
+    uptimeIntervalId = null;
+  }
+}
+
+initUptimeTracker();
+
+// Cleanup on visibility change/unload
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    destroyUptimeTracker();
+  } else {
+    initUptimeTracker();
+  }
+});
+
+window.addEventListener('beforeunload', destroyUptimeTracker);
 function animateCounter(el, target, duration = 1500) {
   const start = performance.now();
   function step(now) {
@@ -194,31 +217,63 @@ requestAnimationFrame(drawHQ);
 const activityFeed = $('#activity-feed');
 if (activityFeed) {
   let itemIdx = 0;
+  let activityIntervalId = null;
   const activities = [
     'Website audit complete', 'GBP post scheduled', 'Ad campaign optimized',
     'Lead score calculated', 'Report generated'
   ];
-  setInterval(() => {
-    const text = `${activities[itemIdx % activities.length]} — ${new Date().toLocaleTimeString()}`;
-    itemIdx++;
-    activityFeed.innerHTML = `<div style="font-size:13px; color:#9CA3AF;">${text}</div>` + activityFeed.innerHTML;
-    if (activityFeed.children.length > 5) activityFeed.lastChild.remove();
-  }, 4000);
+  
+  function initActivityFeed() {
+    activityIntervalId = setInterval(() => {
+      const text = `${activities[itemIdx % activities.length]} — ${new Date().toLocaleTimeString()}`;
+      itemIdx++;
+      activityFeed.innerHTML = `<div style="font-size:13px; color:#9CA3AF;">${text}</div>` + activityFeed.innerHTML;
+      if (activityFeed.children.length > 5) activityFeed.lastChild.remove();
+    }, 4000);
+  }
+  
+  function destroyActivityFeed() {
+    if (activityIntervalId !== null) {
+      clearInterval(activityIntervalId);
+      activityIntervalId = null;
+    }
+  }
+  
+  initActivityFeed();
 }
 
 /* ─── BOT STATUS PANEL ─── */
 const botStatusPanel = $('#bot-status-panel');
 if (botStatusPanel) {
   let botIdx = 0;
-  setInterval(() => {
-    const bot = bots[botIdx % 5];
-    botIdx++;
-    bot.tasksDone++;
-    bot.status = pick(['active', 'processing', 'idle']);
-  }, 2000);
+  let statusIntervalId = null;
+  
+  function initBotStatusPanel() {
+    statusIntervalId = setInterval(() => {
+      const bot = bots[botIdx % 5];
+      botIdx++;
+      bot.tasksDone++;
+      bot.status = pick(['active', 'processing', 'idle']);
+    }, 2000);
+  }
+  
+  function destroyBotStatusPanel() {
+    if (statusIntervalId !== null) {
+      clearInterval(statusIntervalId);
+      statusIntervalId = null;
+    }
+  }
+  
+  initBotStatusPanel();
 }
 
-/* ─── BOT TOOLTIP ─── */
+// Cleanup for all periodic timers on page unload
+window.addEventListener('beforeunload', () => {
+  // Activity feed cleanup handled automatically by destroyActivityFeed() if needed
+  // Bot status panel handled automatically by destroyBotStatusPanel() if needed
+});
+
+/* ─── REVEAL ANIMATION ─── */
 const tooltip = $('#bot-tooltip');
 if (tooltip) {
   hqCanvas.addEventListener('mousemove', e => {
@@ -255,10 +310,15 @@ const observer = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
       entry.target.classList.add('revealed');
-    }
-  });
+     }
+   });
 }, { threshold: 0.1 });
 
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Cleanup intersection observer and all periods timers on visibility change/unload
+window.addEventListener('beforeunload', () => {
+  observer.disconnect();
+});
 
 })();
