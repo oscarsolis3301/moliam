@@ -291,10 +291,35 @@
       z-index: 1;
      }
 
-    @media (max-width: 480px) {
-      .links { gap: .5rem; }
-      .links a { padding: .55rem 1rem; font-size: .8rem; }
+      /* Mobile Responsive Fixes - WCAG 44px touch targets */
+     @media (max-width: 768px) {
+       .container { padding: 1.5rem 1rem; max-width: 100%; }
+       .error-code { font-size: clamp(5rem, 20vw, 9rem); }
+       .subtitle { font-size: 1.15rem; }
+       .description { font-size: .95rem; padding: 0 .25rem; }
+       .search-form { width: 100%; margin: 0 -.75rem; max-width: unset; }
+       .search-input { padding: .85rem 1rem; font-size: 1rem; }
+       .search-btn { padding: .5rem; min-width: 44px; min-height: 44px; }
+       .links { gap: .625rem; flex-wrap: wrap; justify-content: center; }
+       .links a { display: inline-flex; align-items: center; justify-content: center; padding: .75rem 1.125rem; min-width: 44px; min-height: 44px; font-size: .875rem; }
+       .quick-help-section { text-align: center; margin-top: 1.5rem; }
+       .quick-help-section button { padding: .75rem 1.5rem; font-size: .95rem; width: 100%; max-width: 280px; }
+       .footer { bottom: 1rem; text-align: center; padding: 0 .5rem; font-size: .6875rem; }
+       /* Fix search bar positioning */
+       .search-wrap { margin: 0 0 1.5rem; width: 100%; max-width: unset; inset: 0 0 auto; }
      }
+      
+     @media (max-width: 480px) {
+       .links { gap: .5rem; }
+       .links a { padding: .625rem .875rem; font-size: .8rem; min-height: 44px; }
+       .search-form { margin: 0 -.5rem; }
+       .error-code { font-size: clamp(4.5rem, 18vw, 7rem); }
+       .subtitle { font-size: 1rem; }
+       .footer { bottom: .75rem; padding: 0 .375rem; }
+     }
+      
+      /* Touch target improvements - ensure WCAG compliance */
+     .links a, .search-btn, .help-btn { touch-action: manipulation; }
    </style>
 </head>
 <body>

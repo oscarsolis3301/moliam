@@ -27,25 +27,25 @@
 <body>
 
 <div id="impersonation-banner"><strong id="impersonated-name"></strong><a href="/dashboard" onclick="document.getElementById('impersonation-banner').style.display='none';location.reload()">Exit</a></div>
-
-<nav><div class="logo">MOLIAMA CLIENT PORTAL</div><div><a class="back" href="/">← Back to Website</a></div></nav>
+<nav><div class="logo"><span class="brand-text">MOLIAMA CLIENT PORTAL</span></div><div class="nav-actions"><a class="back" href="/">← Back to Website</a><!-- Mobile hamburger menu toggle - WCAG 44x44px --><button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false" tabindex="0"><span class="hamburger-lines"></span></button></div></nav>
 
 <div class="container">
-        <h1>Dashboard</h1>
+         <h1>Dashboard</h1>
 
 <!-- Stats Cards -->                                                                          
+
 <div class="stats-grid" id="stats-grid"></div>
 
 <!-- Projects -->
 <div class="section">
-       <div class="section-title">Active Projects</div>
-       <div class="project-grid" id="projects-grid"></div>
+        <div class="section-title">Active Projects</div>
+        <div class="project-grid" id="projects-grid"></div>
 </div>
 
 <!-- Client History Timeline - Task 11 Unified View -->
 <div class="section">
-        <div class="section-title">Project Updates &amp; Milestones</div>
-        <div class="timeline" id="timeline"></div>
+         <div class="section-title">Project Updates &amp; Milestones</div>
+         <div class="timeline" id="timeline"></div>
 </div>
 
 <!-- Comprehensive Client Timeline v2 - Task 11 Complete (submissions+appointments+messages+invoices) -->
@@ -59,31 +59,31 @@
 
 <!-- Invoice Summary -->
 <div class="invoice-summary">
-         <div class="section-title">Billing Overview</div>
-         <div class="invoice-stats" id="invoice-stats">Loading invoices...</div>
+          <div class="section-title">Billing Overview</div>
+          <div class="invoice-stats" id="invoice-stats">Loading invoices...</div>
 <div class="invoice-actions">
-       <a class="btn" href="/api/invoices?export=pdf">Download PDFs</a>
-         <a class="btn secondary" onclick="window.showInvoiceList()">View Details</a>
-          </div>
+        <a class="btn" href="/api/invoices?export=pdf">Download PDFs</a>
+          <a class="btn secondary" onclick="window.showInvoiceList()">View Details</a>
+           </div>
 </div>
 
 <!-- Invoice List Section -->
 <div class="section invoice-section">
-        <div class="section-title">Your Invoices</div>
-        <div class="invoice-list" id="invoice-list"></div>
-        <div class="invoice-actions-secondary">
-            <button class="btn primary" onclick="window.loadInvoicesData()">Refresh Invoices</button>
-            <a class="btn secondary" href="/api/invoices?action=create&return=dashboard">Create New Invoice</a>
-        </div>
+         <div class="section-title">Your Invoices</div>
+         <div class="invoice-list" id="invoice-list"></div>
+         <div class="invoice-actions-secondary">
+             <button class="btn primary" onclick="window.loadInvoicesData()">Refresh Invoices</button>
+             <a class="btn secondary" href="/api/invoices?action=create&return=dashboard">Create New Invoice</a>
+         </div>
 </div>
 
 <!-- Appointments Calendar - Task 23 start -->
 <div class="section appointment-section">
-    <div class="section-title">Upcoming Appointments</div>
-    <div id="appointments-list" style="--stagger:0.1s"></div>
-    <div class="appointment-actions">
-      <a class="btn primary" href="https://calendly.com/visualark/demo" target="_blank">➕ Book New Call</a>
-    </div>
+     <div class="section-title">Upcoming Appointments</div>
+     <div id="appointments-list" style="--stagger:0.1s"></div>
+     <div class="appointment-actions">
+       <a class="btn primary" href="https://calendly.com/visualark/demo" target="_blank">➕ Book New Call</a>
+     </div>
 </div>
 
 <!-- Workforce Clock Widget - Task 24: Employee time tracking dashboard -->
@@ -98,19 +98,25 @@
 <div class="section viz-section"><h2 class="viz-title">Pipeline Analytics</h2><div class="viz-grid" id="viz-grid"><div class="viz-card"><canvas id="funnel-chart" style="height:350px;width:100%;"></canvas></div><div class="viz-card"><canvas id="revenue-chart" style="height:350px;width:100%;"></canvas></div></div></div>
 
  <div class="section next-actions"><div class="next-actions-flex"><h2>Next Actions</h2><button class="btn-refresh" onclick="window.location.reload()" aria-label="Refresh dashboard data from server">
-           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>Refresh Data</button></div><div class="next-actions-wr"><a class="btn" href="/">Book a Call</a><a class="btn secondary" onclick="window.showInvoices()">View Invoice</a><a class="btn secondary" href="#contact">Message Us</a></div></div>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>Refresh Data</button></div><div class="next-actions-wr"><a class="btn" href="/">Book a Call</a><a class="btn secondary" onclick="window.showInvoices()">View Invoice</a><a class="btn secondary" href="#contact">Message Us</a></div></div>
 
 <!-- Loading Skeleton (hidden when data loaded) -->
 <div class="stats-grid" id="skeleton-stats" style="display:none;">
-       <div class="stat-card loading-skeleton" style="--h:80px;height:var(--h);border:none;background:transparent"></div>
-       <div class="stat-card loading-skeleton" style="--h:80px;height:var(--h);border:none;background:transparent"></div>
+        <div class="stat-card loading-skeleton" style="--h:80px;height:var(--h);border:none;background:transparent"></div>
+        <div class="stat-card loading-skeleton" style="--h:80px;height:var(--h);border:none;background:transparent"></div>
 </div>
 
 <div class="section">
-       <div class="section-title">Active Projects</div>
-       <div class="project-grid" id="skeleton-projects" style="display:none;"></div>
+        <div class="section-title">Active Projects</div>
+        <div class="project-grid" id="skeleton-projects" style="display:none;"></div>
 </div>
 
 </div>
+
+<!-- DASHBOARD MOBILE NAV SCRIPT -->
+<script>
+// Mobile hamburger handler - WCAG compliant for dashboard
+(function(){'use strict';const nav=document.querySelector('nav');const toggle=nav?.querySelector('.menu-toggle');if(!toggle)return;let open=false;function closeM(){open=false;toggle.setAttribute('aria-expanded','false');document.body.classList.remove('mob-nav-open');closeFn();}function schedule(f){setTimeout(f,0);}toggle.addEventListener('click',e=>{e.preventDefault();if(open){closeM();return;}open=true;toggle.setAttribute('aria-expanded','true');document.body.classList.add('mob-nav-open');schedule(()=>{const f=nav.querySelector('.back');if(f)f.focus();});},{passive:false});})();</script>
+
 </body>
 </html>
