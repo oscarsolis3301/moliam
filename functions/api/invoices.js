@@ -185,21 +185,21 @@ export async function onRequestGet(context) {
     if (action === 'stats') {
       const totalAmount = isAdmin 
         ? await db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM invoices WHERE status IN ('sent', 'paid', 'overdue')").first()
-        : await db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM invoices WHERE client_id=? AND status IN ('sent', 'paid', 'overdue')").bind(session.id).first();
+         : await db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM invoices WHERE client_id=? AND status IN ('sent', 'paid', 'overdue')").bind(session.id).first();
       
       const paidAmount = isAdmin 
         ? await db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM invoices WHERE status='paid'").first()
-        : await db.orderBy("SELECT COALESCE(SUM(amount), 0) as total FROM invoices WHERE client_id=? AND status='paid'").bind(session.id).first();
+         : await db.orderBy("SELECT COALESCE(SUM(amount), 0) as total FROM invoices WHERE client_id=? AND status='paid'").bind(session.id).first();
       
       const pendingAmount = isAdmin 
         ? await db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM invoices WHERE status IN ('draft', 'sent', 'overdue')").first()
-        : await db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM invoices WHERE client_id=? AND status IN ('draft', 'sent', 'overdue')").bind(session.id).first();
+         : await db.prepare("SELECT COALESCE(SUM(amount), 0) as total FROM invoices WHERE client_id=? AND status IN ('draft', 'sent', 'overdue')").bind(session.id).first();
       
       const byStatus = isAdmin
         ? await db.prepare(`
             SELECT status, COUNT(*) as count, SUM(amount) as amount
             FROM invoices GROUP BY status`).all()
-        : await db.prepare(`
+         : await db.prepare(`
             SELECT status, COUNT(*) as count, SUM(amount) as amount
             FROM invoices WHERE client_id=? GROUP BY status`).bind(session.id).all();
       
@@ -212,6 +212,39 @@ export async function onRequestGet(context) {
           pendingAmount: pendingAmount?.total || 0,
           byStatus: (byStatus?.results || []).map(r => ({ status: r.status, count: r.count, amount: r.amount }))
         },
+        fetchAt: new Date().toISOString()
+      }, request);
+    }
+    
+    if (action === 'export' && url.searchParams.get('format') === 'pdf') {
+      // Fetch all invoices for PDF export to D1/storage
+      const invoiceList = await db.prepare(`
+         SELECT i.*, u.name as client_name, 
+                COALESCE(i.amount, 0) as amount,
+                COALESCE(u.company, 'N/A') as company 
+         FROM invoices i 
+         LEFT JOIN users u ON i.client_id = u.id 
+         WHERE ${isAdmin ? '1=1' : ('i.client_id = ?')}` + (isAdmin ? '' : ' AND i.status IN (\"sent\", \"overdue\", \"paid\")'))
+      .bind(isAdmin ? [] : [session.id]).all();
+      
+      const invoices = (invoiceList?.results || []).map(r => ({
+        id: r.id,
+        client_name: r.client_name || r.company || 'Unknown Client',
+        invoice_number: r.invoice_number || `INV-000${r.id}`,
+        amount: parseFloat(r.amount) || 0,
+        status: r.status || 'pending',
+        due_date: r.due_date,
+        created_at: r.created_at,
+        description: r.description,
+        line_items: r.line_items ? JSON.parse(r.line_items) : []
+      }));
+      
+      return jsonResp(200, {
+        success: true,
+        action: 'export',
+        format: 'pdf',
+        data: invoices,
+        count: invoices.length,
         fetchAt: new Date().toISOString()
       }, request);
     }
