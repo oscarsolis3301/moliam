@@ -13,6 +13,8 @@
 <script src="/js/dashboard-realtime.js" defer></script>
 <!-- PDF Export Module for Invoices/Reports -->
 <script src="/js/pdf-export.js" defer></script>
+<!-- Task 11: Unified Client Timeline UI Component -->
+<script src="/js/timeline-client.js" defer></script>
 <script src="/js/dashboard.js" defer></script>
 <script src="/js/activity-feed.js" defer></script>
 </head>
@@ -34,13 +36,16 @@
      <div class="project-grid" id="projects-grid"></div>
 </div>
 
-<!-- Timeline/Milestones -->
+<!-- Client History Timeline - Task 11 Unified View -->
 <div class="section">
-     <div class="section-title">Project Updates &amp; Milestones</div>
-     <div class="timeline" id="timeline"></div>
+      <div class="section-title">Project Updates &amp; Milestones</div>
+      <div class="timeline" id="timeline"></div>
 </div>
 
-<!-- Client Activity Feed - Task 20: Real-time updates widget -->  
+<!-- Comprehensive Client Timeline v2 - Task 11 Complete (submissions+appointments+messages+invoices) -->
+<div class="section timeline-v2-section"><h3 class="section-title">Complete Client History</h3><div id="client-history-container" class="timeline-container"></div></div>
+
+<!-- Client Activity Feed - Task 20: Real-time updates widget -->
 <div class="section activity-section"><div class="section-title">Client Activity Feed</div><div id="activity-feed" class="activity-feed-container"></div></div>
 
 <!-- ARIA live region for screen reader announcements -->
