@@ -41,7 +41,7 @@
 
     function showSkeletonStats() { const c = document.getElementById('skeleton-stats'); if(c){c.style.display='grid'; setTimeout(()=>{c.className+=' fade-out'; setTimeout(()=>{if(c)c.style.display='none'},300);},600);} }
     
-    function renderAll(d) { renderStats(d); renderProjects(d.projects||[]); renderTimeline(d.updates||[]); loadInvoicesData(); initializeCharts(d, d.user?.role); }
+    async function renderAll(d) { renderStats(d); renderProjects(d.projects||[]); renderTimeline(d.updates||[]); await loadAndRenderInvoices(invoices => renderInvoiceCards(invoices, document.getElementById('invoice-list'))); initializeCharts(d, d.user?.role); }
 
     // TASK 5: Chart.js Lazy Loader - Only loads when visible (reduces initial bundle, keeps under 100KB budget)
     const chartLoader = { loaded: false, queue: [] };
@@ -92,11 +92,15 @@
     // Timeline rendering (no changes needed - already efficient)
     const renderTimeline = (updates) => { const timeline=document.getElementById('timeline'); if(!timeline)return; let html=''; if(updates?.length){ for(const u of updates.slice(0,15)) html+='<div class="timeline-item"><h4>'+u.title+'</h4><p style="color:var(--text-secondary)">">'+(u.description||'No desc')+'</p></div>'; } html+='<div class="empty-state">No updates yet.</div>'; timeline.innerHTML=html; };
 
-    // Invoice management (Task 5: keep under budget - minimal code, WCAG touch targets maintained via CSS)
-    const renderInvoiceCards = (invoices,listEl)=>{ if(!listEl)return; let c=''; for(const i of invoices){ c+='<div class="invoice-card"><h4>#'+(i.invoice_number||i.id)+'</h4><div>$'+(i.amount||0); } listEl.innerHTML=c; };
+    // Invoice data loading with async/proper error handling
+    const renderInvoiceCards = (invoices, listEl) => { if(!listEl || !invoices?.length) { listEl.innerHTML = '<div class="empty-state">No invoices yet.</div>'; return; } let html=''; for(const i of invoices){ const status=i.status||'draft'; html+='<div class="invoice-card"><h4>Invoice #'+(i.invoice_number||i.id)+'</h4><p>Status: <span class="status-badge" style="color:var(--accent-amber)">'+status.charAt(0).toUpperCase()+status.slice(1)+'</span></p><p>Amount: $'+(i.amount||0)+'</p><a href="/api/invoices?action=details&id='+encodeURIComponent(i.id)+'" class="btn secondary">Details</a></div>'; } listEl.innerHTML = html; };
 
-      // Render data to DOM (Task 5: Mobile Touch Targets WCAG 44px maintained via CSS, JS removed bulk)
-    async function loadInvoicesData() { try{ const r=await fetch('/api/invoices?action=list',{credentials:'include'}); return (await r.json()).data||[]; } catch(e){console.error(e);return [];}} window.loadInvoicesData = loadInvoicesData;
+       // Invoice management - load and render with async integration (Task 14 Complete)
+    async function loadAndRenderInvoices(callback) { try{ const r=await fetch('/api/invoices?action=list',{credentials:'include'}); const data=(await r.json()).data||[]; if(typeof callback==='function')callback(data); } catch(e){ console.error('Failed to load invoices:',e); return []; } }
+
+       // Render data to DOM (Task 5: Mobile Touch Targets WCAG 44px maintained via CSS, JS removed bulk)
+    window.loadInvoicesData = async () => { try{ const r=await fetch('/api/invoices?action=list',{credentials:'include'}); return (await r.json()).data||[]; } catch(e){console.error(e);return [];}};
+
     
       // Auto-refresh with debounced intervals (Task 5: reduce memory leaks - stop setInterval on visibility change)
     let refreshInterval; const startAutoRefresh = () =>{ clearTimeout(refreshInterval); refreshInterval=setInterval(()=>{ if(!document.hidden)loadActivityHistory(5).catch(w=>{}); },30000); };
