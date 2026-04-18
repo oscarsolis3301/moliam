@@ -335,21 +335,21 @@ export async function onRequestGet(context) {
       return jsonResp(400, { success: false, message: 'Provide either email=XXX or clientId=X parameter', requestId: generateRequestId() }, request);
     }
     
-    let token = url.searchParams.get('token') || '';
+    let token=url.searchParams.get('token') || '';
     
     if (!token) {
       const hashIdx = request.url.indexOf('#');
       if (hashIdx > -1) {
         const hash = request.url.substring(hashIdx + 1);
         const query = new URLSearchParams(hash.split('&')[0]);
-        token = query.get('token') || '';
+        token=query.get('s') || '';
       }
     }
     
     if (!token) {
       const cookies = request.headers.get('Cookie') || '';
       const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-      token = cookieMatch ? cookieMatch[1] : null;
+      token=cookieMatch ? cookieMatch[1] : null;
     }
 
     let session;
@@ -360,8 +360,8 @@ export async function onRequestGet(context) {
          FROM sessions s 
          JOIN users u ON s.user_id = u.id 
          WHERE s.token=? AND u.is_active = 1 
-         AND s.expires_at > datetime('now')`
-      ).bind(token).first();
+         AND s.expires_at > datetime('now')
+       ).bind(token).first();
     }
     
     if (!session) {
