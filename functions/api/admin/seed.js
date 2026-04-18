@@ -3,24 +3,12 @@
  * POST /api/admin/seed with X-Seed-Key: moliam2026
  * @returns {Response} JSON response with success/error and CORS handling
  */
-import { jsonResp } from './lib/standalone.js';
+import { jsonResp } from '../lib/standalone.js';
+import { hashPassword } from '../../lib/auth.js';
 
 const SALT = "_moliam_salt_2026";
 
-/**
- * Hash password using SHA-256 with salt for secure storage
- * @param {string} password - Plain text password to hash
- * @returns {Promise<string>} Hexadecimal string representation of hashed password (64 chars)
- */
-async function hashPassword(password) {
-  const buf = await crypto.subtle.digest(
-       "SHA-256",
-    new TextEncoder().encode(password + SALT)
-     );
-  return Array.from(new Uint8Array(buf))
-         .map(b => b.toString(16).padStart(2, "0"))
-      .join("");
-}
+// NOTE: hashPassword() now imported from lib/auth.js - removed duplicate (~9 lines concise)
 
 /**
  * POST /api/admin/seed -- Seeds database with demo users and tables
