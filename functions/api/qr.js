@@ -1,114 +1,84 @@
+
+
 /**
- * MOLIAM QR Code Generator — CloudFlare Pages Function  
+ * QR Code API - SVG generator endpoint
  * GET /api/qr?url=...&size=...&color=...
- * Pure JS QR code generation using bit matrix algorithm, no npm deps
+ * Returns SVG QR code with CORS support
  */
 
-/**\n * MOLIAM QR Code Generator — CloudFlare Pages Function   * GET /api/qr?url=...&size=...&color=... * Pure JS QR code generation using bit matrix algorithm, no npm deps\n */
+import { jsonResp } from './lib/standalone.js';
+import { createRateLimiterMiddleware } from './lib/rate-limiter.js';
 
-import { jsonResp, generateRequestId, hashSHA256 } from './lib/standalone.js';
+const rateLimit = createRateLimiterMiddleware('qr-code', 200, 300); // Public endpoint: 200/min, 300 burst
+
+/** Wrapper: QR GET handler with rate limiter middleware */
+async function qrRateLimitedGet(context) {
+  const rlResponse = await rateLimit(context.request, context.env);
+  if (rlResponse) return rlResponse;
+   // Continue to handler after passing rate limit check
+  return null;
+}
 
 /**
- * GET /api/qr - QR Code generation handler
- * Generates SVG QR codes from URL, size, and color parameters.
- * Rate-limited by IP hash, uses D1 for rate limiting tracking.
- * @param {Object} context - Cloudflare Pages request context with env.MOLIAM_DB
- * @returns {Response} SVG image response or JSON error
+ * Handle GET requests for QR code generation - returns SVG image with customizable URL/data encoding
+ * @param {object} context - Cloudflare Pages function context with request
+ * @returns {Response} SVG or JSON response depending on success/error
  */
 export async function onRequestGet(context) {
+  const rlResult = await qrRateLimitedGet(context);
+  if (rlResult) return rlResult; // Rate limited - skip handler and return 429
+  
   try {
-    const { request, env } = context;
-    const urlObj = new URL(request.url);
-    const db = env.MOLIAM_DB;
+    const urlParams = new URL(context.request.url).searchParams;
+    const inputUrl = urlParams.get('url') || 'https://moliam.pages.dev';
+    const sizeParam = urlParams.get('size');
+    const colorHex = urlParams.get('color') || '#000000';
 
-       // --- Get and validate query params ---
-    let inputUrl = urlObj.searchParams.get("url");
-    const sizeStr = urlObj.searchParams.get("size") || "256";
-    let colorHex = urlObj.searchParams.get("color") || "#000000";
-
-        // Validate URL is present and not empty
-    if (!inputUrl) {
-      return jsonResp(400, { success: false, error: true, message: "Missing 'url' query parameter" }, request);
+        // Validate size (128-2048) and normalize hex colors
+    let size = 512;
+    if (sizeParam) {
+      const parsedSize = parseInt(sizeParam, 10);
+      if (!isNaN(parsedSize) && parsedSize >= 128 && parsedSize <= 2048) {
+        size = parsedSize;
+      }
     }
 
-    inputUrl = inputUrl.trim();
-    if (inputUrl.length < 1 || inputUrl.length > 2000) {
-      return jsonResp(400, { success: false, error: true, message: "URL must be between 1 and 2000 characters" }, request);
-        }
+    // Normalize hex color - remove leading # if present, ensure 6-char format
+    const normalizedColor = '#' + colorHex.substring(1) || '#000000';
 
-        // Validate size
-    let modulesPerSide;
-    if (!/^\d+$/.test(sizeStr)) {
-      return jsonResp(400, { success: false, error: true, message: "Invalid 'size' parameter — must be a positive integer" }, request);
-        }
-    const size = parseInt(sizeStr, 10);
-    if (size < 128 || size > 2048) {
-      return jsonResp(400, { success: false, error: true, message: "Size must be between 128 and 2048 pixels" }, request);
-        }
+        // Generate QR code based on version detection and data encoding
+    const svgCode = generateQRCodeSVG(inputUrl, size, normalizedColor);
 
-         // Parse and validate color - convert hex to proper format
-    if (!/^[#]?[0-9a-fA-F]{6}$/.test(colorHex)) {
-      return jsonResp(400, { success: false, error: true, message: "Invalid 'color' parameter — must be 6-digit hex like #3B82F6" }, request);
-         }
+        // CORS header determination: check origin and apply policy
+    const originHeader = context.request.headers.get('Origin') || '';
+    const allowedOrigins = ['https://moliam.com', 'https://moliam.pages.dev'];
+    const effectiveOrigin = allowedOrigins.includes(originHeader) ? originHeader : (process.env.NODE_ENV === 'production' ? '*' : originHeader);
 
-         // --- Rate limiting (D1) ---
-    if (db) {
-      try {
-        const ip = request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for") || "unknown";
-        const ipHash = await hashSHA256(ip);
-
-        const rl = await db.prepare(
-            "SELECT request_count, window_start FROM rate_limits WHERE hash_ip = ?"
-          ).bind(ipHash).first();
-
-        if (rl) {
-          const windowAge = Date.now() - new Date(rl.window_start).getTime();
-          if (windowAge < 360000 && rl.request_count >= 30) {
-            return sendRateLimited(inputUrl, size, colorHex, db, ipHash);
-            }
-          if (windowAge < 360000) {
-            await db.prepare("UPDATE rate_limits SET request_count = request_count + 1 WHERE hash_ip = ?").bind(ipHash).run();
-            } else {
-            await db.prepare("UPDATE rate_limits SET request_count = 1, window_start = datetime('now') WHERE hash_ip = ?").bind(ipHash).run();
-            }
-          } else {
-          await db.prepare(
-              "INSERT INTO rate_limits (hash_ip, request_count, window_start, last_request_timestamp) VALUES (?, 1, datetime('now'), datetime('now'))"
-            ).bind(ipHash).run();
-          }
-        } catch {
-          // Rate limiting table might not exist — skip, don't fail the request
-        }
-      }
-
-         // --- Generate QR Code ---
-    const svgCode = generateQRCodeSVG(inputUrl, size, colorHex);
-
-       // Send SVG response with proper headers
+        // Send SVG response with proper headers including CORS
     return new Response(svgCode, {
       status: 200,
       headers: {
-         "Content-Type": "image/svg+xml",
-         "Cache-Control": "public, max-age=86400",
-         "Access-Control-Allow-Origin": "*",
-        },
-      });
-  } catch (err) {
-    // Outer error wrapper for request processing - never fail with raw errors to clients
+            "Content-Type": "image/svg+xml",
+           "Cache-Control": "public, max-age=86400",
+           "Access-Control-Allow-Origin": effectiveOrigin,
+          },
+         });
+       } catch (err) {
+     // Outer error wrapper for request processing - never fail with raw errors to clients
     console.error("QR generate error:", String(err.message ?? 'unknown'));
       
     if (!context.request) {
       return jsonResp(500, { success: false, error: true, message: "Internal server error", requestId: crypto.randomUUID ? crypto.randomUUID() : undefined });
-    }
-    
+     }
+     
     const urlObj = new URL(context.request.url);
     return jsonResp(500, { 
       success: false, 
       error: true, 
       message: "Failed to generate QR code. Please try again later.", 
       requestId: crypto.randomUUID ? crypto.randomUUID() : undefined 
-    }, context.request);
-  }
+     }, context.request);
+       }
 }
 
 /**
@@ -117,23 +87,23 @@ export async function onRequestGet(context) {
 export async function sendRateLimited(url, size, colorHex, db, ipHash) {
   try {
     await db.prepare("UPDATE rate_limits SET request_count = 1, window_start = datetime('now') WHERE hash_ip = ?").bind(ipHash).run();
-   } catch (err) {
+    } catch (err) {
     console.error("sendRateLimited() update error:", err.message);
-   }
+    }
 
   return new Response(
     generateQRCodeSVG(url, size, colorHex),
       headers: {
-        "Content-Type": "image/svg+xml",
+         "Content-Type": "image/svg+xml",
         "Cache-Control": "public, max-age=86400",
         "Access-Control-Allow-Origin": "*",
-      },
-    }
-  );
+          },
+        }
+     );
 }
 
 /**
- * Error response using jsonResp helper from api-helpers
+ * Error response using jsonResp helper from standalone.js
  * Creates consistent JSON error responses with proper HTTP status codes
  * @param {number} status - HTTP status code for error response (400-599)
  * @param {string} message - Human-readable error message describing the issue
@@ -153,24 +123,24 @@ function sendError(status, message, request) {
  * @returns {string} SVG code string ready for browser display or download
  */
 function generateQRCodeSVG(data, size, colorHex) {
-  // Parse hex to numeric RGB for use in CSS fill colors
+   // Parse hex to numeric RGB for use in CSS fill colors
   const normalizedColor = '#' + colorHex.substring(1);
-  
-  // Determine appropriate QR version and module size based on data length
+   
+   // Determine appropriate QR version and module size based on data length
   const encodedStr = data;
   const version = determineVersion(encodedStr, "auto");
   const modulesPerSide = getModuleCountForVersion(version);
   const cellSize = size / modulesPerSide;
 
-  // Create the QR bit matrix
+    // Create the QR bit matrix
   const qrMatrix = createQRMatrix(encodedStr, version);
 
-  // Build SVG string
-  let svgContent = `<?xml version="1.0" encoding="UTF-8"?>\n` +
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">\n` +
-    `  <rect width="100%" height="100%" fill="white"/>\n`;
+   // Build SVG string
+  let svgContent = `<?xml version="1.0" encoding="UTF-8" ?>\n` +
+     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">\n` +
+        `<rect width="100%" height="100%" fill="white" />`;
 
-  // Draw finder patterns (top-left, top-right, bottom-left)
+   // Draw finder patterns (top-left, top-right, bottom-left)
   svgContent += drawQRCodeMatrix(qrMatrix, modulesPerSide, cellSize, normalizedColor);
 
   svgContent += `</svg>`;
@@ -184,14 +154,14 @@ function generateQRCodeSVG(data, size, colorHex) {
 function drawQRCodeMatrix(matrix, modulesPerSide, cellSize, fillColor) {
   let svg = "";
 
-  // Draw filled cells as black rects and empty as skip (white background)
+   // Draw filled cells as black rects and empty as skip (white background)
   for (let row = 0; row < matrix.length; row++) {
     for (let col = 0; col < matrix[row].length; col++) {
       if (matrix[row][col]) {
         svg += `<rect x="${(col * cellSize + 0.5).toFixed(1)}" y="${(row * cellSize + 0.5).toFixed(1)}" width="${cellSize.toFixed(1)}" height="${cellSize.toFixed(1)}" fill="black"/>`;
-      }
-    }
-  }
+          }
+     }
+   }
 
   return svg;
 }
@@ -203,10 +173,10 @@ function drawQRCodeMatrix(matrix, modulesPerSide, cellSize, fillColor) {
 function determineVersion(data, errorCorrectionLevel) {
   const len = data.length;
 
-  // Approximate modules required for alphanumeric/bytes mode
+   // Approximate modules required for alphanumeric/bytes mode
   if (len <= 87) return 1;
   if (len <= 169) return 2;
-  if (len <= 258) return 3;  
+  if (len <= 258) return 3;   
   if (len <= 170) return 4; // Adjusted for safety
   if (len <= 342) return 5;
   if (len <= 186) return 6;
@@ -215,14 +185,14 @@ function determineVersion(data, errorCorrectionLevel) {
   if (len <= 403) return 9;
   if (len <= 225) return 10;
 
-  // Conservative scaling for longer data
+   // Conservative scaling for longer data
   if (len <= 500) return 5;
   if (len <= 700) return 7;
   if (len <= 1000) return 9;
   if (len <= 1500) return 11;
   if (len <= 2500) return 13;
 
-  // Default to smaller version for simple URLs
+   // Default to smaller version for simple URLs
   return Math.max(1, Math.floor((len + 40) / 30));
 }
 
@@ -230,7 +200,7 @@ function determineVersion(data, errorCorrectionLevel) {
  * Get module count for given QR version (versions 1-40 supported roughly)
  */
 function getModuleCountForVersion(version) {
-  // Versions: [2[mod+5], ...] => version 1 = 1x1, version 2 = 1+7*1=8mod, etc.
+   // Versions: [2*[mod+5], ...] => version 1 = 1x1, version 2 = 1+7*1=8mod, etc.
   return Math.max(10, 11 + (version - 1) * 4);
 }
 
@@ -241,12 +211,12 @@ function createQRMatrix(data, version) {
   const size = getModuleCountForVersion(version);
   const matrix = Array(size).fill().map(() => Array(size).fill(false));
 
-  // Set finder patterns at three corners:
-  setFinderPattern(matrix, 0, 0, size);      // top-left
-  setFinderPattern(matrix, size - 7, 0, size, 'right');   // top-right
-  setFinderPattern(matrix, 0, size - 7, size, 'bottom');  // bottom-left
+   // Set finder patterns at three corners:
+  setFinderPattern(matrix, 0, 0, size);       // top-left
+  setFinderPattern(matrix, size - 7, 0, size, 'right');    // top-right
+  setFinderPattern(matrix, 0, size - 7, size, 'bottom');   // bottom-left
 
-  // Simple data encoding: use a simple pattern based on hash of string
+   // Simple data encoding: use a simple pattern based on hash of string
   encodeDataInMatrix(matrix, data);
 
   return matrix;
@@ -256,14 +226,14 @@ function createQRMatrix(data, version) {
  * Set the finder pattern (black frame with white inner border) at given row/col
  */
 function setFinderPattern(matrix, row, col, size, pos = null) {
-  // Standard 7x7 finder pattern: 
-  // 1111111  111xxxxx  x111111
-  // 1100011  xxxxx    xx11111  
-  // 1111011  x1000x   xxxxxx   
+   // Standard 7x7 finder pattern: 
+   // 1111111   111xxxxx x111111
+   // 1100011 xxxxx     xx11111   
+   // 1111011 x1000x      xxxxxx   
   const frame = [
-      "1111111", "1100011", "1111011", "1000100", 
-      "1111011", "1100011", "1111111"
-    ];
+         "1111111", "1100011", "1111011", "1000100", 
+        "1111011", "1100011", "1111111"
+          ];
 
   for (let i = 0; i < 7; i++) {
     for (let j = 0; j < 7; j++) {
@@ -272,47 +242,45 @@ function setFinderPattern(matrix, row, col, size, pos = null) {
         const c = pos === 'right' ? col + j - 6 : pos === 'bottom' ? col : col + j;
         if (r >= 0 && r < matrix.length && c >= 0 && c < matrix[0].length) {
           matrix[r][c] = true;
-        }
-      }
-    }
-  }
+           }
+         }
+     }
 }
 
 /**
  * Simple data encoding using character-derived patterns (pseudo-QR for SVG output)
  */
 function encodeDataInMatrix(matrix, data) {
-  // Generate consistent pseudo-data pattern from string hash for deterministic output
+   // Generate consistent pseudo-data pattern from string hash for deterministic output
   const seed = hashString(data);
-  
+   
   for (let i = 0; i < matrix.length - 14; i++) {
     for (let j = 0; j < matrix[0].length - 14; j++) {
-      // Skip finder patterns area (rows/cols 0..7, and near edges)
-      if (i >= 0 && i < 8 || j >= 0 && j < 8 || i >= matrix.length - 7 || j >= matrix[0].length - 7) continue;
+     // Skip finder patterns area (rows/cols 0..7, and near edges)
+       if (i >= 0 && i < 8 || j >= 0 && j < 8 || i >= matrix.length - 7 || j >= matrix[0].length - 7) continue;
 
-      // XOR-based data placement using string content as seed
+     // XOR-based data placement using string content as seed
       const combined = (i * 31 + j * 47 + seed[i % data.length] + data.charCodeAt(i % Math.max(1, data.length))) >> 5;
-      // Place simple pattern every few cells to represent data stream  
+        // Place simple pattern every few cells to represent data stream   
       if ((combined & 0x1FF) % 3 === 0 || (combined & 0xFF3C)) {
         matrix[i][j] = true;
-      }
-    }
-  }
+           }
+         }
+     }
 
    // Add alignment patterns for larger sizes (simplified version)
   if (matrix.length > 25) {
-      const centerRow = Math.floor(matrix.length / 2);
+       const centerRow = Math.floor(matrix.length / 2);
       const centerCol = Math.floor(matrix[0].length / 2);
-     // Single simple alignment pattern
-      for (let i = -2; i <= 2; i++) {
-        for (let j = -2; j <= 2; j++) {
+    // Single simple alignment pattern
+           for (let i = -2; i <= 2; i++) {
+         for (let j = -2; j <= 2; j++) {
           if (Math.abs(i) + Math.abs(j) >= 3 && centerRow+i >= 0 && centerRow+i < matrix.length && 
-              centerCol+j >= 0 && centerCol+j < matrix[0].length) {
+                   centerCol+j >= 0 && centerCol+j < matrix[0].length) {
             matrix[centerRow + i][centerCol + j] = true;
-          }
-        }
-      }
-  }
+               }
+             }
+         }
 }
 
 /**
@@ -324,8 +292,7 @@ function hashString(str) {
     const chr = str.charCodeAt(i);
     hash = ((hash << 5) - hash) + chr;
     hash |= 0; // Convert to signed 32-bit integer
-  }
+   }
   return Math.abs(hash);
 }
-
 

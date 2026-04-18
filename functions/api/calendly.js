@@ -1,4 +1,5 @@
 
+
 /**
  * Calendly API - Public link endpoint
  * GET /api/calendly
@@ -13,7 +14,6 @@ const rateLimit = createRateLimiterMiddleware('calendly-public', 100, 200); // P
 /** Wrapper: Calendly GET handler with rate limiter middleware for public calendar link access */
 async function calendlyRateLimitedGet(context) {
   const rlResponse = await rateLimit(context.request, context.env);
-  if (rlResponse) return rlResponse;
   // Continue to handler after passing rate limit check
   return null;
 }
@@ -33,28 +33,33 @@ export async function onRequestGet(context) {
       data: { 
           url: "https://calendly.com/visualark/demo", 
           embed: true 
-          },
+           },
       error: false 
-        };
+         };
     return jsonResp(200, result, context.request);
-  } catch (error) {
+   } catch (error) {
     console.error("ERROR [calendly.js GET]:", error.message);
     const response = { 
       success: false, 
       error: error.message || "Internal server error", 
       data: null 
-        };
+         };
     return jsonResp(500, response, context.request);
-  }
+   }
 }
 
-export async function onRequestOptions() { 
-  return new Response(null, { 
+export async function onRequestOptions(context) {
+  const origin = context ? (context.request ? context.request.headers.get('Origin') : null) : null;
+  const actualOrigin = origin || '';
+  const allowedOrigins = ['https://moliam.com', 'https://moliam.pages.dev'];
+  const effectiveOrigin = allowedOrigins.includes(actualOrigin) ? actualOrigin : (process.env.NODE_ENV === 'production' ? '*' : actualOrigin);
+  
+  return new Response(null, {
       status: 204, 
-      headers: { 
-         "Access-Control-Allow-Origin": "*",
-         "Access-Control-Allow-Methods": "GET, OPTIONS",
-         "Access-Control-Allow-Headers": "Content-Type" 
-        } 
-      });
+      headers: {
+           "Access-Control-Allow-Origin": effectiveOrigin,
+           "Access-Control-Allow-Methods": "GET, OPTIONS",
+           "Access-Control-Allow-Headers": "Content-Type" 
+          } 
+        });
 }

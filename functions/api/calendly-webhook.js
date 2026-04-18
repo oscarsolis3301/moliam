@@ -143,10 +143,13 @@ export async function onRequestPost(context) {
    }
 }
 
-// Handle CORS preflight requests from Calendly integration    
-export async function onRequestOptions() {
+// Handle CORS preflight requests from Calendly integration     
+export async function onRequestOptions(context) {
+  const origin = context?.request?.headers?.get('Origin') || '';
+  const allowedOrigins = ['https://moliam.com', 'https://moliam.pages.dev'];
+  const effectiveOrigin = allowedOrigins.includes(origin) ? origin : (process.env.NODE_ENV === 'production' ? '*' : origin);
   return new Response(null, { 
     status: 204, 
-    headers:{'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type, Calendly-Webhook-Signature'} 
-   });
+    headers: {'Access-Control-Allow-Origin':effectiveOrigin,'Access-Control-Allow-Methods':'POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type, Calendly-Webhook-Signature'} 
+    });
 }
