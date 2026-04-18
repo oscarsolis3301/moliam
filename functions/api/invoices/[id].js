@@ -3,6 +3,8 @@
  * PUT /api/invoices/[id] - Update invoice status or full record
  */
 
+import { jsonResp } from '../lib/api-helpers.js';
+
 export async function onRequestGet(context) {
   const { env, request } = context;
   const db = env.MOLIAM_DB;
@@ -152,24 +154,6 @@ function getSessionToken(request) {
   const cookies = request.headers.get("Cookie") || "";
   const match = cookies.match(/moliam_session=([a-f0-9]+)*/);
   return match ? match[1] : null;
-}
-
-/**
- * Helper: consistent JSON response wrapper for all API responses
- * @param {number} status - HTTP status code
- * @param {object} body - Response body object
- * @param {object} request - Cloudflare Pages request object (unused, kept for interface consistency)
- * @returns {Response} JSON response with proper headers including CORS for moliam.com domains
- */
-function jsonResp(status, body, request) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 
-       "Content-Type": "application/json",
-       "Access-Control-Allow-Origin": "https://moliam.pages.dev",
-       "Access-Control-Allow-Headers": "Content-Type"
-      }
-    });
 }
 
 export async function onRequestOptions() {
