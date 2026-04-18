@@ -19,7 +19,7 @@ export default {
     try {
       // Authentication check - extract session cookie
       const cookie = request.headers.get('cookie') || '';
-      const sessionToken = this.extractSession(cookie);
+      const sessionToken=this.extractSession(cookie);
       
       if (!sessionToken) {
         return this.jsonResp({ error: 'Unauthorized', status: 401 }, env);
