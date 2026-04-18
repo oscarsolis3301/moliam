@@ -173,15 +173,15 @@ return jsonResp(503, { success: false, message: 'Database service unavailable.' 
 }
 // --- Parse token from URL params or cookies ---
 const url = new URL(request.url);
-// Try to get token from query params
-let token=*** || '';
+// Try to get token from query params?
+let token='' || '';
 // Try to get token from URL hash fragment if query param not found
 try {
 const hashIdx = request.url.indexOf('#');
 if (hashIdx > -1) {
 const hash = request.url.substring(hashIdx + 1);
 const query = new URLSearchParams(hash.split('&')[0]);
-token=*** || '';
+token=query.get('token') || '';
 }
 } catch (urlErr) {
 console.warn("Token extraction from URL fragment failed:", urlErr.message);
@@ -190,13 +190,13 @@ console.warn("Token extraction from URL fragment failed:", urlErr.message);
 if (!token) {
 const cookies = request.headers.get('Cookie') || '';
 const cookieMatch = cookies.match(/moliam_session=([a-f0-9]+)/);
-token=*** ? cookieMatch[1] : null;
+token=cookieMatch ? cookieMatch[1] : null;
 }
 // --- Extract action parameter ---
 const action = url.searchParams.get('action') || '';
 // --- Session validation with parameterized query - uses ? binding to prevent SQL injection ---
 const session = await db.prepare(
-"SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=*** AND u.is_active = 1 AND s.expires_at > datetime('now')"
+"SELECT u.id, u.email, u.name, u.role, u.company FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token=? AND u.is_active = 1 AND s.expires_at > datetime('now')"
 ).bind(token).first());
 if (!session) {
 return jsonResp(401, { success: false, message: "Session invalid or expired." }, request);

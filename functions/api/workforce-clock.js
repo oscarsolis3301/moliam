@@ -17,13 +17,14 @@ export default {
     }
 
     try {
-      // Authentication check - extract session cookie
-      const cookie = request.headers.get('cookie') || '';
-      const sessionToken=this.extractSession(cookie);
-      
-      if (!sessionToken) {
-        return this.jsonResp({ error: 'Unauthorized', status: 401 }, env);
-      }
+// Authentication check - extract session cookie
+const cookie = request.headers.get('cookie') || '';
+const match = cookie.match(/cf_session=([a-zA-Z0-9]+)/);
+const sessionToken = match ? match[1] : null;
+
+if (!sessionToken) {
+  return this.jsonResp({ error: 'Unauthorized', status: 401 }, env);
+}
 
       // Verify session and get user info
       const session = await this.validateSession(sessionToken, env);
