@@ -148,31 +148,3 @@ export async function onRequestPost(context) {
     }, request);
 }
 }
-
-/**
- * Queue email sequences for new lead submissions
- * Non-blocking call that logs errors to console without affecting user response
- * Inserts record into email_queue table for scheduled deliverability
- * @param {object} env - Worker environment with EMAIL_API_KEY if configured
- * @param {number} submission_id - Lead submission ID from database
- * @returns {Promise<null|null>} null on success (errors logged silently to console.warn)
- */
-async function queueEmailSequences(env, submission_id) {
-  try {
-      // Background job to send welcome emails and sequence triggers
-    const hasEmailProvider = env.EMAIL_API_KEY || env.MAILGUN_API_KEY || env.SENDGRID_API_KEY;
-    if (!hasEmailProvider) return null;
-
-     // Check if DB is available before attempting queue operations - parameterized safety confirmed
-    if (env.MOLIAM_DB) {
-      await env.MOLIAM_DB.prepare(
-         `INSERT INTO email_queue (submission_id, queued_at, status) VALUES (?, datetime('now'), 'pending')`
-       ).bind(submission_id).run();
-     }
-
-    return null;
-     } catch (err) {
-     // removed - fire-and-forget;
-    return null;
-     }
-}
