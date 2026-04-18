@@ -163,8 +163,10 @@ export async function POST(request, { env, context }) {
       facebook: (data.facebook || "").trim(),
       instagram: (data.instagram || "").trim(),
       yelp: (data.yelp || "").trim()
-     };
-    await sendWebhook(env, { name, email, phone, company, message, service: data.service, score, category, subId, socials });
+      };
+    await sendDiscordWebhook(env, { 
+      email, phone, company, message, leadScore: score, category, socials, subId 
+    });
 
     return jsonResp(200, {
       success: true,
@@ -172,34 +174,21 @@ export async function POST(request, { env, context }) {
       submissionId: subId,
       leadScore: score,
       category: category,
-     }, request);
+      }, request);
 
-  } catch (err) {
-    // Even if D1 completely fails, still send webhook and return success to user
-    await sendWebhook(env, { name, email, phone, company, message, service: data.service, score: 0, category: "cold", subId: 0 });
+   } catch (err) {
+     // Even if D1 completely fails, still send webhook and return success to user
+    await sendDiscordWebhook(env, { 
+      email, phone, company, message, leadScore: 0, category: "cold", subId: 0 
+    });
     return jsonResp(200, {
       success: true,
       message: "Thanks! We'll be in touch within 1 business day.",
       submissionId: 0,
-     }, request);
-  }
-}
-
-/**
- * Send Discord webhook with embedded lead/message data - centralized helper from standalone.js
- * Fire-and-forget pattern: never blocks response, handles failures gracefully
- * 
- * @param {object} env - Worker environment containing DISCORD_WEBHOOK_URL
- * @param {{name, email, phone, company, message, service, score, category}} params - Lead data payload
- * @returns {Promise<void>} No return value, fire-and-forget execution
- */
-async function sendWebhook(env, { name, email, phone, company, message, service, score, category }) {
-  // Use centralized Discord helper from standalone.js to avoid duplication
-  await sendDiscordWebhook(env, { 
-    email, phone, company, message, leadScore: score, category, priority: category === 'hot' ? '<@1466244456088080569>' : ''
-   });
+      }, request);
+   }
 }
 
 /* ============================================================================
    MODULE USAGE - contact.js uses standalone.js for: jsonResp, validateEmail, validatePhone, sanitizeText, calculateLeadScore, sendDiscordWebhook
-   ========================================================================== */
+    ========================================================================== */
