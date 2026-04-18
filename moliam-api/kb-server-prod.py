@@ -2341,3 +2341,216 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+# ============== GitHub-Integrated Rollback Endpoints ==============
+
+import subprocess
+import shutil
+from pathlib import Path
+
+GITHUB_TOKEN_FILE = Path(__file__).parent / ".github-token"
+VERSIONS_DIR = Path(__file__).parent / "versions"
+
+def get_github_token():
+    if GITHUB_TOKEN_FILE.exists():
+        return GITHUB_TOKEN_FILE.read_text().strip()
+    return None
+
+@require_auth()
+async def admin_github_push(request):
+    """Push current version to GitHub"""
+    key_data = request["key_data"]
+    if key_data.get("role") != "admin":
+        return web.json_response({"error": "Admin access required"}, status=403)
+    
+    try:
+        data = await request.json()
+        version_name = data.get("version_name", f"v{datetime.now().strftime('%m%d')}-toby")
+        description = data.get("description", "New version")
+        
+        token = get_github_token()
+        if not token:
+            return web.json_response({"error": "GitHub token not configured"}, status=500)
+        
+        WORKSPACE = Path(__file__).parent
+        
+        # Configure git
+        subprocess.run(["git", "config", "user.email", "atlas@moliam.com"], cwd=WORKSPACE, capture_output=True)
+        subprocess.run(["git", "config", "user.name", "Atlas API"], cwd=WORKSPACE, capture_output=True)
+        
+        # Stage and commit
+        subprocess.run(["git", "add", "."], cwd=WORKSPACE, capture_output=True)
+        subprocess.run(["git", "commit", "-m", f"{version_name}: {description}"], cwd=WORKSPACE, capture_output=True)
+        
+        # Push to GitHub
+        result = subprocess.run(
+            ["git", "push", "origin", "main"],
+            cwd=WORKSPACE,
+            capture_output=True,
+            text=True
+        )
+        
+        if result.returncode != 0:
+            return web.json_response({"error": f"Push failed: {result.stderr}"}, status=500)
+        
+        # Create local version folder
+        date_str = datetime.now().strftime("%Y%m%d")
+        version_dir = VERSIONS_DIR / f"{version_name}-{date_str}"
+        version_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Copy files
+        for item in WORKSPACE.iterdir():
+            if item.name not in ["versions", ".git", "__pycache__"]:
+                if item.is_dir():
+                    shutil.copytree(item, version_dir / item.name, dirs_exist_ok=True)
+                else:
+                    shutil.copy(item, version_dir / item.name)
+        
+        # Metadata
+        metadata = {
+            "version_name": version_name,
+            "backup_id": f"{version_name}-{date_str}",
+            "description": description,
+            "pushed_to": "github",
+            "timestamp": datetime.now().isoformat()
+        }
+        with open(version_dir / "metadata.json", "w") as f:
+            json.dump(metadata, f, indent=2)
+        with open(WORKSPACE / "data" / "current-version.json", "w") as f:
+            json.dump(metadata, f, indent=2)
+        
+        return web.json_response({
+            "success": True,
+            "version_name": version_name,
+            "pushed_to": "github",
+            "local_version": str(version_dir),
+            "message": f"Created {version_name} and pushed to GitHub"
+        })
+        
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+@require_auth()
+async def admin_github_versions(request):
+    """List all versions from GitHub"""
+    key_data = request["key_data"]
+    if key_data.get("role") != "admin":
+        return web.json_response({"error": "Admin access required"}, status=403)
+    
+    try:
+        WORKSPACE = Path(__file__).parent
+        result = subprocess.run(
+            ["git", "log", "--oneline", "-30"],
+            cwd=WORKSPACE,
+            capture_output=True,
+            text=True
+        )
+        
+        versions = []
+        for line in result.stdout.strip().split("\n"):
+            if line:
+                parts = line.split(" ", 1)
+                versions.append({
+                    "commit": parts[0],
+                    "message": parts[1] if len(parts) > 1 else "",
+                    "is_release": "v" in parts[1].lower() and "-toby" in parts[1].lower() if len(parts) > 1 else False
+                })
+        
+        return web.json_response({
+            "versions": versions,
+            "repo_url": "https://github.com/oscarsolis3301/atlas-api",
+            "total_commits": len(versions)
+        })
+        
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+@require_auth()
+async def admin_github_rollback(request):
+    """Rollback to version from GitHub - pulls and switches instantly"""
+    key_data = request["key_data"]
+    if key_data.get("role") != "admin":
+        return web.json_response({"error": "Admin access required"}, status=403)
+    
+    try:
+        data = await request.json()
+        version_name = data.get("version_name") or data.get("commit")
+        
+        if not version_name:
+            return web.json_response({"error": "version_name or commit required"}, status=400)
+        
+        token = get_github_token()
+        if not token:
+            return web.json_response({"error": "GitHub token not configured"}, status=500)
+        
+        WORKSPACE = Path(__file__).parent
+        
+        # Stash current changes
+        subprocess.run(["git", "stash"], cwd=WORKSPACE, capture_output=True)
+        
+        # Pull from GitHub (this will merge)
+        subprocess.run(["git", "fetch", "origin"], cwd=WORKSPACE, capture_output=True)
+        
+        # Checkout specific commit or find by version name
+        if len(version_name) == 7:  # Looks like a commit hash
+            subprocess.run(["git", "checkout", version_name], cwd=WORKSPACE, capture_output=True)
+        else:
+            # Find commit by version name in message
+            result = subprocess.run(
+                ["git", "log", "--oneline", "--all"],
+                cwd=WORKSPACE,
+                capture_output=True,
+                text=True
+            )
+            target_commit = None
+            for line in result.stdout.split("\n"):
+                if version_name.lower() in line.lower():
+                    target_commit = line.split(" ")[0]
+                    break
+            
+            if target_commit:
+                subprocess.run(["git", "checkout", target_commit], cwd=WORKSPACE, capture_output=True)
+            else:
+                return web.json_response({"error": f"Version {version_name} not found in git history"}, status=404)
+        
+        # Create version folder for this rollback
+        date_str = datetime.now().strftime("%Y%m%d")
+        version_dir = VERSIONS_DIR / f"{version_name}-{date_str}"
+        version_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Copy current files (after rollback) to version folder
+        for item in WORKSPACE.iterdir():
+            if item.name not in ["versions", ".git", "__pycache__"]:
+                if item.is_dir():
+                    shutil.copytree(item, version_dir / item.name, dirs_exist_ok=True)
+                else:
+                    shutil.copy(item, version_dir / item.name)
+        
+        # Update current version
+        metadata = {
+            "version_name": version_name,
+            "backup_id": f"{version_name}-{date_str}",
+            "rolled_back_from": "github",
+            "timestamp": datetime.now().isoformat()
+        }
+        with open(WORKSPACE / "data" / "current-version.json", "w") as f:
+            json.dump(metadata, f, indent=2)
+        
+        # Schedule restart
+        async def restart():
+            await asyncio.sleep(2)
+            os.execv(sys.executable, [sys.executable] + sys.argv)
+        
+        asyncio.create_task(restart())
+        
+        return web.json_response({
+            "success": True,
+            "version_name": version_name,
+            "message": f"Rolled back to {version_name} from GitHub",
+            "local_version": str(version_dir),
+            "restarting": True
+        })
+        
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
