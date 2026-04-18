@@ -78,8 +78,13 @@
     // TASK 5: Skeleton loading state for better UX + Task 9 combined (Error Handling Grace - Loading Skeletons)
     function showSkeleton(containerId, items=3) { const c=document.getElementById(containerId); if(!c)return; c.innerHTML=Array.from({length:items},(_,i)=>`<div style="height:40px;background:linear-gradient(90deg,var(--bg-building) 25%,var(--bg-room) 50%,var(--bg-building) 75%);background-size:200% 100%;margin-bottom:8px;animation:skeletonLoad 1.5s infinite;display:block"></div>`).join(''); }
 
-    // Task 5: Error toast component - centralized error display (Task 9: Error Handling Grace + Task 5 combined)
-    const Toast = { create:function(type,message){const t=document.createElement('div');t.className=`toast ${type}`;t.textContent=message;document.body.appendChild(t);setTimeout(()=>t.remove(),4000);} };
+     // Task 5: Error toast component - centralized error display (Task 9: Error Handling Grace + Task 5 combined)
+    const Toast = { 
+        create:function(type,message){const t=document.createElement('div');t.className=`toast ${type}`;t.textContent=message;document.body.appendChild(t);setTimeout(()=>{if(t.parentNode)t.remove();},4000);},
+        success: function(msg) { this.create('success', msg); },
+        error: function(msg) { this.create('error', msg); },
+        loading: function(msg) { const t=document.createElement('div');t.className='toast loading';t.textContent=msg;document.body.appendChild(t);return t; }
+      };
 
     // Render project cards (Task 5: Mobile Touch Targets WCAG 44px maintained via CSS)
     const renderProjects = (projects) => { const grid= document.getElementById('projects-grid'); let pHtml=''; if(!projects||!projects.length)pHtml='<div class="empty-state">No active projects.</div>'; else for(const p of projects){let typeDisp = p.type ? p.type.charAt(0).toUpperCase()+p.type.slice(1)+' ' + (p.type==='Website'?'':'('+p.type+')') : ''; let statusDisp = (p.status==='active')?'Active':(p.status?(p.status.charAt(0).toUpperCase()+p.status.slice(1)):'Completed'); pHtml+='<div class="project-card"><span class="type-badge">'+typeDisp+'</span><span class="status-badge">'+statusDisp+'</span><h3>'+p.name+'</h3><div class="meta"><div>Type: '+typeDisp+'</div><div>Status: '+statusDisp+'</div></div></div>'; } grid.innerHTML=pHtml; };
