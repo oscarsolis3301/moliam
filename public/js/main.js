@@ -163,7 +163,11 @@ function updateSparkData() {
    drawSparkline();
 }
 
-setInterval(updateSparkData, 500);
+// Clearable interval for sparkline - prevents memory leak on page unload
+const sparklineInterval = setInterval(updateSparkData, 500);
+
+/* cleanup handler: store for beforeunload */
+window.__moliam_cleanup_sparkline = () => clearInterval(sparklineInterval);
 
 /* ─── UPTIME ─── */
 const startTime = Date.now();
@@ -826,12 +830,16 @@ function mainLoop(t) {
 requestAnimationFrame(mainLoop);
 
 /* ─── SPARKLINE UPDATER ─── */
-setInterval(() => {
+// Clearable interval for sparkline - prevents memory leak on page unload
+const sparklineUpdaterInterval = setInterval(() => {
   sparkData.push(sparkData[sparkData.length - 1]);
   sparkData.shift();
   sparkData[sparkData.length - 1] = 0;
   drawSparkline();
 }, 5000);
+
+/* cleanup handler: store for beforeunload */
+window.__moliam_cleanup_sparkline_updater = () => clearInterval(sparklineUpdaterInterval);
 drawSparkline();
 
 // ─── UPDATE BOT STATUS PANEL ─── */
