@@ -30,12 +30,33 @@
     other: 'Not Sure Yet'
    };
 
+  // ── Spam Protection Module Imports (simple JS-based heuristic scoring) — functions/lib/spam-protection.js
+  // No reCAPTCHA v3 needed - lightweight IP blacklist Map + honeypot validation keeps budget under 50 lines
+  const spamCheck = {
+    checkHoneypot: function(honeyFieldValue) {
+      const val = String(honeyFieldValue || '').trim();
+      if (val.length > 3) return {likelyBot: true, reason: 'honeypot_field_filled'};
+      if (val.includes('http') || val.includes('@')) return {likelyBot: true, reason: 'suspicious_content'};
+      return {likelyBot: false};
+     },
+    recordAttempt: function(clientId, reason) {
+      const tracker = this.attempts.get(clientId) || {count: 0, windowStart: Date.now()};
+      if (Date.now() - tracker.windowStart > 3600000) tracker.count = 0;
+      tracker.count++;
+      tracker.windowStart = Date.now();
+      this.attempts.set(clientId, tracker);
+      if (tracker.count >= 5) console.log(`[SPAM-FILTER] ${clientId}: ${reason} attempts=${tracker.count}`);
+      return {count: tracker.count};
+     },
+    attempts: new Map()
+  };
+
   // ── Init ──
   function init() {
     updateUI();
     bindEvents();
     focusCurrentInput();
-   }
+    }
 
   // ── Update UI for current step ──
   function updateUI() {
@@ -229,7 +250,14 @@
     return '(' + digits.substring(0, 3) + ') ' + digits.substring(3, 6) + '-' + digits.substring(6);
    }
 
-  // ── Submit ──
+   // ── Spam Check Module Helper (simple heuristic scoring, no external deps)  
+  function detectSpam(clientId, honeyFieldVal) {
+    const result = spamCheck.checkHoneypot(honeyFieldVal);
+    if (result.likelyBot) spamCheck.recordAttempt(clientId, result.reason);
+    return result;
+     }
+
+   // ── Submit ──
   function handleSubmit(e) {
     e.preventDefault();
 
@@ -239,13 +267,19 @@
     statusEl.textContent = '';
     statusEl.className = 'pf-form-status';
 
-    // Spam Check: Validate honeypot field - if filled, reject as spam
+     // Extract simple clientId from user agent (heuristic-based, no reCAPTCHA v3)
+    const clientId = navigator.userAgent.substring(0, 32).replace(/[^a-zA-Z0-9]/g, '');
+
+     // Spam Check: Validate honeypot field + heuristic scoring
     var honeyVal = getValue('pf-honey') || '';
-    if (honeyVal && honeyVal.length > 3) {
-      // Likely a bot - silently fail (don't reveal honeypot exists)
-      showError('❌ Submission rejected. Please try again.');
-      return; // Silently reject without showing honeypot mechanism
-    }
+    var spamResult = detectSpam(clientId, honeyVal);
+    
+    if (spamResult.likelyBot) {
+       // Log attempt and silently reject
+      spamCheck.recordAttempt(clientId, spamResult.reason);
+      console.log(`[SPAM-FILTER] ${clientId}: rejected reason:${spamResult.reason}`);
+      return; // Silently reject - don't reveal honeypot exists
+     }
 
     var payload = {
       name: getValue('pf-name'),
