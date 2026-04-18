@@ -226,14 +226,13 @@ async function createAppointment(context, body, db) {
  * @param {object} context Cloudflare Pages request context
  * @param {number|string} id Appointment ID to update
  * @param {string} status Status change: 'confirmed', 'cancelled', 'rescheduled', 'completed'
- * @param {MOLIAM_DB} db D1 database instance for persistence  
+ * @param {MOLIAM_DB} db D1 database instance for persistence   
  * @returns {Response} 200 OK with updated status or error response
  */
 async function updateAppointmentStatus(context, id, status, db) {
   if (!id || !db) {
     return jsonResp(400, { error: true, message: "Invalid appointment ID or database" }, context.request);
-}
-
+  }
 
   try {
     const res = await db.prepare(
@@ -260,17 +259,16 @@ async function updateAppointmentStatus(context, id, status, db) {
 
 /**
  * Reschedule an appointment to a new date/time with email notification
- * @param {object} context Cloudflare Pages request context  
- * @param {number|string} id Appointment ID to reschedule  
+ * @param {object} context Cloudflare Pages request context   
+ * @param {number|string} id Appointment ID to reschedule   
  * @param {string} newDate ISO-8601 datetime for rescheduling
  * @param {MOLIAM_DB} db D1 database instance for persistence
- * @returns {Response} 200 OK with updated_date or error response  
+ * @returns {Response} 200 OK with updated_date or error response   
  */
 async function rescheduleAppointment(context, id, newDate, db) {
   if (!id || !newDate || !db) {
     return jsonResp(400, { error: true, message: "Invalid parameters for rescheduling" }, context.request);
-}
-
+   }
 
   try {
     const res = await db.prepare(
@@ -299,16 +297,15 @@ async function rescheduleAppointment(context, id, newDate, db) {
 
 /**
  * Handle no-show workflow for missed appointments with auto-retry logic
- * @param {object} context Cloudflare Pages request context  
- * @param {number|string} id Appointment ID that was a no-show  
+ * @param {object} context Cloudflare Pages request context   
+ * @param {number|string} id Appointment ID that was a no-show   
  * @param {MOLIAM_DB} db D1 database instance for persistence
  * @returns {Response} 200 OK with retry_count or auto-denial status after max attempts
  */
 async function handleNoShow(context, id, db) {
   if (!id || !db) {
     return jsonResp(400, { error: true, message: "Invalid appointment ID or database" }, context.request);
-}
-
+    }
 
   try {
     const appointment = await db.prepare("SELECT * FROM appointments WHERE id = ?").bind(id).first();
