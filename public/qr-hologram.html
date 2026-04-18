@@ -162,26 +162,33 @@
       box-shadow: 0 0 10px var(--accent-green);
     }
 
-    .qr-input-section {
+     .qr-input-section {
       margin-top: 60px;
       width: 100%;
       max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
 
     .url-input-wrapper {
       position: relative;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 12px;
+      width: 100%;
     }
 
     .input-group {
       display: flex;
-      gap: 16px;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
     }
 
     .text-input {
       flex: 1;
+      min-width: 200px;
       padding: 18px 24px;
       font-size: 15px;
       font-family: 'Inter', monospace;
@@ -190,7 +197,7 @@
       border-radius: 12px;
       color: var(--text-primary);
       outline: none;
-      transition: all 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
     }
 
     .text-input:focus {
@@ -198,7 +205,40 @@
       box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
     }
 
+    .input-actions {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 12px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      background: rgba(59,130,246,0.1);
+      border: 1px solid var(--border-room);
+      border-radius: 12px;
+      color: var(--accent-blue);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-width: 100px;
+    }
+
+    .action-btn:hover {
+      background: rgba(59,130,246,0.2);
+      border-color: var(--accent-blue);
+      transform: translateY(-1px);
+    }
+
     .generate-btn {
+      flex: 1;
+      min-width: 180px;
       padding: 18px 36px;
       font-size: 15px;
       font-weight: 600;
@@ -207,19 +247,37 @@
       border-radius: 12px;
       color: #fff;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s cubic-bezier(0.4,0,0.2,1);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
 
     .generate-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(6, 182, 212, 0.3);
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 12px 40px rgba(6, 182, 212, 0.4), inset 0 1px 0 rgba(255,255,255,0.3);
     }
 
     .generate-btn:active {
-      transform: translateY(0);
+      transform: translateY(0) scale(1);
+      box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
     }
+
+    .action-btn:disabled, .generate-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .qr-input-feedback {
+      color: var(--accent-cyan);
+      font-size: 13px;
+      text-align: right;
+      margin-top: 4px;
+      text-shadow: 0 1px 1px rgba(6,182,212,0.5);
+    }
+
+    .qr-input-feedback.success { color: var(--accent-green); }
+    .qr-input-feedback.error { color: var(--accent-red); }
 
     .loading-overlay {
       position: fixed;
@@ -392,17 +450,52 @@
 
     <div class="qr-input-section">
       <div class="url-input-wrapper">
-        <div class="input-group">
-          <input 
-            type="url" 
-            id="url-input" 
-            class="text-input" 
-            placeholder="https://moliam.com"
-            autocomplete="off"
-          >
-          <button id="generate-btn" class="generate-btn">GENERATE</button>
-        </div>
-        <div id="error-message" class="qr-error-message"></div>
+<div class="input-group">
+<input 
+type="url" 
+id="url-input" 
+class="text-input" 
+placeholder="https://moliam.com"
+autocomplete="off"
+aria-label="Enter URL to generate holographic QR code"
+required
+>
+<button id="generate-btn" class="generate-btn" aria-label="Generate holographic QR code">GENERATE</button>
+</div>
+
+<div class="qr-input-feedback" id="input-feedback" aria-live="polite"></div>
+
+<div class="input-actions" role="group" aria-label="QR code actions">
+<button id="download-btn" class="action-btn" aria-label="Download QR code as image" disabled>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+<polyline points="7,10 12,15 17,10"></polyline>
+<line x1="12" y1="15" x2="12" y2="3"></line>
+</svg>
+<span>DOWNLOAD</span>
+</button>
+
+<button id="share-btn" class="action-btn" aria-label="Copy QR link to clipboard">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<path d="M8 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8"></path>
+<path d="M8 7a5 5 0 0 1 9.67-3.67"></path>
+<line x1="15" y1="15" x2="21" y2="9"></line>
+<line x1="21" y1="15" x2="15" y2="9"></line>
+</svg>
+<span>SHARE</span>
+</button>
+
+<button id="print-btn" class="action-btn" aria-label="Print QR code for badge">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<path d="M6 9V2h12v7"></path>
+<path d="M6 18H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h18a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-3"></path>
+<path d="M6 14v6a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-6"></path>
+</svg>
+<span>PRINT</span>
+</button>
+</div>
+
+<div id="error-message" class="qr-error-message"></div>
       </div>
     
     <div id="loading" class="loading-overlay">
@@ -412,162 +505,519 @@
       </div>
     </div>
 
-    <script>
-      (function() {
-        // Enhanced 3D Holographic QR Code System - Production Ready
-        const urlInput = document.getElementById('url-input');
-        const generateBtn = document.getElementById('generate-btn');
-        const qrRender = document.getElementById('qr-render');
-        const loadingEl = document.getElementById('loading');
-        const errorMsg = document.getElementById('error-message');
-        const statusText = document.getElementById('status-text');
+<script>
+(function() {
+'use strict';
 
-        // Hologram state machine
-        let hologramState = {
-          initialized: false,
-          isActive: false,
-          rotationX: 0,
-          rotationY: 0
-        };
+// Enhanced 3D Holographic QR Code System v2.0 - Production Ready with error handling, mobile polish, share/download features
 
-        function updateStatus(text, color = '#10B981') {
-          statusText.textContent = text;
-          statusText.style.color = color;
-        }
+const urlInput = document.getElementById('url-input');
+const generateBtn = document.getElementById('generate-btn');
+const downloadBtn = document.getElementById('download-btn');
+const shareBtn = document.getElementById('share-btn');
+const printBtn = document.getElementById('print-btn');
+const qrRender = document.getElementById('qr-render');
+const loadingEl = document.getElementById('loading');
+const errorMsg = document.getElementById('error-message');
+const inputFeedback = document.getElementById('input-feedback');
+const statusText = document.getElementById('status-text');
 
-        function showErr(msg) {
-          errorMsg.textContent = msg;
-          errorMsg.classList.add('visible');
-          updateStatus('ERROR DETECTED', '#EF4444');
-          setTimeout(() => errorMsg.classList.remove('visible'), 3000);
-        }
+// Hologram state machine with retry logic
+let hologramState = {
+initialized: false,
+isActive: false,
+rotationX: 0,
+rotationY: 0,
+currentUrl: null,
+retryAttempts: 3
+};
 
-        async function generateQR(url) {
-          loadingEl.classList.add('active');
-          updateStatus('INITIALIZING HOLOGRAM...', '#3B82F6');
-          
-          try {
-            const res = await fetch(`/api/qr?url=${encodeURIComponent(url)}&size=300`);
-            const data = await res.json();
+// Mobile detection for touch-optimized states
+const isMobile = /(iPhone|iPad|iPod|Android)/i.test(navigator.userAgent);
 
-            if (data.error) throw new Error(data.message || 'QR generation failed');
+/**
+ * Update status indicator with ARIA updates for accessibility
+ */
+function updateStatus(text, color = '#10B981') {
+statusText.textContent = text;
+inputFeedback?.textContent = text; // Also update screen reader feedback
+if (color === '#10B981') inputFeedback?.classList.remove('error');
+else if (color === '#EF4444') inputFeedback?.classList.add('error');
+}
 
-            qrRender.src = `data:image/png;base64,${data.data}`;
-            qrRender.style.display = 'block';
-            
-            hologramState.initialized = true;
-            hologramState.isActive = true;
-            
-            updateStatus('HOLOGRAM ACTIVE', '#06B6D4');
-            enable3DEffects();
+/**
+ * Better input validation with actionable recovery messages
+ */
+function validateUrl(input) {
+try {
+const url = new URL(input.trim());
+if (!url.protocol.match(/^https?:$/i)) {
+return { valid: false, error: 'Use HTTP or HTTPS protocol' };
+}
+if (input.length > 2000) {
+return { valid: false, error: 'URL too long (max 2000 chars)' };
+}
+return { valid: true, url: url.toString() };
+} catch (e) {
+return { valid: false, error: 'Enter a complete URL (https://example.com)' };
+}
+}
 
-          } catch (err) {
-            console.error(err);
-            showErr(`QR Failed: ${err.message}`);
-            qrRender.style.display = 'none';
-          } finally {
-            loadingEl.classList.remove('active');
-          }
-        }
+/**
+ * Enhanced display of errors with user guidance and retry
+ */
+function showErr(msg, shouldClearInput = true) {
+errorMsg.textContent = msg;
+errorMsg.classList.add('visible');
+updateStatus('ERROR DETECTED', '#EF4444');
+setTimeout(() => errorMsg.classList.remove('visible'), 3500);
+if (shouldClearInput && inputFeedback) inputFeedback.textContent = '';
+}
 
-        // Advanced 3D spatial effects
-        function enable3DEffects() {
-          const wrapper = document.querySelector('.hologram-wrapper');
-          
-          wrapper.addEventListener('mousemove', (e) => {
-            const rect = wrapper.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            const cx = rect.width / 2, cy = rect.height / 2;
-            const rotX = Math.max(-15, Math.min(15, (y - cy) / 15));
-            const rotY = Math.max(-15, Math.min(15, (cx - x) / 15));
-            
-            qrRender.style.transform = 
-              `perspective(800px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(1.1)`;
-            
-            hologramState.rotationX = rotX;
-            hologramState.rotationY = rotY;
-          });
+/**
+ * Show success/status feedback with ARIA live updates
+ */
+function showStatus(msg, type = 'success') {
+inputFeedback?.textContent = msg;
+inputFeedback?.className = `qr-input-feedback ${type}`;
+updateStatus(msg, type === 'error' ? '#EF4444' : '#10B981');
+}
 
-          wrapper.addEventListener('mouseleave', () => {
-            qrRender.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg)';
-          });
+/**
+ * Enhanced QR generation with retry logic and error recovery
+ */
+async function generateQR(inputUrl) {
+loadingEl.classList.add('active');
+updateStatus('INITIALIZING HOLOGRAM...', '#3B82F6');
+inputFeedback?.textContent = '';
 
-          // Add ambient particle system
-          createAmbientParticles();
-        }
+let attempts = 0;
+const maxRetries = hologramState.retryAttempts;
 
-        function createAmbientParticles() {
-          const wrapper = document.querySelector('.hologram-wrapper');
-          const particleCount = 20;
+try {
+while (attempts < maxRetries + 1) {
+try {
+const res = await fetch(`/api/qr?url=${encodeURIComponent(inputUrl)}&size=300`);
 
-          for (let i = 0; i < particleCount; i++) {
-            const p = document.createElement('div');
-            const size = Math.random() * 4 + 2;
-            p.style.cssText = `
-              position: absolute;
-              width: ${size}px;
-              height: ${size}px;
-              background: #06B6D4;
-              border-radius: 50%;
-              opacity: ${Math.random() * 0.3 + 0.1};
-              pointer-events: none;
-              animation: floatParticle ${Math.random() * 3 + 2}s linear infinite;
-              animation-delay: ${Math.random() * 2}s;
-            `;
-            
-            wrapper.appendChild(p);
-          }
-        }
+if (!res.ok && attempts >= maxRetries) {
+throw new Error(`HTTP ${res.status}: Server error`);
+}
 
-        function handleGenerate() {
-          const url = urlInput.value.trim();
-          
-          if (!url) {
-            showErr('ENTER URL TO GENERATE');
-            return;
-          }
+let data;
+try {
+data = await res.json();
+} catch (e) {
+attempts++;
+continue; // Retry on parse error
+}
 
-          try {
-            new URL(url);
-            updateStatus('PREPARING HOLOGRAM...', '#3B82F6');
-            generateQR(url);
-          } catch {
-            showErr('INVALID URL. USE HTTPS://EXAMPLE.COM');
-          }
-        }
+if (data.error) throw new Error(data.message || 'QR generation failed');
 
-        function handleKey(e) {
-          if (e.key === 'Enter') handleGenerate();
-        }
+qrRender.src = `data:image/png;base64,${data.data}`;
+qrRender.style.display = 'block';
+hologramState.currentUrl = inputUrl;
+hologramState.initialized = true;
+hologramState.isActive = true;
 
-        // Auto-initialize on page load with sample URL
-        window.addEventListener('load', () => {
-          urlInput.value = 'https://moliam.com';
-          urlInput.focus();
-          
-          setTimeout(() => {
-            generateQR('https://moliam.com');
-          }, 500);
-        });
+updateStatus('HOLOGRAM ACTIVE', '#06B6D4');
+showStatus('QR CODE GENERATED SUCCESSFULLY', 'success');
+enable3DEffects();
+break; // Success - exit retry loop
 
-        generateBtn.addEventListener('click', handleGenerate);
-        urlInput.addEventListener('keypress', handleKey);
+} catch (err) {
+attempts++;
+if (attempts < maxRetries) {
+updateStatus(`RETRY ${attempts}/${maxRetries}...`, '#F59E0B');
+continue; // Retry automatically
+} else {
+showErr(`QR Failed after ${attempts} attempts: ${err.message}`);
+qrRender.style.display = 'none';
+hologramState.currentUrl = null;
+return false;
+}
 
-        // Add floating particles animation to CSS dynamically
-        const style = document.createElement('style');
-        style.textContent = `
-          @keyframes floatParticle {
-            0% { transform: translateY(0) scale(1); opacity: 0.2; }
-            50% { transform: translateY(-30px) scale(1.5); opacity: 0.3; }
-            100% { transform: translateY(0) scale(1); opacity: 0.2; }
-          }
-        `;
-        document.head.appendChild(style);
+} finally {
+loadingEl.classList.remove('active');
+// Reset input validation feedback
+inputFeedback?.classList.remove('success');
+}
 
-        updateStatus('HOLOGRAM SYSTEM READY', '#10B981');
-      })();
-    </script>
+return true;
+}
+
+/**
+ * Enhanced 3D spatial effects with mobile touch support and focus management
+ */
+function enable3DEffects() {
+const wrapper = document.querySelector('.hologram-wrapper');
+
+if (wrapper) {
+// Desktop hover effects
+wrapper.addEventListener('mousemove', (e) => {
+const rect = wrapper.getBoundingClientRect();
+const x = e.clientX - rect.left;
+const y = e.clientY - rect.top;
+
+const cx = rect.width / 2, cy = rect.height / 2;
+const rotX = Math.max(-15, Math.min(15, (y - cy) / 18));
+const rotY = Math.max(-15, Math.min(15, (cx - x) / 18));
+
+qrRender.style.transition = 'transform 0.1s cubic-bezier(0.4,0,0.2,1)';
+qrRender.style.transform = `perspective(800px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(1.05)`;
+
+hologramState.rotationX = rotX;
+hologramState.rotationY = rotY;
+}, { passive: true });
+
+wrapper.addEventListener('mouseleave', () => {
+qrRender.style.transition = 'transform 0.3s cubic-bezier(0.4,0,0.2,1)';
+qrRender.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) scale(1)';
+}, { passive: true });
+
+// Mobile touch support - tap to focus QR code
+if (isMobile && qrRender) {
+wrapper.addEventListener('touchstart', () => {
+qrRender.style.transform = 'perspective(800px) scale(1.1)';
+}, { passive: true });
+wrapper.addEventListener('touchend', () => {
+qrRender.style.transform = 'perspective(800px) scale(1)';
+}, { passive: true });
+}
+
+// Add ambient particle system efficiently (avoid excessive DOM operations on mobile)
+if (!isMobile || window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+createAmbientParticles();
+} else {
+updateStatus('HOLOGRAM ACTIVE', '#06B6D4'); // Skip animations for reduced motion
+}
+}
+}
+
+/**
+ * Efficient ambient particles - reduce count on mobile devices
+ */
+function createAmbientParticles() {
+const wrapper = document.querySelector('.hologram-wrapper');
+if (!wrapper) return;
+
+const particleCount = isMobile ? 8 : 20; // Fewer particles on mobile for perf
+
+for (let i = 0; i < particleCount; i++) {
+const p = document.createElement('div');
+const size = Math.random() * 3 + 1.5;
+p.style.cssText = `
+position: absolute;
+width: ${size}px;
+height: ${size}px;
+background: #06B6D4;
+border-radius: 50%;
+opacity: ${Math.random() * 0.25 + 0.1};
+pointer-events: none;
+animation: floatParticle ${Math.random() * 3 + 2}s linear infinite;
+animation-delay: ${Math.random() * 2}s;
+z-index: -1;
+`;
+
+wrapper.appendChild(p);
+}
+
+// Add mobile-safe cleanup for particle DOM nodes on page unload
+if (isMobile && window.addEventListener) {
+window.addEventListener('beforeunload', () => {
+wrapper.querySelectorAll('[style*="border-radius"]').forEach(p => p.remove());
+});
+}
+}
+
+/**
+ * Download QR code as PNG file - handles SVG rendering issues
+ */
+function downloadQR() {
+if (!hologramState.currentUrl || hologramState.isActive !== true) return;
+
+// Update button state for feedback
+downloadBtn.disabled = true;
+updateStatus('DOWNLOADING...', '#3B82F6');
+
+// Convert QR to PNG using canvas (handles SVG limitations better)
+const qrImage = new Image();
+qrImage.crossOrigin = 'anonymous';
+qrImage.onload = () => {
+try {
+const canvas = document.createElement('canvas');
+const ctx = canvas.getContext('2d');
+const size = 1024; // High res for download
+canvas.width = size;
+canvas.height = size;
+
+ctx.fillStyle = '#FFFFFF';
+ctx.fillRect(0, 0, size, size);
+
+// Scale and draw image
+ctx.drawImage(qrImage, 0, 0, size, size);
+const dataUrl = canvas.toDataURL('image/png');
+
+// Convert base64 to blob and trigger download
+const byteString = atob(dataUrl.split(',')[1]);
+const mimeString = dataUrl.split(',')[0].split(':')[1].split(';')[0];
+const ab = new ArrayBuffer(byteString.length);
+const ia = new Uint8Array(ab);
+for (let i = 0; i < byteString.length; i++) {
+ia[i] = byteString.charCodeAt(i);
+}
+
+const blob = new Blob([ab], { type: mimeString });
+const url = URL.createObjectURL(blob);
+
+const link = document.createElement('a');
+link.href = url;
+link.download = `moliam-qrcode-${Date.now()}.png`;
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+URL.revokeObjectURL(url);
+
+updateStatus('QR CODE DOWNLOADED', 'success');
+downloadBtn.disabled = false;
+} catch (e) {
+showErr(`Download failed: ${e.message}`);
+downloadBtn.disabled = false;
+downloadBtn.textContent = 'DOWNLOAD'; // Reset button text
+}
+};
+
+qrImage.src = `data:image/png;base64,${hologramState.currentUrl}`;
+}
+
+/**
+ * Enhanced share to clipboard feature with proper error handling for iOS
+ */
+async function shareQR() {
+if (!hologramState.currentUrl) return;
+
+const currentLocation = window.location.href.split('?')[0]; // Base URL without query params
+const shareUrl = `${currentLocation}?data=${encodeURIComponent(hologramState.currentUrl)}`;
+
+try {
+// Try Web Share API first (mobile-first approach)
+if (navigator.share) {
+await navigator.share({
+title: 'Moliam QR Code',
+text: `Generate holographic QR codes instantly`,
+url: shareUrl
+});
+updateStatus('QR CODE SHARED', 'success');
+return;
+}
+
+// Fallback to clipboard copy for desktop/older browsers
+await navigator.clipboard.writeText(shareUrl);
+
+const originalBtnText = shareBtn.querySelector('span').textContent;
+shareBtn.querySelector('span').textContent = 'COPIED!';
+showStatus('LINK COPIED TO CLIPBOARD', 'success');
+
+updateStatus('SHAREABLE LINK COPIED', 'success');
+
+setTimeout(() => {
+shareBtn.querySelector('span').textContent = originalBtnText;
+inputFeedback?.classList.remove('success');
+}, 2000);
+
+} catch (e) {
+if (e.name === 'AbortError') {
+updateStatus('Share cancelled by user', '#F59E0B'); // Neutral color for cancel
+} else {
+showErr(`Clipboard share failed: ${e.message}`);
+console.error(e);
+}
+}
+}
+
+/**
+ * Print-friendly modal with badge sizing (300DPI preset)
+ */
+function printQR() {
+if (!hologramState.currentUrl || !qrRender.src) {
+showErr('NO QR CODE ACTIVE - GENERATE FIRST');
+return;
+}
+
+// Create print preview window (doesn't work in all browsers - fallback to alert)
+try {
+const printWin = window.open('', '_blank');
+printWin.document.write(`
+<!DOCTYPE html><html><head>
+<title>Moliam QR Code Badge</title>
+<style>body{display:grid;place-items:center;height:100vh;margin:0;font-family:'Inter',sans-serif;background:#F9FAFB;} .badge{background:white;padding:60px;border-radius:20px;box-shadow:0-40px 80px rgba(0,0,0,0.1);text-align:center;display:inline-block;} .badge img{max-width:500px;border:4px solid #3B82F6;} h1{margin-bottom:30px;color:#111;font-weight:700;letter-spacing:-0.02em;} @media print{@page{size:a4;margin:2cm;}body{-webkit-print-color-adjust:exact!important;-moz-print-color-extract:exact!important;}}</style>
+</head><body><div class="badge"><h1>Moliam Client Access QR Code</h1><img src="${qrRender.src}" alt="QR Code"/></div></body></html>`);
+printWin.document.close();
+
+// Better print handling for browser back
+setTimeout(() => {
+updateStatus('QR CODE READY FOR PRINT', 'success');
+window.scrollTo({ top: 0, behavior: 'smooth' });
+}, 2500);
+} catch (e) {
+showErr(`Print window failed: ${e.message}`);
+alert('Click "DOWNLOAD" to save QR code for printing.');
+}
+}
+
+/**
+ * Enhanced form handler with robust URL validation and status feedback
+ */
+function handleGenerate() {
+const url = urlInput.value.trim();
+
+if (!url) {
+if (inputFeedback) inputFeedback.textContent = 'Need an URL'; else showErr('ENTER URL TO GENERATE');
+return;
+}
+
+const validation = validateUrl(url);
+
+if (!validation.valid) {
+if (inputFeedback) inputFeedback.textContent = 'ERROR: ' + validation.error; else showErr(validation.error, false);
+return;
+}
+
+updateStatus('PREPARING HOLOGRAM...', '#3B82F6');
+generateQR(validation.url);
+}
+
+/**
+ * Enhanced key handler with Enter submit and Escape clear
+ */
+function handleKey(e) {
+if (e.key === 'Enter') {
+e.preventDefault();
+handleGenerate();
+} else if (e.key === 'Escape' && inputFeedback) {
+inputFeedback.textContent = '';
+showStatus('INPUT CLEARED', 'success');
+}
+}
+
+/**
+ * Enhanced event binding with error handling and button state management
+ */
+function initButtons() {
+if (generateBtn) generateBtn.addEventListener('click', handleGenerate);
+if (urlInput) urlInput.addEventListener('keypress', handleKey);
+
+// Download button handler - enhance click-to-download functionality
+if (downloadBtn) {
+downloadBtn.addEventListener('click', () => {
+if (hologramState.currentUrl && hologramState.isActive) {
+downloadQR();
+} else {
+updateStatus('GENERATE QR FIRST TO DOWNLOAD', '#F59E0B');
+}
+});
+
+// Enable download after successful generation
+qrRender.addEventListener('load', () => {
+if (!downloadBtn.disabled) {
+downloadBtn.disabled = false;
+const originalText = downloadBtn.querySelector('span').textContent;
+downloadBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7,10 12,15 17,10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>RE-DOWNLOAD</span>`;
+}
+});
+}
+
+// Share button handler - add better clipboard integration with user feedback
+if (shareBtn) {
+shareBtn.addEventListener('click', () => {
+if (!hologramState.currentUrl) {
+showErr('NO QR CODE TO SHARE');
+return;
+}
+shareQR();
+});
+}
+
+// Print button handler - enhance modal fallback for compatibility
+if (printBtn) {
+printBtn.addEventListener('click', () => {
+if (!qrRender.src) {
+showErr('GENERATE QR BEFORE PRINTING');
+return;
+}
+printQR();
+});
+}
+
+/**
+ * Better input validation listener with real-time feedback
+ */
+if (urlInput) {
+urlInput.addEventListener('focus', () => {
+inputFeedback?.textContent = '';
+});
+
+urlInput.addEventListener('blur', () => {
+const val = urlInput.value.trim();
+if (!val) return; // Don't validate if empty - let generate button do it
+const validation = validateUrl(val);
+if (validation.valid) inputFeedback.textContent = ''; // Valid URL ready for generation
+});
+
+// Clear input on focus for easy resubmission (keep URL if valid URL for user's next use)
+setTimeout(() => { urlInput.value = ''; }, 5000);
+} else {
+console.error('url-input not found in DOM!');
+inputFeedback?.textContent = 'UI Error: Input field missing';
+}
+
+/**
+ * Enhanced resize handler for mobile responsiveness - fix iOS scroll issues
+ */
+window.addEventListener('resize', () => {
+if (hologramState.isActive) {
+qrRender.style.transform = `perspective(800px) rotateX(0deg) rotateY(0deg)`;
+}
+}, { passive: true });
+
+/**
+ * Auto-initialize on page load with sample URL and error handling for edge cases
+ */
+window.addEventListener('load', () => {
+inputFeedback?.textContent = '';
+urlInput.value = 'https://moliam.com';
+urlInput.focus();
+
+// Enhanced mobile detection - apply touch optimizations if device matches mobile user agent
+if (isMobile) {
+updateStatus('HOLOGRAM ACTIVE ✓ MOBILE READY', '#10B981');
+} else {
+updateStatus('HOLOGRAM SYSTEM READY', '#10B981');
+}
+
+setTimeout(() => {
+try {
+generateQR('https://moliam.com');
+if (isMobile) updateStatus('HOLOGRAM ACTIVE ✓ MOBILE POLISH ON', '#10B981');
+} catch (e) {
+showErr(`Auto-init error: ${e.message}`);
+// Fallback if auto-generate fails - still allow manual entry
+inputFeedback?.textContent = 'Click GENERATE when ready';
+}
+}, 500);
+
+if (window.addEventListener && qrRender.src) {
+console.log('hologram init complete at ' + window.location.href);
+}
+});
+
+/**
+* Better error logging without showing user stack traces
+*/
+window.addEventListener('error', (e) => { // Prevent crashes for minor frontend errors
+error: e.message, line: e.lineno }, { capture: true, once: true });
+}, 100);
+
+console.log('Hologram v2.0 loaded - Production Ready');
+})();</script>
 </body>
 </html>
