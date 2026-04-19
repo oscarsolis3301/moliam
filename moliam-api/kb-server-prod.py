@@ -33,79 +33,133 @@ except ImportError:
     MEMORY_SYSTEM_AVAILABLE = False
     print("Warning: Memory system not available")
 
-# NICKNAMES mapping for fuzzy matching
+# NICKNAMES mapping for fuzzy matching - v4.1 Extended
 NICKNAMES = {
-    "oscar": ["oskar", "oz", "ocky"],
-    "vinh": ["vin", "vinnie"],
+    "alexander": ["alex", "al", "sandy"],
+    "andrew": ["andy", "drew"],
+    "anthony": ["tony", "ant"],
+    "benjamin": ["ben", "benny"],
+    "christopher": ["chris", "kit", "topher"],
+    "daniel": ["dan", "danny"],
     "david": ["dave", "davy", "davey"],
-    "joe": ["joey", "joseph", "jos"],
-    "michael": ["mike", "mikey", "mick"],
+    "edward": ["ed", "eddie", "ted", "teddy"],
+    "elizabeth": ["liz", "lizzy", "beth", "betty", "eliza"],
+    "james": ["jim", "jimmy", "jamie"],
+    "joseph": ["joe", "joey"],
+    "joshua": ["josh"],
+    "matthew": ["matt", "matty"],
+    "michael": ["mike", "mikey", "mick", "mickey"],
+    "nicholas": ["nick", "nicky"],
+    "patrick": ["pat", "paddy"],
     "richard": ["rick", "ricky", "rich", "dick"],
     "robert": ["rob", "bob", "bobby", "robbie"],
-    "william": ["will", "bill", "billy", "liam"],
-    "james": ["jim", "jimmy", "jamie"],
+    "samuel": ["sam", "sammy"],
+    "stephen": ["steve", "stevie"],
     "thomas": ["tom", "tommy"],
-    "christopher": ["chris", "kit"],
+    "timothy": ["tim", "timmy"],
+    "william": ["will", "bill", "billy", "liam"],
+    "oscar": ["oskar", "oz", "ocky"],
+    "vinh": ["vin", "vinnie", "ving"],
 }
+
+def normalized_similarity(s1: str, s2: str) -> float:
+    """Calculate normalized similarity with multiple algorithms"""
+    from difflib import SequenceMatcher
+    if not s1 or not s2:
+        return 0.0
+    if s1.lower() == s2.lower():
+        return 1.0
+    
+    seq_sim = SequenceMatcher(None, s1.lower(), s2.lower()).ratio()
+    
+    # Simple edit distance
+    max_len = max(len(s1), len(s2))
+    if max_len == 0:
+        return 0.0
+    
+    # Quick Levenshtein
+    m, n = len(s1), len(s2)
+    if abs(m - n) > 3:  # Too different in length
+        return seq_sim * 0.8
+    
+    # Dynamic programming for edit distance
+    prev = list(range(n + 1))
+    for i in range(1, m + 1):
+        curr = [i]
+        for j in range(1, n + 1):
+            cost = 0 if s1[i-1].lower() == s2[j-1].lower() else 1
+            curr.append(min(prev[j] + 1, curr[j-1] + 1, prev[j-1] + cost))
+        prev = curr
+    
+    lev_sim = 1.0 - (prev[n] / max_len)
+    return (seq_sim * 0.6) + (lev_sim * 0.4)
 
 def fuzzy_match_user(query: str, users: list) -> tuple:
     """
-    Fuzzy match a user query against known users.
+    Enhanced fuzzy matching with multiple algorithms
     Returns: (matched_user_name, confidence, suggestions)
     """
-    from difflib import SequenceMatcher
-    
     query_lower = query.lower().strip()
-    user_names = [u.get('name', '') for u in users if u.get('name')]
+    if not query_lower:
+        return None, 0.0, []
     
-    # Exact match
-    for name in user_names:
+    user_names = [u.get('name', '') for u in users if u.get('name')]
+    if not user_names:
+        return None, 0.0, []
+    
+    scores = []
+    
+    for user in users:
+        name = user.get('name', '')
+        if not name:
+            continue
+        
+        # Exact match
         if name.lower() == query_lower:
             return name, 1.0, []
-    
-    # Nickname matching
-    query_parts = query_lower.split()
-    for part in query_parts:
-        for canonical, nicks in NICKNAMES.items():
-            if part in nicks or part == canonical:
-                # Found nickname, find user with this name
-                for name in user_names:
-                    if canonical in name.lower():
-                        return name, 0.9, []
-    
-    # Sequence matching for typos
-    best_match = None
-    best_score = 0.0
-    
-    for name in user_names:
-        # Full name similarity
-        score = SequenceMatcher(None, query_lower, name.lower()).ratio()
-        if score > best_score:
-            best_score = score
-            best_match = name
         
-        # First name only
+        # First name exact match
         first_name = name.split()[0] if name.split() else ""
-        if first_name:
-            score = SequenceMatcher(None, query_lower, first_name.lower()).ratio()
-            if score > best_score:
-                best_score = score
-                best_match = name
-    
-    if best_score >= 0.6:
-        # Get suggestions (other close matches)
-        all_scores = []
-        for name in user_names:
-            if name != best_match:
-                score = SequenceMatcher(None, query_lower, name.lower()).ratio()
-                if score >= 0.5:
-                    all_scores.append((name, score))
-        all_scores.sort(key=lambda x: x[1], reverse=True)
-        suggestions = [s[0] for s in all_scores[:2]]
+        if first_name.lower() == query_lower:
+            return name, 0.95, []
         
-        return best_match, best_score, suggestions
+        # Nickname matching
+        query_parts = query_lower.split()
+        first_part = query_parts[0] if query_parts else query_lower
+        
+        for canonical, nicks in NICKNAMES.items():
+            if first_part in [n.lower() for n in nicks]:
+                if canonical in name.lower():
+                    scores.append((name, 0.92))
+                    break
+        
+        # Normalized similarity (lower threshold for short queries)
+        threshold = 0.5 if len(query) <= 4 else 0.6
+        sim = normalized_similarity(query_lower, name.lower())
+        if sim >= threshold:
+            scores.append((name, sim))
+        
+        # First name similarity
+        if first_name:
+            sim = normalized_similarity(query_lower, first_name.lower())
+            if sim >= 0.7:
+                scores.append((name, sim * 0.95))
     
-    return None, 0.0, []
+    if not scores:
+        return None, 0.0, []
+    
+    # Get best match
+    scores.sort(key=lambda x: x[1], reverse=True)
+    best_match = scores[0][0]
+    best_score = scores[0][1]
+    
+    # Get alternatives
+    alternatives = []
+    for name, score in scores[1:3]:
+        if score >= 0.5 and name != best_match:
+            alternatives.append(name)
+    
+    return best_match, best_score, alternatives
 
 # Configuration
 PORT = int(os.environ.get("PORT", 8788))
@@ -963,6 +1017,15 @@ async def v1_chat_completions(request):
                 # v4: Try fuzzy matching when user index returns no exact match
                 print(f"DEBUG: No exact match for '{search_query}', trying fuzzy matching...")
                 
+                # Also try with the full query (for typos like "Oskar" that don't match name patterns)
+                fuzzy_query = search_query
+                if not mentioned_users:
+                    # Extract potential name from query (e.g., "who is Oskar" -> "Oskar")
+                    words = [w for w in last.split() if len(w) > 2 and w.lower() not in ['who', 'is', 'what', 'tell', 'me', 'about', 'the', 'a', 'an']]
+                    if words:
+                        fuzzy_query = words[-1]  # Last word is likely the name
+                        print(f"DEBUG: Using extracted name '{fuzzy_query}' for fuzzy matching")
+                
                 # Build user list from user index for fuzzy matching
                 all_users_in_kb = []
                 user_index_path = get_user_index_path(tenant_id)
@@ -975,8 +1038,8 @@ async def v1_chat_completions(request):
                         })
                 
                 if all_users_in_kb:
-                    matched_name, confidence, suggestions = fuzzy_match_user(search_query, all_users_in_kb)
-                    print(f"DEBUG: Fuzzy match '{search_query}' → '{matched_name}' (confidence: {confidence:.2f})")
+                    matched_name, confidence, suggestions = fuzzy_match_user(fuzzy_query, all_users_in_kb)
+                    print(f"DEBUG: Fuzzy match '{fuzzy_query}' → '{matched_name}' (confidence: {confidence:.2f})")
                     
                     if confidence >= 0.85:
                         # Strong match - try user index with corrected name
