@@ -2609,6 +2609,7 @@ async def main():
     app.router.add_get("/v1/documents", v1_list_documents)
     app.router.add_post("/v1/documents", v1_upload_document)
     app.router.add_post("/v1/search", v1_search)
+    app.router.add_post("/v1/kb/search", v1_search)  # Alias for backward compatibility
     app.router.add_post("/v1/chat/completions", v1_chat_completions)
     app.router.add_post("/v1/chat/stream", v1_chat_stream)
     
