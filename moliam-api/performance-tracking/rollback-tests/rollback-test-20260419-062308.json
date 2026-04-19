@@ -1,0 +1,23 @@
+{
+  "test": "rollback_unified",
+  "test_id": "20260419-062310",
+  "timestamp": "2026-04-19T13:23:10Z",
+  "version_before": "v06-toby",
+  "version_after": "v06-toby",
+  "target_version": "v01-toby-20260418",
+  "metrics": {
+    "api_response_ms": 122,
+    "restart_time_ms": 1321,
+    "total_time_ms": 1474,
+    "restart_success": true
+  },
+  "rollback_api_response": "404: Not Found\n"
+}
+,
+  "github_rollback": {
+    "api_response_ms": 102,
+    "restart_time_ms": 1272,
+    "total_time_ms": 4530,
+    "target_version": "v06-toby"
+  }
+}
