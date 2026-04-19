@@ -133,11 +133,20 @@ def fuzzy_match_user(query: str, users: list) -> tuple:
                     scores.append((name, 0.92))
                     break
         
-        # Normalized similarity (lower threshold for short queries)
-        threshold = 0.5 if len(query) <= 4 else 0.6
+        # Normalized similarity (lower threshold for short queries and typos)
+        threshold = 0.45 if len(query) <= 5 else 0.6
         sim = normalized_similarity(query_lower, name.lower())
         if sim >= threshold:
             scores.append((name, sim))
+        
+        # Extra check for double-letter typos (e.g., Daviid -> David)
+        if len(query) >= 4:
+            # Remove duplicate consecutive letters
+            deduped = ''.join(c for i, c in enumerate(query_lower) if i == 0 or c != query_lower[i-1])
+            if len(deduped) >= 3:
+                sim_deduped = normalized_similarity(deduped, name.lower())
+                if sim_deduped >= threshold:
+                    scores.append((name, sim_deduped * 0.95))  # Slightly lower confidence
         
         # First name similarity
         if first_name:
