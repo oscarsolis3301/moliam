@@ -33,6 +33,80 @@ except ImportError:
     MEMORY_SYSTEM_AVAILABLE = False
     print("Warning: Memory system not available")
 
+# NICKNAMES mapping for fuzzy matching
+NICKNAMES = {
+    "oscar": ["oskar", "oz", "ocky"],
+    "vinh": ["vin", "vinnie"],
+    "david": ["dave", "davy", "davey"],
+    "joe": ["joey", "joseph", "jos"],
+    "michael": ["mike", "mikey", "mick"],
+    "richard": ["rick", "ricky", "rich", "dick"],
+    "robert": ["rob", "bob", "bobby", "robbie"],
+    "william": ["will", "bill", "billy", "liam"],
+    "james": ["jim", "jimmy", "jamie"],
+    "thomas": ["tom", "tommy"],
+    "christopher": ["chris", "kit"],
+}
+
+def fuzzy_match_user(query: str, users: list) -> tuple:
+    """
+    Fuzzy match a user query against known users.
+    Returns: (matched_user_name, confidence, suggestions)
+    """
+    from difflib import SequenceMatcher
+    
+    query_lower = query.lower().strip()
+    user_names = [u.get('name', '') for u in users if u.get('name')]
+    
+    # Exact match
+    for name in user_names:
+        if name.lower() == query_lower:
+            return name, 1.0, []
+    
+    # Nickname matching
+    query_parts = query_lower.split()
+    for part in query_parts:
+        for canonical, nicks in NICKNAMES.items():
+            if part in nicks or part == canonical:
+                # Found nickname, find user with this name
+                for name in user_names:
+                    if canonical in name.lower():
+                        return name, 0.9, []
+    
+    # Sequence matching for typos
+    best_match = None
+    best_score = 0.0
+    
+    for name in user_names:
+        # Full name similarity
+        score = SequenceMatcher(None, query_lower, name.lower()).ratio()
+        if score > best_score:
+            best_score = score
+            best_match = name
+        
+        # First name only
+        first_name = name.split()[0] if name.split() else ""
+        if first_name:
+            score = SequenceMatcher(None, query_lower, first_name.lower()).ratio()
+            if score > best_score:
+                best_score = score
+                best_match = name
+    
+    if best_score >= 0.6:
+        # Get suggestions (other close matches)
+        all_scores = []
+        for name in user_names:
+            if name != best_match:
+                score = SequenceMatcher(None, query_lower, name.lower()).ratio()
+                if score >= 0.5:
+                    all_scores.append((name, score))
+        all_scores.sort(key=lambda x: x[1], reverse=True)
+        suggestions = [s[0] for s in all_scores[:2]]
+        
+        return best_match, best_score, suggestions
+    
+    return None, 0.0, []
+
 # Configuration
 PORT = int(os.environ.get("PORT", 8788))
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
