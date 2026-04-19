@@ -959,6 +959,47 @@ async def v1_chat_completions(request):
                         "validation": "failed",
                         "validation_error": error_msg
                     })
+            else:
+                # v4: Try fuzzy matching when user index returns no exact match
+                print(f"DEBUG: No exact match for '{search_query}', trying fuzzy matching...")
+                
+                # Build user list from user index for fuzzy matching
+                all_users_in_kb = []
+                user_index_path = get_user_index_path(tenant_id)
+                if user_index_path.exists():
+                    user_index = load_user_index(tenant_id)
+                    for user_id, user_data in user_index.items():
+                        all_users_in_kb.append({
+                            'name': user_data.get('name', ''),
+                            'source_doc': user_data.get('source_doc', '')
+                        })
+                
+                if all_users_in_kb:
+                    matched_name, confidence, suggestions = fuzzy_match_user(search_query, all_users_in_kb)
+                    print(f"DEBUG: Fuzzy match '{search_query}' → '{matched_name}' (confidence: {confidence:.2f})")
+                    
+                    if confidence >= 0.85:
+                        # Strong match - try user index with corrected name
+                        user_data = search_user_index(tenant_id, matched_name)
+                        if user_data:
+                            response_text = format_user_response(user_data, user_data.get('source_doc', 'N/A'))
+                            return web.json_response({
+                                "choices": [{"message": {"role": "assistant", "content": response_text}}],
+                                "model": MODEL,
+                                "fuzzy_matched": True,
+                                "confidence": confidence
+                            })
+                    elif confidence >= 0.6:
+                        # Medium confidence - ask for clarification
+                        clarification_msg = f"I found a possible match. Did you mean: **{matched_name}**?"
+                        if suggestions:
+                            clarification_msg += f" Or perhaps: {', '.join(suggestions[:2])}"
+                        
+                        return web.json_response({
+                            "choices": [{"message": {"role": "assistant", "content": clarification_msg}}],
+                            "model": MODEL,
+                            "suggested_matches": [matched_name] + suggestions[:2]
+                        })
         
         filtered_keywords = ["about", "relating to", "regarding", "for", "sota", "cbct", "workflow", "fhir"]
         is_filtered = any(k in last_lower for k in filtered_keywords) and not is_all
