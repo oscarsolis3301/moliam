@@ -973,6 +973,29 @@ FOUND USER DATA (use this directly):
 Email: {user_info['email']}
 Employee #: {user_info['employee_id']}
 Source: {user_info['source_doc']}"""
+        else:
+            # v3: Check for ambiguous matches that might need clarification
+            if is_user_query and len(mentioned_users) > 1:
+                # Multiple potential matches - ask for clarification
+                possible_matches = []
+                for doc in docs[:5]:
+                    content = doc.get('content', '')
+                    # Extract names from user documents
+                    name_match = re.search(r'^Name:\s*(.+)$', content, re.MULTILINE)
+                    if name_match:
+                        possible_matches.append(name_match.group(1).strip())
+                
+                if len(possible_matches) > 1:
+                    clarification_msg = "I found multiple people that might match. Did you mean:\n\n"
+                    for i, name in enumerate(possible_matches[:3], 1):
+                        clarification_msg += f"{i}. {name}\n"
+                    clarification_msg += "\nPlease tell me which one you're asking about."
+                    
+                    return web.json_response({
+                        "choices": [{"message": {"role": "assistant", "content": clarification_msg}}],
+                        "model": MODEL,
+                        "clarification_required": True
+                    })
         context = []
         # For user queries, include ALL documents that might contain user info
         if is_user_query:
@@ -1096,9 +1119,13 @@ User: {last}
 
 Response:"""
         
-        # If we extracted steps programmatically, return them directly
+        # If we extracted steps programmatically, return them directly with BOLD formatting
         if extracted_steps:
-            response_text = f"According to {extracted_steps['doc_id']}, the troubleshooting steps for the FHIR error are:\n{extracted_steps['steps']}"
+            steps_raw = extracted_steps['steps']
+            # Make step numbers bold: "1. " -> "**1.** "
+            import re
+            steps_bold = re.sub(r'^(\d+)\.\s*', r'**\1.** ', steps_raw, flags=re.MULTILINE)
+            response_text = f"According to {extracted_steps['doc_id']}, here are the troubleshooting steps:\n\n{steps_bold}"
             # Store assistant response in session if using sessions
             if session_id:
                 add_message_to_session(session_id, "assistant", response_text)
