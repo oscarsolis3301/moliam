@@ -1,0 +1,26 @@
+{
+  "displayName": "Clutch",
+  "description": "Self-hosted Kahoot-style quiz game",
+  "defaultPort": 8787,
+  "portEnv": "PORT",
+  "env": {
+    "NODE_ENV": "production",
+    "VITE_BASE": "/"
+  },
+  "steps": [
+    {
+      "name": "install",
+      "cmd": "npm install",
+      "skipIf": "node_modules"
+    },
+    {
+      "name": "build",
+      "cmd": "npm run build"
+    },
+    {
+      "name": "start",
+      "cmd": "node server/dist/server/src/index.js",
+      "longRunning": true
+    }
+  ]
+}

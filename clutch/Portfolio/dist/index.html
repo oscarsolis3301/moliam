@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#0a0a0c" />
+
+  <!-- Favicon — snake/orb mark, used site-wide -->
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="64x64" href="favicon-64.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png" />
+  <link rel="shortcut icon" type="image/png" href="favicon-32.png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <title>moliam · playground</title>
+  <meta name="description" content="A small collection of playable browser games." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="moliam-styles.css?v=5" />
+  <link rel="stylesheet" href="playground.css?v=9" />
+
+  <!-- ─────────── Cinematic boot splash · Playground · v3 (compositor-only 60fps) ─────────── -->
+  <style>
+    #__boot {
+      --accent: #ff6b35;
+      --accent-warm: #ffb289;
+      --ink: #ebe4d7;
+      position: fixed; inset: 0; z-index: 9999;
+      color: var(--ink);
+      overflow: hidden;
+      isolation: isolate;
+      transition: opacity .6s cubic-bezier(.4,0,.2,1), filter .6s cubic-bezier(.4,0,.2,1);
+      will-change: opacity, filter;
+      contain: strict;
+      background:
+        radial-gradient(ellipse 60% 80% at 50% 120%, rgba(255,107,53,0.12), transparent 60%),
+        radial-gradient(ellipse 80% 60% at 50% 50%, #14141a 0%, #0a0a0c 55%, #050507 100%);
+    }
+    #__boot.hide { opacity: 0; filter: blur(10px); pointer-events: none; }
+
+    /* drifting architectural grid */
+    #__boot::before {
+      content: ''; position: absolute; inset: -1px;
+      background-image:
+        linear-gradient(to right, rgba(235,228,215,0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(235,228,215,0.04) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black 30%, transparent 85%);
+      -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black 30%, transparent 85%);
+      opacity: 0;
+      animation: __pgGrid 1.4s cubic-bezier(.2,.8,.2,1) .05s forwards, __pgGridDrift 24s linear infinite;
+      will-change: opacity, transform;
+    }
+    @keyframes __pgGrid { to { opacity: 1; } }
+    @keyframes __pgGridDrift {
+      from { transform: translate3d(0,0,0); }
+      to   { transform: translate3d(64px,64px,0); }
+    }
+
+    /* film grain */
+    #__boot::after {
+      content: ''; position: absolute; inset: -50%;
+      background:
+        radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px) 0 0/3px 3px,
+        radial-gradient(rgba(255,107,53,0.018) 1px, transparent 1px) 1px 1px/5px 5px;
+      mix-blend-mode: screen; pointer-events: none;
+      animation: __pgGrain 1.2s steps(8) infinite;
+      opacity: .55;
+      will-change: transform;
+    }
+    @keyframes __pgGrain {
+      0%   { transform: translate3d(0,0,0); }
+      25%  { transform: translate3d(-8px,4px,0); }
+      50%  { transform: translate3d(6px,-6px,0); }
+      75%  { transform: translate3d(-4px,8px,0); }
+      100% { transform: translate3d(0,0,0); }
+    }
+
+    /* aurora bloom */
+    #__boot .aurora {
+      position: absolute; left: 50%; top: 50%;
+      width: 720px; height: 720px;
+      transform: translate(-50%,-50%) scale(.6);
+      background: radial-gradient(circle at 50% 50%, rgba(255,107,53,0.26), transparent 55%);
+      filter: blur(18px);
+      opacity: 0; mix-blend-mode: screen;
+      animation: __pgAurora 2.4s cubic-bezier(.2,.8,.2,1) .1s forwards, __pgAuroraPulse 4s ease-in-out 2.4s infinite;
+      will-change: transform, opacity;
+      pointer-events: none;
+    }
+    @keyframes __pgAurora {
+      0%   { opacity: 0; transform: translate(-50%,-50%) scale(.6); }
+      60%  { opacity: 1; }
+      100% { opacity: .85; transform: translate(-50%,-50%) scale(1); }
+    }
+    @keyframes __pgAuroraPulse {
+      0%,100% { opacity: .85; }
+      50%     { opacity: .55; }
+    }
+
+    /* meridian sweep */
+    #__boot .meridian {
+      position: absolute; top: 50%; left: 50%;
+      width: min(720px, 84vw); height: 1px;
+      transform: translate(-50%,-50%) scaleX(0);
+      transform-origin: 50% 50%;
+      background: linear-gradient(90deg,
+        transparent 0%, rgba(255,107,53,0) 8%,
+        rgba(255,107,53,0.6) 50%,
+        rgba(255,107,53,0) 92%, transparent 100%);
+      box-shadow: 0 0 24px rgba(255,107,53,0.4);
+      animation: __pgMeridian 1.2s cubic-bezier(.7,0,.2,1) .12s forwards;
+      will-change: transform;
+    }
+    @keyframes __pgMeridian {
+      to { transform: translate(-50%,-50%) scaleX(1); }
+    }
+
+    /* viewfinder corners */
+    #__boot .corner {
+      position: absolute; width: 22px; height: 22px;
+      border-color: rgba(235,228,215,0.45);
+      opacity: 0; animation: __pgCorner .5s cubic-bezier(.4,0,.2,1) forwards;
+    }
+    #__boot .corner.tl { top: 28px; left: 28px; border-top: 1px solid; border-left: 1px solid; animation-delay: .85s; }
+    #__boot .corner.tr { top: 28px; right: 28px; border-top: 1px solid; border-right: 1px solid; animation-delay: .92s; }
+    #__boot .corner.bl { bottom: 28px; left: 28px; border-bottom: 1px solid; border-left: 1px solid; animation-delay: .99s; }
+    #__boot .corner.br { bottom: 28px; right: 28px; border-bottom: 1px solid; border-right: 1px solid; animation-delay: 1.06s; }
+    @keyframes __pgCorner { to { opacity: 1; } }
+
+    #__boot .lbl {
+      position: absolute; font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+      font-size: 10px; letter-spacing: .22em; text-transform: uppercase;
+      color: rgba(235,228,215,0.45);
+      opacity: 0; animation: __pgCorner .5s cubic-bezier(.4,0,.2,1) 1.1s forwards;
+    }
+    #__boot .lbl.lbl-tl { top: 32px; left: 60px; }
+    #__boot .lbl.lbl-tr { top: 32px; right: 60px; color: var(--accent); }
+    #__boot .lbl.lbl-tr::before {
+      content: ''; display: inline-block; width: 5px; height: 5px; border-radius: 50%;
+      background: var(--accent); box-shadow: 0 0 8px var(--accent); margin-right: 8px; vertical-align: middle;
+      animation: __pgLive 1.4s ease-in-out infinite;
+    }
+    #__boot .lbl.lbl-bl { bottom: 32px; left: 60px; }
+    #__boot .lbl.lbl-br { bottom: 32px; right: 60px; }
+    @keyframes __pgLive { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
+
+    /* center stack */
+    #__boot .stack {
+      position: absolute; inset: 0; display: grid; place-items: center; align-content: center;
+      gap: clamp(22px, 2.6vw, 32px); padding: 24px;
+      will-change: transform;
+    }
+
+    /* ─── 3×3 mark · upgraded · cartridge-style ─── */
+    #__boot .mark {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, clamp(20px, 2.4vw, 28px));
+      gap: clamp(7px, .8vw, 10px);
+      padding: clamp(14px, 1.6vw, 20px);
+      border-radius: 22px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.15));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.06),
+        0 30px 60px -20px rgba(0,0,0,0.6);
+      opacity: 0;
+      transform: scale(.92);
+      animation: __pgMarkIn 1s cubic-bezier(.2,.8,.2,1) .15s forwards;
+      will-change: transform, opacity;
+    }
+    @keyframes __pgMarkIn {
+      0%   { opacity: 0; transform: scale(.92); }
+      60%  { opacity: 1; }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    /* faint border ring around the cartridge */
+    #__boot .mark::before {
+      content: ''; position: absolute; inset: 0; border-radius: inherit;
+      border: 1px solid rgba(235,228,215,0.10);
+      pointer-events: none;
+    }
+    /* conic ring sweep behind the mark — REPLACED with SVG perimeter trace */
+    #__boot .mark .trace {
+      position: absolute; inset: -2px;
+      width: calc(100% + 4px); height: calc(100% + 4px);
+      pointer-events: none;
+      overflow: visible;
+      opacity: 0;
+      animation: __pgTraceFade .4s ease .35s forwards;
+      filter: drop-shadow(0 0 8px rgba(255,107,53,0.7));
+      z-index: 2;
+    }
+    #__boot .mark .trace rect {
+      fill: none;
+      stroke: url(#__pgTraceGrad);
+      stroke-width: 2;
+      stroke-linecap: round;
+      /* perimeter normalized to 500 via pathLength; 110-unit highlight, 390-unit gap */
+      stroke-dasharray: 110 390;
+      animation: __pgTrace 2.4s linear .4s infinite;
+    }
+    @keyframes __pgTraceFade { to { opacity: 1; } }
+    @keyframes __pgTrace {
+      0%   { stroke-dashoffset: 500; }
+      100% { stroke-dashoffset: 0; }
+    }
+
+    #__boot .mark span {
+      width: 100%; aspect-ratio: 1;
+      border-radius: 5px;
+      background: rgba(235,228,215,0.08);
+      border: 1px solid rgba(235,228,215,0.14);
+      opacity: 0; transform: scale(.6);
+      animation: __pgTile .55s cubic-bezier(.2,1.5,.4,1) forwards;
+      will-change: transform, opacity;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    /* corners → edges → center wave */
+    #__boot .mark span:nth-child(1) { animation-delay: .35s; }
+    #__boot .mark span:nth-child(3) { animation-delay: .42s; }
+    #__boot .mark span:nth-child(7) { animation-delay: .49s; }
+    #__boot .mark span:nth-child(9) { animation-delay: .56s; }
+    #__boot .mark span:nth-child(2) { animation-delay: .65s; }
+    #__boot .mark span:nth-child(4) { animation-delay: .70s; }
+    #__boot .mark span:nth-child(6) { animation-delay: .75s; }
+    #__boot .mark span:nth-child(8) { animation-delay: .80s; }
+    #__boot .mark span:nth-child(5) {
+      animation: __pgTile .6s cubic-bezier(.2,1.5,.4,1) .92s forwards, __pgCenterPulse 2.6s ease-in-out 1.6s infinite;
+      background: var(--accent);
+      border-color: var(--accent);
+      box-shadow:
+        0 0 14px rgba(255,107,53,0.65),
+        0 0 28px rgba(255,107,53,0.35),
+        inset 0 0 2px rgba(255,255,255,0.4);
+    }
+    @keyframes __pgTile { to { opacity: 1; transform: scale(1); } }
+    @keyframes __pgCenterPulse {
+      0%,100% { box-shadow: 0 0 14px rgba(255,107,53,0.65), 0 0 28px rgba(255,107,53,0.35), inset 0 0 2px rgba(255,255,255,0.4); }
+      50%     { box-shadow: 0 0 22px rgba(255,107,53,0.85), 0 0 44px rgba(255,107,53,0.5),  inset 0 0 3px rgba(255,255,255,0.6); }
+    }
+
+    /* title — letter-by-letter */
+    #__boot .title {
+      font-family: "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
+      font-size: clamp(48px, 6vw, 76px); letter-spacing: -.025em;
+      line-height: 1; color: var(--ink); text-align: center;
+      font-style: italic;
+      display: flex; gap: .02em; justify-content: center;
+      will-change: transform;
+    }
+    #__boot .title .ch {
+      display: inline-block;
+      opacity: 0; transform: translateY(16px); filter: blur(8px);
+      animation: __pgChRise .8s cubic-bezier(.2,.8,.2,1) forwards;
+      will-change: transform, opacity, filter;
+    }
+    /* the "P" gets the accent color for a punch of warmth */
+    #__boot .title .ch.acc { color: var(--accent); text-shadow: 0 0 22px rgba(255,107,53,0.45); }
+    @keyframes __pgChRise {
+      0%   { opacity: 0; transform: translateY(16px); filter: blur(8px); }
+      60%  { opacity: 1; filter: blur(0); }
+      100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+    }
+
+    /* tag */
+    #__boot .tag {
+      font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+      font-size: 11px; letter-spacing: .32em; text-transform: uppercase;
+      color: rgba(235,228,215,0.55);
+      opacity: 0;
+      animation: __pgRise 1s cubic-bezier(.2,.8,.2,1) 1.4s forwards;
+      display: flex; align-items: center; gap: 14px;
+      will-change: transform, opacity;
+    }
+    #__boot .tag .sep {
+      width: 24px; height: 1px; background: rgba(235,228,215,0.25);
+      transform: scaleX(0); transform-origin: left;
+      animation: __pgSepIn 1s cubic-bezier(.4,0,.2,1) 1.55s forwards;
+    }
+    @keyframes __pgRise { to { opacity: 1; transform: none; } }
+    @keyframes __pgSepIn { to { transform: scaleX(1); } }
+
+    /* progress meter */
+    #__boot .meter {
+      position: absolute; left: 50%; bottom: 64px;
+      width: min(320px, 50vw); height: 1px;
+      transform: translateX(-50%);
+      background: rgba(235,228,215,0.08); overflow: hidden;
+      opacity: 0; animation: __pgCorner .4s ease 1.2s forwards;
+    }
+    #__boot .meter i {
+      display: block; height: 100%; width: 100%;
+      background: linear-gradient(90deg, transparent, var(--accent), var(--ink));
+      box-shadow: 0 0 12px rgba(255,107,53,0.55);
+      transform-origin: left;
+      transform: scaleX(0);
+      animation: __pgFill 2.4s cubic-bezier(.5,.05,.2,1) 1.25s forwards, __pgFillBreathe 1.6s ease-in-out 3.65s infinite;
+      will-change: transform;
+    }
+    @keyframes __pgFill { to { transform: scaleX(0.86); } }
+    @keyframes __pgFillBreathe {
+      0%, 100% { transform: scaleX(0.86); }
+      50%      { transform: scaleX(0.92); }
+    }
+    /* a thin shimmer that travels along the meter so it never feels stuck */
+    #__boot .meter::after {
+      content: ''; position: absolute; top: 0; left: 0; height: 100%; width: 60px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+      filter: blur(1px);
+      transform: translateX(-60px);
+      animation: __pgShimmer 1.8s linear 1.4s infinite;
+      pointer-events: none;
+    }
+    @keyframes __pgShimmer {
+      0%   { transform: translateX(-60px); opacity: 0; }
+      15%  { opacity: 1; }
+      85%  { opacity: 1; }
+      100% { transform: translateX(min(320px, 50vw)); opacity: 0; }
+    }
+
+    /* exit */
+    #__boot.hide .corner, #__boot.hide .lbl, #__boot.hide .meter,
+    #__boot.hide .meridian, #__boot.hide .tag, #__boot.hide .aurora {
+      opacity: 0 !important;
+    }
+    #__boot.hide .stack { transform: scale(1.06); transition: transform .55s cubic-bezier(.4,0,.2,1); }
+
+    @media (prefers-reduced-motion: reduce) {
+      #__boot *, #__boot::before, #__boot::after {
+        animation-duration: .01ms !important;
+        animation-delay: 0s !important;
+        animation-iteration-count: 1 !important;
+      }
+      #__boot .meter i { transform: scaleX(1); }
+      #__boot .meridian { transform: translate(-50%,-50%) scaleX(1); }
+      #__boot .title .ch, #__boot .mark, #__boot .mark span { opacity: 1; transform: none; filter: none; }
+    }
+  </style>
+</head>
+<body class="">
+  <!-- ── Cinematic boot splash ─────────── -->
+  <div id="__boot" aria-hidden="true">
+    <span class="aurora"></span>
+    <span class="meridian"></span>
+
+    <span class="corner tl"></span>
+    <span class="corner tr"></span>
+    <span class="corner bl"></span>
+    <span class="corner br"></span>
+
+    <span class="lbl lbl-tl">PLAYGROUND · MMXXVI</span>
+    <span class="lbl lbl-tr">BUILD 2026.04</span>
+    <span class="lbl lbl-bl">07 TITLES · ALL PLAYABLE</span>
+    <span class="lbl lbl-br">v 2.0</span>
+
+    <div class="stack">
+      <div class="mark" aria-hidden="true">
+        <svg class="trace" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="__pgTraceGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="100" y2="100">
+              <stop offset="0%" stop-color="rgba(255,107,53,0)"/>
+              <stop offset="40%" stop-color="rgba(255,107,53,0.95)"/>
+              <stop offset="70%" stop-color="rgba(255,178,137,1)"/>
+              <stop offset="100%" stop-color="rgba(235,228,215,1)"/>
+            </linearGradient>
+          </defs>
+          <rect x="1" y="1" width="98" height="98" rx="22" ry="22" pathLength="500"/>
+        </svg>
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+      </div>
+
+      <div class="title" aria-label="Playground">
+        <span class="ch acc" style="animation-delay: 1.05s">P</span><span class="ch" style="animation-delay: 1.10s">l</span><span class="ch" style="animation-delay: 1.15s">a</span><span class="ch" style="animation-delay: 1.20s">y</span><span class="ch" style="animation-delay: 1.25s">g</span><span class="ch" style="animation-delay: 1.30s">r</span><span class="ch" style="animation-delay: 1.35s">o</span><span class="ch" style="animation-delay: 1.40s">u</span><span class="ch" style="animation-delay: 1.45s">n</span><span class="ch" style="animation-delay: 1.50s">d</span>
+      </div>
+
+      <div class="tag">
+        <span>Small Games</span>
+        <span class="sep"></span>
+        <span>Big Ideas</span>
+      </div>
+    </div>
+
+    <div class="meter"><i></i></div>
+  </div>
+
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-vignette" aria-hidden="true"></div>
+  <div class="bg-aurora" aria-hidden="true">
+    <div class="aurora-blob a1"></div>
+    <div class="aurora-blob a2"></div>
+  </div>
+
+  <header class="pg-bar">
+    <a href="index.html" class="pg-logo">
+      <img src="logo.png" alt="moliam" />
+      <span>moliam</span>
+      <span class="pg-logo-sep">·</span>
+      <span class="pg-logo-tag">playground</span>
+    </a>
+    <div class="pg-bar-meta">
+      <span class="pg-clock" id="pg-clock">—</span>
+      <span class="pg-bar-sep">·</span>
+      <span class="pg-build">build 2026.04</span>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ── INTRO ─────────────────────── -->
+    <section class="pg-intro">
+      <div class="pg-intro-row">
+        <div>
+          <div class="pg-eyebrow">/ playground</div>
+          <h1 class="pg-h1">
+            Small games.<br>
+            <span class="it">Played in a tab.</span>
+          </h1>
+        </div>
+        <div class="pg-intro-side">
+          <p class="pg-sub">
+            A working catalogue of browser-native games. Click any tile —
+            it starts immediately. <span class="dim">Starting one pauses the rest.</span>
+          </p>
+          <div class="pg-counts">
+            <div><span class="num" id="count-total">07</span><span class="lbl">games</span></div>
+            <div><span class="num">3</span><span class="lbl">new</span></div>
+            <div><span class="num live"><span class="dotlive"></span><span id="count-active">0</span></span><span class="lbl">active</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FEATURED ─────────────────── -->
+    <section class="pg-section">
+      <div class="pg-section-head">
+        <div>
+          <span class="pg-eyebrow">/ 01 — featured</span>
+          <h2 class="pg-h2">Newest <span class="it">in the playground</span></h2>
+        </div>
+        <span class="pg-section-meta">Updated 04 · 26 · 26</span>
+      </div>
+
+      <div class="pg-featured">
+
+        <!-- big featured · CLUTCH (link-out) -->
+        <article class="pg-card pg-card--lg pg-card--link" data-game="clutch" data-cat="party" data-href="https://clutch.moliam.com">
+          <div class="pg-card-head">
+            <span class="num">№ 07</span>
+            <span class="dot-row">
+              <span class="rel">latest</span>
+              <span class="ver">v1.0</span>
+            </span>
+          </div>
+          <div class="pg-card-stage">
+            <div class="pg-stage-mount"></div>
+            <div class="pg-hud" aria-hidden="true">
+              <div><span class="lbl">Players</span><span class="val" data-hud="score">— —</span></div>
+              <div><span class="lbl">Mode</span><span class="val" data-hud="length">QUIZ</span></div>
+            </div>
+            <div class="pg-overlay">
+              <button type="button" class="pg-play pg-play--lg" aria-label="Open Clutch">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4L10 14"/><path d="M19 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h6"/></svg>
+              </button>
+              <span class="pg-overlay-label">Opens in new tab ↗</span>
+            </div>
+          </div>
+          <div class="pg-card-body">
+            <div class="pg-card-title-row">
+              <div class="pg-card-title">Clutch</div>
+              <span class="pg-pill">Party · Link</span>
+            </div>
+            <p class="pg-card-desc">Self-hosted, Kahoot-style trivia for small groups. Upload an Excel, share a QR, race the buzzer. Hosted live — opens in a new tab.</p>
+            <div class="pg-card-foot">
+              <span>Host + Phones</span>
+              <span class="dim">Apr 26, 2026</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- side stack -->
+        <div class="pg-featured-side">
+
+          <article class="pg-card pg-card--md" data-game="cipher" data-cat="puzzle">
+            <div class="pg-card-head">
+              <span class="num">№ 06</span>
+              <span class="dot-row"><span class="rel">new</span><span class="ver">v1.0</span></span>
+            </div>
+            <div class="pg-card-stage">
+              <div class="pg-stage-mount"></div>
+              <div class="pg-hud" aria-hidden="true">
+                <div><span class="lbl">Score</span><span class="val" data-hud="score">000</span></div>
+                <div><span class="lbl">Left</span><span class="val" data-hud="length">003</span></div>
+              </div>
+              <div class="pg-overlay">
+                <button type="button" class="pg-play" aria-label="Play Cipher">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="pg-card-body">
+              <div class="pg-card-title-row">
+                <div class="pg-card-title">Cipher</div>
+                <span class="pg-pill">Puzzle</span>
+              </div>
+              <p class="pg-card-desc">Hidden letters in a wall of static. Sweep your cursor to reveal — click to lock matches before they fade.</p>
+              <div class="pg-card-foot">
+                <span>Mouse · Click</span>
+                <span class="dim">Apr 26, 2026</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="pg-card pg-card--md" data-game="drift" data-cat="arcade">
+            <div class="pg-card-head">
+              <span class="num">№ 05</span>
+              <span class="dot-row"><span class="rel">new</span><span class="ver">v1.0</span></span>
+            </div>
+            <div class="pg-card-stage">
+              <div class="pg-stage-mount"></div>
+              <div class="pg-hud" aria-hidden="true">
+                <div><span class="lbl">Distance</span><span class="val" data-hud="score">000</span></div>
+                <div><span class="lbl">Level</span><span class="val" data-hud="length">L01</span></div>
+              </div>
+              <div class="pg-overlay">
+                <button type="button" class="pg-play" aria-label="Play Drift">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="pg-card-body">
+              <div class="pg-card-title-row">
+                <div class="pg-card-title">Drift</div>
+                <span class="pg-pill">Arcade</span>
+              </div>
+              <p class="pg-card-desc">Steer through a falling field. One hit resets the run.</p>
+              <div class="pg-card-foot">
+                <span>A · D / ← →</span>
+                <span class="dim">Apr 24, 2026</span>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── CATALOGUE ─────────────────── -->
+    <section class="pg-section">
+      <div class="pg-section-head">
+        <div>
+          <span class="pg-eyebrow">/ 02 — catalogue</span>
+          <h2 class="pg-h2">Earlier <span class="it">in the catalogue</span></h2>
+        </div>
+        <span class="pg-section-meta">04 titles · all playable</span>
+      </div>
+
+      <div class="pg-grid pg-grid--3">
+
+        <article class="pg-card" data-game="pulse" data-cat="arcade">
+          <div class="pg-card-head">
+            <span class="num">№ 04</span>
+            <span class="dot-row"><span class="ver">v1.0</span></span>
+          </div>
+          <div class="pg-card-stage">
+            <div class="pg-stage-mount"></div>
+            <div class="pg-hud" aria-hidden="true">
+              <div><span class="lbl">Score</span><span class="val" data-hud="score">000</span></div>
+              <div><span class="lbl">Onscreen</span><span class="val" data-hud="length">000</span></div>
+            </div>
+            <div class="pg-overlay">
+              <button type="button" class="pg-play" aria-label="Play Pulse">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="pg-card-body">
+            <div class="pg-card-title-row">
+              <div class="pg-card-title">Pulse</div>
+              <span class="pg-pill">Reflex</span>
+            </div>
+            <p class="pg-card-desc">Tap rings before they vanish. Smaller hit, bigger bonus.</p>
+            <div class="pg-card-foot">
+              <span>Click</span>
+              <span class="dim">Apr 22, 2026</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="pg-card" data-game="lattice" data-cat="arcade">
+          <div class="pg-card-head">
+            <span class="num">№ 03</span>
+            <span class="dot-row"><span class="ver">v1.0</span></span>
+          </div>
+          <div class="pg-card-stage">
+            <div class="pg-stage-mount"></div>
+            <div class="pg-hud" aria-hidden="true">
+              <div><span class="lbl">Score</span><span class="val" data-hud="score">000</span></div>
+              <div><span class="lbl">Bricks</span><span class="val" data-hud="length">032</span></div>
+            </div>
+            <div class="pg-overlay">
+              <button type="button" class="pg-play" aria-label="Play Lattice">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="pg-card-body">
+            <div class="pg-card-title-row">
+              <div class="pg-card-title">Lattice</div>
+              <span class="pg-pill">Arcade</span>
+            </div>
+            <p class="pg-card-desc">Break-out, pared back. Move the paddle, clear the wall.</p>
+            <div class="pg-card-foot"><span>Mouse</span><span class="dim">Apr 18, 2026</span></div>
+          </div>
+        </article>
+
+        <article class="pg-card" data-game="orbital" data-cat="toy">
+          <div class="pg-card-head">
+            <span class="num">№ 02</span>
+            <span class="dot-row"><span class="ver">v1.0</span></span>
+          </div>
+          <div class="pg-card-stage">
+            <div class="pg-stage-mount"></div>
+            <div class="pg-hud" aria-hidden="true">
+              <div><span class="lbl">Bodies</span><span class="val" data-hud="length">000</span></div>
+              <div><span class="lbl">Spawned</span><span class="val" data-hud="score">000</span></div>
+            </div>
+            <div class="pg-overlay">
+              <button type="button" class="pg-play" aria-label="Play Orbital">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="pg-card-body">
+            <div class="pg-card-title-row">
+              <div class="pg-card-title">Orbital</div>
+              <span class="pg-pill">Sandbox</span>
+            </div>
+            <p class="pg-card-desc">A gravity sandbox. Click to fling bodies into orbit.</p>
+            <div class="pg-card-foot"><span>Click</span><span class="dim">Apr 14, 2026</span></div>
+          </div>
+        </article>
+
+        <article class="pg-card" data-game="snake" data-cat="arcade">
+          <div class="pg-card-head">
+            <span class="num">№ 01</span>
+            <span class="dot-row"><span class="ver">v1.0</span></span>
+          </div>
+          <div class="pg-card-stage">
+            <div class="pg-stage-mount"></div>
+            <div class="pg-hud" aria-hidden="true">
+              <div><span class="lbl">Score</span><span class="val" data-hud="score">000</span></div>
+              <div><span class="lbl">Length</span><span class="val" data-hud="length">003</span></div>
+            </div>
+            <div class="pg-overlay">
+              <button type="button" class="pg-play" aria-label="Play Snake">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="pg-card-body">
+            <div class="pg-card-title-row">
+              <div class="pg-card-title">Snake</div>
+              <span class="pg-pill">Arcade</span>
+            </div>
+            <p class="pg-card-desc">The classic, with a soft glow and edge-wrapping.</p>
+            <div class="pg-card-foot"><span>WASD · Arrows</span><span class="dim">Apr 10, 2026</span></div>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ════════════════ SPLIT-SCREEN ARCADE MODE ════════════════ -->
+  <div class="pg-arcade" id="pg-arcade" aria-hidden="true">
+    <div class="pg-arcade-inner">
+      <!-- LEFT: active game -->
+      <div class="pg-arcade-stage" id="pg-arcade-stage">
+        <div class="pg-arcade-header">
+          <div class="pg-arcade-title">
+            <span class="num" id="arcade-num">№ —</span>
+            <h3 id="arcade-name">—</h3>
+            <span class="pg-pill" id="arcade-tag">—</span>
+          </div>
+          <div class="pg-arcade-hud" id="arcade-hud">
+            <div><span class="lbl">Score</span><span class="val" data-arcade-hud="score">000</span></div>
+            <div><span class="lbl">Stat</span><span class="val" data-arcade-hud="length">000</span></div>
+          </div>
+          <button type="button" class="pg-arcade-close" id="arcade-close" aria-label="Exit arcade mode">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            <span>Exit</span>
+          </button>
+        </div>
+        <div class="pg-arcade-screen" id="pg-arcade-screen">
+          <!-- mobile touch controls (snake/drift) injected here when needed -->
+          <div class="pg-touch" id="pg-touch" aria-hidden="true"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: rail of all games -->
+      <aside class="pg-rail">
+        <div class="pg-rail-head">
+          <span class="lbl">Library</span>
+          <span class="num" id="rail-count">06</span>
+        </div>
+        <div class="pg-rail-list" id="pg-rail-list"></div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="pg-foot">
+    <span class="pg-signature">
+      Made with <span class="heart" aria-hidden="true">☕</span> by
+      <a href="portfolio.html" class="name">Oscar Solis</a>
+    </span>
+    <span class="dim">© moliam · MMXXVI</span>
+    <span class="dim">v2</span>
+  </footer>
+
+  <script src="playground.js?v=12"></script>
+
+  <!-- Hide cinematic splash once page is ready, holds for min 1700ms -->
+  <script>
+    (function () {
+      const MIN_SHOW_MS = 2600;
+      const start = performance.now();
+      const hide = () => {
+        const b = document.getElementById('__boot');
+        if (!b) return;
+        b.classList.add('hide');
+        setTimeout(() => b.remove(), 600);
+      };
+      const tryHide = () => {
+        const elapsed = performance.now() - start;
+        if (elapsed < MIN_SHOW_MS) return setTimeout(tryHide, MIN_SHOW_MS - elapsed);
+        hide();
+      };
+      if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        requestAnimationFrame(tryHide);
+      } else {
+        window.addEventListener('DOMContentLoaded', () => requestAnimationFrame(tryHide));
+      }
+      // fail-safe
+      setTimeout(hide, 8000);
+    })();
+  </script>
+</body>
+</html>

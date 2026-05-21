@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Build output
+server/dist/
+server/public/
+
+# Runtime data (SQLite database)
+data/
+
+# Local environment
+.env
+
+# Logs
+*.log

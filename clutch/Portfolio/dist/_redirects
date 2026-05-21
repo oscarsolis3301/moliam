@@ -1,0 +1,10 @@
+# Cloudflare Pages redirects
+#
+# Note: Cloudflare Pages automatically serves `foo.html` at the clean path
+# `/foo` and 301s `/foo.html` → `/foo`. Do NOT add a `/foo  /foo.html` rule —
+# it creates an infinite redirect loop (ERR_TOO_MANY_REDIRECTS).
+#
+# `/portfolio` is served automatically by `portfolio.html`. No rule needed.
+
+/play           /   302
+/playground     /   302

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+    <meta name="theme-color" content="#0F0F14" />
+    <title>Clutch</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Non-blocking Google Fonts: load via `media=print` trick so system fonts
+         render immediately if the CDN is slow or unreachable (flaky phone LANs,
+         offline use). Falls back to Inter/system-ui via CSS stacks. -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,700&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,700&display=swap"
+      />
+    </noscript>
+    <link rel="icon" href="/moliam-logo.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/moliam-logo.png" />
+    <!-- Pre-JS boot indicator: visible immediately after the phone fetches the
+         HTML, without waiting for the JS bundle. Removed by main.ts the moment
+         the router mounts — so on a slow LAN the user sees progress instead of
+         a blank page. Inlined here (not in the main CSS bundle) because the
+         main bundle is exactly what we're waiting on. -->
+    <style>
+      #boot { position: fixed; inset: 0; display: flex; flex-direction: column;
+              align-items: center; justify-content: center;
+              background: #FAFAF7; color: #0F0F14;
+              font-family: Inter, system-ui, -apple-system, sans-serif;
+              z-index: 9999; }
+      #boot.boot-hide { opacity: 0; pointer-events: none;
+                        transition: opacity 300ms ease; }
+      #boot .boot-dot { width: 12px; height: 12px; border-radius: 50%;
+                        background: #0F0F14; margin: 0 4px; display: inline-block;
+                        animation: boot-bounce 1.2s infinite ease-in-out; }
+      #boot .boot-dot:nth-child(2) { animation-delay: 0.15s; }
+      #boot .boot-dot:nth-child(3) { animation-delay: 0.3s; }
+      #boot .boot-label { margin-top: 20px; font-size: 14px;
+                          letter-spacing: 0.2em; text-transform: uppercase;
+                          color: #6b6b6b; }
+      #boot .boot-slow { margin-top: 10px; font-size: 13px; color: #6b6b6b;
+                         max-width: 280px; text-align: center; opacity: 0;
+                         transition: opacity 400ms ease; }
+      #boot.boot-slow-shown .boot-slow { opacity: 1; }
+      @keyframes boot-bounce {
+        0%, 80%, 100% { transform: translateY(0); opacity: 0.3; }
+        40%           { transform: translateY(-10px); opacity: 1; }
+      }
+    </style>
+  </head>
+  <body class="font-body bg-clutch-paper text-clutch-ink antialiased">
+    <div id="boot">
+      <div>
+        <span class="boot-dot"></span><span class="boot-dot"></span><span class="boot-dot"></span>
+      </div>
+      <div class="boot-label">Loading Clutch</div>
+      <div class="boot-slow">Still loading — make sure your phone is on the same Wi-Fi as the host.</div>
+    </div>
+    <div id="app"></div>
+    <script>
+      // If the JS bundle hasn't booted within 6s, surface a hint. Phones with
+      // slow LAN or captive-portal Wi-Fi otherwise sit on a silent spinner.
+      window.setTimeout(function () {
+        var el = document.getElementById('boot');
+        if (el) el.classList.add('boot-slow-shown');
+      }, 6000);
+    </script>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
