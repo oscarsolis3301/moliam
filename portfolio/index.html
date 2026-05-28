@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#0a0a0c" />
+  <title>moliam · services & subscriptions</title>
+  <meta name="description" content="Lumi is your personal AI assistant from Moliam. A proactive desktop companion that captures, records, repairs, and chats — all on your machine. Tiered subscriptions from $3/mo." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="moliam-styles.css?v=12" />
+  <link rel="stylesheet" href="services.css?v=12" />
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <!-- Atmospherics from moliam-styles -->
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-vignette" aria-hidden="true"></div>
+  <div class="bg-aurora" aria-hidden="true">
+    <div class="aurora-blob a1"></div>
+    <div class="aurora-blob a2"></div>
+    <div class="aurora-blob a3"></div>
+  </div>
+
+  <main id="main">
+
+    <!-- ════════════════ HERO ════════════════ -->
+    <section class="svc-hero">
+      <div class="svc-hero-inner">
+        <div class="svc-hero-copy">
+          <div class="eyebrow">SERVICES &amp; SUBSCRIPTIONS · MMXXVI</div>
+
+          <h1 class="svc-headline">
+            We ship
+            <span class="rotator-wrap" data-rotator>
+              <span class="rotator-ghost" aria-hidden="true">capture · record · repair.</span>
+              <span class="rotator" id="hero-rotator">proactive agents.</span>
+            </span>
+          </h1>
+
+          <p class="svc-lede">
+            Meet <b>Lumi</b> &mdash; your personal AI assistant that lives in your system tray and
+            acts before you ask. Chat, capture, record, repair &mdash; one signed-in orb that watches
+            your machine, learns your habits, and runs the loop while you work.
+          </p>
+
+          <div class="svc-cta-row">
+            <button type="button" class="dl-btn" id="dl-now" data-download-href="#" data-download-name="" aria-label="Download Lumi">
+              <span class="dl-layer dl-layer-default">
+                <span class="dl-label-default">Download Now</span>
+                <span class="dl-icon-slot" aria-hidden="true">
+                  <span class="dl-arrow">↓</span>
+                  <span class="dl-spinner">
+                    <svg viewBox="0 0 16 16" fill="none">
+                      <circle cx="8" cy="8" r="6" stroke="rgba(245,245,245,0.18)" stroke-width="1.5"/>
+                      <path d="M14 8a6 6 0 0 0-6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                  </span>
+                </span>
+              </span>
+              <span class="dl-layer dl-layer-success">
+                <span class="dl-label-success">Downloaded</span>
+                <span class="dl-check-inline" aria-hidden="true">
+                  <svg viewBox="0 0 16 16" fill="none">
+                    <path d="M3.5 8.5l3 3 6-6" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+              </span>
+            </button>
+            <a href="#pricing" class="btn-primary">
+              View Plans
+              <span class="arrow">→</span>
+            </a>
+          </div>
+
+          <ul class="svc-hero-trust">
+            <li><span class="trust-dot"></span>On-device by default</li>
+            <li><span class="trust-dot"></span>System-tray native</li>
+            <li><span class="trust-dot"></span>One-tap browser handoff</li>
+          </ul>
+        </div>
+
+        <!-- ════════════════ LUMI LIVE RUNTIME ════════════════ -->
+        <aside class="svc-agent" aria-label="Lumi live runtime">
+          <div class="agent-head">
+            <span class="agent-head-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="eyebrow-sm">LUMI · DESKTOP RUNTIME</span>
+          </div>
+
+          <div class="agent-hud">
+            <div><span class="hud-lbl">Events · 24h</span><span class="hud-val" id="ag-tasks">1,284</span></div>
+            <div><span class="hud-lbl">Captures</span><span class="hud-val" id="ag-lat">142</span></div>
+            <div><span class="hud-lbl">Uptime</span><span class="hud-val" id="ag-up">99.98<small>%</small></span></div>
+          </div>
+
+          <div class="agent-stream" id="agent-stream" aria-live="polite">
+            <!-- lines injected by JS -->
+          </div>
+
+          <div class="agent-foot">
+            <span class="dot live" id="ag-dot"></span>
+            <span id="ag-status">LIVE · streaming</span>
+            <span class="agent-foot-sep">·</span>
+            <span id="ag-region">local · m3 max</span>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ════════════════ STATS BAR ════════════════ -->
+    <section class="svc-stats">
+      <div class="stat">
+        <div class="stat-num">12<span>+</span></div>
+        <div class="stat-lbl">Live products</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num"><span>&lt;</span>2wk</div>
+        <div class="stat-lbl">Average ship time</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">99.98<span>%</span></div>
+        <div class="stat-lbl">Runtime uptime</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">24h</div>
+        <div class="stat-lbl">Reply window</div>
+      </div>
+    </section>
+
+    <!-- ════════════════ CAPABILITIES ════════════════ -->
+    <section class="svc-section" id="services">
+      <header class="section-head svc-cap-head">
+        <div class="svc-cap-head-copy">
+          <span class="eyebrow">/ 01 — What Lumi does</span>
+          <h2 class="section-title">
+            Six things in one orb.<br>
+            <span class="accent-italic">All on your machine.</span>
+          </h2>
+        </div>
+        <button type="button" class="btn-ghost svc-cap-dl" id="dl-brief" data-dl-state="idle">
+          <span class="btn-ghost-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 2v8"></path>
+              <path d="M4.5 7L8 10.5 11.5 7"></path>
+              <path d="M3 13h10"></path>
+            </svg>
+          </span>
+          <span class="btn-ghost-label" id="dl-label">Capabilities brief · PDF</span>
+        </button>
+      </header>
+
+      <div class="svc-grid">
+        <article class="svc-card reveal">
+          <div class="svc-card-vis vis-orb">
+            <div class="orb-rings">
+              <span></span><span></span>
+            </div>
+            <div class="orb-monitor m1"></div>
+            <div class="orb-monitor m2"></div>
+            <div class="orb-monitor m3"></div>
+            <div class="orb-smile">
+              <svg viewBox="0 0 64 64" aria-hidden="true">
+                <defs>
+                  <radialGradient id="orbG" cx="50%" cy="40%" r="60%">
+                    <stop offset="0%" stop-color="#c4b5fd"/>
+                    <stop offset="55%" stop-color="#a78bfa"/>
+                    <stop offset="100%" stop-color="#7c3aed"/>
+                  </radialGradient>
+                </defs>
+                <circle cx="32" cy="32" r="28" fill="url(#orbG)"/>
+                <circle cx="22" cy="27" r="3" fill="#fff"/>
+                <circle cx="42" cy="27" r="3" fill="#fff"/>
+                <path d="M21 38 Q32 48 43 38" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="orb-tag">tray · always there</div>
+          </div>
+          <div class="svc-card-body">
+            <span class="card-num">01</span>
+            <h3>Floating Orb</h3>
+            <p>A smiley lives in your system tray and floats on top when you call it. Stays out of the way until you need it. One global shortcut brings it back &mdash; signed-in by a single browser handoff, no passwords to retype.</p>
+            <div class="card-meta"><span>Tray + shortcut</span><span>·</span><span>Auto-start on login</span></div>
+          </div>
+        </article>
+
+        <article class="svc-card reveal">
+          <div class="svc-card-vis vis-chat">
+            <div class="chat-row chat-me">clean my Downloads, keep .pdfs</div>
+            <div class="chat-row chat-ai">
+              sweeping <span class="chat-tk">~/Downloads</span> · 47 items · 12 kept · <span class="chat-cursor"></span>
+            </div>
+            <span class="chat-meta">multi-provider · streaming · remembers context</span>
+          </div>
+          <div class="svc-card-body">
+            <span class="card-num">02</span>
+            <h3>Chat &amp; AI Brain</h3>
+            <p>Talk to Lumi from a control window with chat, settings, and a brain view. Prompts route across multiple providers with streaming responses. Local Claude Code CLI and OAuth Claude sessions baked in. Chats, projects, skills, and attachments persist between sessions.</p>
+            <div class="card-meta"><span>Multi-provider</span><span>·</span><span>Claude Code CLI</span><span>·</span><span>Persistent memory</span></div>
+          </div>
+        </article>
+
+        <article class="svc-card reveal feature">
+          <div class="svc-card-vis vis-record">
+            <div class="rec-bar">
+              <span class="rec-dot"></span>
+              <span class="rec-time">00:42.3</span>
+              <span class="rec-mode">screen + mic</span>
+              <span class="rec-stop">■</span>
+            </div>
+            <div class="rec-frame">
+              <span class="rec-corner tl"></span>
+              <span class="rec-corner tr"></span>
+              <span class="rec-corner bl"></span>
+              <span class="rec-corner br"></span>
+              <span class="rec-dims">1840 × 986 · area</span>
+            </div>
+            <div class="rec-timeline">
+              <div class="rec-wave">
+                <span style="--h:30%"></span><span style="--h:55%"></span><span style="--h:78%"></span><span style="--h:48%"></span><span style="--h:90%"></span><span style="--h:65%"></span><span style="--h:38%"></span><span style="--h:62%"></span><span style="--h:80%"></span><span style="--h:52%"></span><span style="--h:88%"></span><span style="--h:42%"></span><span style="--h:60%"></span><span style="--h:34%"></span><span style="--h:72%"></span><span style="--h:50%"></span><span style="--h:66%"></span><span style="--h:40%"></span><span style="--h:84%"></span><span style="--h:58%"></span>
+              </div>
+              <div class="rec-scrub"></div>
+            </div>
+          </div>
+          <div class="svc-card-body">
+            <span class="card-num">03 · Flagship</span>
+            <h3>Screen Capture &amp; Recording</h3>
+            <p>One-click screenshots with a built-in annotation editor. Area, window, or full-screen pickers. Screen + audio recorder with floating bar, preview, and stop pill. Webcam preview window for face-cam. A full video editor for trimming and exporting afterwards &mdash; all native, all local.</p>
+            <div class="card-meta"><span>Picker · annotate · share</span><span>·</span><span>Webcam pip</span><span>·</span><span>Full video editor</span></div>
+          </div>
+        </article>
+
+        <article class="svc-card reveal">
+          <div class="svc-card-vis vis-docs">
+            <div class="docs-stack">
+              <span class="doc-tile t-pdf">PDF</span>
+              <span class="doc-tile t-doc">DOC</span>
+              <span class="doc-tile t-xls">XLS</span>
+              <span class="doc-tile t-ppt">PPT</span>
+            </div>
+            <div class="docs-arrow">→</div>
+            <div class="docs-md">
+              <span class="md-tag">.md</span>
+              <div class="md-line w90"></div>
+              <div class="md-line w70"></div>
+              <div class="md-line w80"></div>
+              <div class="md-line w55"></div>
+            </div>
+          </div>
+          <div class="svc-card-body">
+            <span class="card-num">04</span>
+            <h3>Documents &amp; Files</h3>
+            <p>Drop any file anywhere on screen &mdash; Lumi catches it. The Markitdown worker converts Office and PDF files into clean markdown for the AI. The OpenClaw local gateway routes and searches files across your machine. A document viewer opens whatever Lumi surfaces.</p>
+            <div class="card-meta"><span>Drop-catcher</span><span>·</span><span>Markitdown</span><span>·</span><span>Local search</span></div>
+          </div>
+        </article>
+
+        <article class="svc-card reveal">
+          <div class="svc-card-vis vis-monitor">
+            <svg viewBox="0 0 240 100" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="monFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#a78bfa" stop-opacity=".25"/>
+                  <stop offset="1" stop-color="#a78bfa" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <line x1="0" y1="78" x2="240" y2="78" stroke="rgba(255,255,255,0.05)" stroke-dasharray="2 4"/>
+              <path d="M0 70 L20 60 L40 68 L60 28 L80 64 L100 50 L120 22 L140 58 L160 48 L180 44 L200 60 L220 38 L240 52 L240 100 L0 100 Z" fill="url(#monFill)"/>
+              <path d="M0 70 L20 60 L40 68 L60 28 L80 64 L100 50 L120 22 L140 58 L160 48 L180 44 L200 60 L220 38 L240 52" fill="none" stroke="#a78bfa" stroke-width="1.4"/>
+            </svg>
+            <div class="mon-pings">
+              <span class="mon-ping alert"><b></b>app hang · saved</span>
+              <span class="mon-ping fix"><b></b>trim · 1.2 GB</span>
+            </div>
+          </div>
+          <div class="svc-card-body">
+            <span class="card-num">05</span>
+            <h3>Proactive PC Helper</h3>
+            <p>Quietly watches for app hangs, memory pressure, disk problems, and boot/resume issues. Cleans hygiene targets, trims working sets, manages power plans, catches unsaved-data risks before crashes, and flags installer wizards stuck on a dialog. Keeps a history of every fix.</p>
+            <div class="card-meta"><span>Background watcher</span><span>·</span><span>Post-resume sweeps</span></div>
+          </div>
+        </article>
+
+        <article class="svc-card reveal">
+          <div class="svc-card-vis vis-shield">
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              <defs>
+                <linearGradient id="shGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#ff6b35"/>
+                  <stop offset="1" stop-color="#a78bfa"/>
+                </linearGradient>
+              </defs>
+              <path d="M50 10 L80 22 V52 C80 70 67 84 50 90 C33 84 20 70 20 52 V22 Z" fill="none" stroke="url(#shGrad)" stroke-width="1.5"/>
+              <path d="M37 50 L46 58 L63 41" fill="none" stroke="#a78bfa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="svc-card-body">
+            <span class="card-num">06</span>
+            <h3>SysOps Repair Toolkit</h3>
+            <p>A loopback service that searches files, runs diagnostics, and executes repair runbooks. PowerShell-driven app resolver, audits, and self-learning routines remember which fixes worked &mdash; and offer them first next time.</p>
+            <div class="card-meta"><span>PowerShell runbooks</span><span>·</span><span>Self-learning</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ════════════════ PRICING / TIERS ════════════════ -->
+    <section class="svc-section svc-pricing" id="pricing">
+      <header class="section-head pricing-head">
+        <div>
+          <span class="eyebrow">/ 02 — Lumi Subscriptions</span>
+          <h2 class="section-title">
+            One orb. <span class="accent-italic">Priced like software.</span>
+          </h2>
+          <p class="lede-left pricing-lede">
+            Three tiers. Cancel any time. Every plan ships the floating orb,
+            AI chat, screenshots, screen recording, and the proactive watcher.
+          </p>
+        </div>
+        <div class="pricing-toggle" role="tablist" aria-label="Billing cadence">
+          <button type="button" class="pt-btn active" data-bill="monthly" role="tab" aria-selected="true">Monthly</button>
+          <button type="button" class="pt-btn" data-bill="annual" role="tab" aria-selected="false">
+            Annual <span class="pt-save">−20%</span>
+          </button>
+          <span class="pt-thumb" aria-hidden="true"></span>
+        </div>
+      </header>
+
+      <div class="tier-grid">
+
+        <article class="tier reveal">
+          <header class="tier-head">
+            <div class="tier-name">Lumi <span class="accent-italic">Personal</span></div>
+            <p class="tier-tag">For one curious mind &amp; one machine.</p>
+          </header>
+          <div class="tier-price">
+            <span class="tp-currency">$</span><span class="tp-num" data-monthly="3" data-annual="2">3</span>
+            <span class="tp-unit">/ mo</span>
+          </div>
+          <div class="tier-meta" data-billed-monthly="cancel any time" data-billed-annual="$29 / yr · save $7">cancel any time</div>
+          <a href="mailto:hello@moliam.com?subject=Lumi%20Personal" class="tier-cta">
+            Start free trial <span class="arrow">→</span>
+          </a>
+          <ul class="tier-feat">
+            <li><i class="ft-check" aria-hidden="true"></i>Floating orb + system tray</li>
+            <li><i class="ft-check" aria-hidden="true"></i>Multi-provider AI chat · streaming</li>
+            <li><i class="ft-check" aria-hidden="true"></i>Screenshots + annotation editor</li>
+            <li><i class="ft-check" aria-hidden="true"></i>Screen recording · basic trim</li>
+            <li><i class="ft-check" aria-hidden="true"></i>Drop-catcher + Markitdown</li>
+            <li><i class="ft-check" aria-hidden="true"></i>Community support</li>
+          </ul>
+        </article>
+
+        <article class="tier featured reveal">
+          <span class="tier-flag">Most popular</span>
+          <header class="tier-head">
+            <div class="tier-name">Lumi <span class="accent-italic">Pro</span></div>
+            <p class="tier-tag">For power users who ship every week.</p>
+          </header>
+          <div class="tier-price">
+            <span class="tp-currency">$</span><span class="tp-num" data-monthly="9" data-annual="7">9</span>
+            <span class="tp-unit">/ mo</span>
+          </div>
+          <div class="tier-meta" data-billed-monthly="14-day trial · cancel any time" data-billed-annual="$86 / yr · save $22">14-day trial · cancel any time</div>
+          <a href="mailto:hello@moliam.com?subject=Lumi%20Pro" class="tier-cta primary">
+            Start a Pro trial <span class="arrow">→</span>
+          </a>
+          <ul class="tier-feat">
+            <li><i class="ft-check" aria-hidden="true"></i><b>Everything in Personal</b>, plus:</li>
+            <li><i class="ft-check" aria-hidden="true"></i>Webcam pip + full video editor</li>
+            <li><i class="ft-check" aria-hidden="true"></i>Proactive PC helper · post-resume sweeps</li>
+            <li><i class="ft-check" aria-hidden="true"></i>SysOps repair toolkit · PowerShell runbooks</li>
+            <li><i class="ft-check" aria-hidden="true"></i>Meeting transcription + audio capture</li>
+            <li><i class="ft-check" aria-hidden="true"></i>Hermes Python runtime + OpenClaw + Skills</li>
+            <li><i class="ft-check" aria-hidden="true"></i>Email support · 24h response</li>
+          </ul>
+        </article>
+
+        <article class="tier reveal">
+          <header class="tier-head">
+            <div class="tier-name">Lumi <span class="accent-italic">Team</span></div>
+            <p class="tier-tag">For small teams &amp; serious operators.</p>
+          </header>
+          <div class="tier-price">
+            <span class="tp-currency">$</span><span class="tp-num" data-monthly="25" data-annual="20">25</span>
+            <span class="tp-unit">/ mo</span>
+          </div>
+          <div class="tier-meta" data-billed-monthly="per seat · 5 seats included" data-billed-annual="$240 / yr per seat · save $60">per seat · 5 seats included</div>
+          <a href="mailto:hello@moliam.com?subject=Lumi%20Team" class="tier-cta">
+            Start Team trial <span class="arrow">→</span>
+          </a>
+          <ul class="tier-feat">
+            <li><i class="ft-check" aria-hidden="true"></i><b>Everything in Pro</b>, plus:</li>
+            <li><i class="ft-check" aria-hidden="true"></i>Per-device cards · heartbeat dashboard</li>
+            <li><i class="ft-check" aria-hidden="true"></i>SSO handoff + role-based access</li>
+            <li><i class="ft-check" aria-hidden="true"></i>Activity log + audit trail</li>
+            <li><i class="ft-check" aria-hidden="true"></i>Private Skills registry · custom adapters</li>
+            <li><i class="ft-check" aria-hidden="true"></i>Lock &amp; blocker overlays · focus policies</li>
+            <li><i class="ft-check" aria-hidden="true"></i>Slack + email · 4h response</li>
+          </ul>
+        </article>
+
+      </div>
+
+      <div class="pricing-foot">
+        <span class="dot live"></span>
+        <span>Every tier ships the orb, AI chat, screenshots, screen recording, and the proactive watcher — on-device, opt-out telemetry, zero vendor lock-in.</span>
+        <button type="button" class="btn-link inline" id="dl-brief-2">
+          Download full pricing PDF <span class="arrow">→</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ════════════════ EXTENSIBILITY ════════════════ -->
+    <section class="svc-section" id="agents">
+      <header class="section-head">
+        <span class="eyebrow">/ 03 — Extensibility</span>
+        <h2 class="section-title">
+          Two runtimes.<br>
+          <span class="accent-italic">Open to your tools.</span>
+        </h2>
+      </header>
+
+      <div class="agents-grid">
+        <article class="agent-card reveal">
+          <div class="agent-card-head">
+            <span class="agent-glyph" aria-hidden="true">H</span>
+            <div class="agent-card-title">
+              <h3>Hermes</h3>
+              <p class="agent-card-tag">Bundled Python runtime · in-process</p>
+            </div>
+          </div>
+          <p class="agent-card-desc">
+            A Python interpreter ships inside Lumi. Drop in custom adapters and HTTP-based plugins
+            and Hermes loads them at launch &mdash; no separate install, no virtualenv juggling.
+          </p>
+          <ul class="agent-card-list">
+            <li>Bundled interpreter · zero setup</li>
+            <li>Custom adapters · HTTP plugins</li>
+            <li>Hot-reload on file change</li>
+            <li>Best for: integrations &amp; one-off scripts</li>
+          </ul>
+        </article>
+
+        <article class="agent-card reveal">
+          <div class="agent-card-head">
+            <span class="agent-glyph" aria-hidden="true">◉</span>
+            <div class="agent-card-title">
+              <h3>OpenClaw</h3>
+              <p class="agent-card-tag">Local agentic gateway · acts on your PC</p>
+            </div>
+          </div>
+          <p class="agent-card-desc">
+            A local gateway that gives Lumi safe, structured tools to act on your machine &mdash;
+            file search, file routing, shell, and your installed apps. Skills layer on top.
+          </p>
+          <ul class="agent-card-list">
+            <li>Local file router &amp; search</li>
+            <li>Shell + app actions, scoped &amp; auditable</li>
+            <li>Skills store for new capabilities</li>
+            <li>Best for: anything Lumi has to <em>do</em></li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="extras">
+        <div class="extras-head">
+          <span class="eyebrow-sm">+ ALSO IN THE BOX</span>
+          <span class="extras-sub">Everything else shipping with Lumi today</span>
+        </div>
+        <ul class="extras-list">
+          <li><b>Meeting transcription</b><span>auto-detects calls, captures audio sessions</span></li>
+          <li><b>Lock &amp; blocker overlays</b><span>session lock + focus blocker for deep work</span></li>
+          <li><b>Phone gate &amp; support-talk</b><span>SMS/voice features inside the control window</span></li>
+          <li><b>Auto-updater + crash reporter</b><span>rollback baked in, postmortems shipped home</span></li>
+          <li><b>Heartbeat &amp; device card</b><span>per-device status on the admin side, opt-out telemetry</span></li>
+          <li><b>Shell-fragment quarantine</b><span>auto-sweeps junk files from stray paste accidents</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ════════════════ FAQ ════════════════ -->
+    <section class="svc-section" id="faq">
+      <header class="section-head">
+        <span class="eyebrow">/ 04 — Questions</span>
+        <h2 class="section-title">
+          Things you'd ask<br>
+          <span class="accent-italic">on the call anyway.</span>
+        </h2>
+      </header>
+
+      <div class="faq">
+        <details class="faq-row reveal">
+          <summary>
+            <span>What does &ldquo;proactive&rdquo; actually mean?</span>
+            <i class="faq-icon" aria-hidden="true"></i>
+          </summary>
+          <div class="faq-a">Lumi doesn&rsquo;t wait for a prompt. The background watcher tracks app hangs, memory pressure, disk health, and boot/resume issues, and acts before you notice &mdash; trims working sets, flags stuck installers, runs post-resume sweeps, catches unsaved data before a crash. You set the rules; Lumi runs the loop.</div>
+        </details>
+
+        <details class="faq-row reveal">
+          <summary>
+            <span>Where does the AI brain run?</span>
+            <i class="faq-icon" aria-hidden="true"></i>
+          </summary>
+          <div class="faq-a">Inside the Lumi control window. The brain routes prompts across multiple providers with streaming responses, runs a local Claude Code CLI integration, and supports OAuth-based Claude sessions. Chats, projects, skills, and attachments persist between sessions on your machine.</div>
+        </details>
+
+        <details class="faq-row reveal">
+          <summary>
+            <span>What can Lumi do with my files?</span>
+            <i class="faq-icon" aria-hidden="true"></i>
+          </summary>
+          <div class="faq-a">Drop a file anywhere on screen and Lumi catches it. The Markitdown worker converts Office and PDF docs into clean markdown for the AI; the OpenClaw local gateway searches, routes, and surfaces files; a document viewer opens whatever you drop in. Files never leave the device unless you tell Lumi to send them.</div>
+        </details>
+
+        <details class="faq-row reveal">
+          <summary>
+            <span>How does Lumi sign in?</span>
+            <i class="faq-icon" aria-hidden="true"></i>
+          </summary>
+          <div class="faq-a">A single browser handoff &mdash; no passwords to retype, no embedded server. The default browser opens, you sign in once, the token comes back to Lumi, and that&rsquo;s the last time you think about it.</div>
+        </details>
+
+        <details class="faq-row reveal">
+          <summary>
+            <span>Can I extend it?</span>
+            <i class="faq-icon" aria-hidden="true"></i>
+          </summary>
+          <div class="faq-a"><b>Hermes</b> ships a bundled Python interpreter for custom adapters and HTTP-based plugins. <b>OpenClaw</b> is the local agentic gateway that exposes tools Lumi can call on your machine. The Skills store layers on top &mdash; new capabilities without a rebuild.</div>
+        </details>
+
+        <details class="faq-row reveal">
+          <summary>
+            <span>How do subscriptions work?</span>
+            <i class="faq-icon" aria-hidden="true"></i>
+          </summary>
+          <div class="faq-a">Personal and Pro are month-to-month, with a 14-day trial on Pro. Annual is 20% off. Team is per-seat with 5 seats included. Cancel any time. Auto-update with rollback comes bundled; opt-out telemetry feeds a per-device card on the admin side.</div>
+        </details>
+
+        <details class="faq-row reveal">
+          <summary>
+            <span>Where are you based?</span>
+            <i class="faq-icon" aria-hidden="true"></i>
+          </summary>
+          <div class="faq-a">Irvine, California &mdash; UTC-8. We work async with users in every time zone. 24-hour response on Pro, 4-hour on Team.</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ════════════════ FINAL CTA ════════════════ -->
+    <section class="svc-final">
+      <div class="final-card">
+        <span class="eyebrow">/ Ready when you are</span>
+        <h2 class="final-title">
+          Your machine. <span class="accent-italic">Your watcher.</span><br>
+          Your <span class="accent-purple">proactive orb</span>.
+        </h2>
+        <p class="final-sub">
+          Tell us what you're building. We'll tell you what's possible<br>
+          — and what's not — within 24 hours.
+        </p>
+        <div class="final-cta-row">
+          <a href="mailto:hello@moliam.com" class="btn-primary lg">
+            hello@moliam.com
+            <span class="arrow">→</span>
+          </a>
+          <button type="button" class="btn-link inline" id="dl-brief-3">
+            Download capabilities · PDF <span class="arrow">→</span>
+          </button>
+        </div>
+        <div class="final-meta">
+          <span class="dot live"></span>
+          <span>OPERATIONAL</span>
+          <span class="sep">·</span>
+          <span>Booking · Q3 2026</span>
+          <span class="sep">·</span>
+          <span>Irvine, CA · UTC-8</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="landing-foot">
+    <span>© MOLIAM · MMXXVI</span>
+    <span class="dim">Irvine, CA</span>
+    <span class="dim">hello@moliam.com</span>
+  </footer>
+
+  <script src="services.js?v=16"></script>
+</body>
+</html>

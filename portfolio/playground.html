@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#0a0a0c" />
+  <title>moliam · playground</title>
+  <meta name="description" content="A small collection of playable browser games." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="moliam-styles.css?v=12" />
+  <link rel="stylesheet" href="playground.css?v=12" />
+</head>
+<body class="">
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-vignette" aria-hidden="true"></div>
+  <div class="bg-aurora" aria-hidden="true">
+    <div class="aurora-blob a1"></div>
+    <div class="aurora-blob a2"></div>
+  </div>
+
+  <header class="pg-bar">
+    <a href="/playground" class="pg-logo">
+      <img src="logo.jpg" alt="" onerror="this.style.display='none'" />
+      <span>moliam</span>
+      <span class="pg-logo-sep">·</span>
+      <span class="pg-logo-tag">playground</span>
+    </a>
+    <div class="pg-bar-meta">
+      <span class="pg-clock" id="pg-clock">—</span>
+      <span class="pg-bar-sep">·</span>
+      <span class="pg-build">build 2026.04</span>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ── INTRO ─────────────────────── -->
+    <section class="pg-intro">
+      <div class="pg-intro-row">
+        <div>
+          <div class="pg-eyebrow">/ playground</div>
+          <h1 class="pg-h1">
+            Small games.<br>
+            <span class="it">Played in a tab.</span>
+          </h1>
+        </div>
+        <div class="pg-intro-side">
+          <p class="pg-sub">
+            A working catalogue of browser-native games. Click any tile —
+            it starts immediately. <span class="dim">Starting one pauses the rest.</span>
+          </p>
+          <div class="pg-counts">
+            <div><span class="num" id="count-total">07</span><span class="lbl">games</span></div>
+            <div><span class="num">3</span><span class="lbl">new</span></div>
+            <div><span class="num live"><span class="dotlive"></span><span id="count-active">0</span></span><span class="lbl">active</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FEATURED ─────────────────── -->
+    <section class="pg-section">
+      <div class="pg-section-head">
+        <div>
+          <span class="pg-eyebrow">/ 01 — featured</span>
+          <h2 class="pg-h2">Newest <span class="it">in the playground</span></h2>
+        </div>
+        <span class="pg-section-meta">Updated 04 · 26 · 26</span>
+      </div>
+
+      <div class="pg-featured">
+
+        <!-- big featured · CLUTCH (link-out) -->
+        <article class="pg-card pg-card--lg pg-card--link" data-game="clutch" data-cat="party" data-href="https://clutch.moliam.com">
+          <div class="pg-card-head">
+            <span class="num">№ 07</span>
+            <span class="dot-row">
+              <span class="rel">latest</span>
+              <span class="ver">v1.0</span>
+            </span>
+          </div>
+          <div class="pg-card-stage">
+            <div class="pg-stage-mount"></div>
+            <div class="pg-hud" aria-hidden="true">
+              <div><span class="lbl">Players</span><span class="val" data-hud="score">— —</span></div>
+              <div><span class="lbl">Mode</span><span class="val" data-hud="length">QUIZ</span></div>
+            </div>
+            <div class="pg-overlay">
+              <button type="button" class="pg-play pg-play--lg" aria-label="Open Clutch">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4L10 14"/><path d="M19 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h6"/></svg>
+              </button>
+              <span class="pg-overlay-label">Opens in new tab ↗</span>
+            </div>
+          </div>
+          <div class="pg-card-body">
+            <div class="pg-card-title-row">
+              <div class="pg-card-title">Clutch</div>
+              <span class="pg-pill">Party · Link</span>
+            </div>
+            <p class="pg-card-desc">Self-hosted, Kahoot-style trivia for small groups. Upload an Excel, share a QR, race the buzzer. Hosted live — opens in a new tab.</p>
+            <div class="pg-card-foot">
+              <span>Host + Phones</span>
+              <span class="dim">Apr 26, 2026</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- side stack -->
+        <div class="pg-featured-side">
+
+          <article class="pg-card pg-card--md" data-game="cipher" data-cat="puzzle">
+            <div class="pg-card-head">
+              <span class="num">№ 06</span>
+              <span class="dot-row"><span class="rel">new</span><span class="ver">v1.0</span></span>
+            </div>
+            <div class="pg-card-stage">
+              <div class="pg-stage-mount"></div>
+              <div class="pg-hud" aria-hidden="true">
+                <div><span class="lbl">Score</span><span class="val" data-hud="score">000</span></div>
+                <div><span class="lbl">Left</span><span class="val" data-hud="length">003</span></div>
+              </div>
+              <div class="pg-overlay">
+                <button type="button" class="pg-play" aria-label="Play Cipher">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="pg-card-body">
+              <div class="pg-card-title-row">
+                <div class="pg-card-title">Cipher</div>
+                <span class="pg-pill">Puzzle</span>
+              </div>
+              <p class="pg-card-desc">Hidden letters in a wall of static. Sweep your cursor to reveal — click to lock matches before they fade.</p>
+              <div class="pg-card-foot">
+                <span>Mouse · Click</span>
+                <span class="dim">Apr 26, 2026</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="pg-card pg-card--md" data-game="drift" data-cat="arcade">
+            <div class="pg-card-head">
+              <span class="num">№ 05</span>
+              <span class="dot-row"><span class="rel">new</span><span class="ver">v1.0</span></span>
+            </div>
+            <div class="pg-card-stage">
+              <div class="pg-stage-mount"></div>
+              <div class="pg-hud" aria-hidden="true">
+                <div><span class="lbl">Distance</span><span class="val" data-hud="score">000</span></div>
+                <div><span class="lbl">Level</span><span class="val" data-hud="length">L01</span></div>
+              </div>
+              <div class="pg-overlay">
+                <button type="button" class="pg-play" aria-label="Play Drift">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="pg-card-body">
+              <div class="pg-card-title-row">
+                <div class="pg-card-title">Drift</div>
+                <span class="pg-pill">Arcade</span>
+              </div>
+              <p class="pg-card-desc">Steer through a falling field. One hit resets the run.</p>
+              <div class="pg-card-foot">
+                <span>A · D / ← →</span>
+                <span class="dim">Apr 24, 2026</span>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── CATALOGUE ─────────────────── -->
+    <section class="pg-section">
+      <div class="pg-section-head">
+        <div>
+          <span class="pg-eyebrow">/ 02 — catalogue</span>
+          <h2 class="pg-h2">Earlier <span class="it">in the catalogue</span></h2>
+        </div>
+        <span class="pg-section-meta">04 titles · all playable</span>
+      </div>
+
+      <div class="pg-grid pg-grid--3">
+
+        <article class="pg-card" data-game="pulse" data-cat="arcade">
+          <div class="pg-card-head">
+            <span class="num">№ 04</span>
+            <span class="dot-row"><span class="ver">v1.0</span></span>
+          </div>
+          <div class="pg-card-stage">
+            <div class="pg-stage-mount"></div>
+            <div class="pg-hud" aria-hidden="true">
+              <div><span class="lbl">Score</span><span class="val" data-hud="score">000</span></div>
+              <div><span class="lbl">Onscreen</span><span class="val" data-hud="length">000</span></div>
+            </div>
+            <div class="pg-overlay">
+              <button type="button" class="pg-play" aria-label="Play Pulse">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="pg-card-body">
+            <div class="pg-card-title-row">
+              <div class="pg-card-title">Pulse</div>
+              <span class="pg-pill">Reflex</span>
+            </div>
+            <p class="pg-card-desc">Tap rings before they vanish. Smaller hit, bigger bonus.</p>
+            <div class="pg-card-foot">
+              <span>Click</span>
+              <span class="dim">Apr 22, 2026</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="pg-card" data-game="lattice" data-cat="arcade">
+          <div class="pg-card-head">
+            <span class="num">№ 03</span>
+            <span class="dot-row"><span class="ver">v1.0</span></span>
+          </div>
+          <div class="pg-card-stage">
+            <div class="pg-stage-mount"></div>
+            <div class="pg-hud" aria-hidden="true">
+              <div><span class="lbl">Score</span><span class="val" data-hud="score">000</span></div>
+              <div><span class="lbl">Bricks</span><span class="val" data-hud="length">032</span></div>
+            </div>
+            <div class="pg-overlay">
+              <button type="button" class="pg-play" aria-label="Play Lattice">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="pg-card-body">
+            <div class="pg-card-title-row">
+              <div class="pg-card-title">Lattice</div>
+              <span class="pg-pill">Arcade</span>
+            </div>
+            <p class="pg-card-desc">Break-out, pared back. Move the paddle, clear the wall.</p>
+            <div class="pg-card-foot"><span>Mouse</span><span class="dim">Apr 18, 2026</span></div>
+          </div>
+        </article>
+
+        <article class="pg-card" data-game="orbital" data-cat="toy">
+          <div class="pg-card-head">
+            <span class="num">№ 02</span>
+            <span class="dot-row"><span class="ver">v1.0</span></span>
+          </div>
+          <div class="pg-card-stage">
+            <div class="pg-stage-mount"></div>
+            <div class="pg-hud" aria-hidden="true">
+              <div><span class="lbl">Bodies</span><span class="val" data-hud="length">000</span></div>
+              <div><span class="lbl">Spawned</span><span class="val" data-hud="score">000</span></div>
+            </div>
+            <div class="pg-overlay">
+              <button type="button" class="pg-play" aria-label="Play Orbital">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="pg-card-body">
+            <div class="pg-card-title-row">
+              <div class="pg-card-title">Orbital</div>
+              <span class="pg-pill">Sandbox</span>
+            </div>
+            <p class="pg-card-desc">A gravity sandbox. Click to fling bodies into orbit.</p>
+            <div class="pg-card-foot"><span>Click</span><span class="dim">Apr 14, 2026</span></div>
+          </div>
+        </article>
+
+        <article class="pg-card" data-game="snake" data-cat="arcade">
+          <div class="pg-card-head">
+            <span class="num">№ 01</span>
+            <span class="dot-row"><span class="ver">v1.0</span></span>
+          </div>
+          <div class="pg-card-stage">
+            <div class="pg-stage-mount"></div>
+            <div class="pg-hud" aria-hidden="true">
+              <div><span class="lbl">Score</span><span class="val" data-hud="score">000</span></div>
+              <div><span class="lbl">Length</span><span class="val" data-hud="length">003</span></div>
+            </div>
+            <div class="pg-overlay">
+              <button type="button" class="pg-play" aria-label="Play Snake">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="pg-card-body">
+            <div class="pg-card-title-row">
+              <div class="pg-card-title">Snake</div>
+              <span class="pg-pill">Arcade</span>
+            </div>
+            <p class="pg-card-desc">The classic, with a soft glow and edge-wrapping.</p>
+            <div class="pg-card-foot"><span>WASD · Arrows</span><span class="dim">Apr 10, 2026</span></div>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ════════════════ SPLIT-SCREEN ARCADE MODE ════════════════ -->
+  <div class="pg-arcade" id="pg-arcade" aria-hidden="true">
+    <div class="pg-arcade-inner">
+      <!-- LEFT: active game -->
+      <div class="pg-arcade-stage" id="pg-arcade-stage">
+        <div class="pg-arcade-header">
+          <div class="pg-arcade-title">
+            <span class="num" id="arcade-num">№ —</span>
+            <h3 id="arcade-name">—</h3>
+            <span class="pg-pill" id="arcade-tag">—</span>
+          </div>
+          <div class="pg-arcade-hud" id="arcade-hud">
+            <div><span class="lbl">Score</span><span class="val" data-arcade-hud="score">000</span></div>
+            <div><span class="lbl">Stat</span><span class="val" data-arcade-hud="length">000</span></div>
+          </div>
+          <button type="button" class="pg-arcade-close" id="arcade-close" aria-label="Exit arcade mode">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            <span>Exit</span>
+          </button>
+        </div>
+        <div class="pg-arcade-screen" id="pg-arcade-screen">
+          <!-- mobile touch controls (snake/drift) injected here when needed -->
+          <div class="pg-touch" id="pg-touch" aria-hidden="true"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: rail of all games -->
+      <aside class="pg-rail">
+        <div class="pg-rail-head">
+          <span class="lbl">Library</span>
+          <span class="num" id="rail-count">06</span>
+        </div>
+        <div class="pg-rail-list" id="pg-rail-list"></div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="pg-foot">
+    <span class="pg-signature">
+      Made with <span class="heart" aria-hidden="true">☕</span> by
+      <a href="/portfolio" class="name">Oscar Solis</a>
+    </span>
+    <span class="dim">© moliam · MMXXVI</span>
+    <span class="dim">v2</span>
+  </footer>
+
+  <script src="playground.js?v=13"></script>
+</body>
+</html>
