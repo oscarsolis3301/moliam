@@ -566,14 +566,14 @@
     drawText(M, H - 320, 'Lumi.', { size: 132, bold: true, color: C.fg });
 
     // italic subtitle — two lines, purple
-    drawText(M, H - 360, 'A proactive desktop', { size: 28, italic: true, color: C.purple });
-    drawText(M, H - 394, 'AI companion.', { size: 28, italic: true, color: C.purple });
+    drawText(M, H - 360, 'Your personal', { size: 28, italic: true, color: C.purple });
+    drawText(M, H - 394, 'AI assistant.', { size: 28, italic: true, color: C.purple });
 
     // description block
     const coverDesc = [
-      'A floating smiley in your system tray. One signed-in orb',
-      'that chats, captures, records, and repairs - entirely on',
-      'your machine. Quietly proactive. Loud when it matters.',
+      'A signed-in orb in your system tray that chats, captures,',
+      'records, and repairs - entirely on your machine. Watches',
+      'your habits. Quietly proactive. Loud when it matters.',
     ];
     for (let i = 0; i < coverDesc.length; i++) {
       drawText(M, H - 436 - i * 16, coverDesc[i], { size: 11, color: C.fg2 });
