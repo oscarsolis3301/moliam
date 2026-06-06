@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="moliam-styles.css?v=12" />
-  <link rel="stylesheet" href="services.css?v=12" />
+  <link rel="stylesheet" href="services.css?v=13" />
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -32,8 +32,6 @@
     <section class="svc-hero">
       <div class="svc-hero-inner">
         <div class="svc-hero-copy">
-          <div class="eyebrow">SERVICES &amp; SUBSCRIPTIONS · MMXXVI</div>
-
           <h1 class="svc-headline">
             We ship
             <span class="rotator-wrap" data-rotator>
@@ -84,29 +82,31 @@
           </ul>
         </div>
 
-        <!-- ════════════════ LUMI LIVE RUNTIME ════════════════ -->
-        <aside class="svc-agent" aria-label="Lumi live runtime">
-          <div class="agent-head">
-            <span class="agent-head-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-            <span class="eyebrow-sm">LUMI · DESKTOP RUNTIME</span>
+        <!-- ════════════════ MEET LUMI · friendly hero visual ════════════════ -->
+        <aside class="svc-hello" aria-label="Meet Lumi">
+          <div class="hello-orb">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <defs>
+                <radialGradient id="helloOrbG" cx="50%" cy="40%" r="60%">
+                  <stop offset="0%" stop-color="#c4b5fd"/>
+                  <stop offset="55%" stop-color="#a78bfa"/>
+                  <stop offset="100%" stop-color="#7c3aed"/>
+                </radialGradient>
+              </defs>
+              <circle cx="32" cy="32" r="28" fill="url(#helloOrbG)"/>
+              <circle cx="22" cy="27" r="3" fill="#fff"/>
+              <circle cx="42" cy="27" r="3" fill="#fff"/>
+              <path d="M21 38 Q32 48 43 38" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+            </svg>
           </div>
-
-          <div class="agent-hud">
-            <div><span class="hud-lbl">Events · 24h</span><span class="hud-val" id="ag-tasks">1,284</span></div>
-            <div><span class="hud-lbl">Captures</span><span class="hud-val" id="ag-lat">142</span></div>
-            <div><span class="hud-lbl">Uptime</span><span class="hud-val" id="ag-up">99.98<small>%</small></span></div>
-          </div>
-
-          <div class="agent-stream" id="agent-stream" aria-live="polite">
-            <!-- lines injected by JS -->
-          </div>
-
-          <div class="agent-foot">
-            <span class="dot live" id="ag-dot"></span>
-            <span id="ag-status">LIVE · streaming</span>
-            <span class="agent-foot-sep">·</span>
-            <span id="ag-region">local · m3 max</span>
-          </div>
+          <p class="hello-greet">Hi, I'm <b>Lumi</b> 👋</p>
+          <p class="hello-say">I live in your taskbar and quietly help with the boring computer stuff — so you don't have to.</p>
+          <ul class="hello-list">
+            <li><span class="hello-emoji" aria-hidden="true">💬</span> Answer your questions, any time</li>
+            <li><span class="hello-emoji" aria-hidden="true">📸</span> Take &amp; record your screen</li>
+            <li><span class="hello-emoji" aria-hidden="true">🧹</span> Tidy up files &amp; clutter</li>
+            <li><span class="hello-emoji" aria-hidden="true">🩹</span> Fix little problems on its own</li>
+          </ul>
         </aside>
       </div>
     </section>
@@ -307,11 +307,44 @@
       </div>
     </section>
 
+    <!-- ════════════════ LUMI LIVE RUNTIME · relocated mid-page ════════════════ -->
+    <section class="svc-runtime-section" aria-label="Lumi live runtime">
+      <header class="section-head svc-runtime-head">
+        <span class="eyebrow">/ Under the hood</span>
+        <h2 class="section-title">See it <span class="accent-italic">running.</span></h2>
+        <p class="lede-left svc-runtime-lede">A peek at the desktop runtime — what Lumi handles in the background while you work.</p>
+      </header>
+
+      <aside class="svc-agent" aria-label="Lumi live runtime">
+        <div class="agent-head">
+          <span class="agent-head-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="eyebrow-sm">LUMI · DESKTOP RUNTIME</span>
+        </div>
+
+        <div class="agent-hud">
+          <div><span class="hud-lbl">Events · 24h</span><span class="hud-val" id="ag-tasks">1,284</span></div>
+          <div><span class="hud-lbl">Captures</span><span class="hud-val" id="ag-lat">142</span></div>
+          <div><span class="hud-lbl">Uptime</span><span class="hud-val" id="ag-up">99.98<small>%</small></span></div>
+        </div>
+
+        <div class="agent-stream" id="agent-stream" aria-live="polite">
+          <!-- lines injected by JS -->
+        </div>
+
+        <div class="agent-foot">
+          <span class="dot live" id="ag-dot"></span>
+          <span id="ag-status">LIVE · streaming</span>
+          <span class="agent-foot-sep">·</span>
+          <span id="ag-region">local · m3 max</span>
+        </div>
+      </aside>
+    </section>
+
     <!-- ════════════════ PRICING / TIERS ════════════════ -->
     <section class="svc-section svc-pricing" id="pricing">
       <header class="section-head pricing-head">
         <div>
-          <span class="eyebrow">/ 02 — Lumi Subscriptions</span>
+          <span class="eyebrow">SERVICES &amp; SUBSCRIPTIONS · MMXXVI</span>
           <h2 class="section-title">
             One orb. <span class="accent-italic">Priced like software.</span>
           </h2>

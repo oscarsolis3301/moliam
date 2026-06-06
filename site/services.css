@@ -431,6 +431,98 @@
   box-shadow: 0 0 6px var(--purple-glow);
 }
 
+/* ─── Meet Lumi — friendly hero visual (replaces runtime panel) ── */
+.svc-hello {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 16px;
+  padding: 52px 48px;
+  min-height: 520px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% -10%, rgba(167,139,250,0.12), transparent 60%),
+    linear-gradient(180deg, var(--bg-1) 0%, var(--bg) 100%);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.04) inset,
+    0 30px 90px -40px rgba(124,92,245,0.45);
+}
+.svc-hello::before {
+  content: "";
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(167,139,250,0.55) 50%, transparent);
+  pointer-events: none;
+}
+.hello-orb {
+  width: 92px; height: 92px;
+  filter: drop-shadow(0 8px 28px rgba(124,92,245,0.5));
+  animation: helloFloat 5s ease-in-out infinite;
+}
+.hello-orb svg { width: 100%; height: 100%; display: block; }
+@keyframes helloFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+.hello-greet {
+  font-family: var(--serif);
+  font-size: 30px;
+  line-height: 1.1;
+  color: var(--fg);
+  margin: 4px 0 0;
+}
+.hello-greet b { font-style: italic; font-weight: 400; color: var(--purple-light); }
+.hello-say {
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--fg-2);
+  max-width: 380px;
+  margin: 0;
+}
+.hello-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.hello-list li {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  font-size: 15px;
+  color: var(--fg);
+}
+.hello-emoji {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px; height: 34px;
+  flex: none;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: rgba(167,139,250,0.10);
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* ─── Live runtime, relocated mid-page ──────────────────── */
+.svc-runtime-section {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 16px 40px 8px;
+}
+.svc-runtime-head { margin-bottom: 28px; text-align: center; }
+.svc-runtime-lede { margin: 12px auto 0; max-width: 520px; }
+.svc-runtime-section .svc-agent { min-height: 460px; }
+
 /* ─── Moliam Agent panel ────────────────────────────────── */
 .svc-agent {
   background:
@@ -2165,6 +2257,8 @@
 @media (max-width: 980px) {
   .svc-hero { padding: 64px 24px 48px; }
   .svc-hero-inner { grid-template-columns: 1fr; gap: 48px; }
+  .svc-hello { min-height: auto; padding: 40px 28px; }
+  .svc-runtime-section { padding: 8px 24px; }
   .svc-stats { grid-template-columns: repeat(2, 1fr); padding: 0 24px; }
   .svc-stats .stat:nth-child(2) { border-right: 0; }
   .svc-stats .stat:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
