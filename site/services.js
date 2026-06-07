@@ -66,6 +66,10 @@
   // ═══════════════════════════════════════════════════════════
   // 2) MOLIAM AGENT LIVE STREAM (Hermes runtime, OpenClaw tools)
   // ═══════════════════════════════════════════════════════════
+  // Bridge: the vault graph (section 2b) registers a callback here so each
+  // console run "creates files" → spawns a node cluster in the graph.
+  let onAgentRun = null;
+
   const AGENT_RUNS = [
     {
       user: 'screenshot · area · annotate',
@@ -186,6 +190,7 @@
 
       setStatus('LIVE · streaming');
       addLine(`<span class="ag-prompt">$</span><span class="ag-user">moliam.agent</span> <span class="ag-arg">"${run.user}"</span>`);
+      if (onAgentRun) onAgentRun(run.user); // grow the vault graph in sync
       await wait(350);
 
       for (const s of run.steps) {
@@ -218,6 +223,364 @@
   function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
   function escapeHtml(s) {
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // 2b) VAULT GRAPH — Obsidian-style node map, grows with the console
+  // ═══════════════════════════════════════════════════════════
+  // Persistent hubs every cluster links into (so it reads as one graph).
+  const GRAPH_HUBS = [
+    { key: 'vault',   name: 'Vault',        type: 'root',  meta: 'root · index' },
+    { key: 'inbox',   name: 'lumi.inbox',   type: 'inbox', meta: 'inbox · 156 items' },
+    { key: 'pattern', name: 'pattern.store', type: 'store', meta: 'learned · self-heal' },
+  ];
+
+  // One artifact cluster per console run (keyed by run.user). Each cluster is a
+  // short chain of files; `hub`/`hubLink` wires one node into a persistent hub.
+  const GRAPH_ARTIFACTS = {
+    'screenshot · area · annotate': {
+      hub: 'inbox', hubLink: 1,
+      nodes: [
+        { name: 'screen-1840×986.png', type: 'image',  meta: 'image · 2.1 MB' },
+        { name: 'annotated.png',       type: 'image',  meta: 'image · 2.3 MB' },
+        { name: 'clip.txt',            type: 'text',   meta: 'clipboard · 4 KB' },
+      ],
+    },
+    'proactive: post-resume sweep': {
+      hub: 'pattern', hubLink: 2,
+      nodes: [
+        { name: 'resume-0314.log',   type: 'log',    meta: 'log · 12 KB' },
+        { name: 'hygiene-report.md', type: 'note',   meta: 'note · 8 KB' },
+        { name: 'freed-1.2GB.json',  type: 'report', meta: 'report · 3 KB' },
+      ],
+    },
+    'record · screen + mic + cam': {
+      hub: 'inbox', hubLink: 2,
+      nodes: [
+        { name: 'screen-rec-42s.mp4', type: 'video', meta: 'video · 18 MB' },
+        { name: 'webcam-pip.mp4',     type: 'video', meta: 'video · 6 MB' },
+        { name: 'export.mp4',         type: 'video', meta: 'video · 22 MB' },
+      ],
+    },
+    'drop · quarterly-deck.pptx': {
+      hub: 'vault', hubLink: 1,
+      nodes: [
+        { name: 'quarterly-deck.pptx', type: 'file',  meta: 'file · 9.4 MB' },
+        { name: 'quarterly-deck.md',   type: 'note',  meta: 'note · 48 KB' },
+        { name: 'slides-index.json',   type: 'index', meta: 'index · 11 KB' },
+      ],
+    },
+    'repair · audio.dll not loaded': {
+      hub: 'pattern', hubLink: 1,
+      nodes: [
+        { name: 'symptom-match.log', type: 'log',    meta: 'log · 6 KB' },
+        { name: 'audio-repair.ps1',  type: 'script', meta: 'script · 2 KB' },
+        { name: 'audit-restart.log', type: 'log',    meta: 'log · 4 KB' },
+      ],
+    },
+    'meeting detected · transcribe': {
+      hub: 'vault', hubLink: 1,
+      nodes: [
+        { name: 'zoom-session.wav', type: 'audio', meta: 'audio · 34 MB' },
+        { name: 'transcript.md',    type: 'note',  meta: 'note · 22 KB' },
+        { name: 'action-items.md',  type: 'note',  meta: 'note · 5 KB' },
+      ],
+    },
+  };
+
+  function startGraph() {
+    const canvas = document.getElementById('lumi-graph');
+    if (!canvas) return;
+    const body = canvas.parentElement;
+    const tip = document.getElementById('graph-tip');
+    const countEl = document.getElementById('graph-count');
+    const emptyEl = document.getElementById('graph-empty');
+    const ctx = canvas.getContext('2d');
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const MAX_ARTIFACTS = 21;       // breathe: fade oldest beyond this (hubs excluded)
+    let nodes = [];
+    let edges = [];
+    let hubMap = {};
+    let uid = 0;
+    let born = 0;
+    let w = 0, h = 0, cx = 0, cy = 0;
+    let hover = null;
+    const timers = [];
+
+    const rand = (a, b) => a + Math.random() * (b - a);
+
+    function radiusFor(type) {
+      if (type === 'root') return 9;
+      if (type === 'inbox' || type === 'store') return 7.5;
+      if (type === 'video' || type === 'audio' || type === 'image') return 5.5;
+      return 4.6;
+    }
+
+    function makeNode(spec, isHub) {
+      const r = radiusFor(spec.type);
+      return {
+        id: ++uid, key: spec.key || null,
+        name: spec.name, type: spec.type, meta: spec.meta,
+        hub: !!isHub, born: born++,
+        x: cx + rand(-30, 30), y: cy + rand(-30, 30),
+        vx: 0, vy: 0,
+        r, rNow: reduce ? r : 0.1,
+        alpha: reduce ? 1 : 0, dying: false,
+      };
+    }
+
+    function link(a, b) { if (a && b && a !== b) edges.push({ a, b }); }
+
+    function neighbors(node) {
+      const set = new Set();
+      for (const e of edges) {
+        if (e.a === node) set.add(e.b);
+        else if (e.b === node) set.add(e.a);
+      }
+      return set;
+    }
+
+    function updateCount() {
+      const n = nodes.filter(x => !x.hub && !x.dying).length;
+      if (countEl) countEl.textContent = n + (n === 1 ? ' note' : ' notes');
+    }
+
+    function hideEmpty() {
+      if (emptyEl && !emptyEl.classList.contains('is-hidden')) emptyEl.classList.add('is-hidden');
+    }
+
+    function enforceCap() {
+      const live = nodes.filter(x => !x.hub && !x.dying);
+      let over = live.length - MAX_ARTIFACTS;
+      if (over <= 0) return;
+      live.sort((a, b) => a.born - b.born);
+      for (let i = 0; i < over; i++) live[i].dying = true;
+      if (reduce) prune();
+    }
+
+    function prune() {
+      const gone = new Set(nodes.filter(n => n.dying && n.alpha <= 0.02));
+      if (!gone.size) return;
+      nodes = nodes.filter(n => !gone.has(n));
+      edges = edges.filter(e => !gone.has(e.a) && !gone.has(e.b));
+    }
+
+    // Spawn a run's cluster, staggered so dots appear as the console prints steps.
+    function spawnFor(user) {
+      const spec = GRAPH_ARTIFACTS[user];
+      if (!spec) return;
+      hideEmpty();
+      const cluster = { prev: null };
+      spec.nodes.forEach((nspec, i) => {
+        const t = setTimeout(() => {
+          const node = makeNode(nspec, false);
+          const anchor = (spec.hub && hubMap[spec.hub]) || { x: cx, y: cy };
+          node.x = anchor.x + rand(-46, 46);
+          node.y = anchor.y + rand(-46, 46);
+          nodes.push(node);
+          if (cluster.prev) link(node, cluster.prev);
+          if (i === spec.hubLink && spec.hub) link(node, hubMap[spec.hub]);
+          cluster.prev = node;
+          updateCount();
+          enforceCap();
+          if (reduce) { settle(); render(); }
+        }, i * 520);
+        timers.push(t);
+      });
+    }
+
+    // ── physics ──────────────────────────────────────────────
+    function step() {
+      const n = nodes.length;
+      const REP = 1400, SPRING = 0.018, REST = 64, CENTER = 0.012, DAMP = 0.86;
+      for (let i = 0; i < n; i++) {
+        const a = nodes[i];
+        for (let j = i + 1; j < n; j++) {
+          const b = nodes[j];
+          let dx = a.x - b.x, dy = a.y - b.y;
+          let d2 = dx * dx + dy * dy || 0.01;
+          const f = REP / d2;
+          const d = Math.sqrt(d2);
+          const fx = (dx / d) * f, fy = (dy / d) * f;
+          a.vx += fx; a.vy += fy; b.vx -= fx; b.vy -= fy;
+        }
+      }
+      for (const e of edges) {
+        let dx = e.b.x - e.a.x, dy = e.b.y - e.a.y;
+        const d = Math.sqrt(dx * dx + dy * dy) || 0.01;
+        const f = (d - REST) * SPRING;
+        const fx = (dx / d) * f, fy = (dy / d) * f;
+        e.a.vx += fx; e.a.vy += fy; e.b.vx -= fx; e.b.vy -= fy;
+      }
+      const pad = 16;
+      for (const a of nodes) {
+        a.vx += (cx - a.x) * CENTER;
+        a.vy += (cy - a.y) * CENTER;
+        a.vx *= DAMP; a.vy *= DAMP;
+        a.x += a.vx; a.y += a.vy;
+        a.x = Math.max(pad + a.r, Math.min(w - pad - a.r, a.x));
+        a.y = Math.max(pad + a.r, Math.min(h - pad - a.r, a.y));
+      }
+    }
+
+    function settle() { for (let k = 0; k < 160; k++) step(); }
+
+    function animateBirth() {
+      for (const node of nodes) {
+        if (node.dying) {
+          node.alpha += (0 - node.alpha) * 0.12;
+          node.rNow += (0 - node.rNow) * 0.12;
+        } else {
+          node.alpha += (1 - node.alpha) * 0.10;
+          node.rNow += (node.r - node.rNow) * 0.12;
+        }
+      }
+      prune();
+    }
+
+    // ── render ───────────────────────────────────────────────
+    function render() {
+      ctx.clearRect(0, 0, w, h);
+      const hoverSet = hover ? neighbors(hover) : null;
+
+      // edges
+      for (const e of edges) {
+        const incident = hover && (e.a === hover || e.b === hover);
+        const a = Math.min(e.a.alpha, e.b.alpha);
+        ctx.beginPath();
+        ctx.moveTo(e.a.x, e.a.y);
+        ctx.lineTo(e.b.x, e.b.y);
+        ctx.lineWidth = incident ? 1.4 : 1;
+        ctx.strokeStyle = incident
+          ? `rgba(196,181,253,${0.55 * a})`
+          : `rgba(167,139,250,${0.13 * a})`;
+        ctx.stroke();
+      }
+
+      // nodes
+      for (const node of nodes) {
+        const isHover = node === hover;
+        const isNeigh = hoverSet && hoverSet.has(node);
+        const dim = hover && !isHover && !isNeigh ? 0.4 : 1;
+        const r = node.rNow;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+        ctx.shadowBlur = isHover ? 16 : (node.hub ? 10 : 6);
+        ctx.shadowColor = `rgba(167,139,250,${0.5 * node.alpha})`;
+        const fill = node.hub ? '196,181,253' : '167,139,250';
+        ctx.fillStyle = `rgba(${fill},${(isHover ? 1 : 0.9) * node.alpha * dim})`;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        if (isHover) {
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, r + 3.5, 0, Math.PI * 2);
+          ctx.lineWidth = 1.2;
+          ctx.strokeStyle = `rgba(196,181,253,${0.6 * node.alpha})`;
+          ctx.stroke();
+        }
+      }
+
+      // labels — only hovered node + neighbors (Obsidian feel)
+      if (hover) {
+        ctx.font = '10px "JetBrains Mono", ui-monospace, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        const labelSet = new Set(hoverSet);
+        labelSet.add(hover);
+        for (const node of labelSet) {
+          if (node.alpha < 0.5) continue;
+          ctx.fillStyle = node === hover
+            ? `rgba(245,245,245,${node.alpha})`
+            : `rgba(168,168,179,${0.85 * node.alpha})`;
+          ctx.fillText(node.name, node.x, node.y + node.rNow + 5);
+        }
+      }
+    }
+
+    // ── loop ─────────────────────────────────────────────────
+    function frame() {
+      step();
+      animateBirth();
+      render();
+      raf = requestAnimationFrame(frame);
+    }
+    let raf = null;
+
+    // ── hover hit-testing ────────────────────────────────────
+    function hitTest(mx, my) {
+      let best = null, bestD = Infinity;
+      for (const node of nodes) {
+        if (node.alpha < 0.4) continue;
+        const dx = node.x - mx, dy = node.y - my;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d < node.r + 6 && d < bestD) { bestD = d; best = node; }
+      }
+      return best;
+    }
+
+    function showTip(node) {
+      if (!tip) return;
+      tip.hidden = false;
+      tip.style.left = node.x + 'px';
+      tip.style.top = node.y + 'px';
+      tip.innerHTML = `<span class="tip-name">${escapeHtml(node.name)}</span><br><span class="tip-meta">${escapeHtml(node.meta)}</span>`;
+    }
+    function hideTip() { if (tip) tip.hidden = true; }
+
+    canvas.addEventListener('pointermove', (ev) => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = ev.clientX - rect.left, my = ev.clientY - rect.top;
+      const hit = hitTest(mx, my);
+      if (hit !== hover) {
+        hover = hit;
+        if (hover) showTip(hover); else hideTip();
+        if (reduce) render();
+      } else if (hover) {
+        showTip(hover); // keep tip pinned to live position
+      }
+      canvas.style.cursor = hit ? 'pointer' : 'grab';
+    });
+    canvas.addEventListener('pointerleave', () => {
+      hover = null; hideTip();
+      if (reduce) render();
+    });
+
+    // ── sizing ───────────────────────────────────────────────
+    function resize() {
+      const rect = body.getBoundingClientRect();
+      w = Math.max(1, rect.width);
+      h = Math.max(1, rect.height);
+      cx = w / 2; cy = h / 2;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (reduce) { settle(); render(); }
+    }
+
+    // ── init ─────────────────────────────────────────────────
+    resize();
+    if ('ResizeObserver' in window) {
+      new ResizeObserver(resize).observe(body);
+    } else {
+      window.addEventListener('resize', resize);
+    }
+
+    // hubs first, wired together as the spine of the vault
+    GRAPH_HUBS.forEach(h => { const n = makeNode(h, true); hubMap[h.key] = n; nodes.push(n); });
+    link(hubMap.vault, hubMap.inbox);
+    link(hubMap.vault, hubMap.pattern);
+
+    // register the console bridge so each run grows the graph
+    onAgentRun = spawnFor;
+
+    // seed warm: drop the first two clusters so the graph isn't empty on load
+    spawnFor('screenshot · area · annotate');
+    spawnFor('drop · quarterly-deck.pptx');
+
+    if (reduce) { settle(); render(); }
+    else { raf = requestAnimationFrame(frame); }
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -283,6 +646,45 @@
       });
     }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
     els.forEach(e => io.observe(e));
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // 4b) BRAND DOCK — logo top-left ↔ diamond follow-badge
+  // ═══════════════════════════════════════════════════════════
+  function startBrandDock() {
+    const dock = document.getElementById('brand-dock');
+    if (!dock) return;
+
+    // Hysteresis avoids flicker when the user lingers right at the threshold.
+    const DOCK_AT = 120, UNDOCK_AT = 60;
+    let docked = false;
+    let ticking = false;
+
+    function update() {
+      ticking = false;
+      const y = window.scrollY || window.pageYOffset || 0;
+      if (!docked && y > DOCK_AT) {
+        docked = true;
+        dock.classList.add('is-docked');
+      } else if (docked && y < UNDOCK_AT) {
+        docked = false;
+        dock.classList.remove('is-docked');
+      }
+    }
+    function onScroll() {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    update(); // honor initial scroll position (e.g. reload mid-page)
+
+    // Clicking the mark jumps to the very top, then hard-reloads the homepage.
+    dock.addEventListener('click', (e) => {
+      e.preventDefault();
+      try { history.scrollRestoration = 'manual'; } catch (_) {}
+      window.scrollTo(0, 0);
+      window.location.reload();
+    });
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -515,16 +917,54 @@
       }
     }
 
-    // ── small Lumi mark for brand row ──
-    function drawBrandMark(x, y, r) {
-      circle(x, y, r * 1.55, null, C.purpleVD, 0.6);
-      circle(x, y, r,        C.purple);
-      circle(x, y, r * 0.45, C.purpleLt);
+    // ── real Moliam logo glyph — vectorized from moliam [Purple].svg ──
+    // (x, y) = bottom-left of the logo box; `size` = box height in pt.
+    const MOLIAM_PATH = "M428.63 479.48 c-3.98 -1.47 -21.36 -12.80 -47.22 -30.88 -43.07 -30.18 -48.09 -34.94 -51.46 -49.12 -1.12 -4.76 -1.30 -17.56 -1.30 -89.43 0 -92.19 -0.09 -89.86 5.28 -99.98 5.10 -9.51 9.60 -12.89 41.34 -31.05 16 -9.17 46.01 -26.55 66.68 -38.49 57.69 -33.47 55.44 -32.43 72.22 -32.43 16.95 0 13.41 -1.64 79.91 36.67 24.48 14.10 53.79 31.05 65.21 37.54 23.96 13.66 30.79 19.20 35.11 28.11 5.45 11.16 5.28 7.52 5.28 99.37 0 86.92 -0.09 89.08 -3.63 96.26 -4.24 8.39 -7.09 10.81 -40.30 34.51 -14.27 10.12 -17.04 11.85 -19.46 11.59 l-2.77 -0.26 -0.43 -116.32 c-0.43 -115.37 -0.43 -116.32 -2.25 -119.35 -2.08 -3.63 -6.66 -6.92 -9.60 -6.92 -3.89 0 -7.61 2.85 -21.88 16.78 -39.78 38.83 -72.22 69.45 -75.42 71.26 -4.67 2.51 -14.18 2.68 -19.29 0.26 -2.25 -1.04 -19.11 -16.69 -47.31 -44.02 -24.13 -23.26 -45.23 -42.98 -46.88 -43.76 -2.68 -1.30 -3.37 -1.30 -5.88 -0.26 -4.41 1.82 -8.22 6.75 -9.34 12.02 -0.69 3.29 -0.86 25.43 -0.69 79.83 0.26 73.95 0.26 75.33 1.99 78.27 1.04 1.64 3.20 3.81 4.93 4.76 3.20 1.73 3.20 1.73 5.54 -0.09 1.30 -0.95 3.20 -2.85 4.15 -4.15 1.82 -2.34 1.82 -3.29 2.08 -69.02 0.17 -46.88 0.52 -67.03 1.12 -67.89 0.61 -0.61 2.77 -1.12 5.28 -1.12 l4.32 0 20.41 19.72 c62.10 59.94 61.15 59.07 68.15 60.37 7.09 1.30 11.59 -2.59 83.03 -71.61 8.65 -8.39 8.74 -8.48 12.97 -8.48 2.42 0 4.76 0.43 5.36 1.04 0.78 0.78 1.04 22.66 1.04 93.23 0 85.97 -0.09 92.28 -1.56 95.14 -2.42 4.93 -5.79 6.05 -18.51 6.05 -12.63 0 -16.86 -1.12 -19.98 -5.54 -1.90 -2.68 -1.90 -2.68 -2.34 -50.77 l-0.43 -48.09 -20.32 19.37 c-11.16 10.64 -22.05 20.41 -24.22 21.71 -3.37 1.99 -4.93 2.34 -12.71 2.59 -13.15 0.52 -13.84 0.17 -38.31 -23.35 l-20.32 -19.55 -0.43 68.50 c-0.35 49.73 -0.69 68.84 -1.47 70.14 -1.56 2.68 -5.62 6.31 -8.30 7.26 -3.46 1.30 -13.32 1.04 -17.38 -0.43z";
+    function drawLogo(x, y, size, color) {
+      // viewBox of the source SVG: "320.56 98.46 387.29 390.74"
+      const vbMinX = 320.56, vbMinY = 98.46, vbW = 387.29, vbH = 390.74;
+      const s = size / Math.max(vbW, vbH);
+      const TX = (px) => fmt(x + (px - vbMinX) * s);
+      const TY = (py) => fmt(y + (vbH - (py - vbMinY)) * s); // flip Y: SVG y-down → PDF y-up
+
+      const tokens = MOLIAM_PATH.match(/[MmLlHhVvCcSsQqTtAaZz]|-?\d*\.?\d+(?:e-?\d+)?/g) || [];
+      let i = 0;
+      const num = () => parseFloat(tokens[i++]);
+      let cmd = '', cx = 0, cy = 0, sx = 0, sy = 0;
+
+      stream += `q\n`;
+      setFill(color);
+      while (i < tokens.length) {
+        if (/[A-Za-z]/.test(tokens[i])) { cmd = tokens[i]; i++; }
+        switch (cmd) {
+          case 'M': cx = num(); cy = num(); sx = cx; sy = cy; stream += `${TX(cx)} ${TY(cy)} m\n`; cmd = 'L'; break;
+          case 'm': cx += num(); cy += num(); sx = cx; sy = cy; stream += `${TX(cx)} ${TY(cy)} m\n`; cmd = 'l'; break;
+          case 'L': cx = num(); cy = num(); stream += `${TX(cx)} ${TY(cy)} l\n`; break;
+          case 'l': cx += num(); cy += num(); stream += `${TX(cx)} ${TY(cy)} l\n`; break;
+          case 'H': cx = num(); stream += `${TX(cx)} ${TY(cy)} l\n`; break;
+          case 'h': cx += num(); stream += `${TX(cx)} ${TY(cy)} l\n`; break;
+          case 'V': cy = num(); stream += `${TX(cx)} ${TY(cy)} l\n`; break;
+          case 'v': cy += num(); stream += `${TX(cx)} ${TY(cy)} l\n`; break;
+          case 'C': {
+            const x1 = num(), y1 = num(), x2 = num(), y2 = num(), ex = num(), ey = num();
+            stream += `${TX(x1)} ${TY(y1)} ${TX(x2)} ${TY(y2)} ${TX(ex)} ${TY(ey)} c\n`;
+            cx = ex; cy = ey; break;
+          }
+          case 'c': {
+            const x1 = cx + num(), y1 = cy + num(), x2 = cx + num(), y2 = cy + num(), ex = cx + num(), ey = cy + num();
+            stream += `${TX(x1)} ${TY(y1)} ${TX(x2)} ${TY(y2)} ${TX(ex)} ${TY(ey)} c\n`;
+            cx = ex; cy = ey; break;
+          }
+          case 'Z': case 'z': stream += `h\n`; cx = sx; cy = sy; break;
+          default: i++; break; // skip anything unexpected safely
+        }
+      }
+      stream += `f\nQ\n`;
     }
 
     function drawHeader(label) {
       // brand strip
-      drawBrandMark(M + 5, H - 33, 3.2);
+      drawLogo(M, H - 40, 11, C.purple);
       drawText(M + 16, H - 36, 'MOLIAM', { size: 8.5, bold: true, color: C.fg, charSpace: 2.2 });
       const mw = textWidth('MOLIAM', { size: 8.5, bold: true, charSpace: 2.2 });
       drawText(M + 16 + mw + 10, H - 36, '/  Lumi capabilities', { size: 8.5, italic: true, color: C.fg3 });
@@ -534,8 +974,9 @@
 
     function drawFooter(idx, total) {
       line(M, 52, W - M, 52, C.line2, 0.4);
-      drawText(M, 34, 'moliam.com', { size: 8, italic: true, color: C.fg2 });
-      drawText(M + 56, 34, '/  Irvine, California  /  hello@moliam.com', { size: 8, color: C.fg3 });
+      drawLogo(M, 30, 9, C.purple);
+      drawText(M + 13, 34, 'moliam.com', { size: 8, italic: true, color: C.fg2 });
+      drawText(M + 69, 34, '/  Irvine, California  /  hello@moliam.com', { size: 8, color: C.fg3 });
       const pn = String(idx).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
       drawTextRight(W - M, 34, pn, { size: 8.5, bold: true, color: C.purple });
     }
@@ -546,7 +987,7 @@
     drawBg();
 
     // top brand row
-    drawBrandMark(M + 5, H - 33, 3.5);
+    drawLogo(M, H - 41, 12, C.purple);
     drawText(M + 18, H - 36, 'MOLIAM', { size: 9, bold: true, color: C.fg, charSpace: 2.4 });
     const mw0 = textWidth('MOLIAM', { size: 9, bold: true, charSpace: 2.4 });
     drawText(M + 18 + mw0 + 10, H - 36, '/  Lumi capabilities + pricing', { size: 9, italic: true, color: C.fg3 });
@@ -571,7 +1012,7 @@
 
     // description block
     const coverDesc = [
-      'A signed-in orb in your system tray that chats, captures,',
+      'A signed-in assistant in your system tray that chats, captures,',
       'records, and repairs - entirely on your machine. Watches',
       'your habits. Quietly proactive. Loud when it matters.',
     ];
@@ -640,7 +1081,7 @@
 
     // ── TOC rows ──
     const TOC = [
-      ['01', 'What Lumi does',     'Six capabilities in one orb',  '03'],
+      ['01', 'What Lumi does',     'Six capabilities, one assistant',  '03'],
       ['02', 'Extensibility',      'Hermes / OpenClaw / Skills',   '05'],
       ['03', 'Lumi Enterprise', 'One engagement, scoped to you',   '06'],
     ];
@@ -664,9 +1105,9 @@
     rect(M, gY - 10, 28, 1.4, C.purple);
 
     const GLANCE = [
-      ['One orb',          'Lives in your system tray. Floats over windows on demand. Signed in via a single browser handoff.'],
+      ['One assistant',    'Lives in your system tray. Comes to the front on demand. Signed in via a single browser handoff.'],
       ['Two runtimes',     'Hermes ships a bundled Python interpreter. OpenClaw is the local agentic gateway.'],
-      ['Six capabilities', 'Floating orb, AI chat, capture + recording, files + drop, proactive watcher, repair toolkit.'],
+      ['Six capabilities', 'Tray assistant, AI chat, capture + recording, files + drop, proactive watcher, repair toolkit.'],
       ['Enterprise',       'One engagement — every capability, scoped to your organization. Custom pricing, volume licensing, dedicated support.'],
     ];
     const glColW = (CW - 18) / 2;
@@ -763,15 +1204,15 @@
     drawBg();
     drawHeader('/  01   WHAT LUMI DOES');
 
-    drawText(M, H - 100, 'Six things', { size: 36, bold: true, color: C.fg });
-    const stW = textWidth('Six things', { size: 36, bold: true });
-    drawText(M + stW + 14, H - 100, 'in one orb.', { size: 36, italic: true, color: C.purple });
-    drawText(M, H - 130, 'All on your machine. One signed-in orb.', { size: 11.5, italic: true, color: C.fg3 });
+    drawText(M, H - 100, 'Six things.', { size: 36, bold: true, color: C.fg });
+    const stW = textWidth('Six things.', { size: 36, bold: true });
+    drawText(M + stW + 14, H - 100, 'One assistant.', { size: 36, italic: true, color: C.purple });
+    drawText(M, H - 130, 'All on your machine. One signed-in assistant.', { size: 11.5, italic: true, color: C.fg3 });
     rect(M, H - 144, 32, 1.5, C.orange);
 
     const CAPS_1 = [
-      ['01', 'Floating Orb',
-        'A smiley lives in your system tray and floats on top when called. One global shortcut brings it back; browser handoff for sign-in - no passwords to retype.',
+      ['01', 'Always-on assistant',
+        'Lumi lives in your system tray and comes to the front when called. One global shortcut brings it back; browser handoff for sign-in - no passwords to retype.',
         ['Tray + shortcut', 'Auto-start on login']],
       ['02', 'Chat & AI Brain',
         'A control window with chat, settings, and a brain view. Multi-provider streaming, local Claude Code CLI, and OAuth Claude sessions. Chats and skills persist.',
@@ -908,8 +1349,8 @@
     drawBg();
     drawHeader('/  03   ENTERPRISE');
 
-    drawText(M, H - 100, 'One orb.', { size: 36, bold: true, color: C.fg });
-    const ooW = textWidth('One orb.', { size: 36, bold: true });
+    drawText(M, H - 100, 'One assistant.', { size: 36, bold: true, color: C.fg });
+    const ooW = textWidth('One assistant.', { size: 36, bold: true });
     drawText(M + ooW + 14, H - 100, 'Built for your org.', { size: 36, italic: true, color: C.purple });
     drawText(M, H - 130, 'One engagement. Every capability. Scoped to your organization.', { size: 11.5, italic: true, color: C.fg3 });
     rect(M, H - 144, 32, 1.5, C.orange);
@@ -975,7 +1416,7 @@
       {
         head: 'PLATFORM',
         feats: [
-          'Floating orb + system tray',
+          'Tray-native assistant',
           'Multi-provider AI chat',
           'Screenshots + annotation',
           'Screen recording + video editor',
@@ -1199,10 +1640,12 @@
   function boot() {
     startRotator();
     startAgent();
+    startGraph();
     startPricing();
     startReveal();
     startFaq();
     startDownload();
+    startBrandDock();
   }
 
   if (document.readyState === 'loading') {

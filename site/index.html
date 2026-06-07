@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="color-scheme" content="dark" />
   <meta name="theme-color" content="#0a0a0c" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" href="/favicon.svg" />
   <title>moliam · services & subscriptions</title>
   <meta name="description" content="Lumi is your personal AI assistant from Moliam. A proactive desktop companion that captures, records, repairs, and chats — all on your machine. Available as a single enterprise engagement, scoped to your organization." />
 
@@ -12,10 +14,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="moliam-styles.css?v=12" />
-  <link rel="stylesheet" href="services.css?v=16" />
+  <link rel="stylesheet" href="services.css?v=19" />
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
+
+  <!-- Brand mark — top-left, morphs into a diamond follow-badge on scroll -->
+  <a id="brand-dock" class="brand-dock" href="/" aria-label="Moliam — home">
+    <span class="brand-dock-shape" aria-hidden="true">
+      <img class="brand-dock-logo" src="/favicon.svg" alt="Moliam" width="40" height="40" />
+    </span>
+  </a>
 
   <!-- Atmospherics from moliam-styles -->
   <div class="bg-grid" aria-hidden="true"></div>
@@ -32,10 +41,6 @@
     <section class="svc-hero">
       <div class="svc-hero-inner">
         <div class="svc-hero-copy">
-          <span class="svc-eyebrow">
-            <span class="svc-eyebrow-dot" aria-hidden="true"></span>
-            Lumi runtime · operational
-          </span>
           <h1 class="svc-headline">
             We ship
             <span class="rotator-wrap" data-rotator>
@@ -46,7 +51,7 @@
 
           <p class="svc-lede">
             Meet <b>Lumi</b> &mdash; your personal AI assistant that lives in your system tray and
-            acts before you ask. Chat, capture, record, repair &mdash; one signed-in orb that watches
+            acts before you ask. Chat, capture, record, repair &mdash; a single signed-in assistant that watches
             your machine, learns your habits, and runs the loop while you work.
           </p>
 
@@ -196,7 +201,7 @@
         <div class="svc-cap-head-copy">
           <span class="eyebrow">/ 01 — What Lumi does</span>
           <h2 class="section-title">
-            Six things in one orb.<br>
+            Six things. One assistant.<br>
             <span class="accent-italic">All on your machine.</span>
           </h2>
         </div>
@@ -240,8 +245,8 @@
           </div>
           <div class="svc-card-body">
             <span class="card-num">01</span>
-            <h3>Floating Orb</h3>
-            <p>A smiley lives in your system tray and floats on top when you call it. Stays out of the way until you need it. One global shortcut brings it back &mdash; signed-in by a single browser handoff, no passwords to retype.</p>
+            <h3>Always-on assistant</h3>
+            <p>Lumi lives in your system tray and comes to the front the moment you call it. Stays out of the way until you need it. One global shortcut brings it back &mdash; signed-in by a single browser handoff, no passwords to retype.</p>
             <div class="card-meta"><span>Tray + shortcut</span><span>·</span><span>Auto-start on login</span></div>
           </div>
         </article>
@@ -374,29 +379,49 @@
         <p class="lede-left svc-runtime-lede">A peek at the desktop runtime — what Lumi handles in the background while you work.</p>
       </header>
 
-      <aside class="svc-agent" aria-label="Lumi live runtime">
-        <div class="agent-head">
-          <span class="agent-head-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-          <span class="eyebrow-sm">LUMI · DESKTOP RUNTIME</span>
-        </div>
+      <div class="svc-runtime-grid">
+        <aside class="svc-agent" aria-label="Lumi live runtime">
+          <div class="agent-head">
+            <span class="agent-head-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="eyebrow-sm">LUMI · DESKTOP RUNTIME</span>
+          </div>
 
-        <div class="agent-hud">
-          <div><span class="hud-lbl">Events · 24h</span><span class="hud-val" id="ag-tasks">1,284</span></div>
-          <div><span class="hud-lbl">Captures</span><span class="hud-val" id="ag-lat">142</span></div>
-          <div><span class="hud-lbl">Uptime</span><span class="hud-val" id="ag-up">99.98<small>%</small></span></div>
-        </div>
+          <div class="agent-hud">
+            <div><span class="hud-lbl">Events · 24h</span><span class="hud-val" id="ag-tasks">1,284</span></div>
+            <div><span class="hud-lbl">Captures</span><span class="hud-val" id="ag-lat">142</span></div>
+            <div><span class="hud-lbl">Uptime</span><span class="hud-val" id="ag-up">99.98<small>%</small></span></div>
+          </div>
 
-        <div class="agent-stream" id="agent-stream" aria-live="polite">
-          <!-- lines injected by JS -->
-        </div>
+          <div class="agent-stream" id="agent-stream" aria-live="polite">
+            <!-- lines injected by JS -->
+          </div>
 
-        <div class="agent-foot">
-          <span class="dot live" id="ag-dot"></span>
-          <span id="ag-status">LIVE · streaming</span>
-          <span class="agent-foot-sep">·</span>
-          <span id="ag-region">local · m3 max</span>
-        </div>
-      </aside>
+          <div class="agent-foot">
+            <span class="dot live" id="ag-dot"></span>
+            <span id="ag-status">LIVE · streaming</span>
+            <span class="agent-foot-sep">·</span>
+            <span id="ag-region">local · m3 max</span>
+          </div>
+        </aside>
+
+        <aside class="svc-graph" aria-label="Lumi knowledge graph">
+          <div class="agent-head">
+            <span class="agent-head-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="eyebrow-sm">LUMI · VAULT GRAPH</span>
+          </div>
+          <div class="graph-body">
+            <canvas id="lumi-graph" aria-hidden="true"></canvas>
+            <div class="graph-tip" id="graph-tip" role="status" aria-live="polite" hidden></div>
+            <div class="graph-empty" id="graph-empty">indexing…</div>
+          </div>
+          <div class="agent-foot">
+            <span class="dot live"></span>
+            <span id="graph-count">0 notes</span>
+            <span class="agent-foot-sep">·</span>
+            <span>linked · local</span>
+          </div>
+        </aside>
+      </div>
     </section>
 
     <!-- ════════════════ PRICING / TIERS ════════════════ -->
@@ -405,7 +430,7 @@
         <div>
           <span class="eyebrow">SERVICES &amp; SUBSCRIPTIONS · MMXXVI</span>
           <h2 class="section-title">
-            One orb. <span class="accent-italic">Built for your organization.</span>
+            One assistant. <span class="accent-italic">Built for your organization.</span>
           </h2>
           <p class="lede-left pricing-lede">
             Lumi ships as a single enterprise engagement — every capability, deployed and
@@ -440,7 +465,7 @@
           <div class="te-feat-col">
             <span class="te-feat-head">Platform</span>
             <ul class="tier-feat">
-              <li><i class="ft-check" aria-hidden="true"></i>Floating orb + system tray</li>
+              <li><i class="ft-check" aria-hidden="true"></i>Tray-native assistant</li>
               <li><i class="ft-check" aria-hidden="true"></i>Multi-provider AI chat · streaming</li>
               <li><i class="ft-check" aria-hidden="true"></i>Screenshots + annotation editor</li>
               <li><i class="ft-check" aria-hidden="true"></i>Screen recording · webcam pip · full video editor</li>
@@ -466,7 +491,7 @@
 
       <div class="pricing-foot">
         <span class="dot live"></span>
-        <span>Every deployment ships the orb, AI chat, screenshots, screen recording, and the proactive watcher — on-device, opt-out telemetry, zero vendor lock-in.</span>
+        <span>Every deployment ships the assistant, AI chat, screenshots, screen recording, and the proactive watcher — on-device, opt-out telemetry, zero vendor lock-in.</span>
         <button type="button" class="btn-link inline" id="dl-brief-2">
           Download capabilities &amp; pricing PDF <span class="arrow">→</span>
         </button>
@@ -616,7 +641,7 @@
         <span class="eyebrow">/ Ready when you are</span>
         <h2 class="final-title">
           Your machine. <span class="accent-italic">Your watcher.</span><br>
-          Your <span class="accent-purple">proactive orb</span>.
+          Your <span class="accent-purple">proactive assistant</span>.
         </h2>
         <p class="final-sub">
           Tell us what you're building. We'll tell you what's possible<br>
@@ -649,6 +674,6 @@
     <span class="dim">hello@moliam.com</span>
   </footer>
 
-  <script src="services.js?v=17"></script>
+  <script src="services.js?v=21"></script>
 </body>
 </html>
