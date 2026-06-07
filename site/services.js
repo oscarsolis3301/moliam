@@ -367,7 +367,7 @@
     //    03  What Lumi does                   (capabilities 01–03)
     //    04  What Lumi does · cont.           (capabilities 04–06)
     //    05  Extensibility                    (Hermes / OpenClaw + extras)
-    //    06  Subscriptions                    (three tiers + contact)
+    //    06  Enterprise                       (single engagement + contact)
     //
     //  Visual system: graph-paper grid bg, big italic display type,
     //  purple primary accent (#a78bfa) + orange tick accent (#ff6b35),
@@ -609,7 +609,7 @@
     const TOCMini = [
       ['01', 'What Lumi does · six capabilities',           'p. 03'],
       ['02', 'Extensibility · Hermes / OpenClaw / Skills',  'p. 05'],
-      ['03', 'Subscriptions · Personal / Pro / Team',       'p. 06'],
+      ['03', 'Enterprise · one engagement',                 'p. 06'],
     ];
     for (let i = 0; i < TOCMini.length; i++) {
       const yy = tocBoxY - 28 - i * 14;
@@ -642,7 +642,7 @@
     const TOC = [
       ['01', 'What Lumi does',     'Six capabilities in one orb',  '03'],
       ['02', 'Extensibility',      'Hermes / OpenClaw / Skills',   '05'],
-      ['03', 'Lumi subscriptions', 'Personal / Pro / Team',        '06'],
+      ['03', 'Lumi Enterprise', 'One engagement, scoped to you',   '06'],
     ];
     let ty = H - 198;
     line(M, ty + 30, W - M, ty + 30, C.line2, 0.5);
@@ -667,7 +667,7 @@
       ['One orb',          'Lives in your system tray. Floats over windows on demand. Signed in via a single browser handoff.'],
       ['Two runtimes',     'Hermes ships a bundled Python interpreter. OpenClaw is the local agentic gateway.'],
       ['Six capabilities', 'Floating orb, AI chat, capture + recording, files + drop, proactive watcher, repair toolkit.'],
-      ['Three tiers',      'Personal at $3/mo, Pro at $9/mo, Team at $25/seat/mo. Annual billing saves 20%.'],
+      ['Enterprise',       'One engagement — every capability, scoped to your organization. Custom pricing, volume licensing, dedicated support.'],
     ];
     const glColW = (CW - 18) / 2;
     const glRowH = 76;
@@ -903,126 +903,113 @@
     pages.push(stream); stream = '';
 
     // ═════════════════════════════════════════════════════════
-    //  PAGE 6 — SUBSCRIPTIONS + CONTACT
+    //  PAGE 6 — ENTERPRISE + CONTACT
     // ═════════════════════════════════════════════════════════
     drawBg();
-    drawHeader('/  03   SUBSCRIPTIONS');
+    drawHeader('/  03   ENTERPRISE');
 
     drawText(M, H - 100, 'One orb.', { size: 36, bold: true, color: C.fg });
     const ooW = textWidth('One orb.', { size: 36, bold: true });
-    drawText(M + ooW + 14, H - 100, 'Priced like software.', { size: 36, italic: true, color: C.purple });
-    drawText(M, H - 130, 'Three tiers. Cancel any time. Annual billing saves 20%.', { size: 11.5, italic: true, color: C.fg3 });
+    drawText(M + ooW + 14, H - 100, 'Built for your org.', { size: 36, italic: true, color: C.purple });
+    drawText(M, H - 130, 'One engagement. Every capability. Scoped to your organization.', { size: 11.5, italic: true, color: C.fg3 });
     rect(M, H - 144, 32, 1.5, C.orange);
 
-    const TIERS = [
+    // ── single Enterprise panel (full width) ──
+    const panelTop = H - 168;
+    const panelBot = 168;
+    const panelH = panelTop - panelBot;
+    rect(M, panelBot, CW, panelH, C.bg2);
+    strokeRect(M, panelBot, CW, panelH, C.purple, 1.0);
+    rect(M, panelTop - 4, CW, 4, C.purple);          // top accent strip
+    const topY = panelTop;
+
+    // left / right zones
+    const leftW = CW * 0.40;
+    const lx = M + 24;
+    const dividerX = M + leftW;
+
+    // flag pill
+    const eFlag = 'ENTERPRISE';
+    const efw = textWidth(eFlag, { size: 7, bold: true, charSpace: 1.6 }) + 16;
+    rect(lx, topY - 40, efw, 15, C.orange);
+    drawText(lx + 8, topY - 36, eFlag, { size: 7, bold: true, color: C.bg, charSpace: 1.6 });
+
+    // name — "Lumi <italic Enterprise>"
+    const eNameY = topY - 72;
+    drawText(lx, eNameY, 'Lumi', { size: 16, color: C.fg3 });
+    const elw = widthOf('Lumi', 16, 'normal');
+    drawText(lx + elw + 6, eNameY, 'Enterprise', { size: 19, italic: true, color: C.purple });
+
+    // tag
+    const eTag = 'One agreement. Every capability. Tailored to your organization.';
+    const eTagLines = wrapText(eTag, 9.5, leftW - 44, 'italic').slice(0, 3);
+    for (let li = 0; li < eTagLines.length; li++) {
+      drawText(lx, eNameY - 22 - li * 12, eTagLines[li], { size: 9.5, italic: true, color: C.fg2 });
+    }
+
+    // pricing label + ambiguous "Custom" (no dollar amount)
+    const ePriceY = eNameY - 122;
+    drawText(lx, ePriceY + 50, 'PRICING', { size: 8, bold: true, color: C.purple, charSpace: 2.2 });
+    drawText(lx, ePriceY, 'Custom', { size: 40, italic: true, color: C.purpleLt });
+    drawText(lx, ePriceY - 16, 'Scoped to seats, security & support', { size: 8, color: C.fg3, charSpace: 0.4 });
+
+    // note
+    const eNote = 'Volume licensing, SSO & RBAC, audit trails, dedicated onboarding, and priority support — packaged into one agreement and quoted to your deployment.';
+    const eNoteLines = wrapText(eNote, 8.5, leftW - 44, 'normal').slice(0, 5);
+    let enY = ePriceY - 44;
+    for (let li = 0; li < eNoteLines.length; li++) {
+      drawText(lx, enY, eNoteLines[li], { size: 8.5, color: C.fg3 });
+      enY -= 11;
+    }
+
+    // vertical divider between zones
+    line(dividerX, panelBot + 22, dividerX, topY - 22, C.line2, 0.5);
+
+    // right zone — "everything included", two feature columns
+    const rx = dividerX + 24;
+    const rZoneW = (M + CW) - rx - 16;
+    drawText(rx, topY - 36, 'EVERYTHING INCLUDED', { size: 8, bold: true, color: C.purple, charSpace: 2.2 });
+    line(rx, topY - 46, M + CW - 16, topY - 46, C.line, 0.4);
+
+    const FEAT_COLS = [
       {
-        name: 'Personal',
-        tag: 'For one curious mind and one machine.',
-        price: '3', unit: '/ mo',
-        annual: '$2/mo annual  /  $29/yr  /  save $7',
+        head: 'PLATFORM',
         feats: [
           'Floating orb + system tray',
           'Multi-provider AI chat',
           'Screenshots + annotation',
-          'Screen recording, basic trim',
+          'Screen recording + video editor',
           'Drop-catcher + Markitdown',
-          'Community support',
+          'Meeting transcription',
         ],
       },
       {
-        name: 'Pro', flag: 'MOST POPULAR',
-        tag: 'For power users who ship every week.',
-        price: '9', unit: '/ mo',
-        annual: '$7/mo annual  /  $86/yr  /  save $22',
+        head: 'OPERATIONS & CONTROL',
         feats: [
-          'Everything in Personal,',
-          'Webcam pip + full video editor',
           'Proactive PC helper',
           'SysOps repair toolkit',
-          'Meeting transcription',
           'Hermes + OpenClaw + Skills',
-          'Email support, 24h response',
-        ],
-      },
-      {
-        name: 'Team',
-        tag: 'For small teams and serious operators.',
-        price: '25', unit: '/ seat / mo',
-        annual: '$20/seat/mo annual  /  5 seats included',
-        feats: [
-          'Everything in Pro,',
-          'Per-device cards + heartbeat',
           'SSO handoff + RBAC',
           'Activity log + audit trail',
           'Private Skills registry',
+          'Per-device cards + heartbeat',
           'Lock & blocker overlays',
-          'Slack + email, 4h response',
         ],
       },
     ];
-
-    const tierW = (CW - 16) / 3;
-    const tierH = 380;
-    const tierY = H - 168 - tierH;
-
-    for (let ti = 0; ti < TIERS.length; ti++) {
-      const t = TIERS[ti];
-      const x = M + ti * (tierW + 8);
-      const isPro = !!t.flag;
-
-      rect(x, tierY, tierW, tierH, isPro ? C.bg2 : C.bg1);
-      strokeRect(x, tierY, tierW, tierH, isPro ? C.purple : C.line, isPro ? 1.0 : 0.5);
-      // top accent strip
-      rect(x, tierY + tierH - 4, tierW, 4, isPro ? C.purple : C.purpleVD);
-
-      // flag
-      let nameY = tierY + tierH - 56;
-      if (t.flag) {
-        const fw = textWidth(t.flag, { size: 7, bold: true, charSpace: 1.6 }) + 16;
-        rect(x + 16, tierY + tierH - 24, fw, 14, C.orange);
-        drawText(x + 24, tierY + tierH - 20, t.flag, { size: 7, bold: true, color: C.bg, charSpace: 1.6 });
-        nameY = tierY + tierH - 68;
-      }
-
-      // tier name — "Lumi <italic Name>"
-      drawText(x + 16, nameY, 'Lumi', { size: 14, color: C.fg3 });
-      const lw = widthOf('Lumi', 14, 'normal');
-      drawText(x + 16 + lw + 6, nameY, t.name, { size: 17, italic: true, color: C.purple });
-
-      // tag
-      const tagLines = wrapText(t.tag, 9.5, tierW - 32, 'italic').slice(0, 2);
-      for (let li = 0; li < tagLines.length; li++) {
-        drawText(x + 16, nameY - 22 - li * 12, tagLines[li], { size: 9.5, italic: true, color: C.fg2 });
-      }
-
-      // price
-      const priceY = nameY - 84;
-      drawText(x + 16, priceY + 28, '$', { size: 15, color: C.fg3 });
-      drawText(x + 30, priceY, t.price, { size: 46, italic: true, color: C.fg });
-      const pwd = widthOf(t.price, 46, 'italic');
-      drawText(x + 36 + pwd, priceY + 12, t.unit, { size: 10, color: C.fg3 });
-
-      // annual
-      drawText(x + 16, priceY - 16, t.annual, { size: 7.5, color: C.fg3, charSpace: 0.6 });
-
-      // divider
-      const divY = priceY - 30;
-      line(x + 16, divY, x + tierW - 16, divY, C.line2, 0.4);
-
-      // features
-      let fy = divY - 18;
-      for (let fi = 0; fi < t.feats.length; fi++) {
-        const f = t.feats[fi];
-        const isHdr = f.indexOf('Everything') === 0;
-        const flines = wrapText(f, 9, tierW - 36, 'normal');
+    const fColGap = 22;
+    const fColW = (rZoneW - fColGap) / 2;
+    for (let ci = 0; ci < FEAT_COLS.length; ci++) {
+      const col = FEAT_COLS[ci];
+      const cx = rx + ci * (fColW + fColGap);
+      drawText(cx, topY - 70, col.head, { size: 7.5, bold: true, color: C.purpleLt, charSpace: 1.4 });
+      let fy = topY - 90;
+      for (let fi = 0; fi < col.feats.length; fi++) {
+        const flines = wrapText(col.feats[fi], 8.5, fColW - 12, 'normal');
         for (let k = 0; k < flines.length; k++) {
-          if (k === 0) {
-            drawText(x + 16, fy, '+', { size: 10, bold: true, color: isPro ? C.purple : C.purpleDp });
-            drawText(x + 28, fy, flines[k], { size: 9, bold: isHdr, color: C.fg });
-          } else {
-            drawText(x + 28, fy, flines[k], { size: 9, color: C.fg2 });
-          }
-          fy -= 12;
+          if (k === 0) drawText(cx, fy, '+', { size: 9, bold: true, color: C.purple });
+          drawText(cx + 11, fy, flines[k], { size: 8.5, color: C.fg2 });
+          fy -= 11.5;
         }
         fy -= 3;
       }
@@ -1038,8 +1025,8 @@
     drawText(M + 22, contactY + 14,
       'hello@moliam.com   /   Irvine, California   /   UTC-8   /   Booking Q3 2026',
       { size: 9, italic: true, color: C.purpleLt });
-    drawTextRight(W - M - 16, contactY + contactH - 24, '24h reply on Pro', { size: 9, color: C.purpleLt });
-    drawTextRight(W - M - 16, contactY + 14, '4h reply on Team', { size: 9, color: C.purpleLt });
+    drawTextRight(W - M - 16, contactY + contactH - 24, 'Priority support', { size: 9, color: C.purpleLt });
+    drawTextRight(W - M - 16, contactY + 14, 'Dedicated onboarding', { size: 9, color: C.purpleLt });
 
     drawFooter(6, 6);
 

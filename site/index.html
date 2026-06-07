@@ -6,13 +6,13 @@
   <meta name="color-scheme" content="dark" />
   <meta name="theme-color" content="#0a0a0c" />
   <title>moliam · services & subscriptions</title>
-  <meta name="description" content="Lumi is your personal AI assistant from Moliam. A proactive desktop companion that captures, records, repairs, and chats — all on your machine. Tiered subscriptions from $3/mo." />
+  <meta name="description" content="Lumi is your personal AI assistant from Moliam. A proactive desktop companion that captures, records, repairs, and chats — all on your machine. Available as a single enterprise engagement, scoped to your organization." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="moliam-styles.css?v=12" />
-  <link rel="stylesheet" href="services.css?v=13" />
+  <link rel="stylesheet" href="services.css?v=16" />
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -32,6 +32,10 @@
     <section class="svc-hero">
       <div class="svc-hero-inner">
         <div class="svc-hero-copy">
+          <span class="svc-eyebrow">
+            <span class="svc-eyebrow-dot" aria-hidden="true"></span>
+            Lumi runtime · operational
+          </span>
           <h1 class="svc-headline">
             We ship
             <span class="rotator-wrap" data-rotator>
@@ -82,31 +86,86 @@
           </ul>
         </div>
 
-        <!-- ════════════════ MEET LUMI · friendly hero visual ════════════════ -->
+        <!-- ════════════════ MEET LUMI · product surface ════════════════ -->
         <aside class="svc-hello" aria-label="Meet Lumi">
-          <div class="hello-orb">
-            <svg viewBox="0 0 64 64" aria-hidden="true">
-              <defs>
-                <radialGradient id="helloOrbG" cx="50%" cy="40%" r="60%">
-                  <stop offset="0%" stop-color="#c4b5fd"/>
-                  <stop offset="55%" stop-color="#a78bfa"/>
-                  <stop offset="100%" stop-color="#7c3aed"/>
-                </radialGradient>
-              </defs>
-              <circle cx="32" cy="32" r="28" fill="url(#helloOrbG)"/>
-              <circle cx="22" cy="27" r="3" fill="#fff"/>
-              <circle cx="42" cy="27" r="3" fill="#fff"/>
-              <path d="M21 38 Q32 48 43 38" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
-            </svg>
+          <div class="hello-bar">
+            <span class="agent-head-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="hello-bar-title">Lumi</span>
+            <span class="hello-status" role="status">
+              <span class="hello-status-dot" aria-hidden="true"></span>
+              <span class="hello-status-txt">Online</span>
+            </span>
           </div>
-          <p class="hello-greet">Hi, I'm <b>Lumi</b> 👋</p>
-          <p class="hello-say">I live in your taskbar and quietly help with the boring computer stuff — so you don't have to.</p>
-          <ul class="hello-list">
-            <li><span class="hello-emoji" aria-hidden="true">💬</span> Answer your questions, any time</li>
-            <li><span class="hello-emoji" aria-hidden="true">📸</span> Take &amp; record your screen</li>
-            <li><span class="hello-emoji" aria-hidden="true">🧹</span> Tidy up files &amp; clutter</li>
-            <li><span class="hello-emoji" aria-hidden="true">🩹</span> Fix little problems on its own</li>
-          </ul>
+
+          <div class="hello-body">
+            <div class="hello-avatar">
+              <span class="hello-orb-halo" aria-hidden="true"></span>
+              <div class="hello-orb">
+                <svg viewBox="0 0 64 64" aria-hidden="true">
+                  <defs>
+                    <radialGradient id="helloOrbG" cx="50%" cy="40%" r="60%">
+                      <stop offset="0%" stop-color="#c4b5fd"/>
+                      <stop offset="55%" stop-color="#a78bfa"/>
+                      <stop offset="100%" stop-color="#7c3aed"/>
+                    </radialGradient>
+                  </defs>
+                  <circle cx="32" cy="32" r="28" fill="url(#helloOrbG)"/>
+                  <g class="hello-eyes">
+                    <circle cx="22" cy="27" r="3" fill="#fff"/>
+                    <circle cx="42" cy="27" r="3" fill="#fff"/>
+                  </g>
+                  <path class="hello-smile" d="M21 38 Q32 48 43 38" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+
+            <p class="hello-greet">Hi, I'm <b>Lumi</b></p>
+            <p class="hello-say">Your on-device AI agent — I live in the system tray and quietly handle the busywork so you don't have to.</p>
+
+            <ul class="hello-list">
+              <li style="--i:0">
+                <span class="hello-ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 9 9 0 0 1-4-1L3 20l1.1-3.5a8.4 8.4 0 0 1-1.1-4A8.38 8.38 0 0 1 11.5 4 8.5 8.5 0 0 1 21 11.5z"/>
+                  </svg>
+                </span>
+                <span class="hello-txt">Answer your questions, any time</span>
+              </li>
+              <li style="--i:1">
+                <span class="hello-ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3l2-3h8l2 3h3a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="3.5"/>
+                  </svg>
+                </span>
+                <span class="hello-txt">Capture &amp; record your screen</span>
+              </li>
+              <li style="--i:2">
+                <span class="hello-ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/>
+                    <path d="M18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/>
+                  </svg>
+                </span>
+                <span class="hello-txt">Tidy up files &amp; clutter</span>
+              </li>
+              <li style="--i:3">
+                <span class="hello-ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3l7 3v5c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6z"/>
+                    <path d="M9 12l2 2 4-4"/>
+                  </svg>
+                </span>
+                <span class="hello-txt">Fix little problems on its own</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="hello-foot">
+            <span class="hello-foot-item"><span class="trust-dot" aria-hidden="true"></span>On-device</span>
+            <span class="hello-foot-item"><span class="trust-dot" aria-hidden="true"></span>Tray-native</span>
+            <span class="hello-foot-item"><span class="trust-dot" aria-hidden="true"></span>Signed-in</span>
+          </div>
         </aside>
       </div>
     </section>
@@ -342,107 +401,74 @@
 
     <!-- ════════════════ PRICING / TIERS ════════════════ -->
     <section class="svc-section svc-pricing" id="pricing">
-      <header class="section-head pricing-head">
+      <header class="section-head pricing-head pricing-head-solo">
         <div>
           <span class="eyebrow">SERVICES &amp; SUBSCRIPTIONS · MMXXVI</span>
           <h2 class="section-title">
-            One orb. <span class="accent-italic">Priced like software.</span>
+            One orb. <span class="accent-italic">Built for your organization.</span>
           </h2>
           <p class="lede-left pricing-lede">
-            Three tiers. Cancel any time. Every plan ships the floating orb,
-            AI chat, screenshots, screen recording, and the proactive watcher.
+            Lumi ships as a single enterprise engagement — every capability, deployed and
+            scoped to your team, security posture, and support needs. No tiers to outgrow,
+            no per-seat math to manage. We quote to your footprint.
           </p>
-        </div>
-        <div class="pricing-toggle" role="tablist" aria-label="Billing cadence">
-          <button type="button" class="pt-btn active" data-bill="monthly" role="tab" aria-selected="true">Monthly</button>
-          <button type="button" class="pt-btn" data-bill="annual" role="tab" aria-selected="false">
-            Annual <span class="pt-save">−20%</span>
-          </button>
-          <span class="pt-thumb" aria-hidden="true"></span>
         </div>
       </header>
 
-      <div class="tier-grid">
+      <article class="tier-enterprise reveal">
+        <div class="te-main">
+          <span class="tier-flag te-flag">Enterprise</span>
+          <div class="tier-name">Lumi <span class="accent-italic">Enterprise</span></div>
+          <p class="tier-tag">One agreement. Every capability. Tailored to your organization.</p>
 
-        <article class="tier reveal">
-          <header class="tier-head">
-            <div class="tier-name">Lumi <span class="accent-italic">Personal</span></div>
-            <p class="tier-tag">For one curious mind &amp; one machine.</p>
-          </header>
-          <div class="tier-price">
-            <span class="tp-currency">$</span><span class="tp-num" data-monthly="3" data-annual="2">3</span>
-            <span class="tp-unit">/ mo</span>
+          <div class="tier-price tp-custom">
+            <span class="tp-num">Custom</span>
           </div>
-          <div class="tier-meta" data-billed-monthly="cancel any time" data-billed-annual="$29 / yr · save $7">cancel any time</div>
-          <a href="mailto:hello@moliam.com?subject=Lumi%20Personal" class="tier-cta">
-            Start free trial <span class="arrow">→</span>
-          </a>
-          <ul class="tier-feat">
-            <li><i class="ft-check" aria-hidden="true"></i>Floating orb + system tray</li>
-            <li><i class="ft-check" aria-hidden="true"></i>Multi-provider AI chat · streaming</li>
-            <li><i class="ft-check" aria-hidden="true"></i>Screenshots + annotation editor</li>
-            <li><i class="ft-check" aria-hidden="true"></i>Screen recording · basic trim</li>
-            <li><i class="ft-check" aria-hidden="true"></i>Drop-catcher + Markitdown</li>
-            <li><i class="ft-check" aria-hidden="true"></i>Community support</li>
-          </ul>
-        </article>
+          <div class="tier-meta">Scoped to seats, security &amp; support</div>
 
-        <article class="tier featured reveal">
-          <span class="tier-flag">Most popular</span>
-          <header class="tier-head">
-            <div class="tier-name">Lumi <span class="accent-italic">Pro</span></div>
-            <p class="tier-tag">For power users who ship every week.</p>
-          </header>
-          <div class="tier-price">
-            <span class="tp-currency">$</span><span class="tp-num" data-monthly="9" data-annual="7">9</span>
-            <span class="tp-unit">/ mo</span>
+          <a href="mailto:hello@moliam.com?subject=Lumi%20Enterprise" class="tier-cta primary te-cta">
+            Talk to us <span class="arrow">→</span>
+          </a>
+
+          <p class="te-note">
+            Volume licensing · SSO &amp; RBAC · audit trails · dedicated onboarding · priority
+            support — packaged into one agreement and quoted to your deployment.
+          </p>
+        </div>
+
+        <div class="te-feats">
+          <div class="te-feat-col">
+            <span class="te-feat-head">Platform</span>
+            <ul class="tier-feat">
+              <li><i class="ft-check" aria-hidden="true"></i>Floating orb + system tray</li>
+              <li><i class="ft-check" aria-hidden="true"></i>Multi-provider AI chat · streaming</li>
+              <li><i class="ft-check" aria-hidden="true"></i>Screenshots + annotation editor</li>
+              <li><i class="ft-check" aria-hidden="true"></i>Screen recording · webcam pip · full video editor</li>
+              <li><i class="ft-check" aria-hidden="true"></i>Drop-catcher + Markitdown</li>
+              <li><i class="ft-check" aria-hidden="true"></i>Meeting transcription + audio capture</li>
+            </ul>
           </div>
-          <div class="tier-meta" data-billed-monthly="14-day trial · cancel any time" data-billed-annual="$86 / yr · save $22">14-day trial · cancel any time</div>
-          <a href="mailto:hello@moliam.com?subject=Lumi%20Pro" class="tier-cta primary">
-            Start a Pro trial <span class="arrow">→</span>
-          </a>
-          <ul class="tier-feat">
-            <li><i class="ft-check" aria-hidden="true"></i><b>Everything in Personal</b>, plus:</li>
-            <li><i class="ft-check" aria-hidden="true"></i>Webcam pip + full video editor</li>
-            <li><i class="ft-check" aria-hidden="true"></i>Proactive PC helper · post-resume sweeps</li>
-            <li><i class="ft-check" aria-hidden="true"></i>SysOps repair toolkit · PowerShell runbooks</li>
-            <li><i class="ft-check" aria-hidden="true"></i>Meeting transcription + audio capture</li>
-            <li><i class="ft-check" aria-hidden="true"></i>Hermes Python runtime + OpenClaw + Skills</li>
-            <li><i class="ft-check" aria-hidden="true"></i>Email support · 24h response</li>
-          </ul>
-        </article>
-
-        <article class="tier reveal">
-          <header class="tier-head">
-            <div class="tier-name">Lumi <span class="accent-italic">Team</span></div>
-            <p class="tier-tag">For small teams &amp; serious operators.</p>
-          </header>
-          <div class="tier-price">
-            <span class="tp-currency">$</span><span class="tp-num" data-monthly="25" data-annual="20">25</span>
-            <span class="tp-unit">/ mo</span>
+          <div class="te-feat-col">
+            <span class="te-feat-head">Operations &amp; control</span>
+            <ul class="tier-feat">
+              <li><i class="ft-check" aria-hidden="true"></i>Proactive PC helper · post-resume sweeps</li>
+              <li><i class="ft-check" aria-hidden="true"></i>SysOps repair toolkit · PowerShell runbooks</li>
+              <li><i class="ft-check" aria-hidden="true"></i>Hermes Python runtime + OpenClaw + Skills</li>
+              <li><i class="ft-check" aria-hidden="true"></i>SSO handoff + role-based access</li>
+              <li><i class="ft-check" aria-hidden="true"></i>Activity log + audit trail</li>
+              <li><i class="ft-check" aria-hidden="true"></i>Private Skills registry · custom adapters</li>
+              <li><i class="ft-check" aria-hidden="true"></i>Per-device cards · heartbeat dashboard</li>
+              <li><i class="ft-check" aria-hidden="true"></i>Lock &amp; blocker overlays · focus policies</li>
+            </ul>
           </div>
-          <div class="tier-meta" data-billed-monthly="per seat · 5 seats included" data-billed-annual="$240 / yr per seat · save $60">per seat · 5 seats included</div>
-          <a href="mailto:hello@moliam.com?subject=Lumi%20Team" class="tier-cta">
-            Start Team trial <span class="arrow">→</span>
-          </a>
-          <ul class="tier-feat">
-            <li><i class="ft-check" aria-hidden="true"></i><b>Everything in Pro</b>, plus:</li>
-            <li><i class="ft-check" aria-hidden="true"></i>Per-device cards · heartbeat dashboard</li>
-            <li><i class="ft-check" aria-hidden="true"></i>SSO handoff + role-based access</li>
-            <li><i class="ft-check" aria-hidden="true"></i>Activity log + audit trail</li>
-            <li><i class="ft-check" aria-hidden="true"></i>Private Skills registry · custom adapters</li>
-            <li><i class="ft-check" aria-hidden="true"></i>Lock &amp; blocker overlays · focus policies</li>
-            <li><i class="ft-check" aria-hidden="true"></i>Slack + email · 4h response</li>
-          </ul>
-        </article>
-
-      </div>
+        </div>
+      </article>
 
       <div class="pricing-foot">
         <span class="dot live"></span>
-        <span>Every tier ships the orb, AI chat, screenshots, screen recording, and the proactive watcher — on-device, opt-out telemetry, zero vendor lock-in.</span>
+        <span>Every deployment ships the orb, AI chat, screenshots, screen recording, and the proactive watcher — on-device, opt-out telemetry, zero vendor lock-in.</span>
         <button type="button" class="btn-link inline" id="dl-brief-2">
-          Download full pricing PDF <span class="arrow">→</span>
+          Download capabilities &amp; pricing PDF <span class="arrow">→</span>
         </button>
       </div>
     </section>
@@ -568,10 +594,10 @@
 
         <details class="faq-row reveal">
           <summary>
-            <span>How do subscriptions work?</span>
+            <span>How does pricing work?</span>
             <i class="faq-icon" aria-hidden="true"></i>
           </summary>
-          <div class="faq-a">Personal and Pro are month-to-month, with a 14-day trial on Pro. Annual is 20% off. Team is per-seat with 5 seats included. Cancel any time. Auto-update with rollback comes bundled; opt-out telemetry feeds a per-device card on the admin side.</div>
+          <div class="faq-a">Lumi is sold as a single enterprise engagement, scoped to your organization &mdash; we quote to your seat count, security requirements, and support needs rather than a fixed tier. Volume licensing, SSO &amp; RBAC, audit trails, and dedicated onboarding are part of the agreement. Auto-update with rollback comes bundled; opt-out telemetry feeds a per-device card on the admin side. Reach out and we'll put together a proposal.</div>
         </details>
 
         <details class="faq-row reveal">
@@ -579,7 +605,7 @@
             <span>Where are you based?</span>
             <i class="faq-icon" aria-hidden="true"></i>
           </summary>
-          <div class="faq-a">Irvine, California &mdash; UTC-8. We work async with users in every time zone. 24-hour response on Pro, 4-hour on Team.</div>
+          <div class="faq-a">Irvine, California &mdash; UTC-8. We work async with users in every time zone. Priority response and dedicated onboarding are part of every enterprise engagement.</div>
         </details>
       </div>
     </section>
@@ -623,6 +649,6 @@
     <span class="dim">hello@moliam.com</span>
   </footer>
 
-  <script src="services.js?v=16"></script>
+  <script src="services.js?v=17"></script>
 </body>
 </html>
